@@ -42,8 +42,8 @@ export function LoginPage() {
       if (response.data.success) {
         setAuth(
           response.data.user,
-          response.data.accessToken,
-          response.data.refreshToken
+          response.data.access_token,
+          response.data.refresh_token || '' // Backend doesn't provide refresh token yet
         );
         toast.success('Erfolgreich angemeldet');
         navigate('/dashboard');
