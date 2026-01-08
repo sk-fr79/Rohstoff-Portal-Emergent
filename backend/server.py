@@ -1359,6 +1359,203 @@ async def get_dashboard_stats(user = Depends(get_current_user)):
         }
     }
 
+# ============================================================
+# FILE UPLOAD ENDPOINTS
+# ============================================================
+
+@app.post("/api/upload/logo/{adresse_id}")
+async def upload_firmenlogo(
+    adresse_id: str,
+    file: UploadFile = File(...),
+    user = Depends(get_current_user)
+):
+    """Firmenlogo hochladen"""
+    # Adresse prüfen
+    adresse = await db.adressen.find_one({
+        "_id": adresse_id,
+        "mandant_id": user["mandant_id"]
+    })
+    if not adresse:
+        raise HTTPException(status_code=404, detail="Adresse nicht gefunden")
+    
+    # Datei validieren
+    if not file.content_type or not file.content_type.startswith("image/"):
+        raise HTTPException(status_code=400, detail="Nur Bilddateien erlaubt")
+    
+    # Dateigröße prüfen (max 5MB)
+    content = await file.read()
+    if len(content) > 5 * 1024 * 1024:
+        raise HTTPException(status_code=400, detail="Datei zu groß (max 5MB)")
+    
+    # Base64 kodieren und speichern
+    ext = file.filename.split(".")[-1] if file.filename else "png"
+    logo_data = f"data:{file.content_type};base64,{base64.b64encode(content).decode('utf-8')}"
+    
+    await db.adressen.update_one(
+        {"_id": adresse_id},
+        {"$set": {"firmenlogo": logo_data, "letzte_aenderung": datetime.utcnow()}}
+    )
+    
+    return {"success": True, "data": {"firmenlogo": logo_data}}
+
+@app.delete("/api/upload/logo/{adresse_id}")
+async def delete_firmenlogo(adresse_id: str, user = Depends(get_current_user)):
+    """Firmenlogo löschen"""
+    result = await db.adressen.update_one(
+        {"_id": adresse_id, "mandant_id": user["mandant_id"]},
+        {"$set": {"firmenlogo": None, "letzte_aenderung": datetime.utcnow()}}
+    )
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Adresse nicht gefunden")
+    return {"success": True}
+
+@app.post("/api/adressen/{adresse_id}/ansprechpartner")
+async def add_ansprechpartner(
+    adresse_id: str,
+    ansprechpartner: Dict[str, Any],
+    user = Depends(get_current_user)
+):
+    """Ansprechpartner zu Adresse hinzufügen"""
+    adresse = await db.adressen.find_one({
+        "_id": adresse_id,
+        "mandant_id": user["mandant_id"]
+    })
+    if not adresse:
+        raise HTTPException(status_code=404, detail="Adresse nicht gefunden")
+    
+    # Ansprechpartner-ID generieren
+    ansprechpartner["id"] = str(uuid.uuid4())
+    ansprechpartner["erstellt_am"] = datetime.utcnow().isoformat()
+    
+    await db.adressen.update_one(
+        {"_id": adresse_id},
+        {
+            "$push": {"ansprechpartner": ansprechpartner},
+            "$set": {"letzte_aenderung": datetime.utcnow()}
+        }
+    )
+    
+    return {"success": True, "data": ansprechpartner}
+
+@app.put("/api/adressen/{adresse_id}/ansprechpartner/{ap_id}")
+async def update_ansprechpartner(
+    adresse_id: str,
+    ap_id: str,
+    ansprechpartner: Dict[str, Any],
+    user = Depends(get_current_user)
+):
+    """Ansprechpartner aktualisieren"""
+    ansprechpartner["id"] = ap_id
+    ansprechpartner["geaendert_am"] = datetime.utcnow().isoformat()
+    
+    result = await db.adressen.update_one(
+        {
+            "_id": adresse_id,
+            "mandant_id": user["mandant_id"],
+            "ansprechpartner.id": ap_id
+        },
+        {
+            "$set": {"ansprechpartner.$": ansprechpartner, "letzte_aenderung": datetime.utcnow()}
+        }
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Ansprechpartner nicht gefunden")
+    
+    return {"success": True, "data": ansprechpartner}
+
+@app.delete("/api/adressen/{adresse_id}/ansprechpartner/{ap_id}")
+async def delete_ansprechpartner(
+    adresse_id: str,
+    ap_id: str,
+    user = Depends(get_current_user)
+):
+    """Ansprechpartner löschen"""
+    result = await db.adressen.update_one(
+        {"_id": adresse_id, "mandant_id": user["mandant_id"]},
+        {
+            "$pull": {"ansprechpartner": {"id": ap_id}},
+            "$set": {"letzte_aenderung": datetime.utcnow()}
+        }
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Adresse nicht gefunden")
+    
+    return {"success": True}
+
+@app.post("/api/adressen/{adresse_id}/ansprechpartner/{ap_id}/profilbild")
+async def upload_ansprechpartner_profilbild(
+    adresse_id: str,
+    ap_id: str,
+    file: UploadFile = File(...),
+    user = Depends(get_current_user)
+):
+    """Profilbild für Ansprechpartner hochladen"""
+    if not file.content_type or not file.content_type.startswith("image/"):
+        raise HTTPException(status_code=400, detail="Nur Bilddateien erlaubt")
+    
+    content = await file.read()
+    if len(content) > 2 * 1024 * 1024:
+        raise HTTPException(status_code=400, detail="Datei zu groß (max 2MB)")
+    
+    profilbild = f"data:{file.content_type};base64,{base64.b64encode(content).decode('utf-8')}"
+    
+    result = await db.adressen.update_one(
+        {
+            "_id": adresse_id,
+            "mandant_id": user["mandant_id"],
+            "ansprechpartner.id": ap_id
+        },
+        {
+            "$set": {
+                "ansprechpartner.$.profilbild": profilbild,
+                "letzte_aenderung": datetime.utcnow()
+            }
+        }
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Ansprechpartner nicht gefunden")
+    
+    return {"success": True, "data": {"profilbild": profilbild}}
+
+@app.post("/api/adressen/{adresse_id}/ansprechpartner/{ap_id}/visitenkarte")
+async def upload_visitenkarte(
+    adresse_id: str,
+    ap_id: str,
+    file: UploadFile = File(...),
+    user = Depends(get_current_user)
+):
+    """Visitenkarte für Ansprechpartner hochladen"""
+    if not file.content_type or not file.content_type.startswith("image/"):
+        raise HTTPException(status_code=400, detail="Nur Bilddateien erlaubt")
+    
+    content = await file.read()
+    if len(content) > 5 * 1024 * 1024:
+        raise HTTPException(status_code=400, detail="Datei zu groß (max 5MB)")
+    
+    visitenkarte = f"data:{file.content_type};base64,{base64.b64encode(content).decode('utf-8')}"
+    
+    result = await db.adressen.update_one(
+        {
+            "_id": adresse_id,
+            "mandant_id": user["mandant_id"],
+            "ansprechpartner.id": ap_id
+        },
+        {
+            "$set": {
+                "ansprechpartner.$.visitenkarte": visitenkarte,
+                "letzte_aenderung": datetime.utcnow()
+            }
+        }
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Ansprechpartner nicht gefunden")
+    
+    return {"success": True, "data": {"visitenkarte": visitenkarte}}
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8001)
