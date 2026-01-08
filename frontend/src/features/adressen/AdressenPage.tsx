@@ -95,6 +95,16 @@ export function AdressenPage() {
     defaultValues: { adresstyp: 1 },
   });
 
+  const handleRowDoubleClick = (adresse: Adresse) => {
+    setSelectedAdresse(adresse);
+    setIsEditMode(false);
+  };
+
+  const handleCloseDetail = () => {
+    setSelectedAdresse(null);
+    setIsEditMode(false);
+  };
+
   const columns: ColumnDef<Adresse>[] = useMemo(() => [
     { accessorKey: 'kdnr', header: 'KDNR', size: 100, cell: ({ row }) => <span className="font-mono text-primary font-medium">{row.getValue('kdnr') || '-'}</span> },
     { accessorKey: 'name1', header: 'Firma', cell: ({ row }) => <div className="flex items-center gap-2"><Building2 className="h-4 w-4 text-muted-foreground" /><span className="font-medium">{row.getValue('name1')}</span></div> },
