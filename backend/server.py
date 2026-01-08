@@ -3,9 +3,10 @@ Rohstoff Portal - FastAPI Backend
 Modernisierte Version des Java/Echo2 ERP-Systems
 """
 
-from fastapi import FastAPI, HTTPException, Depends, status
+from fastapi import FastAPI, HTTPException, Depends, status, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field, EmailStr
 from typing import Optional, List, Dict, Any
 from datetime import datetime, timedelta
@@ -15,8 +16,18 @@ import uuid
 import hashlib
 import secrets
 import jwt
+import base64
+import shutil
+from pathlib import Path
 from motor.motor_asyncio import AsyncIOMotorClient
 from contextlib import asynccontextmanager
+
+# Upload-Verzeichnis erstellen
+UPLOAD_DIR = Path("/app/backend/uploads")
+UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+(UPLOAD_DIR / "logos").mkdir(exist_ok=True)
+(UPLOAD_DIR / "profiles").mkdir(exist_ok=True)
+(UPLOAD_DIR / "visitenkarten").mkdir(exist_ok=True)
 
 # ============================================================
 # KONFIGURATION
