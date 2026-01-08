@@ -1,30 +1,269 @@
-import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useState, useMemo } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { ColumnDef } from '@tanstack/react-table';
 import { motion } from 'framer-motion';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { toast } from 'sonner';
 import {
   Plus,
-  Search,
-  Filter,
   MoreHorizontal,
+  Pencil,
+  Trash2,
+  Eye,
   Building2,
-  Phone,
-  Mail,
+  User,
   MapPin,
 } from 'lucide-react';
 import { adressenApi } from '@/services/api/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
+import { DataTable } from '@/components/ui/data-table';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+
+const adresseSchema = z.object({
+  name1: z.string().min(1, 'Firma/Name erforderlich').max(40),
+  name2: z.string().max(40).optional(),
+  name3: z.string().max(40).optional(),
+  strasse: z.string().max(45).optional(),
+  hausnummer: z.string().max(10).optional(),
+  plz: z.string().max(10).optional(),
+  ort: z.string().max(30).optional(),
+  land: z.string().max(30).optional(),
+  telefon: z.string().max(30).optional(),
+  email: z.string().email().optional().or(z.literal('')),
+  adresstyp: z.number().min(1).max(5).default(1),
+  betreuer: z.string().max(20).optional(),
+  bemerkungen: z.string().max(700).optional(),
+});
+
+type AdresseForm = z.infer<typeof adresseSchema>;
+
+interface Adresse {
+  id: string;
+  kdnr?: string;
+  name1: string;
+  name2?: string;
+  name3?: string;
+  strasse?: string;
+  hausnummer?: string;
+  plz?: string;
+  ort?: string;
+  land?: string;
+  telefon?: string;
+  email?: string;
+  adresstyp?: number;
+  betreuer?: string;
+  aktiv: boolean;
+}
+
+const adresstypLabels: Record<number, string> = {
+  1: 'Kunde',
+  2: 'Lieferant',
+  3: 'Spedition',
+  4: 'Interessent',
+  5: 'Sonstige',
+};
 
 export function AdressenPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(20);
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [selectedAdresse, setSelectedAdresse] = useState<Adresse | null>(null);
+  const queryClient = useQueryClient();
 
   const { data, isLoading } = useQuery({
-    queryKey: ['adressen', { suche: searchTerm, page }],
-    queryFn: () => adressenApi.search({ suche: searchTerm, page, limit: 20 }),
+    queryKey: ['adressen', { suche: searchTerm, page, limit }],
+    queryFn: () => adressenApi.search({ suche: searchTerm, page, limit }),
     select: (res) => res.data,
   });
+
+  const createMutation = useMutation({
+    mutationFn: (data: AdresseForm) => adressenApi.create(data),
+    onSuccess: () => {
+      toast.success('Adresse erfolgreich erstellt');
+      queryClient.invalidateQueries({ queryKey: ['adressen'] });
+      setShowCreateDialog(false);
+      reset();
+    },
+    onError: () => {
+      toast.error('Fehler beim Erstellen der Adresse');
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => adressenApi.delete(id),
+    onSuccess: () => {
+      toast.success('Adresse deaktiviert');
+      queryClient.invalidateQueries({ queryKey: ['adressen'] });
+    },
+    onError: () => {
+      toast.error('Fehler beim Deaktivieren');
+    },
+  });
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    setValue,
+    formState: { errors },
+  } = useForm<AdresseForm>({
+    resolver: zodResolver(adresseSchema),
+    defaultValues: {
+      adresstyp: 1,
+    },
+  });
+
+  const onSubmit = (data: AdresseForm) => {
+    createMutation.mutate(data);
+  };
+
+  const columns: ColumnDef<Adresse>[] = useMemo(() => [
+    {
+      accessorKey: 'kdnr',
+      header: 'KDNR',
+      size: 100,
+      cell: ({ row }) => (
+        <span className="font-mono text-primary font-medium">
+          {row.getValue('kdnr') || '-'}
+        </span>
+      ),
+    },
+    {
+      accessorKey: 'name1',
+      header: 'Firma',
+      cell: ({ row }) => (
+        <div className="flex items-center gap-2">
+          <Building2 className="h-4 w-4 text-muted-foreground" />
+          <span className="font-medium">{row.getValue('name1')}</span>
+        </div>
+      ),
+    },
+    {
+      accessorKey: 'name2',
+      header: 'Name',
+      cell: ({ row }) => row.getValue('name2') || '-',
+    },
+    {
+      accessorKey: 'name3',
+      header: 'Vorname',
+      cell: ({ row }) => row.getValue('name3') || '-',
+    },
+    {
+      id: 'adresse',
+      header: 'Straße',
+      cell: ({ row }) => {
+        const strasse = row.original.strasse;
+        const hausnummer = row.original.hausnummer;
+        return strasse ? `${strasse} ${hausnummer || ''}`.trim() : '-';
+      },
+    },
+    {
+      id: 'ortDisplay',
+      header: 'Ort',
+      cell: ({ row }) => {
+        const plz = row.original.plz;
+        const ort = row.original.ort;
+        return plz || ort ? `${plz || ''} ${ort || ''}`.trim() : '-';
+      },
+    },
+    {
+      accessorKey: 'land',
+      header: 'Land',
+      cell: ({ row }) => row.getValue('land') || 'DE',
+    },
+    {
+      accessorKey: 'betreuer',
+      header: 'Betreuer',
+      cell: ({ row }) => (
+        <span className="inline-flex items-center gap-1">
+          {row.getValue('betreuer') ? (
+            <>
+              <User className="h-3 w-3 text-muted-foreground" />
+              {row.getValue('betreuer')}
+            </>
+          ) : '-'}
+        </span>
+      ),
+    },
+    {
+      accessorKey: 'adresstyp',
+      header: 'Typ',
+      size: 100,
+      cell: ({ row }) => {
+        const typ = row.getValue('adresstyp') as number;
+        const colors: Record<number, string> = {
+          1: 'bg-blue-500/10 text-blue-500',
+          2: 'bg-green-500/10 text-green-500',
+          3: 'bg-purple-500/10 text-purple-500',
+          4: 'bg-yellow-500/10 text-yellow-500',
+          5: 'bg-gray-500/10 text-gray-500',
+        };
+        return (
+          <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${colors[typ] || colors[5]}`}>
+            {adresstypLabels[typ] || 'Sonstige'}
+          </span>
+        );
+      },
+    },
+    {
+      id: 'actions',
+      size: 60,
+      cell: ({ row }) => (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon" className="h-8 w-8">
+              <MoreHorizontal className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={() => setSelectedAdresse(row.original)}>
+              <Eye className="h-4 w-4 mr-2" />
+              Details
+            </DropdownMenuItem>
+            <DropdownMenuItem>
+              <Pencil className="h-4 w-4 mr-2" />
+              Bearbeiten
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              className="text-destructive"
+              onClick={() => deleteMutation.mutate(row.original.id)}
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
+              Deaktivieren
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      ),
+    },
+  ], [deleteMutation]);
 
   return (
     <motion.div
@@ -36,173 +275,206 @@ export function AdressenPage() {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Adressen</h1>
-          <p className="text-muted-foreground">Verwalten Sie Ihre Kunden und Lieferanten</p>
+          <p className="text-muted-foreground">
+            {data?.pagination?.total || 0} Adressen verwalten
+          </p>
         </div>
-        <Button data-testid="create-address-btn">
+        <Button onClick={() => setShowCreateDialog(true)} data-testid="create-address-btn">
           <Plus className="h-4 w-4 mr-2" />
           Neue Adresse
         </Button>
       </div>
 
-      {/* Filter und Suche */}
-      <Card>
-        <CardContent className="p-4">
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Suchen nach Name, KDNR, Ort..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-                data-testid="address-search"
-              />
+      {/* Data Table */}
+      <DataTable
+        columns={columns}
+        data={data?.data || []}
+        isLoading={isLoading}
+        searchPlaceholder="Suchen nach KDNR, Firma, Ort..."
+        onSearchChange={(search) => {
+          setSearchTerm(search);
+          setPage(1);
+        }}
+        pagination={data?.pagination ? {
+          page: data.pagination.page,
+          limit: data.pagination.limit,
+          total: data.pagination.total,
+          totalPages: data.pagination.total_pages,
+        } : undefined}
+        onPageChange={setPage}
+        onLimitChange={(newLimit) => {
+          setLimit(newLimit);
+          setPage(1);
+        }}
+      />
+
+      {/* Create Dialog */}
+      <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>Neue Adresse erstellen</DialogTitle>
+            <DialogDescription>
+              Erfassen Sie die Stammdaten für eine neue Adresse.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="col-span-2 space-y-2">
+                <Label htmlFor="name1">Firma / Name 1 *</Label>
+                <Input
+                  id="name1"
+                  {...register('name1')}
+                  placeholder="z.B. Müller GmbH"
+                  data-testid="address-name1"
+                />
+                {errors.name1 && (
+                  <p className="text-sm text-destructive">{errors.name1.message}</p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="name2">Name</Label>
+                <Input id="name2" {...register('name2')} placeholder="Nachname" />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="name3">Vorname</Label>
+                <Input id="name3" {...register('name3')} placeholder="Vorname" />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="strasse">Straße</Label>
+                <Input id="strasse" {...register('strasse')} placeholder="Hauptstraße" />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="hausnummer">Hausnummer</Label>
+                <Input id="hausnummer" {...register('hausnummer')} placeholder="123" />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="plz">PLZ</Label>
+                <Input id="plz" {...register('plz')} placeholder="12345" />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="ort">Ort</Label>
+                <Input id="ort" {...register('ort')} placeholder="Musterstadt" />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="land">Land</Label>
+                <Input id="land" {...register('land')} placeholder="Deutschland" defaultValue="Deutschland" />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="betreuer">Betreuer</Label>
+                <Input id="betreuer" {...register('betreuer')} placeholder="Kürzel" />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="telefon">Telefon</Label>
+                <Input id="telefon" {...register('telefon')} placeholder="+49 123 456789" />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="email">E-Mail</Label>
+                <Input id="email" type="email" {...register('email')} placeholder="info@firma.de" />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Adresstyp</Label>
+                <Select
+                  defaultValue="1"
+                  onValueChange={(value) => setValue('adresstyp', Number(value))}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="1">Kunde</SelectItem>
+                    <SelectItem value="2">Lieferant</SelectItem>
+                    <SelectItem value="3">Spedition</SelectItem>
+                    <SelectItem value="4">Interessent</SelectItem>
+                    <SelectItem value="5">Sonstige</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="col-span-2 space-y-2">
+                <Label htmlFor="bemerkungen">Bemerkungen</Label>
+                <Textarea
+                  id="bemerkungen"
+                  {...register('bemerkungen')}
+                  placeholder="Optionale Notizen..."
+                  rows={2}
+                />
+              </div>
             </div>
-            <Button variant="outline">
-              <Filter className="h-4 w-4 mr-2" />
-              Filter
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
 
-      {/* Adressliste */}
-      {isLoading ? (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {[...Array(6)].map((_, i) => (
-            <Card key={i} className="animate-pulse">
-              <CardHeader className="pb-2">
-                <div className="h-5 bg-muted rounded w-3/4" />
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  <div className="h-4 bg-muted rounded w-1/2" />
-                  <div className="h-4 bg-muted rounded w-2/3" />
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setShowCreateDialog(false)}>
+                Abbrechen
+              </Button>
+              <Button type="submit" disabled={createMutation.isPending} data-testid="address-submit">
+                {createMutation.isPending ? 'Speichern...' : 'Adresse erstellen'}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Detail Dialog */}
+      <Dialog open={!!selectedAdresse} onOpenChange={() => setSelectedAdresse(null)}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Building2 className="h-5 w-5" />
+              {selectedAdresse?.name1}
+            </DialogTitle>
+            <DialogDescription>
+              KDNR: {selectedAdresse?.kdnr || '-'}
+            </DialogDescription>
+          </DialogHeader>
+          {selectedAdresse && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <p className="text-muted-foreground">Name</p>
+                  <p className="font-medium">{selectedAdresse.name2 || '-'}</p>
                 </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      ) : data?.data?.length > 0 ? (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {data.data.map((adresse: {
-            id: string;
-            kdnr?: string;
-            name1: string;
-            name2?: string;
-            strasse?: string;
-            hausnummer?: string;
-            plz?: string;
-            ort?: string;
-            telefon?: string;
-            email?: string;
-            adresstyp?: number;
-            aktiv: boolean;
-          }) => (
-            <motion.div
-              key={adresse.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              whileHover={{ scale: 1.02 }}
-              transition={{ duration: 0.2 }}
-            >
-              <Card className="cursor-pointer hover:shadow-lg transition-shadow">
-                <CardHeader className="pb-2">
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                        <Building2 className="h-5 w-5 text-primary" />
-                      </div>
-                      <div>
-                        <CardTitle className="text-base">{adresse.name1}</CardTitle>
-                        {adresse.kdnr && (
-                          <p className="text-xs text-muted-foreground">KDNR: {adresse.kdnr}</p>
-                        )}
-                      </div>
-                    </div>
-                    <Button variant="ghost" size="icon">
-                      <MoreHorizontal className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  {adresse.name2 && (
-                    <p className="text-sm text-muted-foreground">{adresse.name2}</p>
-                  )}
-                  {(adresse.strasse || adresse.ort) && (
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <MapPin className="h-4 w-4 flex-shrink-0" />
-                      <span>
-                        {adresse.strasse} {adresse.hausnummer}, {adresse.plz} {adresse.ort}
-                      </span>
-                    </div>
-                  )}
-                  {adresse.telefon && (
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <Phone className="h-4 w-4 flex-shrink-0" />
-                      <span>{adresse.telefon}</span>
-                    </div>
-                  )}
-                  {adresse.email && (
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <Mail className="h-4 w-4 flex-shrink-0" />
-                      <span className="truncate">{adresse.email}</span>
-                    </div>
-                  )}
-                  <div className="pt-2 flex items-center gap-2">
-                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
-                      adresse.adresstyp === 1 ? 'bg-blue-500/10 text-blue-500' :
-                      adresse.adresstyp === 2 ? 'bg-green-500/10 text-green-500' :
-                      'bg-gray-500/10 text-gray-500'
-                    }`}>
-                      {adresse.adresstyp === 1 ? 'Kunde' :
-                       adresse.adresstyp === 2 ? 'Lieferant' : 'Sonstige'}
-                    </span>
-                    {!adresse.aktiv && (
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-500/10 text-red-500">
-                        Inaktiv
-                      </span>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-          ))}
-        </div>
-      ) : (
-        <Card>
-          <CardContent className="flex flex-col items-center justify-center py-12">
-            <Building2 className="h-12 w-12 text-muted-foreground/50 mb-4" />
-            <h3 className="text-lg font-medium">Keine Adressen gefunden</h3>
-            <p className="text-muted-foreground text-sm mt-1">
-              {searchTerm ? 'Versuchen Sie andere Suchbegriffe' : 'Erstellen Sie Ihre erste Adresse'}
-            </p>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Pagination */}
-      {data?.pagination && data.pagination.totalPages > 1 && (
-        <div className="flex justify-center gap-2">
-          <Button
-            variant="outline"
-            onClick={() => setPage(p => Math.max(1, p - 1))}
-            disabled={page === 1}
-          >
-            Zurück
-          </Button>
-          <span className="flex items-center px-4 text-sm text-muted-foreground">
-            Seite {page} von {data.pagination.totalPages}
-          </span>
-          <Button
-            variant="outline"
-            onClick={() => setPage(p => p + 1)}
-            disabled={page >= data.pagination.totalPages}
-          >
-            Weiter
-          </Button>
-        </div>
-      )}
+                <div>
+                  <p className="text-muted-foreground">Vorname</p>
+                  <p className="font-medium">{selectedAdresse.name3 || '-'}</p>
+                </div>
+                <div className="col-span-2">
+                  <p className="text-muted-foreground">Adresse</p>
+                  <p className="font-medium flex items-center gap-1">
+                    <MapPin className="h-4 w-4" />
+                    {selectedAdresse.strasse} {selectedAdresse.hausnummer}, {selectedAdresse.plz} {selectedAdresse.ort}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground">Telefon</p>
+                  <p className="font-medium">{selectedAdresse.telefon || '-'}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground">E-Mail</p>
+                  <p className="font-medium">{selectedAdresse.email || '-'}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground">Betreuer</p>
+                  <p className="font-medium">{selectedAdresse.betreuer || '-'}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground">Typ</p>
+                  <p className="font-medium">{adresstypLabels[selectedAdresse.adresstyp || 5]}</p>
+                </div>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </motion.div>
   );
 }
