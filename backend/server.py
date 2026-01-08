@@ -496,6 +496,286 @@ async def logout(user = Depends(get_current_user)):
     return {"success": True, "message": "Erfolgreich abgemeldet"}
 
 # ============================================================
+# GESCHÄFTSLOGIK - ADRESS-VALIDIERUNG (aus Java: __FS_Adress_Check.java)
+# ============================================================
+
+# EU-Länder mit UST-Präfixen (aus Java-Länderstamm)
+EU_LAENDER = {
+    "Deutschland": {"ust_praefix": "DE", "ist_eu": True, "ist_homeland": True},
+    "Österreich": {"ust_praefix": "AT", "ist_eu": True, "ist_homeland": False},
+    "Niederlande": {"ust_praefix": "NL", "ist_eu": True, "ist_homeland": False},
+    "Belgien": {"ust_praefix": "BE", "ist_eu": True, "ist_homeland": False},
+    "Frankreich": {"ust_praefix": "FR", "ist_eu": True, "ist_homeland": False},
+    "Italien": {"ust_praefix": "IT", "ist_eu": True, "ist_homeland": False},
+    "Spanien": {"ust_praefix": "ES", "ist_eu": True, "ist_homeland": False},
+    "Polen": {"ust_praefix": "PL", "ist_eu": True, "ist_homeland": False},
+    "Tschechien": {"ust_praefix": "CZ", "ist_eu": True, "ist_homeland": False},
+    "Dänemark": {"ust_praefix": "DK", "ist_eu": True, "ist_homeland": False},
+    "Schweden": {"ust_praefix": "SE", "ist_eu": True, "ist_homeland": False},
+    "Finnland": {"ust_praefix": "FI", "ist_eu": True, "ist_homeland": False},
+    "Griechenland": {"ust_praefix": "EL", "ist_eu": True, "ist_homeland": False},
+    "Portugal": {"ust_praefix": "PT", "ist_eu": True, "ist_homeland": False},
+    "Irland": {"ust_praefix": "IE", "ist_eu": True, "ist_homeland": False},
+    "Luxemburg": {"ust_praefix": "LU", "ist_eu": True, "ist_homeland": False},
+    "Ungarn": {"ust_praefix": "HU", "ist_eu": True, "ist_homeland": False},
+    "Rumänien": {"ust_praefix": "RO", "ist_eu": True, "ist_homeland": False},
+    "Bulgarien": {"ust_praefix": "BG", "ist_eu": True, "ist_homeland": False},
+    "Kroatien": {"ust_praefix": "HR", "ist_eu": True, "ist_homeland": False},
+    "Slowakei": {"ust_praefix": "SK", "ist_eu": True, "ist_homeland": False},
+    "Slowenien": {"ust_praefix": "SI", "ist_eu": True, "ist_homeland": False},
+    "Estland": {"ust_praefix": "EE", "ist_eu": True, "ist_homeland": False},
+    "Lettland": {"ust_praefix": "LV", "ist_eu": True, "ist_homeland": False},
+    "Litauen": {"ust_praefix": "LT", "ist_eu": True, "ist_homeland": False},
+    "Malta": {"ust_praefix": "MT", "ist_eu": True, "ist_homeland": False},
+    "Zypern": {"ust_praefix": "CY", "ist_eu": True, "ist_homeland": False},
+    # Nicht-EU mit UST
+    "Schweiz": {"ust_praefix": "CH", "ist_eu": False, "ist_homeland": False},
+    "Großbritannien": {"ust_praefix": "GB", "ist_eu": False, "ist_homeland": False},
+    "Norwegen": {"ust_praefix": "NO", "ist_eu": False, "ist_homeland": False},
+}
+
+class AdresseValidierungsFehler(BaseModel):
+    """Validierungsfehler mit Schweregrad (aus Java: Validation_Error)"""
+    meldung: str
+    schweregrad: str  # "warnung", "fehler"
+    betroffene_felder: List[str]
+
+class AdresseValidierungsErgebnis(BaseModel):
+    """Ergebnis der Adress-Validierung"""
+    ist_gueltig: bool
+    fehler: List[AdresseValidierungsFehler]
+    warnungen: List[AdresseValidierungsFehler]
+    steuer_status: Optional[str] = None  # PRIVAT_INLAND, FIRMA_EU, etc.
+
+def validate_adresse_geschaeftslogik(
+    ist_firma: bool,
+    ist_privat: bool,
+    land: Optional[str],
+    umsatzsteuer_lkz: Optional[str],
+    umsatzsteuer_id: Optional[str],
+    steuernummer: Optional[str],
+    ausweis_nummer: Optional[str],
+    ausweis_ablauf: Optional[str],
+    firma_ohne_ustid: bool = False,
+    privat_mit_ustid: bool = False,
+) -> AdresseValidierungsErgebnis:
+    """
+    Geschäftslogik-Validierung für Adressen 
+    Portiert aus Java: rohstoff.Echo2BusinessLogic.FIRMENSTAMM.__FS_Adress_Check
+    
+    Validiert:
+    - PRIVAT/FIRMA Einstufung
+    - UST-ID Anforderungen basierend auf Land und Typ
+    - Ausweisangaben für Privatpersonen
+    - Sonderschalter-Logik
+    """
+    fehler = []
+    warnungen = []
+    
+    # Land-Info ermitteln
+    land_info = EU_LAENDER.get(land, {"ust_praefix": None, "ist_eu": False, "ist_homeland": False})
+    ist_homeland = land_info.get("ist_homeland", False)
+    ist_eu = land_info.get("ist_eu", False)
+    ust_praefix = land_info.get("ust_praefix")
+    
+    # UST-ID Status ermitteln
+    hat_ustid = bool(umsatzsteuer_lkz) or bool(umsatzsteuer_id)
+    hat_komplette_ustid = bool(umsatzsteuer_lkz) and bool(umsatzsteuer_id)
+    hat_steuernummer = bool(steuernummer)
+    hat_ausweis = bool(ausweis_nummer)
+    hat_ausweis_oder_steuernummer = hat_ausweis or hat_steuernummer
+    
+    # Ausweis-Gültigkeit prüfen (vereinfacht)
+    ausweis_gueltig = False
+    if ausweis_ablauf:
+        try:
+            from datetime import datetime
+            ablauf = datetime.strptime(ausweis_ablauf, "%d.%m.%Y")
+            ausweis_gueltig = ablauf >= datetime.now()
+        except:
+            pass
+    
+    # ========== GRUNDVALIDIERUNG ==========
+    
+    # 1. PRIVAT/FIRMA muss exklusiv sein
+    if (not ist_firma and not ist_privat) or (ist_firma and ist_privat):
+        fehler.append(AdresseValidierungsFehler(
+            meldung="Eine Adresse muss entweder als PRIVAT oder als FIRMA eingestuft werden!",
+            schweregrad="fehler",
+            betroffene_felder=["ist_firma"]
+        ))
+    
+    # 2. Land muss gesetzt sein
+    if not land:
+        warnungen.append(AdresseValidierungsFehler(
+            meldung="Das Land ist noch nicht gesetzt. Bitte zuerst definieren.",
+            schweregrad="warnung",
+            betroffene_felder=["land"]
+        ))
+        return AdresseValidierungsErgebnis(
+            ist_gueltig=len(fehler) == 0,
+            fehler=fehler,
+            warnungen=warnungen,
+            steuer_status=None
+        )
+    
+    # ========== UST-ID VALIDIERUNG ==========
+    
+    # 3. Wenn EU-Land, muss UST-Präfix definiert sein
+    if ist_eu and not ust_praefix:
+        warnungen.append(AdresseValidierungsFehler(
+            meldung=f"Das EU-Land '{land}' besitzt kein UST-Länderkürzel, bitte korrigieren!",
+            schweregrad="warnung",
+            betroffene_felder=["land"]
+        ))
+    
+    # 4. UST-ID nur teilweise ausgefüllt
+    if hat_ustid and not hat_komplette_ustid:
+        fehler.append(AdresseValidierungsFehler(
+            meldung="Die Basis-UST-ID der Adresse ist nur teilweise ausgefüllt. Bitte komplettieren oder komplett leeren!",
+            schweregrad="fehler",
+            betroffene_felder=["umsatzsteuer_lkz", "umsatzsteuer_id"]
+        ))
+    
+    # 5. UST-LKZ muss mit Land übereinstimmen
+    if hat_ustid and ust_praefix and umsatzsteuer_lkz != ust_praefix:
+        fehler.append(AdresseValidierungsFehler(
+            meldung=f"Das Länderkürzel der Basis-UST-ID ({umsatzsteuer_lkz}) stimmt nicht mit der Angabe im Land ({ust_praefix}) überein!",
+            schweregrad="fehler",
+            betroffene_felder=["umsatzsteuer_lkz", "land"]
+        ))
+    
+    # ========== SONDERSCHALTER VALIDIERUNG ==========
+    
+    # 6. Sonderschalter nur im Inland sinnvoll
+    if not ist_homeland and (firma_ohne_ustid or privat_mit_ustid):
+        warnungen.append(AdresseValidierungsFehler(
+            meldung="Die Ausnahmeschalter 'Firma ohne UST-ID' und 'Privat mit UST-ID' sind nur bei Adressen in Deutschland sinnvoll!",
+            schweregrad="warnung",
+            betroffene_felder=["firma_ohne_ustid", "privat_mit_ustid"]
+        ))
+    
+    # 7. Beide Sonderschalter gleichzeitig nicht erlaubt
+    if ist_homeland and firma_ohne_ustid and privat_mit_ustid:
+        fehler.append(AdresseValidierungsFehler(
+            meldung="Die Ausnahmeschalter 'Firma ohne UST-ID' und 'Privat mit UST-ID' können nicht gleichzeitig aktiv sein!",
+            schweregrad="fehler",
+            betroffene_felder=["firma_ohne_ustid", "privat_mit_ustid"]
+        ))
+    
+    # ========== PRIVAT-SPEZIFISCHE VALIDIERUNG ==========
+    
+    if ist_privat:
+        # 8. Privat + Inland + UST-ID erfordert Sonderschalter
+        if ist_homeland and hat_ustid and not privat_mit_ustid:
+            fehler.append(AdresseValidierungsFehler(
+                meldung="Die Einstufung einer Adresse mit Basis-UST-ID als PRIVAT ist nur mit dem Sonderschalter 'Privat mit UST-ID' möglich!",
+                schweregrad="fehler",
+                betroffene_felder=["privat_mit_ustid"]
+            ))
+        
+        # Spezialfälle (nicht Privat+Homeland+UST+Sonderschalter)
+        if not (hat_ustid and ist_homeland and privat_mit_ustid):
+            # 9. Privat + Ausland: Ausweis erforderlich
+            if not ist_homeland and not hat_ausweis:
+                fehler.append(AdresseValidierungsFehler(
+                    meldung="Bei als PRIVAT eingestuften Adressen aus dem Ausland MUSS die Ausweisnummer vorliegen!",
+                    schweregrad="fehler",
+                    betroffene_felder=["ausweis_nummer"]
+                ))
+            # 10. Privat + Inland: Ausweis oder Steuernummer erforderlich
+            elif ist_homeland and not hat_ausweis_oder_steuernummer:
+                fehler.append(AdresseValidierungsFehler(
+                    meldung="Bei als PRIVAT eingestuften Adressen aus dem Inland MUSS die Ausweisnummer oder die Steuernummer vorliegen!",
+                    schweregrad="fehler",
+                    betroffene_felder=["ausweis_nummer", "steuernummer"]
+                ))
+        
+        # 11. Privat + Ausland + UST-ID nicht erlaubt
+        if not ist_homeland and hat_ustid:
+            fehler.append(AdresseValidierungsFehler(
+                meldung="Bei als PRIVAT eingestuften Adressen im Ausland darf keine UST-ID erfasst sein!",
+                schweregrad="fehler",
+                betroffene_felder=["umsatzsteuer_id"]
+            ))
+        
+        # 12. Privat + Inland + Firma-ohne-UST-ID Schalter nicht erlaubt
+        if ist_homeland and firma_ohne_ustid:
+            fehler.append(AdresseValidierungsFehler(
+                meldung="Bei als PRIVAT eingestuften Adressen in Deutschland darf der Sonderschalter 'Firma ohne UST-ID' nicht gesetzt sein!",
+                schweregrad="fehler",
+                betroffene_felder=["firma_ohne_ustid"]
+            ))
+    
+    # ========== FIRMA-SPEZIFISCHE VALIDIERUNG ==========
+    
+    if ist_firma:
+        # 13. Firma + Inland + keine UST-ID: Sonderschalter + Steuernummer erforderlich
+        if ist_homeland and not hat_ustid and (not firma_ohne_ustid or not hat_steuernummer):
+            fehler.append(AdresseValidierungsFehler(
+                meldung="Die Einstufung einer Adresse ohne UST-ID als FIRMA ist nur mit dem Sonderschalter 'Firma ohne UST-ID', sowie der Angabe der Steuernummer möglich!",
+                schweregrad="fehler",
+                betroffene_felder=["firma_ohne_ustid", "steuernummer"]
+            ))
+        
+        # 14. Firma + EU-Ausland: UST-ID erforderlich
+        if not ist_homeland and ist_eu and not hat_ustid:
+            fehler.append(AdresseValidierungsFehler(
+                meldung="Eine Adresse mit Einstufung als FIRMA im EU-Ausland MUSS eine korrekte Basis-UST-ID haben!",
+                schweregrad="fehler",
+                betroffene_felder=["umsatzsteuer_lkz", "umsatzsteuer_id"]
+            ))
+        
+        # 15. Firma + Nicht-EU + UST-ID: Länderkürzel muss stimmen
+        if not ist_homeland and not ist_eu and hat_ustid:
+            if not (umsatzsteuer_lkz == ust_praefix and ust_praefix):
+                warnungen.append(AdresseValidierungsFehler(
+                    meldung="Bei einer Adresse mit Einstufung als FIRMA im NICHT-EU-Ausland mit einer Basis-UST-ID MUSS das UST-Länderkürzel mit dem Eintrag im Länderstamm übereinstimmen!",
+                    schweregrad="warnung",
+                    betroffene_felder=["umsatzsteuer_lkz", "land"]
+                ))
+        
+        # 16. Firma + Inland + UST-ID + Firma-ohne-UST-ID Schalter nicht erlaubt
+        if ist_homeland and hat_ustid and firma_ohne_ustid:
+            fehler.append(AdresseValidierungsFehler(
+                meldung="Bei einer Adresse mit Einstufung als FIRMA, die eine UST-ID hat, darf der Schalter 'Firma ohne UST-ID' nicht gesetzt sein!",
+                schweregrad="fehler",
+                betroffene_felder=["firma_ohne_ustid"]
+            ))
+        
+        # 17. Firma + Inland + Privat-mit-UST-ID Schalter nicht erlaubt
+        if ist_homeland and privat_mit_ustid:
+            fehler.append(AdresseValidierungsFehler(
+                meldung="Bei als FIRMA eingestuften Adressen in Deutschland darf der Sonderschalter 'Privat mit UST-ID' nicht gesetzt sein!",
+                schweregrad="fehler",
+                betroffene_felder=["privat_mit_ustid"]
+            ))
+    
+    # Steuer-Status ermitteln
+    steuer_status = None
+    if ist_privat:
+        if ist_homeland:
+            steuer_status = "PRIVAT_INLAND"
+        elif ist_eu:
+            steuer_status = "PRIVAT_EU"
+        else:
+            steuer_status = "PRIVAT_DRITTLAND"
+    elif ist_firma:
+        if ist_homeland:
+            steuer_status = "FIRMA_INLAND"
+        elif ist_eu:
+            steuer_status = "FIRMA_EU"
+        else:
+            steuer_status = "FIRMA_DRITTLAND"
+    
+    return AdresseValidierungsErgebnis(
+        ist_gueltig=len(fehler) == 0,
+        fehler=fehler,
+        warnungen=warnungen,
+        steuer_status=steuer_status
+    )
+
+# ============================================================
 # ADRESSEN ENDPOINTS
 # ============================================================
 
