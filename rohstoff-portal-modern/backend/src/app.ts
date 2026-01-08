@@ -103,13 +103,11 @@ app.get('/api/health', (req, res) => {
 // Auth-Modul
 app.use('/api/auth', authRoutes);
 
-// Weitere Module werden hier hinzugefügt:
-// app.use('/api/mandanten', mandantRoutes);
-// app.use('/api/adressen', adresseRoutes);
-// app.use('/api/artikel', artikelRoutes);
-// app.use('/api/kontrakte', kontraktRoutes);
-// app.use('/api/fuhren', fuhreRoutes);
-// app.use('/api/rechnungen', rechnungRoutes);
+// Weitere Module
+app.use('/api/mandanten', mandantRoutes);
+app.use('/api/adressen', adresseRoutes);
+app.use('/api/artikel', artikelRoutes);
+app.use('/api/kontrakte', kontraktRoutes);
 
 // =====================================================
 // FEHLERBEHANDLUNG
