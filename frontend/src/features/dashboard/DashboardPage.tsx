@@ -14,46 +14,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useAuthStore } from '@/store/authStore';
 import { api } from '@/services/api/client';
 
-// Dashboard Karten mit Statistiken
-const stats = [
-  {
-    title: 'Aktive Adressen',
-    value: '1.247',
-    change: '+12%',
-    trend: 'up',
-    icon: Users,
-    color: 'text-blue-500',
-    bgColor: 'bg-blue-500/10',
-  },
-  {
-    title: 'Artikel',
-    value: '856',
-    change: '+5%',
-    trend: 'up',
-    icon: Package,
-    color: 'text-green-500',
-    bgColor: 'bg-green-500/10',
-  },
-  {
-    title: 'Offene Kontrakte',
-    value: '38',
-    change: '-3%',
-    trend: 'down',
-    icon: FileText,
-    color: 'text-orange-500',
-    bgColor: 'bg-orange-500/10',
-  },
-  {
-    title: 'Fuhren diese Woche',
-    value: '124',
-    change: '+18%',
-    trend: 'up',
-    icon: Truck,
-    color: 'text-purple-500',
-    bgColor: 'bg-purple-500/10',
-  },
-];
-
 // Animation Variants
 const containerVariants = {
   hidden: { opacity: 0 },
