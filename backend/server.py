@@ -275,6 +275,10 @@ class AdresseCreate(BaseModel):
     ausweis_ablauf: Optional[str] = Field(None, max_length=10)
     geburtsdatum: Optional[str] = Field(None, max_length=10)
     
+    # Sonderschalter für UST-Ausnahmen (aus Java: __FS_Adress_Check)
+    firma_ohne_ustid: bool = False  # Für Firmen im Inland ohne UST-ID
+    privat_mit_ustid: bool = False  # Für Privatpersonen im Inland mit UST-ID
+    
     # Bemerkungen
     bemerkungen: Optional[str] = Field(None, max_length=700)
     bemerkung_fahrplan: Optional[str] = Field(None, max_length=300)
