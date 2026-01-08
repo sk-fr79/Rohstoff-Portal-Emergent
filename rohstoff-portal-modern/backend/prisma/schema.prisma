@@ -832,3 +832,496 @@ model Fuhre {
 }
 
 // Fortsetzung in Teil 2...
+
+// =====================================================
+// RECHNUNGEN/GUTSCHRIFTEN
+// =====================================================
+
+/// Rechnungs-/Gutschrifts-Kopf
+model Rechnung {
+  id                    String   @id @default(uuid()) @db.Uuid
+  mandantId             String   @db.Uuid @map("id_mandant")
+  
+  // Buchungsnummer
+  buchungsnummer        String?  @db.VarChar(40)
+  
+  // Typ (Rechnung/Gutschrift)
+  istGutschrift         Boolean  @default(false) @map("ist_gutschrift")
+  
+  // Adresse
+  adresseId             String?  @db.Uuid @map("id_adresse")
+  kdnr                  String?  @db.VarChar(20)
+  name1                 String?  @db.VarChar(40)
+  name2                 String?  @db.VarChar(40)
+  name3                 String?  @db.VarChar(40)
+  strasse               String?  @db.VarChar(45)
+  hausnummer            String?  @db.VarChar(10)
+  plz                   String?  @db.VarChar(10)
+  ort                   String?  @db.VarChar(30)
+  ortzusatz             String?  @db.VarChar(30)
+  laendercode           String?  @db.VarChar(6)
+  
+  // Datum
+  rechnungsdatum        DateTime? @map("rechnungsdatum")
+  leistungsdatum        DateTime? @map("leistungsdatum")
+  lieferdatum           DateTime? @map("lieferdatum")
+  faelligkeitsdatum     DateTime? @map("faelligkeitsdatum")
+  
+  // Beträge
+  nettosumme            Decimal  @default(0) @db.Decimal(14, 2)
+  steuersumme           Decimal  @default(0) @db.Decimal(14, 2)
+  bruttosumme           Decimal  @default(0) @db.Decimal(14, 2)
+  
+  // Fremdwährung
+  waehrungFremdId       String?  @db.Uuid @map("id_waehrung_fremd")
+  waehrungskurs         Decimal? @db.Decimal(9, 4)
+  nettosummeFremd       Decimal? @db.Decimal(14, 2) @map("nettosumme_fremd")
+  steuersummeFremd      Decimal? @db.Decimal(14, 2) @map("steuersumme_fremd")
+  bruttosummeFremd      Decimal? @db.Decimal(14, 2) @map("bruttosumme_fremd")
+  
+  // Konditionen
+  zahlungsbedingungenId String?  @db.Uuid @map("id_zahlungsbedingungen")
+  lieferbedingungen     String?  @db.VarChar(200)
+  skontoProzent         Decimal? @db.Decimal(8, 3) @map("skonto_prozent")
+  skontoBetrag          Decimal? @db.Decimal(14, 2) @map("skonto_betrag")
+  
+  // Status
+  gebucht               Boolean  @default(false)
+  gedruckt              Boolean  @default(false)
+  storniert             Boolean  @default(false)
+  stornoGrund           String?  @db.VarChar(200) @map("storno_grund")
+  storniertAm           DateTime? @map("storniert_am")
+  stornoKuerzel         String?  @db.VarChar(20) @map("storno_kuerzel")
+  
+  // Deleted
+  deleted               Boolean  @default(false)
+  delGrund              String?  @db.VarChar(200) @map("del_grund")
+  delDate               DateTime? @map("del_date")
+  
+  // Druck
+  druckdatum            DateTime?
+  druckzaehler          Int      @default(0)
+  
+  // Texte
+  formulartextAnfang    String?  @db.VarChar(2000) @map("formulartext_anfang")
+  formulartextEnde      String?  @db.VarChar(2000) @map("formulartext_ende")
+  bemerkungenIntern     String?  @db.VarChar(500) @map("bemerkungen_intern")
+  
+  // EU-Steuervermerk
+  euSteuervermerk       String?  @db.VarChar(600) @map("eu_steuer_vermerk")
+  
+  // Sachbearbeiter
+  userId                String?  @db.Uuid @map("id_user")
+  bearbeiterKuerzel     String?  @db.VarChar(20) @map("bearbeiter_kuerzel")
+  
+  // Audit-Felder
+  erstelltVon           String?  @db.VarChar(10) @map("erstellt_von")
+  erstelltAm            DateTime @default(now()) @map("erstellt_am")
+  geaendertVon          String?  @db.VarChar(10) @map("geaendert_von")
+  letzteAenderung       DateTime @updatedAt @map("letzte_aenderung")
+  
+  // Relationen
+  mandant               Mandant  @relation(fields: [mandantId], references: [id])
+  adresse               Adresse? @relation(fields: [adresseId], references: [id])
+  zahlungsbedingungen   Zahlungsbedingungen? @relation(fields: [zahlungsbedingungenId], references: [id])
+  waehrungFremd         Waehrung? @relation("RechnungWaehrung", fields: [waehrungFremdId], references: [id])
+  
+  // Reverse Relations
+  positionen            RechnungsPosition[]
+  
+  @@index([mandantId])
+  @@index([buchungsnummer])
+  @@index([adresseId])
+  @@index([rechnungsdatum])
+  @@map("jt_vkopf_rg")
+}
+
+/// Rechnungs-Position
+model RechnungsPosition {
+  id                    String   @id @default(uuid()) @db.Uuid
+  mandantId             String   @db.Uuid @map("id_mandant")
+  rechnungId            String   @db.Uuid @map("id_vkopf_rg")
+  positionsnummer       Int      @default(1)
+  
+  // Artikel
+  artikelId             String?  @db.Uuid @map("id_artikel")
+  artbez1               String?  @db.VarChar(80)
+  artbez2               String?  @db.VarChar(1000)
+  
+  // Mengen und Preise
+  anzahl                Decimal? @db.Decimal(12, 3)
+  einzelpreis           Decimal? @db.Decimal(10, 2)
+  gesamtpreis           Decimal? @db.Decimal(12, 2)
+  steuersatz            Decimal? @db.Decimal(10, 2)
+  
+  // Abzüge
+  anzahlAbzug           Decimal? @db.Decimal(10, 3) @map("anzahl_abzug")
+  einzelpreisAbzug      Decimal? @db.Decimal(10, 2) @map("einzelpreis_abzug")
+  gesamtpreisAbzug      Decimal? @db.Decimal(12, 2) @map("gesamtpreis_abzug")
+  
+  // Einheiten
+  einheitKurz           String?  @db.VarChar(10) @map("einheit_kurz")
+  einheitPreisKurz      String?  @db.VarChar(10) @map("einheit_preis_kurz")
+  mengendivisor         Int      @default(1)
+  
+  // Fuhren-Zuordnung
+  fuhreId               String?  @db.Uuid @map("id_vpos_tpa_fuhre_zugeord")
+  
+  // Ausführungsdatum
+  ausfuehrungsdatum     DateTime? @map("ausfuehrungsdatum")
+  
+  // Zusatzinfos
+  bestellnummer         String?  @db.VarChar(30)
+  wiegekartenkenner     String?  @db.VarChar(100)
+  bemerkungIntern       String?  @db.VarChar(400) @map("bemerkung_intern")
+  lieferbedingungen     String?  @db.VarChar(200)
+  zahlungsbedingungen   String?  @db.VarChar(200)
+  
+  // Steuer
+  ohneSteur             Boolean  @default(false) @map("ohne_steuer")
+  euSteuervermerk       String?  @db.VarChar(600) @map("eu_steuer_vermerk")
+  
+  // Lager
+  lagerVorzeichen       Int      @default(0) @map("lager_vorzeichen")
+  
+  // Status
+  gebucht               Boolean  @default(false)
+  deleted               Boolean  @default(false)
+  delGrund              String?  @db.VarChar(200) @map("del_grund")
+  delDate               DateTime? @map("del_date")
+  
+  // Audit-Felder
+  erstelltVon           String?  @db.VarChar(10) @map("erstellt_von")
+  erstelltAm            DateTime @default(now()) @map("erstellt_am")
+  geaendertVon          String?  @db.VarChar(10) @map("geaendert_von")
+  letzteAenderung       DateTime @updatedAt @map("letzte_aenderung")
+  
+  // Relationen
+  rechnung              Rechnung @relation(fields: [rechnungId], references: [id], onDelete: Cascade)
+  artikel               Artikel? @relation(fields: [artikelId], references: [id])
+  fuhre                 Fuhre?   @relation(fields: [fuhreId], references: [id])
+  
+  @@index([mandantId])
+  @@index([rechnungId])
+  @@map("jt_vpos_rg")
+}
+
+// =====================================================
+// LOOKUP-TABELLEN / STAMMDATEN
+// =====================================================
+
+/// Land
+model Land {
+  id                    String   @id @default(uuid()) @db.Uuid
+  mandantId             String   @db.Uuid @map("id_mandant")
+  laendercode           String   @db.VarChar(3)
+  laendername           String?  @db.VarChar(60)
+  beschreibung          String?  @db.VarChar(255)
+  laendervorwahl        String?  @db.VarChar(20)
+  postCode              String?  @db.VarChar(20) @map("post_code")
+  hatPostcode           Boolean  @default(true) @map("hat_postcode")
+  istStandard           Boolean  @default(false) @map("ist_standard")
+  intrastatJn           Boolean  @default(false) @map("intrastat_jn")
+  ustPraefix            String?  @db.VarChar(3) @map("ust_praefix")
+  isoCountryCode        String?  @db.VarChar(3) @map("iso_country_code")
+  
+  // Audit-Felder
+  erstelltVon           String?  @db.VarChar(10) @map("erstellt_von")
+  erstelltAm            DateTime @default(now()) @map("erstellt_am")
+  geaendertVon          String?  @db.VarChar(10) @map("geaendert_von")
+  letzteAenderung       DateTime @updatedAt @map("letzte_aenderung")
+  
+  // Reverse Relations
+  mandanten             Mandant[]
+  adressen              Adresse[]
+  
+  @@unique([mandantId, laendercode])
+  @@index([mandantId])
+  @@map("jt_land")
+}
+
+/// Sprache
+model Sprache {
+  id                    String   @id @default(uuid()) @db.Uuid
+  mandantId             String   @db.Uuid @map("id_mandant")
+  bezeichnung           String   @db.VarChar(20)
+  beschreibung          String?  @db.VarChar(200)
+  laendercode           String?  @db.VarChar(20)
+  langCode              String?  @db.VarChar(10) @map("lang_code")
+  istStandard           Boolean  @default(false) @map("ist_standard")
+  
+  // Audit-Felder
+  erstelltVon           String?  @db.VarChar(10) @map("erstellt_von")
+  erstelltAm            DateTime @default(now()) @map("erstellt_am")
+  geaendertVon          String?  @db.VarChar(10) @map("geaendert_von")
+  letzteAenderung       DateTime @updatedAt @map("letzte_aenderung")
+  
+  // Reverse Relations
+  adressen              Adresse[]
+  
+  @@index([mandantId])
+  @@map("jt_sprache")
+}
+
+/// Währung
+model Waehrung {
+  id                    String   @id @default(uuid()) @db.Uuid
+  mandantId             String   @db.Uuid @map("id_mandant")
+  kurzbezeichnung       String   @db.VarChar(10)
+  bezeichnung           String?  @db.VarChar(100)
+  symbol                String?  @db.VarChar(5)
+  kurs                  Decimal  @default(1) @db.Decimal(10, 4)
+  istBasis              Boolean  @default(false) @map("ist_basis")
+  
+  // Audit-Felder
+  erstelltVon           String?  @db.VarChar(10) @map("erstellt_von")
+  erstelltAm            DateTime @default(now()) @map("erstellt_am")
+  geaendertVon          String?  @db.VarChar(10) @map("geaendert_von")
+  letzteAenderung       DateTime @updatedAt @map("letzte_aenderung")
+  
+  // Reverse Relations
+  mandanten             Mandant[]
+  adressen              Adresse[]
+  kontrakte             Kontrakt[]
+  rechnungen            Rechnung[] @relation("RechnungWaehrung")
+  
+  @@unique([mandantId, kurzbezeichnung])
+  @@index([mandantId])
+  @@map("jt_waehrung")
+}
+
+/// Anrede
+model Anrede {
+  id                    String   @id @default(uuid()) @db.Uuid
+  mandantId             String   @db.Uuid @map("id_mandant")
+  kurzbezeichnung       String   @db.VarChar(20)
+  bezeichnung           String?  @db.VarChar(100)
+  briefanrede           String?  @db.VarChar(100)
+  
+  // Audit-Felder
+  erstelltVon           String?  @db.VarChar(10) @map("erstellt_von")
+  erstelltAm            DateTime @default(now()) @map("erstellt_am")
+  geaendertVon          String?  @db.VarChar(10) @map("geaendert_von")
+  letzteAenderung       DateTime @updatedAt @map("letzte_aenderung")
+  
+  // Reverse Relations
+  adressen              Adresse[]
+  kontakte              Kontakt[]
+  
+  @@index([mandantId])
+  @@map("jt_anrede")
+}
+
+/// Einheit
+model Einheit {
+  id                    String   @id @default(uuid()) @db.Uuid
+  mandantId             String   @db.Uuid @map("id_mandant")
+  kurzbezeichnung       String   @db.VarChar(10)
+  bezeichnung           String?  @db.VarChar(100)
+  faktor                Decimal  @default(1) @db.Decimal(10, 4)
+  
+  // Audit-Felder
+  erstelltVon           String?  @db.VarChar(10) @map("erstellt_von")
+  erstelltAm            DateTime @default(now()) @map("erstellt_am")
+  geaendertVon          String?  @db.VarChar(10) @map("geaendert_von")
+  letzteAenderung       DateTime @updatedAt @map("letzte_aenderung")
+  
+  // Reverse Relations
+  artikelAlsEinheit     Artikel[] @relation("ArtikelEinheit")
+  artikelAlsPreiseinheit Artikel[] @relation("ArtikelEinheitPreis")
+  
+  @@unique([mandantId, kurzbezeichnung])
+  @@index([mandantId])
+  @@map("jt_einheit")
+}
+
+/// Zahlungsbedingungen
+model Zahlungsbedingungen {
+  id                    String   @id @default(uuid()) @db.Uuid
+  mandantId             String   @db.Uuid @map("id_mandant")
+  kurzbezeichnung       String   @db.VarChar(60)
+  bezeichnung           String?  @db.VarChar(200)
+  bemerkungen           String?  @db.VarChar(200)
+  zahltage              Int?
+  fixmonat              Int?
+  fixtag                Int?
+  istStandard           Boolean  @default(false) @map("ist_standard")
+  skontoProzent         Decimal? @db.Decimal(8, 3) @map("skonto_prozent")
+  
+  // Audit-Felder
+  erstelltVon           String?  @db.VarChar(10) @map("erstellt_von")
+  erstelltAm            DateTime @default(now()) @map("erstellt_am")
+  geaendertVon          String?  @db.VarChar(10) @map("geaendert_von")
+  letzteAenderung       DateTime @updatedAt @map("letzte_aenderung")
+  
+  // Reverse Relations
+  adressenEk            Adresse[] @relation("AdresseZahlungEk")
+  adressenVk            Adresse[] @relation("AdresseZahlungVk")
+  kontrakte             Kontrakt[]
+  rechnungen            Rechnung[]
+  
+  @@index([mandantId])
+  @@map("jt_zahlungsbedingungen")
+}
+
+/// Lieferbedingungen
+model Lieferbedingungen {
+  id                    String   @id @default(uuid()) @db.Uuid
+  mandantId             String   @db.Uuid @map("id_mandant")
+  kurzbezeichnung       String   @db.VarChar(60)
+  bezeichnung           String?  @db.VarChar(200)
+  bemerkungen           String?  @db.VarChar(200)
+  istStandard           Boolean  @default(false) @map("ist_standard")
+  
+  // Audit-Felder
+  erstelltVon           String?  @db.VarChar(10) @map("erstellt_von")
+  erstelltAm            DateTime @default(now()) @map("erstellt_am")
+  geaendertVon          String?  @db.VarChar(10) @map("geaendert_von")
+  letzteAenderung       DateTime @updatedAt @map("letzte_aenderung")
+  
+  // Reverse Relations
+  adressenEk            Adresse[] @relation("AdresseLieferEk")
+  adressenVk            Adresse[] @relation("AdresseLieferVk")
+  
+  @@index([mandantId])
+  @@map("jt_lieferbedingungen")
+}
+
+/// Artikelgruppe
+model ArtikelGruppe {
+  id                    String   @id @default(uuid()) @db.Uuid
+  mandantId             String   @db.Uuid @map("id_mandant")
+  bezeichnung           String   @db.VarChar(100)
+  beschreibung          String?  @db.VarChar(500)
+  
+  // Audit-Felder
+  erstelltVon           String?  @db.VarChar(10) @map("erstellt_von")
+  erstelltAm            DateTime @default(now()) @map("erstellt_am")
+  geaendertVon          String?  @db.VarChar(10) @map("geaendert_von")
+  letzteAenderung       DateTime @updatedAt @map("letzte_aenderung")
+  
+  // Reverse Relations
+  artikel               Artikel[]
+  
+  @@index([mandantId])
+  @@map("jt_artikel_gruppe")
+}
+
+/// EAK-Code (Europäischer Abfallkatalog)
+model EakCode {
+  id                    String   @id @default(uuid()) @db.Uuid
+  mandantId             String   @db.Uuid @map("id_mandant")
+  code                  String   @db.VarChar(20)
+  bezeichnung           String?  @db.VarChar(500)
+  gefaehrlich           Boolean  @default(false)
+  
+  // Audit-Felder
+  erstelltVon           String?  @db.VarChar(10) @map("erstellt_von")
+  erstelltAm            DateTime @default(now()) @map("erstellt_am")
+  geaendertVon          String?  @db.VarChar(10) @map("geaendert_von")
+  letzteAenderung       DateTime @updatedAt @map("letzte_aenderung")
+  
+  // Reverse Relations
+  artikel               Artikel[]
+  artikelBezeichnungen  ArtikelBezeichnung[]
+  
+  @@unique([mandantId, code])
+  @@index([mandantId])
+  @@map("jt_eak_code")
+}
+
+/// Bankverbindung
+model Bankverbindung {
+  id                    String   @id @default(uuid()) @db.Uuid
+  mandantId             String   @db.Uuid @map("id_mandant")
+  adresseId             String   @db.Uuid @map("id_adresse")
+  
+  // Bankdaten
+  bankname              String?  @db.VarChar(100)
+  blz                   String?  @db.VarChar(20)
+  kontonummer           String?  @db.VarChar(30)
+  iban                  String?  @db.VarChar(34)
+  bic                   String?  @db.VarChar(11)
+  
+  // Optionen
+  istStandard           Boolean  @default(false) @map("ist_standard")
+  aktiv                 Boolean  @default(true)
+  
+  // Audit-Felder
+  erstelltVon           String?  @db.VarChar(10) @map("erstellt_von")
+  erstelltAm            DateTime @default(now()) @map("erstellt_am")
+  geaendertVon          String?  @db.VarChar(10) @map("geaendert_von")
+  letzteAenderung       DateTime @updatedAt @map("letzte_aenderung")
+  
+  // Relationen
+  adresse               Adresse  @relation(fields: [adresseId], references: [id], onDelete: Cascade)
+  
+  @@index([mandantId])
+  @@index([adresseId])
+  @@map("jt_bankverbindung")
+}
+
+/// Kommunikation (Telefon, Email, etc.)
+model Kommunikation {
+  id                    String   @id @default(uuid()) @db.Uuid
+  mandantId             String   @db.Uuid @map("id_mandant")
+  adresseId             String   @db.Uuid @map("id_adresse")
+  
+  // Kommunikationstyp
+  typ                   String   @db.VarChar(20) // TEL, FAX, EMAIL, WEB, etc.
+  wert                  String   @db.VarChar(200)
+  bemerkung             String?  @db.VarChar(200)
+  
+  // Optionen
+  istStandard           Boolean  @default(false) @map("ist_standard")
+  aktiv                 Boolean  @default(true)
+  
+  // Audit-Felder
+  erstelltVon           String?  @db.VarChar(10) @map("erstellt_von")
+  erstelltAm            DateTime @default(now()) @map("erstellt_am")
+  geaendertVon          String?  @db.VarChar(10) @map("geaendert_von")
+  letzteAenderung       DateTime @updatedAt @map("letzte_aenderung")
+  
+  // Relationen
+  adresse               Adresse  @relation(fields: [adresseId], references: [id], onDelete: Cascade)
+  
+  @@index([mandantId])
+  @@index([adresseId])
+  @@map("jt_kommunikation")
+}
+
+// =====================================================
+// AUDIT-LOG
+// =====================================================
+
+/// Audit-Log für Änderungsnachverfolgung
+model AuditLog {
+  id                    String   @id @default(uuid()) @db.Uuid
+  mandantId             String   @db.Uuid @map("id_mandant")
+  userId                String?  @db.Uuid @map("id_user")
+  
+  // Änderungsinformationen
+  tableName             String   @db.VarChar(100) @map("table_name")
+  recordId              String   @db.Uuid @map("record_id")
+  aktion                String   @db.VarChar(20) // CREATE, UPDATE, DELETE
+  
+  // Werte
+  altWert               Json?    @map("alt_wert")
+  neuWert               Json?    @map("neu_wert")
+  
+  // Zusatzinfos
+  ipAdresse             String?  @db.VarChar(45) @map("ip_adresse")
+  userAgent             String?  @db.VarChar(500) @map("user_agent")
+  beschreibung          String?  @db.VarChar(500)
+  
+  // Timestamp
+  erstelltAm            DateTime @default(now()) @map("erstellt_am")
+  
+  // Relationen
+  benutzer              Benutzer? @relation(fields: [userId], references: [id])
+  
+  @@index([mandantId])
+  @@index([tableName, recordId])
+  @@index([erstelltAm])
+  @@map("jt_audit_log")
+}
