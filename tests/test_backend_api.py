@@ -8,7 +8,7 @@ import requests
 import os
 import uuid
 
-BASE_URL = "https://raw-materials.preview.emergentagent.com"
+BASE_URL = "https://raw-materials-hub-1.preview.emergentagent.com"
 
 # Test credentials
 TEST_USERNAME = "admin"
