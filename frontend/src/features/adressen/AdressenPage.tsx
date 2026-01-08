@@ -145,10 +145,10 @@ export function AdressenPage() {
 
   const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm<AdresseForm>({
     resolver: zodResolver(adresseSchema),
-    defaultValues: { adresstyp: 1, aktiv: true, wareneingang: true, warenausgang: true, ist_firma: true, land: 'Deutschland', sprache: 'Deutsch', waehrung: 'EUR' },
+    defaultValues: { adresstyp: 1, aktiv: true, wareneingang: true, warenausgang: true, ist_firma: true, land: 'Deutschland', sprache: 'Deutsch', waehrung: 'EUR', firma_ohne_ustid: false, privat_mit_ustid: false },
   });
 
-  const watchFields = watch(['aktiv', 'wareneingang', 'warenausgang', 'barkunde', 'scheckdruck', 'ist_firma', 'postfach_aktiv', 'rechnungen_sperren', 'gutschriften_sperren', 'wareneingang_sperren', 'warenausgang_sperren', 'wird_nicht_gemahnt']);
+  const watchFields = watch(['aktiv', 'wareneingang', 'warenausgang', 'barkunde', 'scheckdruck', 'ist_firma', 'postfach_aktiv', 'rechnungen_sperren', 'gutschriften_sperren', 'wareneingang_sperren', 'warenausgang_sperren', 'wird_nicht_gemahnt', 'firma_ohne_ustid', 'privat_mit_ustid', 'land']);
 
   useEffect(() => {
     if (selectedAdresse && isEditMode) {
