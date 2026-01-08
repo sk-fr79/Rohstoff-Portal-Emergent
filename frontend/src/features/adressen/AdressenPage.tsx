@@ -172,17 +172,34 @@ export function AdressenPage() {
         </DialogContent>
       </Dialog>
 
-      <Dialog open={!!selectedAdresse} onOpenChange={() => setSelectedAdresse(null)}>
-        <DialogContent><DialogHeader><DialogTitle className="flex items-center gap-2"><Building2 className="h-5 w-5" />{selectedAdresse?.name1}</DialogTitle><DialogDescription>KDNR: {selectedAdresse?.kdnr || '-'}</DialogDescription></DialogHeader>
-          {selectedAdresse && <div className="grid grid-cols-2 gap-4 text-sm">
-            <div><p className="text-muted-foreground">Name</p><p className="font-medium">{selectedAdresse.name2 || '-'}</p></div>
-            <div><p className="text-muted-foreground">Vorname</p><p className="font-medium">{selectedAdresse.name3 || '-'}</p></div>
-            <div className="col-span-2"><p className="text-muted-foreground">Adresse</p><p className="font-medium flex items-center gap-1"><MapPin className="h-4 w-4" />{selectedAdresse.strasse} {selectedAdresse.hausnummer}, {selectedAdresse.plz} {selectedAdresse.ort}</p></div>
-            <div><p className="text-muted-foreground">Telefon</p><p className="font-medium">{selectedAdresse.telefon || '-'}</p></div>
-            <div><p className="text-muted-foreground">E-Mail</p><p className="font-medium">{selectedAdresse.email || '-'}</p></div>
-            <div><p className="text-muted-foreground">Betreuer</p><p className="font-medium">{selectedAdresse.betreuer || '-'}</p></div>
-            <div><p className="text-muted-foreground">Typ</p><p className="font-medium">{adresstypLabels[selectedAdresse.adresstyp || 5]}</p></div>
-          </div>}
+      <Dialog open={!!selectedAdresse} onOpenChange={handleCloseDetail}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Building2 className="h-5 w-5" />
+              {selectedAdresse?.name1}
+              {isEditMode && <span className="text-sm font-normal text-muted-foreground ml-2">(Bearbeitungsmodus)</span>}
+            </DialogTitle>
+            <DialogDescription>KDNR: {selectedAdresse?.kdnr || '-'}</DialogDescription>
+          </DialogHeader>
+          {selectedAdresse && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div><p className="text-muted-foreground">Name</p><p className="font-medium">{selectedAdresse.name2 || '-'}</p></div>
+                <div><p className="text-muted-foreground">Vorname</p><p className="font-medium">{selectedAdresse.name3 || '-'}</p></div>
+                <div className="col-span-2"><p className="text-muted-foreground">Adresse</p><p className="font-medium flex items-center gap-1"><MapPin className="h-4 w-4" />{selectedAdresse.strasse} {selectedAdresse.hausnummer}, {selectedAdresse.plz} {selectedAdresse.ort}</p></div>
+                <div><p className="text-muted-foreground">Land</p><p className="font-medium">{selectedAdresse.land || 'Deutschland'}</p></div>
+                <div><p className="text-muted-foreground">Betreuer</p><p className="font-medium">{selectedAdresse.betreuer || '-'}</p></div>
+                <div><p className="text-muted-foreground">Telefon</p><p className="font-medium">{selectedAdresse.telefon || '-'}</p></div>
+                <div><p className="text-muted-foreground">E-Mail</p><p className="font-medium">{selectedAdresse.email || '-'}</p></div>
+                <div><p className="text-muted-foreground">Typ</p><p className="font-medium">{adresstypLabels[selectedAdresse.adresstyp || 5]}</p></div>
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={handleCloseDetail}>Schließen</Button>
+                <Button onClick={() => setIsEditMode(true)}><Pencil className="h-4 w-4 mr-2" />Bearbeiten</Button>
+              </DialogFooter>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </motion.div>
