@@ -353,6 +353,69 @@ export function AdressenPage() {
     setWeitereUstIds(weitereUstIds.filter(u => u.id !== id));
   };
 
+  // UST-ID VIES Validierung
+  const validateUstId = async (lkz: string, ustid: string, index?: number) => {
+    if (!selectedAdresse || !lkz || !ustid) {
+      toast.error('Bitte Länderkennzeichen und UST-ID eingeben');
+      return;
+    }
+
+    if (index !== undefined) {
+      setValidatingUstIdIndex(index);
+    } else {
+      setValidatingUstId(true);
+    }
+
+    try {
+      const response = await api.post('/ustid/validate', {
+        adresse_id: selectedAdresse.id,
+        laenderkennzeichen: lkz,
+        ustid: ustid
+      });
+
+      if (response.data.success) {
+        const result = response.data.data;
+        if (result.gueltig) {
+          toast.success('✓ UST-ID ist gültig', {
+            description: result.firmenname || undefined
+          });
+        } else {
+          toast.warning('UST-ID ist ungültig');
+        }
+      } else {
+        toast.error(response.data.error || 'Validierung fehlgeschlagen');
+      }
+    } catch (error: any) {
+      toast.error(error.response?.data?.detail || 'Fehler bei der Validierung');
+    } finally {
+      setValidatingUstId(false);
+      setValidatingUstIdIndex(null);
+    }
+  };
+
+  // UST-ID Protokoll laden
+  const loadUstIdProtokoll = async () => {
+    if (!selectedAdresse) return;
+
+    setUstIdProtokollLoading(true);
+    try {
+      const response = await api.get(`/ustid/protokoll/${selectedAdresse.id}`);
+      if (response.data.success) {
+        setUstIdProtokoll(response.data.data);
+      }
+    } catch (error) {
+      toast.error('Fehler beim Laden des Protokolls');
+    } finally {
+      setUstIdProtokollLoading(false);
+    }
+  };
+
+  // Protokoll öffnen
+  const openUstIdProtokoll = () => {
+    loadUstIdProtokoll();
+    setShowUstIdProtokoll(true);
+  };
+
   // Ansprechpartner Handlers
   const saveAnsprechpartner = async (ap: Ansprechpartner) => {
     if (!selectedAdresse) return;
