@@ -18,9 +18,15 @@ import secrets
 import jwt
 import base64
 import shutil
+import re
+import json
 from pathlib import Path
 from motor.motor_asyncio import AsyncIOMotorClient
 from contextlib import asynccontextmanager
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 # Upload-Verzeichnis erstellen
 UPLOAD_DIR = Path("/app/backend/uploads")
