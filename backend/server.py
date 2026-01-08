@@ -259,13 +259,17 @@ class AdresseCreate(BaseModel):
     umsatzsteuer_id: Optional[str] = Field(None, max_length=20)
     steuernummer: Optional[str] = Field(None, max_length=20)
     
-    # Weitere UST-IDs (für andere Länder)
-    ust_at: Optional[str] = Field(None, max_length=20)  # Österreich
-    ust_nl: Optional[str] = Field(None, max_length=20)  # Niederlande
-    ust_ch: Optional[str] = Field(None, max_length=20)  # Schweiz
+    # Weitere UST-IDs (dynamisches Array von {land, lkz, ustid})
+    weitere_ustids: Optional[List[Dict[str, str]]] = None
     
     # Handelsregister
     handelsregister: Optional[str] = Field(None, max_length=50)
+    
+    # Firmenlogo (als base64 oder URL)
+    firmenlogo: Optional[str] = None
+    
+    # Ansprechpartner (Array von Kontaktpersonen)
+    ansprechpartner: Optional[List[Dict[str, Any]]] = None
     
     # Zahlungs-/Lieferbedingungen
     waehrung: Optional[str] = Field("EUR", max_length=3)
