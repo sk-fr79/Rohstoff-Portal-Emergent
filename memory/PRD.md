@@ -98,7 +98,10 @@ Portiert aus Java-Code: `rohstoff.Echo2BusinessLogic.FIRMENSTAMM.__FS_Adress_Che
 - **UI-Komponenten:** Dialog, Dropdown, Select, Switch, Tabs, Popover, Command, Textarea
 
 ### ✅ Tests
-- **Backend:** 29/29 Tests bestanden (100%)
+- **Backend:** 46/46 Tests bestanden (100%)
+  - Authentifizierung: Login, Token-Validierung
+  - Adress-Validierung: 17 Tests für Geschäftslogik aus Java
+  - CRUD-Operationen: Adressen, Artikel, Kontrakte
 - **Frontend:** Alle Module funktionsfähig
 
 ---
