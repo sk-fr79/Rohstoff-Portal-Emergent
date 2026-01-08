@@ -216,12 +216,49 @@ export function DashboardPage() {
               </CardTitle>
               <CardDescription>Monatlicher Umsatz der letzten 12 Monate</CardDescription>
             </CardHeader>
-            <CardContent className="flex items-center justify-center h-[280px]">
-              <div className="text-muted-foreground text-center">
-                <Activity className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p>Chart wird hier angezeigt</p>
-                <p className="text-sm">(Recharts Integration)</p>
-              </div>
+            <CardContent className="h-[280px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={umsatzData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="colorUmsatz" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#374151" opacity={0.3} />
+                  <XAxis 
+                    dataKey="monat" 
+                    stroke="#6b7280" 
+                    fontSize={12}
+                    tickLine={false}
+                    axisLine={false}
+                  />
+                  <YAxis 
+                    stroke="#6b7280" 
+                    fontSize={12}
+                    tickLine={false}
+                    axisLine={false}
+                    tickFormatter={(value) => `${(value / 1000).toFixed(0)}k`}
+                  />
+                  <Tooltip 
+                    contentStyle={{ 
+                      backgroundColor: '#1f2937', 
+                      border: '1px solid #374151',
+                      borderRadius: '8px',
+                      color: '#f9fafb'
+                    }}
+                    formatter={(value: number) => [`€${value.toLocaleString('de-DE')}`, 'Umsatz']}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="umsatz"
+                    stroke="#3b82f6"
+                    strokeWidth={2}
+                    fillOpacity={1}
+                    fill="url(#colorUmsatz)"
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
             </CardContent>
           </Card>
         </motion.div>
