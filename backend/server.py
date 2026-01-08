@@ -222,14 +222,59 @@ class AdresseUpdate(BaseModel):
 
 # Artikel
 class ArtikelCreate(BaseModel):
-    artbez1: str = Field(..., max_length=80)
-    artbez2: Optional[str] = Field(None, max_length=1000)
+    # Grunddaten
+    anr1: Optional[str] = Field(None, max_length=10)  # Artikelnummer 1
+    artbez1: str = Field(..., max_length=80)  # Artikelbezeichnung 1
+    artbez2: Optional[str] = Field(None, max_length=1000)  # Artikelbezeichnung 2
+    
+    # Einheiten
     einheit: str = Field("kg", max_length=10)
     einheit_preis: str = Field("t", max_length=10)
     mengendivisor: int = Field(1000, ge=1)
+    genauigkeit_mengen: int = Field(3, ge=0, le=6)  # Nachkommastellen
+    
+    # Klassifikation
+    artikelgruppe: Optional[str] = Field(None, max_length=100)
+    artikelgruppe_fibu: Optional[str] = Field(None, max_length=100)
+    
+    # Status-Flags
     aktiv: bool = True
     gefahrgut: bool = False
+    ist_leergut: bool = False
+    elektro_elektronik: bool = False
+    ist_produkt: bool = False
+    dienstleistung: bool = False
+    end_of_waste: bool = False
+    end_of_waste_lager: bool = False
+    
+    # AVV-Codes
+    avv_code_eingang: Optional[str] = Field(None, max_length=50)  # AVV-Code Bar-Anlieferer
+    avv_code_ausgang: Optional[str] = Field(None, max_length=50)  # AVV-Code Ausgang mvg
     eakcode: Optional[str] = Field(None, max_length=20)
+    
+    # Zoll
+    zolltarifnr: Optional[str] = Field(None, max_length=50)
+    zolltarifnotiz: Optional[str] = Field(None, max_length=500)
+    
+    # Basel-Code
+    basel_code: Optional[str] = Field(None, max_length=80)
+    basel_notiz: Optional[str] = Field(None, max_length=500)
+    
+    # OECD
+    oecd_code: Optional[str] = Field(None, max_length=50)
+    oecd_notiz: Optional[str] = Field(None, max_length=500)
+    
+    # Anhang 7
+    anhang7_3a_code: Optional[str] = Field(None, max_length=20)
+    anhang7_3a_text: Optional[str] = Field(None, max_length=1000)
+    anhang7_3b_code: Optional[str] = Field(None, max_length=20)
+    anhang7_3b_text: Optional[str] = Field(None, max_length=1000)
+    
+    # Österreichische AVV
+    oesterreichische_avv: Optional[str] = Field(None, max_length=50)
+    
+    # Bemerkungen
+    bemerkung_intern: Optional[str] = Field(None, max_length=1000)
 
 # Kontrakt
 class KontraktCreate(BaseModel):
