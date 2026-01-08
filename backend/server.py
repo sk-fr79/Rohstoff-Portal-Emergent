@@ -1562,6 +1562,93 @@ async def upload_visitenkarte(
     
     return {"success": True, "data": {"visitenkarte": visitenkarte}}
 
+# ============================================================
+# OCR - VISITENKARTEN-ERKENNUNG
+# ============================================================
+
+@app.post("/api/ocr/visitenkarte")
+async def ocr_visitenkarte(
+    file: UploadFile = File(...),
+    user = Depends(get_current_user)
+):
+    """
+    OCR-Erkennung für Visitenkarten
+    Extrahiert automatisch: Name, Vorname, Firma, Funktion, Telefon, Mobil, E-Mail
+    Verwendet OpenAI GPT-4o Vision
+    """
+    if not file.content_type or not file.content_type.startswith("image/"):
+        raise HTTPException(status_code=400, detail="Nur Bilddateien erlaubt")
+    
+    content = await file.read()
+    if len(content) > 5 * 1024 * 1024:
+        raise HTTPException(status_code=400, detail="Datei zu groß (max 5MB)")
+    
+    # Base64 kodieren
+    image_base64 = base64.b64encode(content).decode('utf-8')
+    
+    try:
+        from emergentintegrations.llm.chat import LlmChat, UserMessage, ImageContent
+        
+        api_key = os.environ.get("EMERGENT_LLM_KEY")
+        if not api_key:
+            raise HTTPException(status_code=500, detail="OCR-Service nicht konfiguriert")
+        
+        chat = LlmChat(
+            api_key=api_key,
+            session_id=f"ocr-{uuid.uuid4()}",
+            system_message="""Du bist ein OCR-Spezialist für Visitenkarten. 
+Analysiere das Bild der Visitenkarte und extrahiere alle relevanten Kontaktdaten.
+Antworte NUR im JSON-Format ohne zusätzlichen Text. Verwende dieses Schema:
+{
+    "vorname": "string oder null",
+    "nachname": "string oder null", 
+    "firma": "string oder null",
+    "funktion": "string oder null (z.B. Geschäftsführer, Einkauf)",
+    "telefon": "string oder null (Festnetz)",
+    "mobil": "string oder null (Handy)",
+    "email": "string oder null",
+    "strasse": "string oder null",
+    "plz": "string oder null",
+    "ort": "string oder null",
+    "webseite": "string oder null"
+}
+Wenn ein Feld nicht auf der Visitenkarte zu finden ist, setze es auf null."""
+        ).with_model("openai", "gpt-4o")
+        
+        image_content = ImageContent(image_base64=image_base64)
+        
+        user_message = UserMessage(
+            text="Analysiere diese Visitenkarte und extrahiere alle Kontaktdaten im JSON-Format.",
+            image_contents=[image_content]
+        )
+        
+        response = await chat.send_message(user_message)
+        
+        # JSON aus Response extrahieren
+        json_match = re.search(r'\{[\s\S]*\}', response)
+        if json_match:
+            extracted_data = json.loads(json_match.group())
+        else:
+            extracted_data = {}
+        
+        return {
+            "success": True,
+            "data": extracted_data,
+            "raw_response": response
+        }
+        
+    except ImportError:
+        raise HTTPException(status_code=500, detail="OCR-Modul nicht installiert")
+    except json.JSONDecodeError:
+        return {
+            "success": True,
+            "data": {},
+            "raw_response": response,
+            "error": "JSON-Parsing fehlgeschlagen"
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"OCR-Fehler: {str(e)}")
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8001)
