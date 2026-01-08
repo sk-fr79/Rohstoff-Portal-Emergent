@@ -127,6 +127,24 @@ interface Adresse extends AdresseForm {
   letzte_aenderung?: string;
 }
 
+// Interface für UST-ID Validierungsprotokoll
+interface UstIdProtokoll {
+  id: string;
+  adresse_id: string;
+  laenderkennzeichen: string;
+  ustid: string;
+  gueltig: boolean;
+  firmenname?: string;
+  adresse?: string;
+  strasse?: string;
+  plz?: string;
+  ort?: string;
+  abfrage_datum: string;
+  request_identifier?: string;
+  fehler_code?: string;
+  abgefragt_von?: string;
+}
+
 // ========================== SIDEBAR SECTIONS ==========================
 const detailSections = [
   { id: 'stamm', label: 'Stammdaten', icon: Building2 },
