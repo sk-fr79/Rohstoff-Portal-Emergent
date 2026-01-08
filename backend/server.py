@@ -925,8 +925,51 @@ async def get_adresse(adresse_id: str, user = Depends(get_current_user)):
     return {"success": True, "data": adresse}
 
 @app.post("/api/adressen")
-async def create_adresse(data: AdresseCreate, user = Depends(get_current_user)):
-    """Neue Adresse erstellen"""
+async def create_adresse(
+    data: AdresseCreate, 
+    skip_validation: bool = False,
+    user = Depends(get_current_user)
+):
+    """
+    Neue Adresse erstellen
+    
+    Die Geschäftslogik-Validierung wird durchgeführt:
+    - Bei Fehlern wird die Erstellung verweigert
+    - Bei Warnungen wird die Adresse erstellt, aber Warnungen zurückgegeben
+    - Mit skip_validation=True kann die Validierung übersprungen werden
+    """
+    warnungen = []
+    
+    if not skip_validation:
+        # Geschäftslogik-Validierung durchführen
+        validierung = validate_adresse_geschaeftslogik(
+            ist_firma=data.ist_firma,
+            ist_privat=not data.ist_firma,
+            land=data.land,
+            umsatzsteuer_lkz=data.umsatzsteuer_lkz,
+            umsatzsteuer_id=data.umsatzsteuer_id,
+            steuernummer=data.steuernummer,
+            ausweis_nummer=data.ausweis_nummer,
+            ausweis_ablauf=data.ausweis_ablauf,
+            firma_ohne_ustid=data.firma_ohne_ustid,
+            privat_mit_ustid=data.privat_mit_ustid,
+        )
+        
+        # Bei kritischen Fehlern abbrechen
+        if not validierung.ist_gueltig:
+            fehler_texte = [f.meldung for f in validierung.fehler]
+            raise HTTPException(
+                status_code=400, 
+                detail={
+                    "message": "Validierungsfehler bei der Adresse",
+                    "fehler": fehler_texte,
+                    "validierung": validierung.model_dump()
+                }
+            )
+        
+        # Warnungen merken
+        warnungen = [w.model_dump() for w in validierung.warnungen]
+    
     kdnr = await generate_kdnr(user["mandant_id"], data.adresstyp or 1)
     
     adresse = {
@@ -942,11 +985,24 @@ async def create_adresse(data: AdresseCreate, user = Depends(get_current_user)):
     await db.adressen.insert_one(adresse)
     adresse["id"] = adresse.pop("_id")
     
-    return {"success": True, "data": adresse}
+    return {
+        "success": True, 
+        "data": adresse,
+        "warnungen": warnungen if warnungen else None
+    }
 
 @app.put("/api/adressen/{adresse_id}")
-async def update_adresse(adresse_id: str, data: AdresseUpdate, user = Depends(get_current_user)):
-    """Adresse aktualisieren"""
+async def update_adresse(
+    adresse_id: str, 
+    data: AdresseUpdate, 
+    skip_validation: bool = False,
+    user = Depends(get_current_user)
+):
+    """
+    Adresse aktualisieren
+    
+    Die Geschäftslogik-Validierung wird durchgeführt (wie bei create)
+    """
     existing = await db.adressen.find_one({
         "_id": adresse_id,
         "mandant_id": user["mandant_id"]
@@ -956,6 +1012,38 @@ async def update_adresse(adresse_id: str, data: AdresseUpdate, user = Depends(ge
         raise HTTPException(status_code=404, detail="Adresse nicht gefunden")
     
     update_data = {k: v for k, v in data.model_dump().items() if v is not None}
+    
+    warnungen = []
+    if not skip_validation:
+        # Merge existing data with updates for validation
+        merged = {**existing, **update_data}
+        
+        validierung = validate_adresse_geschaeftslogik(
+            ist_firma=merged.get("ist_firma", True),
+            ist_privat=not merged.get("ist_firma", True),
+            land=merged.get("land"),
+            umsatzsteuer_lkz=merged.get("umsatzsteuer_lkz"),
+            umsatzsteuer_id=merged.get("umsatzsteuer_id"),
+            steuernummer=merged.get("steuernummer"),
+            ausweis_nummer=merged.get("ausweis_nummer"),
+            ausweis_ablauf=merged.get("ausweis_ablauf"),
+            firma_ohne_ustid=merged.get("firma_ohne_ustid", False),
+            privat_mit_ustid=merged.get("privat_mit_ustid", False),
+        )
+        
+        if not validierung.ist_gueltig:
+            fehler_texte = [f.meldung for f in validierung.fehler]
+            raise HTTPException(
+                status_code=400, 
+                detail={
+                    "message": "Validierungsfehler bei der Adresse",
+                    "fehler": fehler_texte,
+                    "validierung": validierung.model_dump()
+                }
+            )
+        
+        warnungen = [w.model_dump() for w in validierung.warnungen]
+    
     update_data["geaendert_von"] = user.get("kuerzel")
     update_data["letzte_aenderung"] = datetime.utcnow()
     
@@ -964,7 +1052,11 @@ async def update_adresse(adresse_id: str, data: AdresseUpdate, user = Depends(ge
     adresse = await db.adressen.find_one({"_id": adresse_id})
     adresse["id"] = adresse.pop("_id")
     
-    return {"success": True, "data": adresse}
+    return {
+        "success": True, 
+        "data": adresse,
+        "warnungen": warnungen if warnungen else None
+    }
 
 @app.delete("/api/adressen/{adresse_id}")
 async def delete_adresse(adresse_id: str, user = Depends(get_current_user)):
