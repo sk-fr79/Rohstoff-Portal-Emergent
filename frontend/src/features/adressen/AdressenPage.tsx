@@ -189,6 +189,13 @@ export function AdressenPage() {
   const [ansprechpartnerList, setAnsprechpartnerList] = useState<Ansprechpartner[]>([]);
   const [showApDialog, setShowApDialog] = useState(false);
   const [editingAp, setEditingAp] = useState<Ansprechpartner | null>(null);
+  
+  // States für UST-ID Validierung
+  const [showUstIdProtokoll, setShowUstIdProtokoll] = useState(false);
+  const [ustIdProtokoll, setUstIdProtokoll] = useState<UstIdProtokoll[]>([]);
+  const [ustIdProtokollLoading, setUstIdProtokollLoading] = useState(false);
+  const [validatingUstId, setValidatingUstId] = useState(false);
+  const [validatingUstIdIndex, setValidatingUstIdIndex] = useState<number | null>(null); // für weitere UST-IDs
 
   const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm<AdresseForm>({
     resolver: zodResolver(adresseSchema),
