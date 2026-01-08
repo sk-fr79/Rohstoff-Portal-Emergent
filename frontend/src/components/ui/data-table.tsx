@@ -66,6 +66,7 @@ export function DataTable<TData, TValue>({
   onPageChange,
   onLimitChange,
   onSearchChange,
+  onRowDoubleClick,
   isLoading = false,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([])
