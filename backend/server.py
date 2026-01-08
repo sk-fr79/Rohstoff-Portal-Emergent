@@ -189,36 +189,159 @@ class LoginResponse(BaseModel):
 
 # Adresse
 class AdresseCreate(BaseModel):
+    # Grunddaten
+    anrede: Optional[str] = Field(None, max_length=20)  # Firma, Herr, Frau
+    vorname: Optional[str] = Field(None, max_length=30)
     name1: str = Field(..., max_length=40)
     name2: Optional[str] = Field(None, max_length=40)
     name3: Optional[str] = Field(None, max_length=40)
+    rechtsform: Optional[str] = Field(None, max_length=30)  # GmbH, AG, etc.
+    
+    # Adresse
     strasse: Optional[str] = Field(None, max_length=45)
     hausnummer: Optional[str] = Field(None, max_length=10)
     plz: Optional[str] = Field(None, max_length=10)
     ort: Optional[str] = Field(None, max_length=30)
+    ortzusatz: Optional[str] = Field(None, max_length=30)
     land: Optional[str] = Field(None, max_length=30)
+    sprache: Optional[str] = Field(None, max_length=20)
+    
+    # Postfach
+    plz_postfach: Optional[str] = Field(None, max_length=10)
+    postfach: Optional[str] = Field(None, max_length=20)
+    postfach_aktiv: bool = False
+    
+    # Kontakt
     telefon: Optional[str] = Field(None, max_length=30)
+    telefax: Optional[str] = Field(None, max_length=30)
     email: Optional[str] = Field(None, max_length=100)
+    webseite: Optional[str] = Field(None, max_length=100)
+    
+    # Geolocation
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+    wartezeit_min: Optional[int] = None
+    
+    # Status & Typ
     adresstyp: Optional[int] = Field(1, ge=1, le=5)
-    betreuer: Optional[str] = Field(None, max_length=20)
     aktiv: bool = True
+    wareneingang: bool = True
+    warenausgang: bool = True
+    barkunde: bool = False
+    scheckdruck: bool = False
+    ist_firma: bool = True  # JA=Firma, NEIN=Privat
+    
+    # Betreuer/Sachbearbeiter
+    betreuer: Optional[str] = Field(None, max_length=20)
+    betreuer2: Optional[str] = Field(None, max_length=20)
+    
+    # Nummern/Codes
+    kreditor_nr: Optional[str] = Field(None, max_length=30)
+    debitor_nr: Optional[str] = Field(None, max_length=30)
+    lief_nr: Optional[str] = Field(None, max_length=60)
+    abn_nr: Optional[str] = Field(None, max_length=60)
+    betriebs_nr_saa: Optional[str] = Field(None, max_length=30)
+    sondernummer: Optional[str] = Field(None, max_length=30)
+    
+    # Steuer
+    umsatzsteuer_lkz: Optional[str] = Field(None, max_length=3)
+    umsatzsteuer_id: Optional[str] = Field(None, max_length=20)
+    steuernummer: Optional[str] = Field(None, max_length=20)
+    
+    # Weitere UST-IDs (für andere Länder)
+    ust_at: Optional[str] = Field(None, max_length=20)  # Österreich
+    ust_nl: Optional[str] = Field(None, max_length=20)  # Niederlande
+    ust_ch: Optional[str] = Field(None, max_length=20)  # Schweiz
+    
+    # Handelsregister
+    handelsregister: Optional[str] = Field(None, max_length=50)
+    
+    # Zahlungs-/Lieferbedingungen
+    waehrung: Optional[str] = Field("EUR", max_length=3)
+    zahlungsbedingung_ek: Optional[str] = Field(None, max_length=100)
+    zahlungsbedingung_vk: Optional[str] = Field(None, max_length=100)
+    lieferbedingung_ek: Optional[str] = Field(None, max_length=50)  # Incoterms
+    lieferbedingung_vk: Optional[str] = Field(None, max_length=50)
+    
+    # Sperren
+    rechnungen_sperren: bool = False
+    gutschriften_sperren: bool = False
+    wareneingang_sperren: bool = False
+    warenausgang_sperren: bool = False
+    wird_nicht_gemahnt: bool = False
+    
+    # Ausweis (für Privatkunden)
+    ausweis_nummer: Optional[str] = Field(None, max_length=30)
+    ausweis_ablauf: Optional[str] = Field(None, max_length=10)
+    geburtsdatum: Optional[str] = Field(None, max_length=10)
+    
+    # Bemerkungen
     bemerkungen: Optional[str] = Field(None, max_length=700)
+    bemerkung_fahrplan: Optional[str] = Field(None, max_length=300)
+    lieferinfo_tpa: Optional[str] = Field(None, max_length=300)
 
 class AdresseUpdate(BaseModel):
+    anrede: Optional[str] = Field(None, max_length=20)
+    vorname: Optional[str] = Field(None, max_length=30)
     name1: Optional[str] = Field(None, max_length=40)
     name2: Optional[str] = Field(None, max_length=40)
     name3: Optional[str] = Field(None, max_length=40)
+    rechtsform: Optional[str] = Field(None, max_length=30)
     strasse: Optional[str] = Field(None, max_length=45)
     hausnummer: Optional[str] = Field(None, max_length=10)
     plz: Optional[str] = Field(None, max_length=10)
     ort: Optional[str] = Field(None, max_length=30)
+    ortzusatz: Optional[str] = Field(None, max_length=30)
     land: Optional[str] = Field(None, max_length=30)
+    sprache: Optional[str] = Field(None, max_length=20)
+    plz_postfach: Optional[str] = Field(None, max_length=10)
+    postfach: Optional[str] = Field(None, max_length=20)
+    postfach_aktiv: Optional[bool] = None
     telefon: Optional[str] = Field(None, max_length=30)
+    telefax: Optional[str] = Field(None, max_length=30)
     email: Optional[str] = Field(None, max_length=100)
+    webseite: Optional[str] = Field(None, max_length=100)
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+    wartezeit_min: Optional[int] = None
     adresstyp: Optional[int] = Field(None, ge=1, le=5)
-    betreuer: Optional[str] = Field(None, max_length=20)
     aktiv: Optional[bool] = None
+    wareneingang: Optional[bool] = None
+    warenausgang: Optional[bool] = None
+    barkunde: Optional[bool] = None
+    scheckdruck: Optional[bool] = None
+    ist_firma: Optional[bool] = None
+    betreuer: Optional[str] = Field(None, max_length=20)
+    betreuer2: Optional[str] = Field(None, max_length=20)
+    kreditor_nr: Optional[str] = Field(None, max_length=30)
+    debitor_nr: Optional[str] = Field(None, max_length=30)
+    lief_nr: Optional[str] = Field(None, max_length=60)
+    abn_nr: Optional[str] = Field(None, max_length=60)
+    betriebs_nr_saa: Optional[str] = Field(None, max_length=30)
+    sondernummer: Optional[str] = Field(None, max_length=30)
+    umsatzsteuer_lkz: Optional[str] = Field(None, max_length=3)
+    umsatzsteuer_id: Optional[str] = Field(None, max_length=20)
+    steuernummer: Optional[str] = Field(None, max_length=20)
+    ust_at: Optional[str] = Field(None, max_length=20)
+    ust_nl: Optional[str] = Field(None, max_length=20)
+    ust_ch: Optional[str] = Field(None, max_length=20)
+    handelsregister: Optional[str] = Field(None, max_length=50)
+    waehrung: Optional[str] = Field(None, max_length=3)
+    zahlungsbedingung_ek: Optional[str] = Field(None, max_length=100)
+    zahlungsbedingung_vk: Optional[str] = Field(None, max_length=100)
+    lieferbedingung_ek: Optional[str] = Field(None, max_length=50)
+    lieferbedingung_vk: Optional[str] = Field(None, max_length=50)
+    rechnungen_sperren: Optional[bool] = None
+    gutschriften_sperren: Optional[bool] = None
+    wareneingang_sperren: Optional[bool] = None
+    warenausgang_sperren: Optional[bool] = None
+    wird_nicht_gemahnt: Optional[bool] = None
+    ausweis_nummer: Optional[str] = Field(None, max_length=30)
+    ausweis_ablauf: Optional[str] = Field(None, max_length=10)
+    geburtsdatum: Optional[str] = Field(None, max_length=10)
     bemerkungen: Optional[str] = Field(None, max_length=700)
+    bemerkung_fahrplan: Optional[str] = Field(None, max_length=300)
+    lieferinfo_tpa: Optional[str] = Field(None, max_length=300)
 
 # Artikel
 class ArtikelCreate(BaseModel):
