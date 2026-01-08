@@ -264,7 +264,7 @@ export function AdressenPage() {
     },
   ], []);
 
-  const adressen = adressenData?.data?.data || [];
+  const adressen = adressenData?.data?.data || adressenData?.data || [];
 
   // ========================== RENDER ==========================
   return (
