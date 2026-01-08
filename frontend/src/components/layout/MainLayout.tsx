@@ -288,7 +288,7 @@ export function MainLayout() {
       {!isMobile && (
         <div className="px-3 pb-2">
           <button
-            onClick={() => setSidebarCollapsed(!collapsed)}
+            onClick={toggleSidebar}
             className={cn(
               "w-full flex items-center justify-center p-2 rounded-lg transition-colors",
               "text-gray-400 hover:bg-white/10 hover:text-white",
