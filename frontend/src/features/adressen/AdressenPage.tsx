@@ -10,7 +10,8 @@ import {
   Plus, MoreHorizontal, Pencil, Trash2, Eye, Building2, User, MapPin, 
   Save, Phone, Mail, Globe, CreditCard, FileText, Users, X, Upload,
   Banknote, Shield, Clock, MessageSquare, AlertTriangle, UserCircle,
-  Image as ImageIcon, Camera, Scan, Loader2, EyeOff
+  Image as ImageIcon, Camera, Scan, Loader2, EyeOff, CheckCircle, XCircle,
+  History, Search, RefreshCw
 } from 'lucide-react';
 import { adressenApi, api } from '@/services/api/client';
 import { Button } from '@/components/ui/button';
@@ -23,6 +24,9 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
+import { Badge } from '@/components/ui/badge';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 // ========================== SCHEMA ==========================
 const adresseSchema = z.object({
