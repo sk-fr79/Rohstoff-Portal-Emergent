@@ -127,10 +127,6 @@ export function MainLayout() {
               <span className="font-bold text-lg text-white whitespace-nowrap">Rohstoff Portal</span>
             </>
           )}
-          />
-          {!collapsed && (
-            <span className="font-bold text-lg text-white whitespace-nowrap">Rohstoff Portal</span>
-          )}
         </div>
         {isMobile && (
           <Button
