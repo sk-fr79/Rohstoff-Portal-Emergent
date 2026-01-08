@@ -273,6 +273,48 @@ export function AdressenPage() {
 
       {/* Tab 2: Finanz/Handel */}
       <TabsContent value="finanz" className="space-y-4">
+        {/* Einstufung & Sonderschalter (Geschäftslogik aus Java) */}
+        <div className="grid grid-cols-2 gap-4 p-3 border-2 border-amber-500/30 rounded-lg bg-amber-500/5">
+          <div className="col-span-2">
+            <h4 className="font-medium text-sm mb-2 text-amber-600">Steuerliche Einstufung (Geschäftslogik)</h4>
+            <p className="text-xs text-muted-foreground mb-3">Diese Schalter steuern die Steuerberechnung nach deutschem Recht.</p>
+          </div>
+          <div className="space-y-3">
+            <div className="flex items-center space-x-2">
+              <Switch checked={watchFields[5]} onCheckedChange={(c) => setValue('ist_firma', c)} disabled={readOnly} />
+              <Label className="text-sm font-medium">{watchFields[5] ? 'FIRMA' : 'PRIVAT'}</Label>
+            </div>
+            <p className="text-xs text-muted-foreground pl-10">
+              {watchFields[5] 
+                ? 'Gewerblicher Geschäftspartner' 
+                : 'Privatperson'}
+            </p>
+          </div>
+          <div className="space-y-3 border-l pl-4">
+            <p className="text-xs font-medium text-amber-600 mb-2">Sonderschalter (nur für {watchFields[14] === 'Deutschland' ? 'Inland' : 'Ausland'})</p>
+            <div className="flex items-center space-x-2">
+              <Switch 
+                checked={watchFields[12]} 
+                onCheckedChange={(c) => setValue('firma_ohne_ustid', c)} 
+                disabled={readOnly || !watchFields[5] || watchFields[14] !== 'Deutschland'} 
+              />
+              <Label className={`text-sm ${(!watchFields[5] || watchFields[14] !== 'Deutschland') ? 'text-muted-foreground' : ''}`}>
+                Firma ohne UST-ID
+              </Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Switch 
+                checked={watchFields[13]} 
+                onCheckedChange={(c) => setValue('privat_mit_ustid', c)} 
+                disabled={readOnly || watchFields[5] || watchFields[14] !== 'Deutschland'} 
+              />
+              <Label className={`text-sm ${(watchFields[5] || watchFields[14] !== 'Deutschland') ? 'text-muted-foreground' : ''}`}>
+                Privat mit UST-ID
+              </Label>
+            </div>
+          </div>
+        </div>
+
         {/* Nummern/Codes */}
         <div className="grid grid-cols-3 gap-4 p-3 border rounded-lg">
           <div className="col-span-3"><h4 className="font-medium text-sm mb-2">Nummern/Codes</h4></div>
