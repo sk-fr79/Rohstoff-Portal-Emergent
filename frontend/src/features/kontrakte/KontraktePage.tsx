@@ -57,6 +57,8 @@ export function KontraktePage() {
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [adresseOpen, setAdresseOpen] = useState(false);
   const [selectedAdresse, setSelectedAdresse] = useState<Adresse | null>(null);
+  const [selectedKontrakt, setSelectedKontrakt] = useState<Kontrakt | null>(null);
+  const [isEditMode, setIsEditMode] = useState(false);
   const queryClient = useQueryClient();
 
   const { data, isLoading } = useQuery({
