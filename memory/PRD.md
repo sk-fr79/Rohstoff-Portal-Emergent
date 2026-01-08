@@ -15,7 +15,25 @@ Die gesamte Geschäftslogik der bestehenden Anwendung soll 1:1 übernommen werde
 
 ## Implementiert (Stand: 08.01.2026)
 
-### ✅ Artikelstamm - Vollständige Feldstruktur aus Java-System
+### ✅ Adressen-Stammdaten - Vollständige Feldstruktur aus Java-System
+- **Tab 1 - Adresse:**
+  - Status: Aktiv, Wareneingang, Warenausgang, Firma, Barkunde, Scheckdruck
+  - Anrede, Vorname, Name 1-3, Rechtsform
+  - Straße, Hausnr., Land, PLZ, Ort, Ortzusatz, Sprache
+  - Betreuer 1+2, Postfach aktiv
+  - Geolocation: Breitengrad, Längengrad, Wartezeit
+- **Tab 2 - Finanz/Handel:**
+  - Nummern: Kreditor-Nr, Debitor-Nr, BetriebsNr. SAA, Alt. Lief.-Nr, Alt. Abn.-Nr, Sondernummer
+  - Währung, Handelsregister, Lieferbedingungen EK/VK (Incoterms® 2020)
+  - Zahlungsbedingungen EK/VK
+  - UST-IDs: Basis + AT, NL, CH
+  - Sperren: Rechnungen, Gutschriften, Wareneingang, Warenausgang, wird nicht gemahnt
+- **Tab 3 - Kontakt:**
+  - Telefon, Telefax, E-Mail, Webseite
+  - Postfach: PLZ Postfach, Postfach
+  - Ausweis Privatkunden: Ausweisnummer, Ablaufdatum, Geburtsdatum
+- **Tab 4 - Sonstiges:**
+  - Adresstyp, Bemerkungen, Bemerkung Fahrplan, Lieferinfo TPA
 - **Tab 1 - Artikel-Angaben:**
   - Status-Flags: Aktiv, Gefahrgut, Leergut, Elektro/Elektronik, Produkt, Dienstleistung, End of Waste, EoW (Lager)
   - Artikelgruppe, Artikelgruppe (FiBu)
