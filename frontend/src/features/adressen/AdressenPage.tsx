@@ -61,6 +61,7 @@ export function AdressenPage() {
   const [limit, setLimit] = useState(20);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [selectedAdresse, setSelectedAdresse] = useState<Adresse | null>(null);
+  const [isEditMode, setIsEditMode] = useState(false);
   const queryClient = useQueryClient();
 
   const { data, isLoading } = useQuery({
