@@ -107,6 +107,16 @@ export function KontraktePage() {
 
   const formatDate = (d?: string) => d ? new Date(d).toLocaleDateString('de-DE') : '-';
 
+  const handleRowDoubleClick = (kontrakt: Kontrakt) => {
+    setSelectedKontrakt(kontrakt);
+    setIsEditMode(false);
+  };
+
+  const handleCloseDetail = () => {
+    setSelectedKontrakt(null);
+    setIsEditMode(false);
+  };
+
   const columns: ColumnDef<Kontrakt>[] = useMemo(() => [
     { accessorKey: 'buchungsnummer', header: 'Buchungsnummer', cell: ({ row }) => (
       <div className="flex items-center gap-2">
@@ -133,7 +143,8 @@ export function KontraktePage() {
       <DropdownMenu>
         <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          <DropdownMenuItem><Eye className="h-4 w-4 mr-2" />Details</DropdownMenuItem>
+          <DropdownMenuItem onClick={() => handleRowDoubleClick(row.original)}><Eye className="h-4 w-4 mr-2" />Details</DropdownMenuItem>
+          <DropdownMenuItem onClick={() => { setSelectedKontrakt(row.original); setIsEditMode(true); }}><Pencil className="h-4 w-4 mr-2" />Bearbeiten</DropdownMenuItem>
           <DropdownMenuItem>Position hinzufügen</DropdownMenuItem>
           {!row.original.abgeschlossen && <><DropdownMenuSeparator /><DropdownMenuItem onClick={() => abschliessenMutation.mutate(row.original.id)}><CheckCircle className="h-4 w-4 mr-2" />Abschließen</DropdownMenuItem></>}
         </DropdownMenuContent>
