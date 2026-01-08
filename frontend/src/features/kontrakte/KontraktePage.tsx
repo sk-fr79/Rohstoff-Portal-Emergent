@@ -6,7 +6,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from 'sonner';
-import { Plus, MoreHorizontal, Eye, ArrowDownCircle, ArrowUpCircle, CheckCircle, Clock, ChevronDown, Loader2, Building2 } from 'lucide-react';
+import { Plus, MoreHorizontal, Eye, ArrowDownCircle, ArrowUpCircle, CheckCircle, Clock, ChevronDown, Loader2, Building2, Pencil } from 'lucide-react';
 import { kontrakteApi, adressenApi } from '@/services/api/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
