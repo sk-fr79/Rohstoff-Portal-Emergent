@@ -1840,6 +1840,654 @@ async def delete_ustid_protokoll(
     return {"success": True, "message": "Protokolleintrag gelöscht"}
 
 
+# ============================================================
+# WIEGEKARTEN (Weighing Cards) - Fahrzeugwaage / Systec IT 4000
+# ============================================================
+
+class WiegekartenTyp(str):
+    """Typ der Wiegekarte"""
+    WIEGESCHEIN = "W"       # Standard Wiegeschein
+    EINGANGSSCHEIN = "E"    # Eingangsschein
+    HOFSCHEIN = "H"         # Hofschein
+    FREMDVERWIEGUNG = "F"   # Fremdverwiegung
+
+class Gueterkategorie(str):
+    """Güterkategorie für Lagerplatz"""
+    SCHUETTGUT = "S"        # Schüttgut
+    STUECKGUT = "P"         # Stückgut (Paletten, Container)
+
+class ZustandWiegekarte(str):
+    """Zustand/Status der Wiegekarte"""
+    NEU = "NEU"
+    STAMMDATEN = "STAMMDATEN"
+    WAEGUNG1 = "WAEGUNG1"
+    WAEGUNG2 = "WAEGUNG2"
+    GEDRUCKT = "GEDRUCKT"
+    STORNO = "STORNO"
+
+class WaegungBase(BaseModel):
+    """Basismodell für eine Wägung"""
+    gewicht: Optional[int] = Field(None, description="Gewicht in kg")
+    datum: Optional[datetime] = None
+    zeit: Optional[str] = None
+    waage_nr: Optional[str] = None
+    ident_nr: Optional[str] = None
+    terminal_nr: Optional[str] = None
+    waage_status: Optional[str] = None
+    fehlercode: Optional[str] = None
+    einheit: str = "kg"
+    tara_code: Optional[str] = None
+    waegebereich: Optional[str] = None
+    manuell: bool = False
+    benutzer: Optional[str] = None
+
+class WiegekarteCreate(BaseModel):
+    """Model für das Erstellen einer Wiegekarte"""
+    typ_wiegekarte: str = Field("W", description="Typ: W=Wiegeschein, E=Eingangsschein, H=Hofschein, F=Fremdverwiegung")
+    ist_lieferant: bool = Field(True, description="True=Wareneingang (Lieferant), False=Warenausgang (Abnehmer)")
+    
+    # Fahrzeug
+    kennzeichen: str = Field(..., min_length=1, max_length=20, description="LKW-Kennzeichen")
+    trailer: Optional[str] = Field(None, max_length=20, description="Anhänger-Kennzeichen")
+    
+    # Adressen
+    id_adresse_lieferant: Optional[str] = None
+    adresse_lieferant: Optional[str] = None
+    id_adresse_spedition: Optional[str] = None
+    adresse_spedition: Optional[str] = None
+    id_adresse_abn_strecke: Optional[str] = None
+    
+    # Artikel/Sorte
+    id_artikel_sorte: Optional[str] = None
+    artikel_bezeichnung: Optional[str] = None
+    sorte_hand: bool = False
+    
+    # Container
+    id_container_eigen: Optional[str] = None
+    container_nr: Optional[str] = None
+    container_tara: Optional[int] = None
+    fremdcontainer: bool = False
+    container_absetz_grund: Optional[str] = None
+    
+    # Lagerplatz
+    id_lagerplatz_schuett: Optional[str] = None
+    id_lagerplatz_absetz: Optional[str] = None
+    gueterkategorie: Optional[str] = Field(None, description="S=Schüttgut, P=Stückgut")
+    
+    # Fuhre-Referenz
+    id_vpos_tpa_fuhre: Optional[str] = None
+    id_vpos_tpa_fuhre_ort: Optional[str] = None
+    
+    # Mengen/Stückzahlen
+    anz_paletten: Optional[int] = None
+    anz_bigbags: Optional[int] = None
+    anz_gitterboxen: Optional[int] = None
+    anz_behaelter: Optional[int] = None
+    anz_allg: Optional[int] = None
+    bez_allg: Optional[str] = None
+    
+    # Bemerkungen
+    bemerkung1: Optional[str] = None
+    bemerkung2: Optional[str] = None
+    bemerkung_intern: Optional[str] = None
+    siegel_nr: Optional[str] = None
+    befund: Optional[str] = None
+    
+    # Spezielle Flags
+    strahlung_geprueft: bool = False
+    ist_gesamtverwiegung: bool = False
+    mehrfachverwiegung: bool = False
+
+class WiegekarteUpdate(BaseModel):
+    """Model für das Aktualisieren einer Wiegekarte"""
+    typ_wiegekarte: Optional[str] = None
+    ist_lieferant: Optional[bool] = None
+    kennzeichen: Optional[str] = None
+    trailer: Optional[str] = None
+    id_adresse_lieferant: Optional[str] = None
+    adresse_lieferant: Optional[str] = None
+    id_adresse_spedition: Optional[str] = None
+    adresse_spedition: Optional[str] = None
+    id_adresse_abn_strecke: Optional[str] = None
+    id_artikel_sorte: Optional[str] = None
+    artikel_bezeichnung: Optional[str] = None
+    sorte_hand: Optional[bool] = None
+    id_container_eigen: Optional[str] = None
+    container_nr: Optional[str] = None
+    container_tara: Optional[int] = None
+    fremdcontainer: Optional[bool] = None
+    container_absetz_grund: Optional[str] = None
+    id_lagerplatz_schuett: Optional[str] = None
+    id_lagerplatz_absetz: Optional[str] = None
+    gueterkategorie: Optional[str] = None
+    id_vpos_tpa_fuhre: Optional[str] = None
+    id_vpos_tpa_fuhre_ort: Optional[str] = None
+    anz_paletten: Optional[int] = None
+    anz_bigbags: Optional[int] = None
+    anz_gitterboxen: Optional[int] = None
+    anz_behaelter: Optional[int] = None
+    anz_allg: Optional[int] = None
+    bez_allg: Optional[str] = None
+    bemerkung1: Optional[str] = None
+    bemerkung2: Optional[str] = None
+    bemerkung_intern: Optional[str] = None
+    siegel_nr: Optional[str] = None
+    befund: Optional[str] = None
+    strahlung_geprueft: Optional[bool] = None
+    ist_gesamtverwiegung: Optional[bool] = None
+    mehrfachverwiegung: Optional[bool] = None
+    # Gewichte (nur bei manueller Eingabe)
+    gewicht_abzug: Optional[int] = None
+    gewicht_abzug_fuhre: Optional[int] = None
+    grund_abzug: Optional[str] = None
+
+class WaegungInput(BaseModel):
+    """Eingabe für eine Wägung (manuell oder von Waage)"""
+    gewicht: int = Field(..., description="Gewicht in kg")
+    manuell: bool = Field(False, description="Manuelle Eingabe statt Waage")
+    waage_daten: Optional[str] = Field(None, description="Rohdaten von der Waage (Systec IT 4000)")
+
+
+@app.get("/api/wiegekarten")
+async def get_wiegekarten(
+    skip: int = 0,
+    limit: int = 100,
+    nur_offene: bool = False,
+    datum_von: Optional[str] = None,
+    datum_bis: Optional[str] = None,
+    kennzeichen: Optional[str] = None,
+    user = Depends(get_current_user)
+):
+    """Liste aller Wiegekarten mit Filteroptionen"""
+    query = {"mandant_id": user["mandant_id"]}
+    
+    if nur_offene:
+        query["zustand"] = {"$nin": [ZustandWiegekarte.GEDRUCKT, ZustandWiegekarte.STORNO]}
+    
+    if datum_von:
+        query["erstellt_am"] = {"$gte": datetime.fromisoformat(datum_von)}
+    if datum_bis:
+        if "erstellt_am" not in query:
+            query["erstellt_am"] = {}
+        query["erstellt_am"]["$lte"] = datetime.fromisoformat(datum_bis)
+    
+    if kennzeichen:
+        query["kennzeichen"] = {"$regex": kennzeichen, "$options": "i"}
+    
+    cursor = db.wiegekarten.find(query, {"_id": 0}).sort("erstellt_am", -1).skip(skip).limit(limit)
+    wiegekarten = await cursor.to_list(limit)
+    
+    total = await db.wiegekarten.count_documents(query)
+    
+    return {
+        "success": True,
+        "data": wiegekarten,
+        "total": total,
+        "skip": skip,
+        "limit": limit
+    }
+
+
+@app.get("/api/wiegekarten/{wiegekarte_id}")
+async def get_wiegekarte(wiegekarte_id: str, user = Depends(get_current_user)):
+    """Einzelne Wiegekarte abrufen"""
+    wiegekarte = await db.wiegekarten.find_one(
+        {"id": wiegekarte_id, "mandant_id": user["mandant_id"]},
+        {"_id": 0}
+    )
+    
+    if not wiegekarte:
+        raise HTTPException(status_code=404, detail="Wiegekarte nicht gefunden")
+    
+    return {"success": True, "data": wiegekarte}
+
+
+@app.post("/api/wiegekarten")
+async def create_wiegekarte(data: WiegekarteCreate, user = Depends(get_current_user)):
+    """Neue Wiegekarte anlegen"""
+    
+    # Laufende Nummer ermitteln
+    year = datetime.utcnow().year
+    count = await db.wiegekarten.count_documents({
+        "mandant_id": user["mandant_id"],
+        "jahr": year
+    })
+    lfd_nr = count + 1
+    
+    wiegekarte = {
+        "id": str(uuid.uuid4()),
+        "mandant_id": user["mandant_id"],
+        "lfd_nr": lfd_nr,
+        "jahr": year,
+        "wiegekarten_nr": f"WK-{year}-{lfd_nr:05d}",
+        "zustand": ZustandWiegekarte.NEU,
+        
+        # Kopfdaten
+        "typ_wiegekarte": data.typ_wiegekarte,
+        "ist_lieferant": data.ist_lieferant,
+        
+        # Fahrzeug
+        "kennzeichen": data.kennzeichen.upper(),
+        "trailer": data.trailer.upper() if data.trailer else None,
+        
+        # Adressen
+        "id_adresse_lieferant": data.id_adresse_lieferant,
+        "adresse_lieferant": data.adresse_lieferant,
+        "id_adresse_spedition": data.id_adresse_spedition,
+        "adresse_spedition": data.adresse_spedition,
+        "id_adresse_abn_strecke": data.id_adresse_abn_strecke,
+        
+        # Artikel
+        "id_artikel_sorte": data.id_artikel_sorte,
+        "artikel_bezeichnung": data.artikel_bezeichnung,
+        "sorte_hand": data.sorte_hand,
+        
+        # Container
+        "id_container_eigen": data.id_container_eigen,
+        "container_nr": data.container_nr,
+        "container_tara": data.container_tara,
+        "fremdcontainer": data.fremdcontainer,
+        "container_absetz_grund": data.container_absetz_grund,
+        
+        # Lagerplatz
+        "id_lagerplatz_schuett": data.id_lagerplatz_schuett,
+        "id_lagerplatz_absetz": data.id_lagerplatz_absetz,
+        "gueterkategorie": data.gueterkategorie,
+        
+        # Fuhre
+        "id_vpos_tpa_fuhre": data.id_vpos_tpa_fuhre,
+        "id_vpos_tpa_fuhre_ort": data.id_vpos_tpa_fuhre_ort,
+        
+        # Mengen
+        "anz_paletten": data.anz_paletten,
+        "anz_bigbags": data.anz_bigbags,
+        "anz_gitterboxen": data.anz_gitterboxen,
+        "anz_behaelter": data.anz_behaelter,
+        "anz_allg": data.anz_allg,
+        "bez_allg": data.bez_allg,
+        
+        # Bemerkungen
+        "bemerkung1": data.bemerkung1,
+        "bemerkung2": data.bemerkung2,
+        "bemerkung_intern": data.bemerkung_intern,
+        "siegel_nr": data.siegel_nr,
+        "befund": data.befund,
+        
+        # Flags
+        "strahlung_geprueft": data.strahlung_geprueft,
+        "ist_gesamtverwiegung": data.ist_gesamtverwiegung,
+        "mehrfachverwiegung": data.mehrfachverwiegung,
+        "storno": False,
+        
+        # Wägungen (initial leer)
+        "waegung1": None,
+        "waegung2": None,
+        
+        # Gewichte
+        "bruttogewicht": None,
+        "taragewicht": None,
+        "nettogewicht": None,
+        "gewicht_abzug": None,
+        "gewicht_abzug_fuhre": None,
+        "gewicht_nach_abzug": None,
+        "gewicht_nach_abzug_fuhre": None,
+        "grund_abzug": None,
+        
+        # Druck
+        "gedruckt_am": None,
+        "druckzaehler": 0,
+        "druckzaehler_eingangsschein": 0,
+        
+        # Meta
+        "erstellt_am": datetime.utcnow(),
+        "erstellt_von": user.get("kuerzel"),
+        "geaendert_am": None,
+        "geaendert_von": None
+    }
+    
+    await db.wiegekarten.insert_one(wiegekarte)
+    del wiegekarte["_id"]
+    
+    return {"success": True, "data": wiegekarte, "message": f"Wiegekarte {wiegekarte['wiegekarten_nr']} erstellt"}
+
+
+@app.put("/api/wiegekarten/{wiegekarte_id}")
+async def update_wiegekarte(
+    wiegekarte_id: str, 
+    data: WiegekarteUpdate, 
+    user = Depends(get_current_user)
+):
+    """Wiegekarte aktualisieren"""
+    
+    existing = await db.wiegekarten.find_one({
+        "id": wiegekarte_id,
+        "mandant_id": user["mandant_id"]
+    })
+    
+    if not existing:
+        raise HTTPException(status_code=404, detail="Wiegekarte nicht gefunden")
+    
+    if existing.get("storno"):
+        raise HTTPException(status_code=400, detail="Stornierte Wiegekarten können nicht bearbeitet werden")
+    
+    update_data = data.dict(exclude_unset=True)
+    update_data["geaendert_am"] = datetime.utcnow()
+    update_data["geaendert_von"] = user.get("kuerzel")
+    
+    # Kennzeichen in Großbuchstaben
+    if "kennzeichen" in update_data and update_data["kennzeichen"]:
+        update_data["kennzeichen"] = update_data["kennzeichen"].upper()
+    if "trailer" in update_data and update_data["trailer"]:
+        update_data["trailer"] = update_data["trailer"].upper()
+    
+    await db.wiegekarten.update_one(
+        {"id": wiegekarte_id},
+        {"$set": update_data}
+    )
+    
+    updated = await db.wiegekarten.find_one({"id": wiegekarte_id}, {"_id": 0})
+    
+    return {"success": True, "data": updated}
+
+
+@app.post("/api/wiegekarten/{wiegekarte_id}/waegung/{waegung_nr}")
+async def speichere_waegung(
+    wiegekarte_id: str,
+    waegung_nr: int,
+    data: WaegungInput,
+    user = Depends(get_current_user)
+):
+    """
+    Wägung speichern (1 oder 2).
+    Bei Wareneingang: Wägung 1 = Brutto (voll), Wägung 2 = Tara (leer)
+    Bei Warenausgang: Wägung 1 = Tara (leer), Wägung 2 = Brutto (voll)
+    """
+    if waegung_nr not in [1, 2]:
+        raise HTTPException(status_code=400, detail="Wägungsnummer muss 1 oder 2 sein")
+    
+    wiegekarte = await db.wiegekarten.find_one({
+        "id": wiegekarte_id,
+        "mandant_id": user["mandant_id"]
+    })
+    
+    if not wiegekarte:
+        raise HTTPException(status_code=404, detail="Wiegekarte nicht gefunden")
+    
+    if wiegekarte.get("storno"):
+        raise HTTPException(status_code=400, detail="Stornierte Wiegekarten können nicht gewogen werden")
+    
+    # Wägungsdaten erstellen
+    waegung = {
+        "gewicht": data.gewicht,
+        "datum": datetime.utcnow(),
+        "zeit": datetime.utcnow().strftime("%H:%M"),
+        "manuell": data.manuell,
+        "benutzer": user.get("kuerzel"),
+        "einheit": "kg"
+    }
+    
+    # Wenn Waage-Rohdaten vorhanden (Systec IT 4000)
+    if data.waage_daten:
+        waegung["rohdaten"] = data.waage_daten
+        # Parse Systec Daten
+        if len(data.waage_daten) >= 50:
+            waegung["fehlercode"] = data.waage_daten[0:2]
+            waegung["waage_status"] = data.waage_daten[2:4]
+            waegung["waage_datum"] = data.waage_daten[4:12]
+            waegung["waage_zeit"] = data.waage_daten[12:17]
+            waegung["ident_nr"] = data.waage_daten[17:21]
+            waegung["waage_nr"] = data.waage_daten[21:22]
+            waegung["terminal_nr"] = data.waage_daten[46:49]
+    
+    # Update Dokument
+    update_data = {
+        f"waegung{waegung_nr}": waegung,
+        "geaendert_am": datetime.utcnow(),
+        "geaendert_von": user.get("kuerzel")
+    }
+    
+    # Gewichte berechnen basierend auf beiden Wägungen
+    waegung1 = waegung if waegung_nr == 1 else wiegekarte.get("waegung1")
+    waegung2 = waegung if waegung_nr == 2 else wiegekarte.get("waegung2")
+    
+    ist_lieferant = wiegekarte.get("ist_lieferant", True)
+    
+    if waegung1 and waegung2:
+        gew1 = waegung1.get("gewicht", 0) or 0
+        gew2 = waegung2.get("gewicht", 0) or 0
+        
+        if ist_lieferant:
+            # Wareneingang: Wägung1 = Brutto, Wägung2 = Tara
+            update_data["bruttogewicht"] = gew1
+            update_data["taragewicht"] = gew2
+        else:
+            # Warenausgang: Wägung1 = Tara, Wägung2 = Brutto
+            update_data["taragewicht"] = gew1
+            update_data["bruttogewicht"] = gew2
+        
+        update_data["nettogewicht"] = abs(update_data["bruttogewicht"] - update_data["taragewicht"])
+        
+        # Abzüge berücksichtigen
+        abzug = (wiegekarte.get("gewicht_abzug") or 0) + (wiegekarte.get("gewicht_abzug_fuhre") or 0)
+        update_data["gewicht_nach_abzug"] = update_data["nettogewicht"] - abzug
+        
+        update_data["zustand"] = ZustandWiegekarte.WAEGUNG2
+    elif waegung1:
+        if ist_lieferant:
+            update_data["bruttogewicht"] = waegung1.get("gewicht")
+        else:
+            update_data["taragewicht"] = waegung1.get("gewicht")
+        update_data["zustand"] = ZustandWiegekarte.WAEGUNG1
+    
+    await db.wiegekarten.update_one({"id": wiegekarte_id}, {"$set": update_data})
+    
+    updated = await db.wiegekarten.find_one({"id": wiegekarte_id}, {"_id": 0})
+    
+    return {
+        "success": True, 
+        "data": updated,
+        "message": f"Wägung {waegung_nr} gespeichert: {data.gewicht} kg"
+    }
+
+
+@app.post("/api/wiegekarten/{wiegekarte_id}/storno")
+async def storniere_wiegekarte(wiegekarte_id: str, user = Depends(get_current_user)):
+    """Wiegekarte stornieren"""
+    
+    result = await db.wiegekarten.update_one(
+        {
+            "id": wiegekarte_id,
+            "mandant_id": user["mandant_id"],
+            "storno": False
+        },
+        {
+            "$set": {
+                "storno": True,
+                "zustand": ZustandWiegekarte.STORNO,
+                "storniert_am": datetime.utcnow(),
+                "storniert_von": user.get("kuerzel")
+            }
+        }
+    )
+    
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="Wiegekarte nicht gefunden oder bereits storniert")
+    
+    return {"success": True, "message": "Wiegekarte storniert"}
+
+
+@app.delete("/api/wiegekarten/{wiegekarte_id}")
+async def delete_wiegekarte(wiegekarte_id: str, user = Depends(get_current_user)):
+    """Wiegekarte löschen (nur wenn noch keine Wägung erfolgt)"""
+    
+    wiegekarte = await db.wiegekarten.find_one({
+        "id": wiegekarte_id,
+        "mandant_id": user["mandant_id"]
+    })
+    
+    if not wiegekarte:
+        raise HTTPException(status_code=404, detail="Wiegekarte nicht gefunden")
+    
+    if wiegekarte.get("waegung1") or wiegekarte.get("waegung2"):
+        raise HTTPException(status_code=400, detail="Wiegekarten mit Wägungen können nicht gelöscht werden. Bitte stornieren.")
+    
+    await db.wiegekarten.delete_one({"id": wiegekarte_id})
+    
+    return {"success": True, "message": "Wiegekarte gelöscht"}
+
+
+# ============================================================
+# WAAGE - Systec IT 4000 IP Terminal
+# ============================================================
+
+class WaageConfig(BaseModel):
+    """Konfiguration für ein Wiegeterminal"""
+    id: Optional[str] = None
+    name: str
+    typ: str = "SYSTEC_IP"  # SYSTEC_IP, SYSTEC_USB, BUL_MINIPOND
+    ip_adresse: Optional[str] = None
+    port: int = 8000
+    waage_nr: str = "1"
+    aktiv: bool = True
+    standort: Optional[str] = None
+
+@app.get("/api/waage/config")
+async def get_waage_config(user = Depends(get_current_user)):
+    """Waage-Konfiguration abrufen"""
+    config = await db.waage_config.find_one(
+        {"mandant_id": user["mandant_id"]},
+        {"_id": 0}
+    )
+    
+    if not config:
+        # Standard-Konfiguration
+        config = {
+            "id": str(uuid.uuid4()),
+            "mandant_id": user["mandant_id"],
+            "waagen": [{
+                "id": str(uuid.uuid4()),
+                "name": "Fahrzeugwaage 1",
+                "typ": "SYSTEC_IP",
+                "ip_adresse": "192.168.1.100",
+                "port": 8000,
+                "waage_nr": "1",
+                "aktiv": True,
+                "standort": "Einfahrt"
+            }]
+        }
+        await db.waage_config.insert_one(config)
+        del config["_id"]
+    
+    return {"success": True, "data": config}
+
+
+@app.get("/api/waage/status")
+async def get_waage_status(user = Depends(get_current_user)):
+    """
+    Waage-Status abfragen.
+    In einer echten Implementierung würde hier eine Socket-Verbindung
+    zum Systec IT 4000 Terminal hergestellt.
+    """
+    # Demo-Status (in Produktion: echte Waage-Kommunikation)
+    return {
+        "success": True,
+        "data": {
+            "verbunden": True,
+            "waage_nr": "1",
+            "status": "bereit",
+            "letztes_gewicht": None,
+            "fehler": None,
+            "demo_modus": True
+        }
+    }
+
+
+@app.post("/api/waage/lesen")
+async def lese_waage(user = Depends(get_current_user)):
+    """
+    Aktuelles Gewicht von der Waage lesen.
+    Sendet <RN1> Kommando an Systec IT 4000.
+    """
+    import random
+    
+    # Demo-Daten (in Produktion: Socket-Kommunikation mit Waage)
+    demo_gewicht = random.randint(5000, 35000)
+    demo_datum = datetime.utcnow()
+    
+    # Simulierter Systec-Datensatz
+    waage_satz = {
+        "fehlercode": "00",
+        "waage_status": "01",  # 01 = Ruhe
+        "datum": demo_datum.strftime("%d.%m.%y"),
+        "zeit": demo_datum.strftime("%H:%M"),
+        "ident_nr": "0001",
+        "waage_nr": "1",
+        "brutto_gewicht": demo_gewicht,
+        "tara_gewicht": 0,
+        "netto_gewicht": demo_gewicht,
+        "einheit": "kg",
+        "tara_code": "PT",
+        "waegebereich": "2",
+        "terminal_nr": "001",
+        "rohdaten": f"0001{demo_datum.strftime('%d.%m.%y%H:%M')}   11{demo_gewicht:08d}00000000{demo_gewicht:08d}kgPT2001",
+        "demo_modus": True
+    }
+    
+    return {
+        "success": True,
+        "data": waage_satz,
+        "message": f"Gewicht gelesen: {demo_gewicht} kg"
+    }
+
+
+@app.get("/api/wiegekarten/statistik")
+async def get_wiegekarten_statistik(user = Depends(get_current_user)):
+    """Statistiken für das Dashboard"""
+    today = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
+    
+    # Heute
+    heute_count = await db.wiegekarten.count_documents({
+        "mandant_id": user["mandant_id"],
+        "erstellt_am": {"$gte": today}
+    })
+    
+    # Offene Wiegekarten
+    offene_count = await db.wiegekarten.count_documents({
+        "mandant_id": user["mandant_id"],
+        "zustand": {"$nin": [ZustandWiegekarte.GEDRUCKT, ZustandWiegekarte.STORNO]}
+    })
+    
+    # Gesamtgewicht heute
+    pipeline = [
+        {
+            "$match": {
+                "mandant_id": user["mandant_id"],
+                "erstellt_am": {"$gte": today},
+                "nettogewicht": {"$ne": None}
+            }
+        },
+        {
+            "$group": {
+                "_id": None,
+                "gesamt_netto": {"$sum": "$nettogewicht"}
+            }
+        }
+    ]
+    
+    result = await db.wiegekarten.aggregate(pipeline).to_list(1)
+    gesamt_netto_heute = result[0]["gesamt_netto"] if result else 0
+    
+    return {
+        "success": True,
+        "data": {
+            "heute": heute_count,
+            "offen": offene_count,
+            "gesamt_netto_heute_kg": gesamt_netto_heute,
+            "gesamt_netto_heute_t": round(gesamt_netto_heute / 1000, 2)
+        }
+    }
+
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8001)
