@@ -123,8 +123,8 @@ export function AdressenPage() {
       <DropdownMenu>
         <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          <DropdownMenuItem onClick={() => setSelectedAdresse(row.original)}><Eye className="h-4 w-4 mr-2" />Details</DropdownMenuItem>
-          <DropdownMenuItem><Pencil className="h-4 w-4 mr-2" />Bearbeiten</DropdownMenuItem>
+          <DropdownMenuItem onClick={() => handleRowDoubleClick(row.original)}><Eye className="h-4 w-4 mr-2" />Details</DropdownMenuItem>
+          <DropdownMenuItem onClick={() => { setSelectedAdresse(row.original); setIsEditMode(true); }}><Pencil className="h-4 w-4 mr-2" />Bearbeiten</DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem className="text-destructive" onClick={() => deleteMutation.mutate(row.original.id)}><Trash2 className="h-4 w-4 mr-2" />Deaktivieren</DropdownMenuItem>
         </DropdownMenuContent>
