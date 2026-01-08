@@ -15,7 +15,7 @@ Die gesamte Geschäftslogik der bestehenden Anwendung soll 1:1 übernommen werde
 
 ## Implementiert (Stand: 09.01.2026)
 
-### ✅ UI/UX Redesign - Enterprise Light Theme (NEU - 09.01.2026)
+### ✅ UI/UX Redesign - Enterprise Light Theme (09.01.2026)
 Komplette Umstellung auf ein helles, professionelles Enterprise-Design:
 - **Haupt-Sidebar:** Dunkle Navy-Farbe mit Emerald-Akzenten, aufklappbare Gruppen
 - **Dashboard:** Statistik-Karten, Umsatz-Chart, Schnellzugriff, Aktivitäten-Feed
@@ -24,6 +24,32 @@ Komplette Umstellung auf ein helles, professionelles Enterprise-Design:
   - Sektionen: Stammdaten, Kontakt, Finanzen, Steuer, Sperren, Bemerkungen
   - Übersichtliche Feldanordnung mit Gruppierung
   - Slide-In Panel von rechts
+
+### ✅ Ansprechpartner-Verwaltung (NEU - 09.01.2026)
+Unter Kontakt-Tab in Adress-Details:
+- **Ansprechpartner anlegen/bearbeiten/löschen**
+- Felder: Vorname, Nachname, Funktion, Sprache
+- Adresse: Straße, PLZ, Ort  
+- Kontaktdaten: Telefon, Mobil, E-Mail
+- **Profilbild-Upload** mit modernem UserCircle-Icon als Standard
+- **Visitenkarten-Upload mit Drag & Drop**
+- Backend-Endpunkte: POST/PUT/DELETE `/api/adressen/{id}/ansprechpartner`
+
+### ✅ Dynamische UST-IDs (NEU - 09.01.2026)
+Unter Steuer-Tab in Adress-Details:
+- Basis UST-ID (LKZ + Nummer)
+- **"Weitere UST-IDs"** dynamisch hinzufügen via Plus-Button
+- Jede Zeile: Land-Dropdown (16 EU-Länder), LKZ-Feld, UST-ID Nummer
+- Löschen-Button (Papierkorb) pro Zeile
+- Ersetzt statische ust_at, ust_nl, ust_ch Felder
+
+### ✅ Firmenlogo-Upload (NEU - 09.01.2026)
+In Stammdaten > Grundinformationen:
+- **Firmenlogo hochladen** (für Firmen-Adressen)
+- Modernes Building2-Icon als Standard-Platzhalter
+- Hover-Effekt mit Kamera-Icon zum Hochladen
+- Backend-Endpunkt: POST `/api/upload/logo/{adresse_id}`
+- Base64-Speicherung in MongoDB
 
 ### ✅ Geschäftslogik - Adress-Validierung (09.01.2026)
 Portiert aus Java-Code: `rohstoff.Echo2BusinessLogic.FIRMENSTAMM.__FS_Adress_Check`
