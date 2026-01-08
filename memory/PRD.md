@@ -15,6 +15,26 @@ Die gesamte Geschäftslogik der bestehenden Anwendung soll 1:1 übernommen werde
 
 ## Implementiert (Stand: 09.01.2026)
 
+### ✅ Wiegekarten-Modul (NEU - 09.01.2026)
+Komplettes Modul für Fahrzeugwaage mit Systec IT 4000 IP-Wiegeterminal:
+- **Tabellen-Ansicht:** Grid mit Doppelklick zur Detailansicht
+- **Spalten:** Nr., Status, Richtung, Kennzeichen, Adresse, Netto (kg), Datum
+- **Detailansicht:** Slide-In Panel mit Sidebar-Navigation (wie Adressen)
+  - Sektionen: Stammdaten, Fahrzeug, Artikel/Material, Wägung, Mengen/Stück, Bemerkungen
+- **Gewichte-Anzeige:** Brutto | Tara | Netto (große Zahlen oben)
+- **Status-System:** NEU → WAEGUNG1 → WAEGUNG2 → GEDRUCKT | STORNO
+- **Wägungen:** 
+  - Wareneingang: Wägung1=Brutto (voll), Wägung2=Tara (leer)
+  - Warenausgang: Wägung1=Tara (leer), Wägung2=Brutto (voll)
+- **Waage-Demo-Modus:** POST /api/waage/lesen (zufällige Gewichte 5000-35000 kg)
+- **Backend-Endpunkte:**
+  - GET/POST /api/wiegekarten
+  - GET/PUT/DELETE /api/wiegekarten/{id}
+  - POST /api/wiegekarten/{id}/waegung/{nr}
+  - POST /api/wiegekarten/{id}/storno
+  - GET /api/waage/status, POST /api/waage/lesen
+- **19 Tests bestanden (100%)**
+
 ### ✅ UI/UX Redesign - Enterprise Light Theme (09.01.2026)
 Komplette Umstellung auf ein helles, professionelles Enterprise-Design:
 - **Haupt-Sidebar:** Dunkle Navy-Farbe mit Emerald-Akzenten, aufklappbare Gruppen
