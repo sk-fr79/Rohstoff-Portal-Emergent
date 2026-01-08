@@ -15,7 +15,17 @@ Die gesamte Geschäftslogik der bestehenden Anwendung soll 1:1 übernommen werde
 
 ## Implementiert (Stand: 09.01.2026)
 
-### ✅ Geschäftslogik - Adress-Validierung (NEU - 09.01.2026)
+### ✅ UI/UX Redesign - Enterprise Light Theme (NEU - 09.01.2026)
+Komplette Umstellung auf ein helles, professionelles Enterprise-Design:
+- **Haupt-Sidebar:** Dunkle Navy-Farbe mit Emerald-Akzenten, aufklappbare Gruppen
+- **Dashboard:** Statistik-Karten, Umsatz-Chart, Schnellzugriff, Aktivitäten-Feed
+- **Login-Seite:** Modernes Split-Layout mit Branding-Bereich
+- **Adressen-Detail:** Neue Sidebar-Navigation statt Top-Tabs
+  - Sektionen: Stammdaten, Kontakt, Finanzen, Steuer, Sperren, Bemerkungen
+  - Übersichtliche Feldanordnung mit Gruppierung
+  - Slide-In Panel von rechts
+
+### ✅ Geschäftslogik - Adress-Validierung (09.01.2026)
 Portiert aus Java-Code: `rohstoff.Echo2BusinessLogic.FIRMENSTAMM.__FS_Adress_Check`
 
 **Validierungsregeln:**
