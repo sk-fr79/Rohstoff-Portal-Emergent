@@ -1619,7 +1619,7 @@ Wenn ein Feld nicht auf der Visitenkarte zu finden ist, setze es auf null."""
         
         user_message = UserMessage(
             text="Analysiere diese Visitenkarte und extrahiere alle Kontaktdaten im JSON-Format.",
-            image_contents=[image_content]
+            file_contents=[image_content]
         )
         
         response = await chat.send_message(user_message)
