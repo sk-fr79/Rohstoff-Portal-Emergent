@@ -8,11 +8,35 @@ import {
   TrendingUp,
   TrendingDown,
   Euro,
-  Activity,
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuthStore } from '@/store/authStore';
 import { api } from '@/services/api/client';
+import {
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from 'recharts';
+
+// Umsatzdaten für das Chart
+const umsatzData = [
+  { monat: 'Jan', umsatz: 125000 },
+  { monat: 'Feb', umsatz: 148000 },
+  { monat: 'Mär', umsatz: 162000 },
+  { monat: 'Apr', umsatz: 185000 },
+  { monat: 'Mai', umsatz: 178000 },
+  { monat: 'Jun', umsatz: 195000 },
+  { monat: 'Jul', umsatz: 210000 },
+  { monat: 'Aug', umsatz: 198000 },
+  { monat: 'Sep', umsatz: 225000 },
+  { monat: 'Okt', umsatz: 242000 },
+  { monat: 'Nov', umsatz: 238000 },
+  { monat: 'Dez', umsatz: 265000 },
+];
 
 // Animation Variants
 const containerVariants = {
