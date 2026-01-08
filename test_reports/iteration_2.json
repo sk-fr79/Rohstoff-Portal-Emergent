@@ -1,0 +1,85 @@
+{
+  "summary": "Completed testing of Adress-Validierung business logic (ported from Java __FS_Adress_Check.java). All 17 backend validation tests passed (100%). Frontend UI shows correct implementation of Steuerliche Einstufung section with Sonderschalter.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/tests/test_adresse_validierung.py",
+    "/app/test_reports/pytest/pytest_validierung_results.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "Validation logic correctly implements all rules from Java __FS_Adress_Check.java",
+    "FIRMA im Inland ohne UST-ID requires Sonderschalter + Steuernummer - WORKING",
+    "FIRMA im EU-Ausland requires UST-ID - WORKING",
+    "PRIVAT im Ausland requires Ausweisnummer - WORKING",
+    "Sonderschalter correctly disabled based on FIRMA/PRIVAT and Land selection in frontend",
+    "GET /api/laender returns 30 countries with correct EU/homeland flags"
+  ],
+  "updated_files": [
+    "/app/tests/test_adresse_validierung.py"
+  ],
+  "success_rate": {
+    "backend": "100% (17/17 validation tests passed)",
+    "frontend": "100% (Steuerliche Einstufung section, Sonderschalter, FIRMA/PRIVAT toggle all working)"
+  },
+  "test_credentials": {
+    "username": "admin",
+    "password": "Admin123!"
+  },
+  "seed_data_creation": "Test addresses created with TEST_ prefix during validation testing",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "All validation logic from Java __FS_Adress_Check.java is correctly implemented. Key test scenarios: 1) FIRMA+Deutschland ohne UST-ID -> Error (needs firma_ohne_ustid + Steuernummer), 2) FIRMA+EU ohne UST-ID -> Error, 3) PRIVAT+Ausland ohne Ausweis -> Error, 4) Both Sonderschalter active -> Error. Frontend Sonderschalter are correctly enabled/disabled based on ist_firma and land values.",
+  "tested_features": {
+    "backend_validation_endpoint": {
+      "endpoint": "POST /api/adressen/validieren",
+      "tests_passed": 17,
+      "scenarios_tested": [
+        "FIRMA Inland ohne UST-ID -> Fehler",
+        "FIRMA Inland mit UST-ID -> OK",
+        "FIRMA Inland ohne UST-ID mit Sonderschalter + Steuernummer -> OK",
+        "FIRMA EU ohne UST-ID -> Fehler",
+        "FIRMA EU mit UST-ID -> OK",
+        "PRIVAT Ausland ohne Ausweis -> Fehler",
+        "PRIVAT Ausland mit Ausweis -> OK",
+        "PRIVAT Inland ohne Ausweis/Steuernummer -> Fehler",
+        "PRIVAT Inland mit Steuernummer -> OK",
+        "Beide Sonderschalter gleichzeitig -> Fehler",
+        "Sonderschalter im Ausland -> Warnung",
+        "UST-ID teilweise ausgefüllt -> Fehler",
+        "UST-LKZ stimmt nicht mit Land -> Fehler"
+      ]
+    },
+    "laender_endpoint": {
+      "endpoint": "GET /api/laender",
+      "countries_returned": 30,
+      "verified": "Deutschland ist_homeland=true, ist_eu=true, ust_praefix=DE"
+    },
+    "adresse_creation_with_validation": {
+      "endpoint": "POST /api/adressen",
+      "tests_passed": 3,
+      "scenarios_tested": [
+        "Invalid address rejected with 400",
+        "Valid address created successfully",
+        "skip_validation=true bypasses validation"
+      ]
+    },
+    "frontend_sonderschalter": {
+      "location": "Adressen Dialog -> Finanz/Handel Tab -> Steuerliche Einstufung",
+      "features_verified": [
+        "Steuerliche Einstufung (Geschäftslogik) section present",
+        "FIRMA/PRIVAT toggle works",
+        "Firma ohne UST-ID switch visible",
+        "Privat mit UST-ID switch visible",
+        "Switches correctly disabled based on ist_firma and land"
+      ]
+    }
+  }
+}
