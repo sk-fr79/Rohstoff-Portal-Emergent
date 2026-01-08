@@ -53,6 +53,7 @@ interface DataTableProps<TData, TValue> {
   onPageChange?: (page: number) => void
   onLimitChange?: (limit: number) => void
   onSearchChange?: (search: string) => void
+  onRowDoubleClick?: (row: TData) => void
   isLoading?: boolean
 }
 
