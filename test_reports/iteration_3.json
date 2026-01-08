@@ -1,0 +1,65 @@
+{
+  "summary": "UST-ID Validation feature testing completed successfully. All 16 backend API tests passed (100%). Frontend UI verified: Search button triggers EU VIES validation, History button opens Protokoll dialog showing validation history with date/time/result/user.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/tests/test_ustid_validation.py",
+    "/app/test_reports/pytest/pytest_ustid_results.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "UST-ID validation correctly integrates with EU VIES REST API (https://ec.europa.eu/taxation_customs/vies/rest-api/check-vat-number)",
+    "Protokoll entries are stored in MongoDB collection 'ustid_protokoll' with all required fields",
+    "Frontend correctly displays toast notifications for validation results",
+    "Protokoll dialog shows validation history sorted by date (newest first)",
+    "Error handling for VIES API errors (timeout, unavailable, invalid input) is implemented"
+  ],
+  "updated_files": [
+    "/app/tests/test_ustid_validation.py"
+  ],
+  "success_rate": {
+    "backend": "100%",
+    "frontend": "100%"
+  },
+  "test_credentials": {
+    "username": "admin",
+    "password": "Admin123!"
+  },
+  "seed_data_creation": "Test addresses created with TEST_ prefix for validation testing",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "UST-ID validation feature is fully functional. Backend endpoints: POST /api/ustid/validate (validates via EU VIES), GET /api/ustid/protokoll/{adresse_id} (retrieves history). Frontend: Steuer tab in address detail view has Search button (validates) and History button (shows protokoll). Test UST-IDs will return 'ungültig' (invalid) from EU VIES - this is expected behavior for test data.",
+  "features_tested": {
+    "backend_endpoints": {
+      "POST /api/ustid/validate": {
+        "status": "WORKING",
+        "tests_passed": 6,
+        "notes": "Validates UST-ID via EU VIES API, creates protokoll entry"
+      },
+      "GET /api/ustid/protokoll/{adresse_id}": {
+        "status": "WORKING",
+        "tests_passed": 6,
+        "notes": "Returns validation history sorted by date descending"
+      },
+      "Address CRUD with schema fix": {
+        "status": "WORKING",
+        "tests_passed": 4,
+        "notes": "Addresses can be created/updated with null/partial fields"
+      }
+    },
+    "frontend_ui": {
+      "steuer_tab": "WORKING - Shows UST-ID fields and Steuerliche Einstufung toggles",
+      "search_button": "WORKING - Triggers EU VIES validation, shows toast notification",
+      "history_button": "WORKING - Opens Protokoll dialog with validation history",
+      "protokoll_dialog": "WORKING - Shows all validations with date, time, result, user"
+    }
+  },
+  "eu_vies_api_notes": "The EU VIES API returns 'invalid' for test UST-IDs. To test with valid results, a real registered UST-ID would be needed. The protokollierung works regardless of validity."
+}
