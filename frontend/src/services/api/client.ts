@@ -74,6 +74,7 @@ export const authApi = {
 };
 
 export const adressenApi = {
+  getAll: (params?: Record<string, unknown>) => api.get('/adressen', { params }),
   search: (params?: Record<string, unknown>) => api.get('/adressen', { params }),
   getById: (id: string) => api.get(`/adressen/${id}`),
   create: (data: unknown) => api.post('/adressen', data),
