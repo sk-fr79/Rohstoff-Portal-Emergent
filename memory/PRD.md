@@ -15,6 +15,16 @@ Die gesamte Geschäftslogik der bestehenden Anwendung soll 1:1 übernommen werde
 
 ## Implementiert (Stand: 08.01.2026)
 
+### ✅ UI-Redesign: Enterprise Data Grid
+- **Tabellarische Ansicht** für alle Module (Adressen, Artikel, Kontrakte)
+- Sortierbare Spalten
+- Spalten ein-/ausblendbar
+- Suchfeld mit Clear-Button
+- Pagination mit 10/20/50/100 Zeilen pro Seite
+- Zebra-Striping + Hover-Effekte
+- Inline-Aktionen (Details, Bearbeiten, Löschen)
+- Status-Badges mit Farben
+
 ### ✅ Backend (FastAPI)
 - **Authentifizierung:** JWT-basierte Auth mit Login, Logout, /auth/me
 - **Benutzer-Management:** Admin-Benutzer automatisch erstellt
