@@ -60,6 +60,13 @@ const navGroups = [
     ]
   },
   {
+    label: 'Waage',
+    icon: Scale,
+    items: [
+      { path: '/wiegekarten', label: 'Wiegekarten', icon: Scale },
+    ]
+  },
+  {
     items: [
       { path: '/berichte', label: 'Berichte', icon: BarChart3 },
     ]
