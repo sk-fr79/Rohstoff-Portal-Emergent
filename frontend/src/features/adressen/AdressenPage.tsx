@@ -137,7 +137,7 @@ export function AdressenPage() {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Adressen</h1>
-          <p className="text-muted-foreground">{data?.pagination?.total || 0} Adressen verwalten</p>
+          <p className="text-muted-foreground">{data?.pagination?.total || 0} Adressen verwalten · Doppelklick für Details</p>
         </div>
         <Button onClick={() => setShowCreateDialog(true)} data-testid="create-address-btn"><Plus className="h-4 w-4 mr-2" />Neue Adresse</Button>
       </div>
