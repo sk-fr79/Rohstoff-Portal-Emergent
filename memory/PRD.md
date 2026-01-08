@@ -13,7 +13,7 @@ Die gesamte Geschäftslogik der bestehenden Anwendung soll 1:1 übernommen werde
 
 ---
 
-## Implementiert (Stand: 08.01.2026)
+## Implementiert (Stand: 09.01.2026)
 
 ### ✅ Adressen-Stammdaten - Vollständige Feldstruktur aus Java-System
 - **Tab 1 - Adresse:**
