@@ -56,6 +56,9 @@ const adresseSchema = z.object({
   barkunde: z.boolean().default(false),
   scheckdruck: z.boolean().default(false),
   ist_firma: z.boolean().default(true),
+  // Sonderschalter für UST-Ausnahmen (Geschäftslogik aus Java)
+  firma_ohne_ustid: z.boolean().default(false),
+  privat_mit_ustid: z.boolean().default(false),
   // Betreuer
   betreuer: z.string().max(20).optional(),
   betreuer2: z.string().max(20).optional(),
