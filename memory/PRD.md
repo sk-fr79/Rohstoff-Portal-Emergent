@@ -64,6 +64,25 @@ In Stammdaten > Grundinformationen:
 - Toggle-Schalter "Inaktive" in der Filterleiste oben rechts
 - Anzeige der Anzahl ausgeblendeter Adressen: "(X inaktive ausgeblendet)"
 
+### ✅ UST-ID Validierung via EU VIES (NEU - 09.01.2026)
+Offizielle EU-Schnittstelle zur Validierung von Umsatzsteuer-Identifikationsnummern:
+- **API-Integration:** REST-API der EU-Kommission (https://ec.europa.eu/taxation_customs/vies/rest-api/check-vat-number)
+- **Protokollierung:** Jede Validierung wird gespeichert mit:
+  - Datum und Uhrzeit der Abfrage
+  - Ergebnis (gültig/ungültig)
+  - Firmenname und Adresse (wenn von VIES zurückgegeben)
+  - Benutzer, der die Prüfung durchgeführt hat
+  - Request-Identifier für Audit-Zwecke
+- **Frontend:**
+  - Suchbutton (Lupe) neben der UST-ID → Löst Validierung aus
+  - Protokoll-Button (Uhren-Symbol) → Öffnet Dialog mit Validierungshistorie
+  - Toast-Benachrichtigungen für Ergebnisse (grün=gültig, rot=ungültig, gelb=Fehler)
+- **Backend-Endpunkte:**
+  - `POST /api/ustid/validate` - Validiert UST-ID über EU VIES und protokolliert
+  - `GET /api/ustid/protokoll/{adresse_id}` - Ruft Validierungshistorie ab
+  - `DELETE /api/ustid/protokoll/{protokoll_id}` - Löscht Protokolleintrag (Admin-only)
+- **MongoDB Collection:** `ustid_protokoll`
+
 ### ✅ Geschäftslogik - Adress-Validierung (09.01.2026)
 Portiert aus Java-Code: `rohstoff.Echo2BusinessLogic.FIRMENSTAMM.__FS_Adress_Check`
 
