@@ -61,10 +61,12 @@ export function LoginPage() {
       <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-slate-800 to-slate-900 p-12 flex-col justify-between">
         <div>
           <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-lg bg-emerald-500 flex items-center justify-center">
-              <Building2 className="h-6 w-6 text-white" />
-            </div>
-            <span className="font-bold text-xl text-white">Rohstoff ERP</span>
+            <img 
+              src="/mv_logo.png" 
+              alt="MV Logo" 
+              className="h-12 w-auto object-contain"
+            />
+            <span className="font-bold text-xl text-white">Rohstoff Portal</span>
           </div>
         </div>
         
