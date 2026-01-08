@@ -43,13 +43,26 @@ Unter Steuer-Tab in Adress-Details:
 - Löschen-Button (Papierkorb) pro Zeile
 - Ersetzt statische ust_at, ust_nl, ust_ch Felder
 
-### ✅ Firmenlogo-Upload (NEU - 09.01.2026)
+### ✅ Firmenlogo-Upload (09.01.2026)
 In Stammdaten > Grundinformationen:
 - **Firmenlogo hochladen** (für Firmen-Adressen)
 - Modernes Building2-Icon als Standard-Platzhalter
+- **Transparente Einbettung** im Header (weißer Hintergrund, Logo freigestellt)
 - Hover-Effekt mit Kamera-Icon zum Hochladen
 - Backend-Endpunkt: POST `/api/upload/logo/{adresse_id}`
 - Base64-Speicherung in MongoDB
+
+### ✅ OCR für Visitenkarten (NEU - 09.01.2026)
+- **Automatische Texterkennung** aus Visitenkarten-Bildern
+- Extrahiert: Vorname, Nachname, Firma, Funktion, Telefon, Mobil, E-Mail, Adresse
+- Verwendet OpenAI GPT-4o Vision via Emergent LLM Key
+- Backend-Endpunkt: POST `/api/ocr/visitenkarte`
+- Hinweis im Upload-Bereich: "Die Kontaktdaten werden automatisch erkannt (OCR)"
+
+### ✅ Filter für inaktive Adressen (NEU - 09.01.2026)
+- **Inaktive Adressen werden standardmäßig ausgeblendet**
+- Toggle-Schalter "Inaktive" in der Filterleiste oben rechts
+- Anzeige der Anzahl ausgeblendeter Adressen: "(X inaktive ausgeblendet)"
 
 ### ✅ Geschäftslogik - Adress-Validierung (09.01.2026)
 Portiert aus Java-Code: `rohstoff.Echo2BusinessLogic.FIRMENSTAMM.__FS_Adress_Check`
