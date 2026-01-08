@@ -5,13 +5,12 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
-import { Package, Loader2, Eye, EyeOff } from 'lucide-react';
+import { Building2, Loader2, Eye, EyeOff } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { authApi } from '@/services/api/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 const loginSchema = z.object({
   benutzername: z.string().min(1, 'Benutzername erforderlich'),
@@ -43,7 +42,7 @@ export function LoginPage() {
         setAuth(
           response.data.user,
           response.data.access_token,
-          response.data.refresh_token || '' // Backend doesn't provide refresh token yet
+          response.data.refresh_token || ''
         );
         toast.success('Erfolgreich angemeldet');
         navigate('/dashboard');
@@ -57,101 +56,144 @@ export function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-background via-background to-primary/10">
-      {/* Background Effects */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-primary/20 rounded-full blur-3xl" />
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-primary/10 rounded-full blur-3xl" />
+    <div className="min-h-screen flex bg-gray-50">
+      {/* Left Side - Branding */}
+      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-slate-800 to-slate-900 p-12 flex-col justify-between">
+        <div>
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-lg bg-emerald-500 flex items-center justify-center">
+              <Building2 className="h-6 w-6 text-white" />
+            </div>
+            <span className="font-bold text-xl text-white">Rohstoff ERP</span>
+          </div>
+        </div>
+        
+        <div className="space-y-6">
+          <h1 className="text-4xl font-bold text-white leading-tight">
+            Ihr modernes ERP-System für die Rohstoff-Branche
+          </h1>
+          <p className="text-lg text-gray-300">
+            Verwalten Sie Adressen, Kontrakte, Fuhren und Rechnungen effizient in einer zentralen Plattform.
+          </p>
+          <div className="flex gap-8 pt-4">
+            <div>
+              <div className="text-3xl font-bold text-emerald-400">500+</div>
+              <div className="text-sm text-gray-400">Aktive Nutzer</div>
+            </div>
+            <div>
+              <div className="text-3xl font-bold text-emerald-400">99.9%</div>
+              <div className="text-sm text-gray-400">Verfügbarkeit</div>
+            </div>
+            <div>
+              <div className="text-3xl font-bold text-emerald-400">24/7</div>
+              <div className="text-sm text-gray-400">Support</div>
+            </div>
+          </div>
+        </div>
+
+        <div className="text-sm text-gray-500">
+          &copy; {new Date().getFullYear()} Rohstoff Portal. Alle Rechte vorbehalten.
+        </div>
       </div>
 
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="w-full max-w-md relative z-10"
-      >
-        <Card className="glass border-border/50">
-          <CardHeader className="text-center">
-            <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
-              className="mx-auto mb-4 h-16 w-16 rounded-2xl bg-primary flex items-center justify-center"
-            >
-              <Package className="h-8 w-8 text-primary-foreground" />
-            </motion.div>
-            <CardTitle className="text-2xl font-bold">Rohstoff Portal</CardTitle>
-            <CardDescription>Melden Sie sich an, um fortzufahren</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="benutzername">Benutzername</Label>
+      {/* Right Side - Login Form */}
+      <div className="flex-1 flex items-center justify-center p-8">
+        <motion.div
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5 }}
+          className="w-full max-w-md"
+        >
+          {/* Mobile Logo */}
+          <div className="lg:hidden flex items-center gap-3 mb-8 justify-center">
+            <div className="h-10 w-10 rounded-lg bg-emerald-500 flex items-center justify-center">
+              <Building2 className="h-6 w-6 text-white" />
+            </div>
+            <span className="font-bold text-xl text-gray-900">Rohstoff ERP</span>
+          </div>
+
+          <div className="text-center mb-8">
+            <h2 className="text-2xl font-bold text-gray-900">Willkommen zurück</h2>
+            <p className="text-gray-500 mt-2">Melden Sie sich an, um fortzufahren</p>
+          </div>
+
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+            <div className="space-y-2">
+              <Label htmlFor="benutzername" className="text-gray-700">Benutzername</Label>
+              <Input
+                id="benutzername"
+                placeholder="Benutzername oder E-Mail"
+                {...register('benutzername')}
+                className={`h-11 bg-white border-gray-200 ${errors.benutzername ? 'border-red-500' : ''}`}
+                data-testid="login-username"
+              />
+              {errors.benutzername && (
+                <p className="text-sm text-red-500">{errors.benutzername.message}</p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="passwort" className="text-gray-700">Passwort</Label>
+              <div className="relative">
                 <Input
-                  id="benutzername"
-                  placeholder="Benutzername oder E-Mail"
-                  {...register('benutzername')}
-                  className={errors.benutzername ? 'border-destructive' : ''}
-                  data-testid="login-username"
+                  id="passwort"
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder="••••••••"
+                  {...register('passwort')}
+                  className={`h-11 bg-white border-gray-200 pr-10 ${errors.passwort ? 'border-red-500' : ''}`}
+                  data-testid="login-password"
                 />
-                {errors.benutzername && (
-                  <p className="text-sm text-destructive">{errors.benutzername.message}</p>
-                )}
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="absolute right-0 top-0 h-full px-3 hover:bg-transparent text-gray-400"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
+                </Button>
               </div>
+              {errors.passwort && (
+                <p className="text-sm text-red-500">{errors.passwort.message}</p>
+              )}
+            </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="passwort">Passwort</Label>
-                <div className="relative">
-                  <Input
-                    id="passwort"
-                    type={showPassword ? 'text' : 'password'}
-                    placeholder="••••••••"
-                    {...register('passwort')}
-                    className={errors.passwort ? 'border-destructive pr-10' : 'pr-10'}
-                    data-testid="login-password"
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
-                    onClick={() => setShowPassword(!showPassword)}
-                  >
-                    {showPassword ? (
-                      <EyeOff className="h-4 w-4 text-muted-foreground" />
-                    ) : (
-                      <Eye className="h-4 w-4 text-muted-foreground" />
-                    )}
-                  </Button>
-                </div>
-                {errors.passwort && (
-                  <p className="text-sm text-destructive">{errors.passwort.message}</p>
-                )}
-              </div>
+            <div className="flex items-center justify-between">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" className="rounded border-gray-300 text-emerald-500 focus:ring-emerald-500" />
+                <span className="text-sm text-gray-600">Angemeldet bleiben</span>
+              </label>
+              <a href="#" className="text-sm text-emerald-600 hover:text-emerald-700 font-medium">
+                Passwort vergessen?
+              </a>
+            </div>
 
-              <Button
-                type="submit"
-                className="w-full"
-                disabled={isLoading}
-                data-testid="login-submit"
-              >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Anmelden...
-                  </>
-                ) : (
-                  'Anmelden'
-                )}
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
+            <Button
+              type="submit"
+              className="w-full h-11 bg-emerald-500 hover:bg-emerald-600 text-white font-medium"
+              disabled={isLoading}
+              data-testid="login-submit"
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Anmelden...
+                </>
+              ) : (
+                'Anmelden'
+              )}
+            </Button>
+          </form>
 
-        <p className="text-center text-sm text-muted-foreground mt-6">
-          &copy; {new Date().getFullYear()} Rohstoff Portal. Alle Rechte vorbehalten.
-        </p>
-      </motion.div>
+          <p className="text-center text-sm text-gray-500 mt-8 lg:hidden">
+            &copy; {new Date().getFullYear()} Rohstoff Portal. Alle Rechte vorbehalten.
+          </p>
+        </motion.div>
+      </div>
     </div>
   );
 }
