@@ -1649,6 +1649,197 @@ Wenn ein Feld nicht auf der Visitenkarte zu finden ist, setze es auf null."""
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"OCR-Fehler: {str(e)}")
 
+
+# ============================================================
+# UST-ID VALIDIERUNG (EU VIES)
+# ============================================================
+
+class UstIdValidationRequest(BaseModel):
+    """Anfrage für UST-ID Validierung"""
+    adresse_id: str
+    laenderkennzeichen: str = Field(..., min_length=2, max_length=2, description="2-stelliger Ländercode (z.B. DE, AT, FR)")
+    ustid: str = Field(..., min_length=1, description="UST-ID ohne Länderprefix")
+
+class UstIdValidationResult(BaseModel):
+    """Ergebnis einer UST-ID Validierung"""
+    id: Optional[str] = None
+    adresse_id: str
+    laenderkennzeichen: str
+    ustid: str
+    gueltig: bool
+    firmenname: Optional[str] = None
+    adresse: Optional[str] = None
+    strasse: Optional[str] = None
+    plz: Optional[str] = None
+    ort: Optional[str] = None
+    abfrage_datum: datetime
+    request_identifier: Optional[str] = None
+    fehler_code: Optional[str] = None
+    abgefragt_von: Optional[str] = None
+
+@app.post("/api/ustid/validate")
+async def validate_ustid(
+    request: UstIdValidationRequest,
+    user = Depends(get_current_user)
+):
+    """
+    Validiert eine UST-ID über die offizielle EU VIES REST API.
+    Das Ergebnis wird in der Datenbank protokolliert.
+    """
+    import httpx
+    
+    # EU VIES REST API Endpoint
+    VIES_API_URL = "https://ec.europa.eu/taxation_customs/vies/rest-api/check-vat-number"
+    
+    try:
+        # UST-ID bereinigen (Leerzeichen und Punkte entfernen)
+        clean_ustid = re.sub(r'[\s\.\-]', '', request.ustid)
+        
+        # VIES API aufrufen
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            response = await client.post(
+                VIES_API_URL,
+                json={
+                    "countryCode": request.laenderkennzeichen.upper(),
+                    "vatNumber": clean_ustid
+                },
+                headers={"Content-Type": "application/json"}
+            )
+        
+        vies_data = response.json()
+        
+        # Fehlerprüfung
+        if "errorWrappers" in vies_data:
+            error_code = vies_data["errorWrappers"][0].get("error", "UNKNOWN_ERROR")
+            error_messages = {
+                "INVALID_INPUT": "Ungültige Eingabe",
+                "GLOBAL_MAX_CONCURRENT_REQ": "Zu viele Anfragen, bitte später erneut versuchen",
+                "MS_UNAVAILABLE": "Der Dienst des Mitgliedsstaates ist derzeit nicht verfügbar",
+                "MS_MAX_CONCURRENT_REQ": "Zu viele Anfragen an den Mitgliedsstaat",
+                "SERVICE_UNAVAILABLE": "VIES-Dienst nicht verfügbar",
+                "TIMEOUT": "Zeitüberschreitung bei der Anfrage",
+            }
+            
+            # Protokoll auch bei Fehlern speichern
+            protokoll = {
+                "_id": str(uuid.uuid4()),
+                "adresse_id": request.adresse_id,
+                "laenderkennzeichen": request.laenderkennzeichen.upper(),
+                "ustid": clean_ustid,
+                "gueltig": False,
+                "firmenname": None,
+                "adresse": None,
+                "strasse": None,
+                "plz": None,
+                "ort": None,
+                "abfrage_datum": datetime.utcnow(),
+                "request_identifier": None,
+                "fehler_code": error_code,
+                "abgefragt_von": user.get("kuerzel"),
+                "mandant_id": user["mandant_id"]
+            }
+            await db.ustid_protokoll.insert_one(protokoll)
+            protokoll["id"] = protokoll.pop("_id")
+            
+            return {
+                "success": False,
+                "error": error_messages.get(error_code, f"VIES-Fehler: {error_code}"),
+                "error_code": error_code,
+                "data": protokoll
+            }
+        
+        # Erfolgreiches Ergebnis verarbeiten
+        is_valid = vies_data.get("valid", False)
+        
+        # Protokoll erstellen
+        protokoll = {
+            "_id": str(uuid.uuid4()),
+            "adresse_id": request.adresse_id,
+            "laenderkennzeichen": request.laenderkennzeichen.upper(),
+            "ustid": clean_ustid,
+            "gueltig": is_valid,
+            "firmenname": vies_data.get("name") if vies_data.get("name") != "---" else None,
+            "adresse": vies_data.get("address") if vies_data.get("address") != "---" else None,
+            "strasse": vies_data.get("traderStreet") if vies_data.get("traderStreet") != "---" else None,
+            "plz": vies_data.get("traderPostalCode") if vies_data.get("traderPostalCode") != "---" else None,
+            "ort": vies_data.get("traderCity") if vies_data.get("traderCity") != "---" else None,
+            "abfrage_datum": datetime.utcnow(),
+            "request_identifier": vies_data.get("requestIdentifier"),
+            "fehler_code": None,
+            "abgefragt_von": user.get("kuerzel"),
+            "mandant_id": user["mandant_id"],
+            "vies_response": vies_data  # Vollständige Antwort für Audit-Zwecke
+        }
+        
+        await db.ustid_protokoll.insert_one(protokoll)
+        protokoll["id"] = protokoll.pop("_id")
+        del protokoll["vies_response"]  # Nicht in Response zurückgeben
+        
+        return {
+            "success": True,
+            "data": protokoll,
+            "message": "UST-ID ist gültig" if is_valid else "UST-ID ist ungültig"
+        }
+        
+    except httpx.TimeoutException:
+        raise HTTPException(status_code=504, detail="Zeitüberschreitung bei der VIES-Anfrage")
+    except httpx.RequestError as e:
+        raise HTTPException(status_code=502, detail=f"Fehler bei der Verbindung zum VIES-Dienst: {str(e)}")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Interner Fehler bei der UST-ID Validierung: {str(e)}")
+
+
+@app.get("/api/ustid/protokoll/{adresse_id}")
+async def get_ustid_protokoll(
+    adresse_id: str,
+    user = Depends(get_current_user)
+):
+    """
+    Ruft das Validierungsprotokoll für eine Adresse ab.
+    Sortiert nach Datum (neueste zuerst).
+    """
+    protokolle = await db.ustid_protokoll.find(
+        {
+            "adresse_id": adresse_id,
+            "mandant_id": user["mandant_id"]
+        }
+    ).sort("abfrage_datum", -1).to_list(100)
+    
+    # _id zu id umwandeln
+    for p in protokolle:
+        p["id"] = p.pop("_id")
+        if "vies_response" in p:
+            del p["vies_response"]
+    
+    return {
+        "success": True,
+        "data": protokolle,
+        "count": len(protokolle)
+    }
+
+
+@app.delete("/api/ustid/protokoll/{protokoll_id}")
+async def delete_ustid_protokoll(
+    protokoll_id: str,
+    user = Depends(get_current_user)
+):
+    """
+    Löscht einen einzelnen Protokolleintrag (nur für Admins).
+    """
+    if not user.get("ist_admin"):
+        raise HTTPException(status_code=403, detail="Nur Administratoren können Protokolleinträge löschen")
+    
+    result = await db.ustid_protokoll.delete_one({
+        "_id": protokoll_id,
+        "mandant_id": user["mandant_id"]
+    })
+    
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Protokolleintrag nicht gefunden")
+    
+    return {"success": True, "message": "Protokolleintrag gelöscht"}
+
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8001)
