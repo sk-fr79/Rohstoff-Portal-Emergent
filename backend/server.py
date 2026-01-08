@@ -196,9 +196,11 @@ class AdresseCreate(BaseModel):
     hausnummer: Optional[str] = Field(None, max_length=10)
     plz: Optional[str] = Field(None, max_length=10)
     ort: Optional[str] = Field(None, max_length=30)
+    land: Optional[str] = Field(None, max_length=30)
     telefon: Optional[str] = Field(None, max_length=30)
     email: Optional[str] = Field(None, max_length=100)
     adresstyp: Optional[int] = Field(1, ge=1, le=5)
+    betreuer: Optional[str] = Field(None, max_length=20)
     aktiv: bool = True
     bemerkungen: Optional[str] = Field(None, max_length=700)
 
@@ -210,9 +212,11 @@ class AdresseUpdate(BaseModel):
     hausnummer: Optional[str] = Field(None, max_length=10)
     plz: Optional[str] = Field(None, max_length=10)
     ort: Optional[str] = Field(None, max_length=30)
+    land: Optional[str] = Field(None, max_length=30)
     telefon: Optional[str] = Field(None, max_length=30)
     email: Optional[str] = Field(None, max_length=100)
     adresstyp: Optional[int] = Field(None, ge=1, le=5)
+    betreuer: Optional[str] = Field(None, max_length=20)
     aktiv: Optional[bool] = None
     bemerkungen: Optional[str] = Field(None, max_length=700)
 
