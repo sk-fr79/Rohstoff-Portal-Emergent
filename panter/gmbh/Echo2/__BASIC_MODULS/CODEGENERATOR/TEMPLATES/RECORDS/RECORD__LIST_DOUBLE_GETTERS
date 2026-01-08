@@ -1,0 +1,46 @@
+	
+	public double get_#FIELDNAME#_d_Summe(RECLIST_#TABLEBASE#.Validation oValidator) throws myException
+	{
+		Iterator<Map.Entry<String,RECORD_#TABLEBASE#>>  oIter = this.entrySet().iterator(); 
+		
+		double dRueck = 0;
+		
+		while (oIter.hasNext())
+		{
+			RECORD_#TABLEBASE# 	oRec = oIter.next().getValue();
+			Double 				oD = oRec.get_#FIELDNAME#_dValue(new Double(0));
+			
+			if (oValidator == null || oValidator.isValid(oRec))
+			{
+				if (oD != null)
+				{
+					dRueck += oD.doubleValue();
+				}
+			}
+		}
+		
+		return dRueck;
+	}
+	
+
+	
+
+	
+	
+	public HashMap<String, Double>  get_#FIELDNAME#_hmDouble(Double NullValue) throws myException
+	{
+		HashMap<String, Double> hmRueck = new HashMap<String, Double>();
+		
+		for (java.util.Map.Entry<String,RECORD_#TABLEBASE#> oEntry: this.entrySet())
+		{
+			RECORD_#TABLEBASE# 	oRec = oEntry.getValue();
+			Double 				oD =   oRec.get_#FIELDNAME#_dValue(NullValue);
+			
+			hmRueck.put(oEntry.getKey(), oD);
+		}
+		return hmRueck;
+	}
+	
+
+
+	

@@ -1,0 +1,43 @@
+ 
+<!--Beispiel fuer eine Definitionsdatei 
+mit 2 messages und eine eMail
+-->
+
+
+<block>
+<message>
+<titel>Test Titel Zeile</titel>
+<text>Das ist ein Test-Text
+für eine Meldung
+</text>
+<user>4000</user>
+<user>4001</user>
+<user>4003</user>
+
+</message>
+
+
+
+<message>
+<titel>Test Titel Zeile</titel>
+<text>Das ist ein Test-Text
+für eine Meldung
+</text>
+<user>4000</user>
+<user>4001</user>
+<user>4003</user>
+
+</message>
+
+
+
+<email>
+<betreff>Test Titel Zeile</betreff>
+<text>Das ist ein Test-Text
+für eine Meldung
+</text>
+<target>martinpanter@googlemail.com</target>
+<target>martinpanter.1@googlemail.com</target>
+</email>
+
+</block> 

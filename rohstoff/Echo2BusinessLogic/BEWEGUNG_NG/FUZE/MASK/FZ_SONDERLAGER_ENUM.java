@@ -1,0 +1,41 @@
+package rohstoff.Echo2BusinessLogic.BEWEGUNG_NG.FUZE.MASK;
+
+import panter.gmbh.indep.bibSES;
+import rohstoff.Echo2BusinessLogic.BEWEGUNG_NG._ENUMS.ENUM_SONDERLAGER;
+
+
+public enum FZ_SONDERLAGER_ENUM {
+	LL_ZWISCHENLAGER(  rohstoff.Echo2BusinessLogic.BEWEGUNG_NG._ENUMS.ENUM_SONDERLAGER.LL.get_ID())
+	,WE_ZWISCHENLAGER( rohstoff.Echo2BusinessLogic.BEWEGUNG_NG._ENUMS.ENUM_SONDERLAGER.ZWE.get_ID())
+	,WA_ZWISCHENLAGER( rohstoff.Echo2BusinessLogic.BEWEGUNG_NG._ENUMS.ENUM_SONDERLAGER.ZWA.get_ID())
+	
+	,TS_ZWISCHENLAGER( rohstoff.Echo2BusinessLogic.BEWEGUNG_NG._ENUMS.ENUM_SONDERLAGER.ZWA.get_ID())
+	,LG_ZWISCHENLAGER( rohstoff.Echo2BusinessLogic.BEWEGUNG_NG._ENUMS.ENUM_SONDERLAGER.ZWA.get_ID())
+	
+	,ST_ZWE_ZWISCHENLAGER( rohstoff.Echo2BusinessLogic.BEWEGUNG_NG._ENUMS.ENUM_SONDERLAGER.ZWE.get_ID())
+	,ST_ZWA_ZWISCHENLAGER( rohstoff.Echo2BusinessLogic.BEWEGUNG_NG._ENUMS.ENUM_SONDERLAGER.ZWA.get_ID())
+	,ST_SONDERLAGER( rohstoff.Echo2BusinessLogic.BEWEGUNG_NG._ENUMS.ENUM_SONDERLAGER.STRECKE.get_ID())
+	
+	;
+	
+	
+	
+//	LL_ZWISCHENLAGER(  bibSES.get_ID_ADRESSE_LAGER_LAGERLAGER())
+//	,WE_ZWISCHENLAGER(bibSES.get_ID_ADRESSE_LAGER_LAGERLAGER())
+//	,WA_ZWISCHENLAGER(bibSES.get_ID_ADRESSE_LAGER_LAGERLAGER())
+//	,TS_ZWISCHENLAGER(bibSES.get_ID_ADRESSE_LAGER_LAGERLAGER())
+//	,LG_ZWISCHENLAGER(bibSES.get_ID_ADRESSE_LAGER_LAGERLAGER())
+//	,ST_ZWISCHENLAGER(bibSES.get_ID_ADRESSE_LAGER_STRECKE())
+//	,ST_SONDERLAGER(bibSES.get_ID_ADRESSE_LAGER_STRECKE())
+//	;
+//	
+	private String id = "";
+	
+	private FZ_SONDERLAGER_ENUM(String p_id){
+		this.id = p_id;
+	}
+	
+	public String get_zwischenlager_id() {
+		return id;
+	}
+}

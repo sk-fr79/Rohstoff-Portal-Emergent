@@ -1,0 +1,26 @@
+	public boolean is_#FIELDNAME#_YES() throws myException
+	{
+		boolean bRueck = false;
+		
+		if (get_#FIELDNAME#_cUF_NN("N").equals("Y"))
+		{ 
+			bRueck = true; 
+		}
+		
+		return bRueck; 
+	}
+
+	
+	
+	public boolean is_#FIELDNAME#_NO() throws myException
+	{
+		boolean bRueck = false;
+		
+		if (get_#FIELDNAME#_cUF_NN("N").equals("N"))
+		{ 
+			bRueck = true; 
+		}
+		
+		return bRueck; 
+	}
+	

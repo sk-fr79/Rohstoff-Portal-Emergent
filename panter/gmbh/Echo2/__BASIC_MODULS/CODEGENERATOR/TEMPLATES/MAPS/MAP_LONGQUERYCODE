@@ -1,0 +1,83 @@
+	public Long get_L_#FIELDNAME#(Long lValueWhenNULL) throws myException
+	{
+		if (vIDs.size()!=1)
+			throw new myException(this,"Method only in singular MAP-Objects allowed ");
+		Long lRueck = this.oHM_First.get_longValue("#FIELDNAME#");
+		if (lRueck==null) 
+		{ 
+			return lValueWhenNULL; 
+		} 
+		else 
+		{ 
+			return lRueck;
+		} 
+	}
+
+
+
+	public Long get_L_#FIELDNAME#(int iPos, Long lValueWhenNULL) throws myException
+	{
+		if (iPos<0)
+			throw new myException(this,"Number MUST be greater equal 0 ");
+
+		if (iPos>=this.vIDs.size())
+			throw new myException(this,"Number of Row smaller than "+iPos);
+
+		String cID = this.vIDs.get(iPos);
+		Long lRueck =  this.oHM_aus_MyDataRecordHashMaps.get(cID).get_longValue("#FIELDNAME#");
+		if (lRueck==null) 
+		{ 
+			return lValueWhenNULL; 
+		} 
+		else 
+		{ 
+			return lRueck;
+		} 
+	}
+
+
+
+	public Long get_L_#FIELDNAME#(String cID, Long lValueWhenNULL) throws myException
+	{
+		if (!this.vIDs.contains(cID))
+			throw new myException(this,"ID is not in the collection");
+
+		Long lRueck =  this.oHM_aus_MyDataRecordHashMaps.get(cID).get_longValue("#FIELDNAME#");
+		if (lRueck==null) 
+		{ 
+			return lValueWhenNULL; 
+		} 
+		else 
+		{ 
+			return lRueck;
+		} 
+	}
+
+
+   public HashMap<String,Long> get_hmL_#FIELDNAME#(Long lValueWhenNULL) throws myException 
+   {
+	  HashMap<String,Long> hmRueck = new HashMap<String,Long>();
+     for (String cID:this.vIDs)
+	  {
+		  hmRueck.put(cID, this.get_L_#FIELDNAME#(cID,lValueWhenNULL));
+	  }
+	  return hmRueck;
+  }
+
+
+   public long get_l_SUMME_#FIELDNAME#(MAP_#TABLEBASE#.ValidSummation oValidator) throws myException 
+   { 
+	   long lRueck = 0; 
+	   for (String cID:this.vIDs) 
+	   { 
+		   if (oValidator == null || oValidator.isValidForSummation(this,cID)) 
+		   { 
+			   lRueck = lRueck + this.get_L_#FIELDNAME#(cID,new Long(0)).longValue(); 
+		   } 
+	   } 
+	    
+	   return lRueck; 
+   } 
+
+
+

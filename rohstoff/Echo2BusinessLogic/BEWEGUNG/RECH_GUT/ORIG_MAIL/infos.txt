@@ -1,0 +1,15 @@
+Script, um Tests zu ermoeglichen:
+
+Loescht alle emails und attachments zu den rechnungen 
+
+delete from jt_email_send_targets where id_email_send in (
+select id_email_send from jt_email_send_attach where ID_ARCHIVMEDIEN in (select id_archivmedien from jt_archivmedien where tablename='VKOPF_RG' and ID_TABLE > 44936)
+);
+
+delete from jt_email_send_attach where id_email_send in (
+select id_email_send from jt_email_send_attach where ID_ARCHIVMEDIEN in (select id_archivmedien from jt_archivmedien where tablename='VKOPF_RG' and ID_TABLE > 44936)
+);
+
+delete  from jt_archivmedien where tablename='VKOPF_RG' and ID_TABLE > 44936; 
+update jt_vkopf_rg set abgeschlossen='N', druckzaehler=0  where ID_vkopf_rg > 44936; 
+

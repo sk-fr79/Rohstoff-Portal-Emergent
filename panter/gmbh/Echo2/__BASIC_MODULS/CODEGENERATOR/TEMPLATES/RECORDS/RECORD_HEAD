@@ -1,0 +1,415 @@
+package panter.gmbh.basics4project.DB_RECORDS;
+
+import java.math.BigDecimal;
+import java.text.DecimalFormat;
+import java.util.GregorianCalendar;
+import java.util.HashMap;
+import java.util.Vector;
+
+import panter.gmbh.Echo2.bibE2;
+import panter.gmbh.Echo2.Messaging.MyE2_MessageVector;
+import panter.gmbh.basics4project.DB_ENUMS._TAB;
+import panter.gmbh.indep.S;
+import panter.gmbh.indep.bibALL;
+import panter.gmbh.indep.dataTools.MyConnection;
+import panter.gmbh.indep.dataTools.MyRECORD;
+import panter.gmbh.indep.dataTools.MyRECORD_IF_RECORDS;
+import panter.gmbh.indep.dataTools.MyRECORD_NEW;
+import panter.gmbh.indep.dataTools.MySqlStatementBuilder;
+import panter.gmbh.indep.exceptions.myException;
+
+public class RECORD_#TABLEBASE# extends MyRECORD implements MyRECORD_IF_RECORDS
+{
+
+    public static String TABLENAME = "#TABLENAME#";
+    public static String IDFIELD   = "ID_#TABLEBASE#";
+    
+
+	//erzeugen eines RECORDNEW_#TABLENAME# - felds
+	private RECORDNEW_#TABLEBASE#   recNEW = null;
+
+    private _TAB  tab = _TAB.#tablebase#;  
+
+
+
+	public RECORD_#TABLEBASE#() throws myException
+	{
+		super();
+		this.set_TABLE_NAME("#TABLENAME#");
+	}
+
+
+	public RECORD_#TABLEBASE#(MyConnection Conn)   throws myException 
+	{
+		super(Conn);
+		this.set_TABLE_NAME("#TABLENAME#");
+	}
+
+
+
+	public RECORD_#TABLEBASE#(RECORD_#TABLEBASE# recordOrig)
+	{
+		super(recordOrig);
+		this.set_TABLE_NAME("#TABLENAME#");
+		
+		//2013-09-20: jedem MetaFieldDef-Objekt den richtigen tabellenname uebergeben
+		this.set_Tablename_To_FieldMetaDefs(RECORD_#TABLEBASE#.TABLENAME);
+	}
+
+
+	//2014-04-03
+	public RECORD_#TABLEBASE#(MyRECORD recordOrig)
+	{
+		super(recordOrig);
+		this.set_TABLE_NAME("#TABLENAME#");
+		this.set_Tablename_To_FieldMetaDefs(RECORD_#TABLEBASE#.TABLENAME);
+	}
+
+
+
+
+	public RECORD_#TABLEBASE#(long lID_Unformated) throws myException
+	{
+		super("#TABLENAME#","ID_#TABLEBASE#",""+lID_Unformated);
+		this.set_TABLE_NAME("#TABLENAME#");
+
+		//2013-09-20: jedem MetaFieldDef-Objekt den richtigen tabellenname uebergeben
+		this.set_Tablename_To_FieldMetaDefs(RECORD_#TABLEBASE#.TABLENAME);
+	}
+
+	public RECORD_#TABLEBASE#(String c_ID_or_WHEREBLOCK_OR_SQL)   throws myException 
+	{
+		super();
+		this.set_TABLE_NAME("#TABLENAME#");
+
+		if (bibALL.isLong(c_ID_or_WHEREBLOCK_OR_SQL))
+		{
+			this.PrepareAndBuild("*", bibE2.cTO()+".#TABLENAME#", "ID_#TABLEBASE#="+c_ID_or_WHEREBLOCK_OR_SQL);
+		}
+		else
+		{
+			if (c_ID_or_WHEREBLOCK_OR_SQL.toUpperCase().trim().startsWith("SELECT "))
+			{
+				this.BuildRecord(c_ID_or_WHEREBLOCK_OR_SQL);
+			}
+			else
+			{
+				this.PrepareAndBuild("*", bibE2.cTO()+".#TABLENAME#", c_ID_or_WHEREBLOCK_OR_SQL);
+			}
+		}
+		
+		
+		//2013-09-20: jedem MetaFieldDef-Objekt den richtigen tabellenname uebergeben
+		this.set_Tablename_To_FieldMetaDefs(RECORD_#TABLEBASE#.TABLENAME);
+	}
+	
+	
+
+	public RECORD_#TABLEBASE#(long lID_Unformated, MyConnection Conn) throws myException
+	{
+		super("#TABLENAME#","ID_#TABLEBASE#",""+lID_Unformated, Conn);
+
+		this.set_TABLE_NAME("#TABLENAME#");
+
+
+		//2013-09-20: jedem MetaFieldDef-Objekt den richtigen tabellenname uebergeben
+		this.set_Tablename_To_FieldMetaDefs(RECORD_#TABLEBASE#.TABLENAME);
+
+	}
+
+
+	public RECORD_#TABLEBASE#(String c_ID_or_WHEREBLOCK_OR_SQL, MyConnection Conn)   throws myException 
+	{
+		super(Conn);
+		this.set_TABLE_NAME("#TABLENAME#");
+		
+		if (bibALL.isLong(c_ID_or_WHEREBLOCK_OR_SQL))
+		{
+			this.PrepareAndBuild("*", bibE2.cTO()+".#TABLENAME#", "ID_#TABLEBASE#="+c_ID_or_WHEREBLOCK_OR_SQL);
+		}
+		else
+		{
+			if (c_ID_or_WHEREBLOCK_OR_SQL.toUpperCase().trim().startsWith("SELECT "))
+			{
+				this.BuildRecord(c_ID_or_WHEREBLOCK_OR_SQL);
+			}
+			else
+			{
+				this.PrepareAndBuild("*", bibE2.cTO()+".#TABLENAME#", c_ID_or_WHEREBLOCK_OR_SQL);
+			}
+		}
+		
+		
+		
+		//2013-09-20: jedem MetaFieldDef-Objekt den richtigen tabellenname uebergeben
+		this.set_Tablename_To_FieldMetaDefs(RECORD_#TABLEBASE#.TABLENAME);
+		
+		
+	}
+
+	
+	
+	@Override
+	public MyRECORD_NEW  get_RECORD_NEW() throws myException {
+	   return this.get_RECORDNEW_#TABLEBASE#();
+	}
+
+	
+	
+    @Override
+	public String get_TABLENAME()
+	{
+		return RECORD_#TABLEBASE#.TABLENAME;
+	}
+	
+    @Override
+	public String get_PRIMARY_KEY_NAME()
+	{
+		return "ID_#TABLEBASE#";
+	}
+
+
+	public String get_PRIMARY_KEY_UF() throws myException
+	{
+		return this.get_ID_#TABLEBASE#_cUF();
+	}
+	
+
+	public long get_PRIMARY_KEY_VALUE() throws myException
+	{
+		return this.get_ID_#TABLEBASE#_lValue(null).longValue();
+	}
+	
+	
+	public String get_SQL_UPDATE_STATEMENT(Vector<String> vFieldsNotInUpdate, boolean bOnlyChangedFields) throws myException
+	{
+		MySqlStatementBuilder oSQLStatementBuilder = (bOnlyChangedFields?this.get_StatementBuilderFilledWithActualValues_ONLY_CHANGED_FIELDS():this.get_StatementBuilderFilledWithActualValues());
+		
+		if (oSQLStatementBuilder.size()==0)    // sonst keine aenderungen
+		{
+			throw new myException(this,"Error: No field in RECORD_#TABLEBASE# was changed !");
+		}
+		return oSQLStatementBuilder.get_CompleteUPDATEString("#TABLENAME#", bibE2.cTO(), "ID_#TABLEBASE#="+this.get_ID_#TABLEBASE#_cUF(), vFieldsNotInUpdate);
+	}
+	
+
+	/*
+	 * 2012-09-18: simples update-statement-erstellung, nur geaenderte felder 
+	 */
+	public String get_SQL_UPDATE_STD() throws myException
+	{
+		MySqlStatementBuilder oSQLStatementBuilder = this.get_StatementBuilderFilledWithActualValues_ONLY_CHANGED_FIELDS();
+		
+		if (oSQLStatementBuilder.size()==0)    // sonst keine aenderungen
+		{
+			throw new myException(this,"Error: No field in RECORD_#TABLEBASE# was changed !");
+		}
+		return oSQLStatementBuilder.get_CompleteUPDATEString("#TABLENAME#", bibE2.cTO(), "ID_#TABLEBASE#="+this.get_ID_#TABLEBASE#_cUF(), null);
+	}
+	
+	
+	/*
+	 * 2012-09-18: simples update, nur geaenderte felder 
+	 */
+	public MyE2_MessageVector UPDATE(boolean bCommit) throws myException
+	{
+	    //2015-05-06:  geaendert von bibDB.ExecMultiSQLVector() nach this.ExecMultiSQLVector()
+		return this.ExecMultiSQLVector(bibALL.get_Vector(this.get_SQL_UPDATE_STD()),bCommit);
+	}
+	
+		
+	/*
+	 * 2016-09-15: anderer name 
+	 */
+	public MyE2_MessageVector SAVE(boolean bCommit) throws myException {
+		return this.UPDATE(bCommit);
+	}
+	
+	
+	
+	public MyE2_MessageVector UPDATE(Vector<String> vFieldsNotInUpdate, boolean bOnlyChangedFields) throws myException
+	{
+	    //2015-05-06:  geaendert von bibDB.ExecMultiSQLVector() nach this.ExecMultiSQLVector()
+		return this.ExecMultiSQLVector(bibALL.get_Vector(this.get_SQL_UPDATE_STATEMENT(vFieldsNotInUpdate,bOnlyChangedFields)),true);
+	}
+	
+	public MyE2_MessageVector DELETE() throws myException
+	{
+        //2015-05-06:  geaendert von bibDB.ExecMultiSQLVector() nach this.ExecMultiSQLVector()
+        return this.ExecMultiSQLVector(bibALL.get_Vector("DELETE FROM "+bibE2.cTO()+".#TABLENAME# WHERE ID_#TABLEBASE#="+this.get_ID_#TABLEBASE#_cUF()),true);
+	}
+	
+	
+	public String get_DELETE_STATEMENT()  throws myException
+	{
+		return "DELETE FROM "+bibE2.cTO()+".#TABLENAME# WHERE ID_#TABLEBASE#="+this.get_ID_#TABLEBASE#_cUF();
+	}
+	
+	
+	
+	/**
+	 * REBUILD wird ueberschrieben, falls der record-datensatz von einer uebergeordnet recordlist rausgezogen wird
+	 * dort liegen keine sql-querys vor. deshalb muessen diese neu definiert werden
+	 * 
+	 */
+	public void REBUILD() throws myException
+	{
+		if (S.isEmpty(this.get_cSQL_4_Build()))
+		{
+			if (S.isFull(this.get_ID_#TABLEBASE#_cUF()))
+			{
+				this.PrepareAndBuild("*", bibE2.cTO()+".#TABLENAME#", "ID_#TABLEBASE#="+this.get_ID_#TABLEBASE#_cUF());
+			}
+		}
+		else
+		{
+			super.REBUILD();
+		}
+	}
+
+	
+	
+	
+	// 2013-09-20: gibt das recnew-objekt zurueck (falls leer, wird es erst gebaut) 
+	public RECORDNEW_#TABLEBASE# get_RECORDNEW_#TABLEBASE#() throws myException {
+
+	  if (this.size() ==0 && this.recNEW == null) {
+	     this.recNEW = new RECORDNEW_#TABLEBASE#();
+	  } else if (this.size()>0) {
+		  this.recNEW = new RECORDNEW_#TABLEBASE#(this.get_hm_FieldMetaDefs());
+	  }
+
+	
+	  return this.recNEW;
+	}
+	
+	
+	//2014-04-02: factory-klassen
+	public static RECORD_#TABLEBASE# create_Instance() throws myException {
+		return new RECORD_#TABLEBASE#();
+	}
+	
+	public static RECORD_#TABLEBASE# create_Instance(MyConnection Conn)   throws myException {
+		return new RECORD_#TABLEBASE#(Conn);
+    }
+
+	public static RECORD_#TABLEBASE# create_Instance(RECORD_#TABLEBASE# recordOrig) {
+		return new RECORD_#TABLEBASE#(recordOrig);
+    }
+
+	public static RECORD_#TABLEBASE# create_Instance(long lID_Unformated) throws myException {
+		return new RECORD_#TABLEBASE#(lID_Unformated);
+    }
+
+	public static RECORD_#TABLEBASE# create_Instance(String c_ID_or_WHEREBLOCK_OR_SQL)   throws myException  {
+		return new RECORD_#TABLEBASE#(c_ID_or_WHEREBLOCK_OR_SQL);
+    }
+
+	public static RECORD_#TABLEBASE# create_Instance(long lID_Unformated, MyConnection Conn) throws myException {
+		return new RECORD_#TABLEBASE#(lID_Unformated, Conn);
+	}
+
+	public static RECORD_#TABLEBASE# create_Instance(String c_ID_or_WHEREBLOCK_OR_SQL, MyConnection Conn)   throws myException {
+		return new RECORD_#TABLEBASE#(c_ID_or_WHEREBLOCK_OR_SQL, Conn);
+	}
+	
+	public static RECORD_#TABLEBASE# create_Instance(MyRECORD recordOrig) throws myException {
+		return new RECORD_#TABLEBASE#(recordOrig);	    
+	}
+	
+	
+//    /** 2015-02-03
+//     * hinzugefuegt, um interface MyRECORD_IF_FILLABLE zu erfuellen 
+//    */
+//    public MySqlStatementBuilder get_StatementBuilder(boolean bExcludeAutomaticFields) throws myException   {
+//      return this.get_StatementBuilderFilledWithActualValues(bExcludeAutomaticFields);
+//    }
+
+//    /** 2015-02-17
+//     * hinzugefuegt, um interface MyRECORD_IF_FILLABLE zu erfuellen 
+//    */
+//	@Override
+//	public boolean get_bHasSomething_to_save() throws myException {
+//		return this.get_bAnyFieldIsRealyChanged();
+//	}
+
+
+    /** 2015-02-17
+     * hinzugefuegt, um interface MyRECORD_IF_RECORDS zu erfuellen 
+     */
+    @Override
+    public RECORD_#TABLEBASE# build_NEW_INSTANCE_ACTUAL_DATABASEVALUES() throws myException {
+      if (S.isEmpty(this.get_cSQL_4_Build())) {
+         //2016-05-10: falls der RECORD aus einem RECORD_VEKTOR kommt, hat er keinen sql-build-string und muss ihn hier zusammenbauen      
+         // **alt**  throw new myException(this,"build_NEW_INSTANCE_ACTUAL_DATABASEVALUES is not possible, no valid sql-statement is inside !");
+         this.set_cSQL_4_Build("SELECT * FROM "+bibE2.cTO()+".#TABLENAME# WHERE ID_#TABLEBASE#="+this.get_ID_#TABLEBASE#_cUF());
+      }
+      //return new RECORD_#TABLEBASE#(this.get_cSQL_4_Build());
+      RECORD_#TABLEBASE# rec = new RECORD_#TABLEBASE#();
+      rec.set_DBToolBox_FAB(this.get_DBToolBox_FAB());
+      rec.BuildRecord(this.get_cSQL_4_Build());
+      return rec;
+     }
+
+	
+	
+     /**
+     * 
+     * martin: 2015-04-24: erzeugt ein gefuelltes RECORDNEW_#TABLEBASE#
+     * @param msg_sammler
+     * @param changeIdWithSeq
+     * @param bRemoveAutomaticField
+     * @return RECORDNEW_#TABLEBASE#-object filled with values of actual record (to generate copy)
+     * @throws myException
+     */
+     public RECORDNEW_#TABLEBASE# get_Record_NEW_FilledWithActualValues(MyE2_MessageVector msg_sammler, boolean changeIdWithSeq, boolean bRemoveAutomaticField) throws myException {
+        if (S.isEmpty(this.get_TABLENAME())) {
+            throw new myException(this, "get_RECORDNEW_#TABLEBASE#_FilledWithActualValues(): no Tablename is present !" );
+        }
+		
+        RECORDNEW_#TABLEBASE#  recNew = new RECORDNEW_#TABLEBASE#();
+		
+        Vector<String> vSonder = this.get_vSonderFelder();
+		
+        for (String Field: this.keySet()) {
+           if (bRemoveAutomaticField) {
+                //2015-05-06: geaendert von  bibALL.get_vSonderFelder() nach this.get_vSonderFelder()          
+                if (vSonder.contains(Field)) {
+                    continue;
+                }
+            }
+            msg_sammler.add_MESSAGE(recNew.set_NewValueForDatabase(Field, this.get_FormatedValue(Field,null)));
+        }
+		
+        if (changeIdWithSeq) {
+           recNew.set_NewValueForDatabase_RAW_AS_STRING_IN_STATEMENT(this.get_PRIMARY_KEY_NAME(), "SEQ_"+this.get_TABLE_NAME().substring(3)+".NEXTVAL");
+        }
+        return recNew;
+     }
+	
+	
+    /*
+     *
+     */
+    public RECORD_#TABLEBASE# set_recordNew(RECORDNEW_#TABLEBASE# recnew) throws myException {
+        if (this.is_ExistingRecord()) {
+            throw new myException(this,"set_recordNew() only allowed, when record is empty");
+        }
+        this.recNEW=recnew;
+        return this;
+    }
+	
+    //2016-10-27
+    public _TAB get_tab() {
+        return this.tab;
+    }
+	
+    public boolean is_ExistingRecord() {
+        return S.isFull(this.get_cSQL_4_Build());
+    }
+
+    public boolean is_NewRecord() {
+        return !this.is_ExistingRecord();
+    }
+	
+	

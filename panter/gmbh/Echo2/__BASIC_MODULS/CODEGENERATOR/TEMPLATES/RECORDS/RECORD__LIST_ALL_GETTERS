@@ -1,0 +1,35 @@
+
+	public HashMap<String, String>  get_#FIELDNAME#_hmString_Formated(String NullString) throws myException
+	{
+		HashMap<String, String> hmRueck = new HashMap<String, String>();
+		
+		for (java.util.Map.Entry<String,RECORD_#TABLEBASE#> oEntry: this.entrySet())
+		{
+			RECORD_#TABLEBASE# 	oRec = oEntry.getValue();
+			String 				oString =   oRec.get_#FIELDNAME#_cF_NN(NullString);
+			
+			hmRueck.put(oEntry.getKey(), oString);
+		}
+		return hmRueck;
+	}
+	
+	
+
+	public HashMap<String, String>  get_#FIELDNAME#_hmString_UnFormated(String NullString) throws myException
+	{
+		HashMap<String, String> hmRueck = new HashMap<String, String>();
+		
+		for (java.util.Map.Entry<String,RECORD_#TABLEBASE#> oEntry: this.entrySet())
+		{
+			RECORD_#TABLEBASE# 	oRec = oEntry.getValue();
+			String 				oString =   oRec.get_#FIELDNAME#_cUF_NN(NullString);
+			
+			hmRueck.put(oEntry.getKey(), oString);
+		}
+		return hmRueck;
+	}
+	
+
+	
+	
+	

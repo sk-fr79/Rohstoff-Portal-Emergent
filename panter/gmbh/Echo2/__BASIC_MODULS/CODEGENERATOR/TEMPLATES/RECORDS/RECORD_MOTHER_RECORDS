@@ -1,0 +1,20 @@
+
+
+	
+	/**
+	 * References the Field #DAUGHTERFIELD#
+	 * Falls keine this.get_#DAUGHTERFIELD#_cUF() leer ist, wird null zurueckgegeben 
+	 */
+	public RECORD_#MOTHERTABLEBASE# get_UP_RECORD_#MOTHERTABLEBASE#_#daughterfield#() throws myException
+	{
+		if (S.isEmpty(this.get_#DAUGHTERFIELD#_cUF()))
+			return null;
+	
+	
+		if (this.UP_RECORD_#MOTHERTABLEBASE#_#daughterfield#==null)
+		{
+			this.UP_RECORD_#MOTHERTABLEBASE#_#daughterfield# = new RECORD_#MOTHERTABLEBASE#(this.get_#DAUGHTERFIELD#_cUF(),this.get_oConn());
+		}
+		return this.UP_RECORD_#MOTHERTABLEBASE#_#daughterfield#;
+	}
+	

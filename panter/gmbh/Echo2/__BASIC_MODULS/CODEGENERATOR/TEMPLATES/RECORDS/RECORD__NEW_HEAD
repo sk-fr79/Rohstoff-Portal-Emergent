@@ -1,0 +1,101 @@
+package panter.gmbh.basics4project.DB_RECORDS;
+
+
+import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.Vector;
+import java.util.GregorianCalendar;
+
+import panter.gmbh.Echo2.Messaging.MyE2_MessageVector;
+import panter.gmbh.basics4project.DB_ENUMS._TAB;
+import panter.gmbh.indep.dataTools.MyConnection;
+import panter.gmbh.indep.dataTools.MyMetaFieldDEF;
+import panter.gmbh.indep.dataTools.MyRECORD_NEW;
+import panter.gmbh.indep.exceptions.myException;
+
+public class RECORDNEW_#TABLEBASE# extends MyRECORD_NEW 
+{
+
+    public static String TABLENAME = "#TABLENAME#";
+    private _TAB  tab = _TAB.#tablebase#;  
+
+
+	public RECORDNEW_#TABLEBASE#() throws myException 
+	{
+		super("#TABLENAME#");
+		
+		//2013-09-20: jedem MetaFieldDef-Objekt den richtigen tabellenname uebergeben
+		this.set_Tablename_To_FieldMetaDefs(RECORDNEW_#TABLEBASE#.TABLENAME);
+	}
+
+
+    //2013-09-20: erstellen des recordnew-objects ohne abfrage	
+	public RECORDNEW_#TABLEBASE#(HashMap<String, MyMetaFieldDEF> hmMetadefs) throws myException 
+	{
+		super("#TABLENAME#", hmMetadefs);   //generiert die RECORD_NEW ohne abfrage
+
+		//2013-09-20: jedem MetaFieldDef-Objekt den richtigen tabellenname uebergeben
+		this.set_Tablename_To_FieldMetaDefs(RECORDNEW_#TABLEBASE#.TABLENAME);
+	}
+	
+	
+	
+	public RECORDNEW_#TABLEBASE#(MyConnection Conn) throws myException 
+	{
+		super(Conn, "#TABLENAME#");
+		
+		
+		//2013-09-20: jedem MetaFieldDef-Objekt den richtigen tabellenname uebergeben
+		this.set_Tablename_To_FieldMetaDefs(RECORDNEW_#TABLEBASE#.TABLENAME);
+	}
+
+	
+	
+	public RECORD_#TABLEBASE# do_WRITE_NEW_#TABLEBASE#(MyE2_MessageVector oMV) throws myException
+	{
+	
+		boolean bThrowExceptionWhenAlarm = false;
+	
+		if (oMV==null)
+		{
+			oMV=new MyE2_MessageVector();
+			bThrowExceptionWhenAlarm = true;
+		}
+		
+		//zuerst die NotNull-felder pruefen (ausser den automatismen)
+		Vector<String> vExcludeFields = new Vector<String>();
+		vExcludeFields.addAll(this.get_vSonderFelder());
+		vExcludeFields.add("ID_#TABLEBASE#");
+		oMV.add_MESSAGE(this.CheckNotNullables(vExcludeFields));
+		
+		if (!oMV.get_bHasAlarms())
+		{
+			Vector<String> vSQL = new Vector<String>();
+			vSQL.add(this.get_InsertSQLStatementWith_Id_Field(false, true));
+			
+			oMV.add_MESSAGE(this.ExecMultiSQLVector(vSQL, true));
+			
+			if (!oMV.get_bHasAlarms())
+			{
+				return new RECORD_#TABLEBASE#(this.get_cLastSEQ_NUMBER());
+			}
+			else
+			{
+				if (bThrowExceptionWhenAlarm)   //falls fehler nicht in einen Messagevector geht, dann exception
+				{
+					throw new myException("Error writing new Dataset to Table #TABLEBASE# ::"+vSQL.get(0));
+				}
+			}
+		}
+		
+		return null;
+	}
+
+    //2016-10-27
+    public _TAB get_tab() {
+        return this.tab;
+    }
+
+
+	
+	

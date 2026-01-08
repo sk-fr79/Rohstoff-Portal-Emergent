@@ -1,0 +1,57 @@
+ 
+package rohstoff.businesslogic.bewegung.lager.list_saldo;
+  
+import panter.gmbh.Echo2.ListAndMask.List.E2_NavigationList;
+import panter.gmbh.Echo2.ListAndMask.List.Export.EXP_popup_menue_exporter;
+import panter.gmbh.Echo2.ListAndMask.List.Settings.E2_ButtonToSelectVisibleListColumns_and_other_settings;
+import panter.gmbh.Echo2.RB.TOOLS.RB_gld;
+import panter.gmbh.Echo2.components.E2_Grid;
+import panter.gmbh.indep.exceptions.myException;
+
+@Deprecated
+public class BG_Lager_Saldo_LIST_BedienPanel extends E2_Grid {
+    
+    private BG_Lager_Saldo_LIST_Selector  bg_ladung_LIST_Selector = null;
+    
+    public BG_Lager_Saldo_LIST_BedienPanel(E2_NavigationList oNaviList) throws myException     {
+        super();
+        this.setSize(2);
+       
+        E2_Grid grid4Components = new E2_Grid()._s(8);
+        
+        this.bg_ladung_LIST_Selector = new BG_Lager_Saldo_LIST_Selector(oNaviList);
+        this._a(bg_ladung_LIST_Selector,   	new RB_gld()._ins(0,2,10,2)._span(2)._left_mid());
+        this._a(grid4Components,   							new RB_gld()._ins(0,2,10,2)._left_mid());
+        this._a(new BG_Lager_Saldo_LIST_DATASEARCH(oNaviList), 	new RB_gld()._ins(0,2,10,2)._left_mid());
+        
+        grid4Components._a(new E2_ButtonToSelectVisibleListColumns_and_other_settings(oNaviList),  new RB_gld()._ins(2,2,20,2)._left_mid());
+//        grid4Components._a(new BG_Lager_Saldo_LIST_bt_ListToMask(true,oNaviList),   new RB_gld()._ins(2,2,10,2)._left_mid());
+//        grid4Components._a(new BG_Lager_Saldo_LIST_bt_ListToMask(false,oNaviList),   new RB_gld()._ins(2,2,10,2)._left_mid());
+//        
+//        grid4Components._a(new BG_Lager_Saldo_LIST_bt_New(oNaviList),   new RB_gld()._ins(2,2,10,2)._left_mid());
+//        grid4Components._a(new BG_Lager_Saldo_LIST_bt_Copy(oNaviList),   new RB_gld()._ins(2,2,10,2)._left_mid());
+//        grid4Components._a(new BG_Lager_Saldo_LIST_bt_multiDelete(oNaviList),  new RB_gld()._ins(2,2,10,2)._left_mid());
+        
+        grid4Components._a(new ownExporter(oNaviList),					new RB_gld()._ins(10, 2, 10, 2)._left_mid());
+        
+    }
+    public BG_Lager_Saldo_LIST_Selector get_list_Selector() 
+    {
+        return bg_ladung_LIST_Selector;
+    }
+    
+    
+    //exporter-button
+    private class ownExporter extends EXP_popup_menue_exporter {
+    	/**
+		 * @param p_navigationlist
+		 */
+		public ownExporter(E2_NavigationList p_navigationlist) {
+			super(p_navigationlist);
+		}
+		
+    }
+    
+    
+}
+ 

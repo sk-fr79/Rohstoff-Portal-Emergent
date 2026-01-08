@@ -1,0 +1,2 @@
+Validierung: 
+Der Trigger wird immer ausgeführt

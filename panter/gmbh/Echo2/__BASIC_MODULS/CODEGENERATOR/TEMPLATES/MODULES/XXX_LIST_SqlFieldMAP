@@ -1,0 +1,35 @@
+package <PACKAGENAME>;
+
+import panter.gmbh.basics4project.db.Project_SQLFieldMAP;
+import panter.gmbh.indep.exceptions.myException;
+
+public class <BASISNAME>_LIST_SqlFieldMAP extends Project_SQLFieldMAP 
+{
+
+	public <BASISNAME>_LIST_SqlFieldMAP() throws myException 
+	{
+		super("<MAINTABLE>", "", false);
+		
+
+		/*
+		 * beispiel fuer die definition von standard-werten
+		 */
+		</FIELDNAME/>
+		this.get_("<FIELDNAME>").set_cDefaultValueFormated("");
+		
+		/*	
+		E2_DropDownSettings oDDWichtigkeit = new E2_DropDownSettings("<MAINTABLE>_WICHTIGKEIT","BESCHREIBUNG","ID_<BASISNAME>_WICHTIGKEIT","ISTSTANDARD",true);
+		this.get_("ID_<BASISNAME>_WICHTIGKEIT").set_cDefaultValueFormated(oDDWichtigkeit.getDefault());
+		*/
+
+		/*
+		 * Beispiel fuer sonderabfragen, die immer zugrunde liegen
+ 		 *
+		cSonderQuery =  "(<MAINTABLE>.ID_USER="+cID_USER+" OR <MAINTABLE>.ID_<BASISNAME> IN (SELECT ID_<BASISNAME> FROM "+bibE2.cTO()+".<MAINTABLE>_TEILNEHMER WHERE ID_USER="+cID_USER+"))";
+		
+		this.add_BEDINGUNG_STATIC(cSonderQuery);
+		*/
+		this.initFields();
+	}
+	
+}

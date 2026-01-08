@@ -1,0 +1,42 @@
+CREATE OR REPLACE FUNCTION GUTPOS(id_vektor IN NUMBER)
+  -- ermitteln der anzahl von rechnungspositionen innerhalb eines vektors
+  RETURN  NUMBER IS
+  
+    ret number := null; 
+    id__mandant number(10); 
+    id__adresse_mandant number(10); 
+  
+  BEGIN
+   
+   
+  if (id_vektor is not null) then 
+      SELECT ID_MANDANT into id__mandant FROM JT_BEWEGUNG_VEKTOR WHERE ID_BEWEGUNG_VEKTOR=id_vektor;
+ 
+      if (id__mandant is not null) then
+      
+          SELECT EIGENE_ADRESS_ID into id__adresse_mandant FROM JD_MANDANT WHERE ID_MANDANT=id__mandant;
+
+          if (id__adresse_mandant is not null)  then
+             --anzahl der atome mit besitzerwechsel weg von mandant=rechnungspositionen
+             
+             SELECT
+               COUNT(*) into ret
+             FROM        JT_BEWEGUNG_ATOM LA
+             INNER JOIN  JT_BEWEGUNG_STATION STS
+               ON (LA.ID_BEWEGUNG_ATOM=STS.ID_BEWEGUNG_ATOM AND STS.MENGENVORZEICHEN=-1)
+             INNER JOIN  JT_BEWEGUNG_STATION STZ
+               ON  (LA.ID_BEWEGUNG_ATOM=STZ.ID_BEWEGUNG_ATOM AND STZ.MENGENVORZEICHEN=1)
+             WHERE   STS.ID_ADRESSE_BESITZER<>id__adresse_mandant
+             AND     STZ.ID_ADRESSE_BESITZER=id__adresse_mandant
+             AND     NVL(LA.DELETED,'N')='N'
+             AND     NVL(LA.STORNIERT,'N')='N'
+             AND     LA.ID_BEWEGUNG_VEKTOR=id_vektor  ;
+             
+          end if;
+          
+      end if;
+      
+  end if;
+  RETURN ret;
+  
+END;

@@ -1,0 +1,85 @@
+	public Double get_D_#FIELDNAME#(Double dValueWhenNULL) throws myException
+	{
+		if (vIDs.size()!=1)
+			throw new myException(this,"Method only in singular MAP-Objects allowed ");
+		Double dRueck = this.oHM_First.get_doubleValue("#FIELDNAME#");
+		if (dRueck==null) 
+		{ 
+			return dValueWhenNULL; 
+		} 
+		else 
+		{ 
+			return dRueck;
+		} 
+	}
+
+
+
+	public Double get_D_#FIELDNAME#(int iPos, Double dValueWhenNULL) throws myException
+	{
+		if (iPos<0)
+			throw new myException(this,"Number MUST be greater equal 0 ");
+
+		if (iPos>=this.vIDs.size())
+			throw new myException(this,"Number of Row smaller than "+iPos);
+
+		String cID = this.vIDs.get(iPos);
+
+		Double dRueck =  this.oHM_aus_MyDataRecordHashMaps.get(cID).get_doubleValue("#FIELDNAME#");
+		if (dRueck==null) 
+		{ 
+			return dValueWhenNULL; 
+		} 
+		else 
+		{ 
+			return dRueck;
+		} 
+	}
+
+
+
+	public Double get_D_#FIELDNAME#(String cID, Double dValueWhenNULL) throws myException
+	{
+		if (!this.vIDs.contains(cID))
+			throw new myException(this,"ID is not in the collection");
+
+		Double dRueck =   this.oHM_aus_MyDataRecordHashMaps.get(cID).get_doubleValue("#FIELDNAME#");
+		if (dRueck==null) 
+		{ 
+			return dValueWhenNULL; 
+		} 
+		else 
+		{ 
+			return dRueck;
+		} 
+	}
+
+
+   public HashMap<String,Double> get_hmD_#FIELDNAME#(Double dValueWhenNULL) throws myException 
+  {
+	  HashMap<String,Double> hmRueck = new HashMap<String,Double>();
+     for (String cID:this.vIDs)
+	  {
+		  hmRueck.put(cID, this.get_D_#FIELDNAME#(cID,dValueWhenNULL));
+	  }
+	  return hmRueck;
+  }
+
+
+    
+   public double get_d_SUMME_#FIELDNAME#(MAP_#TABLEBASE#.ValidSummation oValidator) throws myException 
+   { 
+	   double dRueck = 0; 
+	   for (String cID:this.vIDs) 
+	   { 
+		   if (oValidator == null || oValidator.isValidForSummation(this,cID)) 
+		   { 
+			   dRueck = dRueck + this.get_D_#FIELDNAME#(new Double(0)).doubleValue();
+		   } 
+	   } 
+	    
+	   return dRueck; 
+   } 
+
+
+

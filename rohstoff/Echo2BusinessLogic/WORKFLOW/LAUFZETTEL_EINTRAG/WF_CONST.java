@@ -1,0 +1,52 @@
+package rohstoff.Echo2BusinessLogic.WORKFLOW.LAUFZETTEL_EINTRAG;
+
+public class WF_CONST
+{
+	
+	public static final String HASH_SONDERFELD_GEANDERT_VON = "SF_GEAENDERT_VON";
+	public static final String HASH_SONDERFELD_LETZTE_AENDERUNG = "SF_LETZTE_AENDERUNG";
+	
+	public static String HASH_DEL_BUTTON_SUBLIST = "HASH_DEL_BUTTON_SUBLIST";
+	public static String HASH_MULTI_COL_BUTTONS = "HASH_MULTI_COL_BUTTONS";
+	
+	// Konstanten für die Mehrzeiler-Komponenten
+	public static String HASH_MEHRZEILER_BEARBEITER = "HASH_MEHRZEILER_BEARBEITER";
+	public static String HASH_MEHRZEILER_PRIO = "HASH_MEHRZEILER_PRIO";
+	public static String HASH_MEHRZEILER_BESITZER = "HASH_MEHRZEILER_BESITZER";
+	public static String HASH_MEHRZEILER_ABSCHLUSS = "HASH_MEHRZEILER_ABSCHLUSS";
+	public static String HASH_MEHRZEILER_IDS = "HASH_MEHRZEILER_IDS";
+
+	// button "Abschließen"
+	public static String HASH_ABSCHLUSSBUTTON = "HASH_ABSCHLUSSBUTTON";
+	// button "Abschließen Rückgängig"
+	public static String HASH_ABSCHLUSSBUTTON_REVERT = "HASH_ABSCHLUSSBUTTON_REVERT";
+	
+	// Laufzettel-Beschreibung
+	public static String HASH_LAUFZETTEL_BESCHREIBUNG = "HASH_LAUFZETTEL_BESCHREIBUNG";
+	// Laufzettel-Supervisor
+	public static String HASH_LAUFZETTEL_SUPERVISOR = "HASH_LAUFZETTEL_SUPERVISOR";
+	
+	
+	// Benutzerauswahl
+	public static String HASH_LAUFZETTEL_BENUTZER_AUSWAHL = "HASH_LAUFZETTEL_BENUTZER_AUSWAHL";
+	// Benutzerauswahl-Container
+	public static String HASH_LAUFZETTEL_BENUTZER_AUSWAHL_CONTAINER = "HASH_LAUFZETTEL_BENUTZER_AUSWAHL_CONTAINER";
+	
+	// Linkmodul auf andere Module
+	public static String HASH_LIST_CONNECTOR  = "HASH_LIST_CONNECTOR";
+	
+	public static String HASH_BUTTON_CREATE_REMINDER = "HASH_BUTTON_CREATE_REMINDER";
+	public static String HASH_BUTTON_CREATE_MESSAGE_TO_GROUP = "HASH_BUTTON_CREATE_MESSAGE_TO_GROUP";
+	
+	
+	public static String HASH_BUTTON_SET_WF_BEARBEITER_SELF = "HASH_BUTTON_SET_LZE_BEARBEITER_SELF";
+	public static String HASH_BUTTON_SET_LZE_BESITZER_SELF 	= "HASH_BUTTON_SET_LZE_BESITZER_SELF";
+	public static String HASH_BUTTON_SET_LZ_BESITZER_SELF 	= "HASH_BUTTON_SET_LZ_BESITZER_SELF";
+	public static String HASH_BUTTON_SET_LZ_SUPERVISOR_SELF = "HASH_BUTTON_SET_LZ_SUPERVISOR_SELF";
+
+	// checkbox kadenz nach abschluss
+	public static String HASH_CHECKBOX_KADENZ_NACH_ABSCHLUSS = "HASH_CHECKBOX_KADENZ_NACH_ABSCHLUSS";
+	
+	
+	
+}

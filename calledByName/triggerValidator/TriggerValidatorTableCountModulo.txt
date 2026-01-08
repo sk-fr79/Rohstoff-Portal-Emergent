@@ -1,0 +1,15 @@
+Validierung:
+Hier wird eine XML-Struktur benoetigt, die einen Zaehler uebergibt.
+Die Zahl, die in der XML-Struktur steht, ist der Modulo-Divisor.
+Dieser prueft die Anzahl der Mandanteneintraege in der Datenbank
+via select count(*) from ... und der Validierer gibt true zurueck,
+wenn der modulo-zaehler = 0 ist (= der n-te Eintrag)
+ 
+ 
+<!--Beispiel --- ausfuehrung erfolgt, bei jedem 20. Eintrag in der Datenbank  -->
+
+<valid>
+<modulo>
+<modulowert>20</modulowert>
+</modulo>
+</valid>

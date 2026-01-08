@@ -1,0 +1,24 @@
+/**
+ * rohstoff.businesslogic.bewegung2.list
+ * @author martin
+ * @date 22.11.2018
+ * 
+ */
+package rohstoff.businesslogic.bewegung2.list;
+
+import panter.gmbh.Echo2.RB.BASICS.RB_TransportHashMapEnumExtender;
+
+public enum B2_TransportHashMapAddons implements RB_TransportHashMapEnumExtender {
+	 CACHE_RECLIST21_LIEFERBEDINGUNGEN
+	,CACHE_RECLIST21_ZAHLUNGSBEDINGUNGEN
+	,CACHE_RECLIST21_TAX
+	,CACHE_RECLIST21_LAND
+	,CACHE_RECLIST21_TRANSPORTMITTEL
+	,CACHE_RECLIST21_VERPACKUNGSART
+	,CACHE_RECLIST21_VERARBEITUNG
+	,CACHE_REC21_RECORD_ADRESSE_MANDANT
+	,MASK_BASIC_GRID
+	,CACHE_RECLIST21_ZOLLTARIFNUMMER
+	,HIGHLIGHT_COLOR_SEARCHBLOCKS
+	
+}

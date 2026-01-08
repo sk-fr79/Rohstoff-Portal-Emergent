@@ -1,0 +1,94 @@
+/**
+ * 
+ */
+package rohstoff.Echo2BusinessLogic.BAM_BETRIEB;
+
+import panter.gmbh.Echo2.MyE2_String;
+import panter.gmbh.Echo2.bibE2;
+import panter.gmbh.Echo2.ActionEventTools.ExecINFO;
+import panter.gmbh.Echo2.ActionEventTools.XX_ActionAgent;
+import panter.gmbh.Echo2.ListAndMask.E2_ComponentMAP;
+import panter.gmbh.Echo2.Messaging.MyE2_Alarm_Message;
+import panter.gmbh.Echo2.Messaging.bibMSG;
+import panter.gmbh.Echo2.components.DB.MyE2_DB_CheckBox;
+import panter.gmbh.Echo2.components.DB.MyE2_DB_SelectField;
+import panter.gmbh.Echo2.components.DB.MyE2_DB_TextField;
+import panter.gmbh.indep.bibALL;
+import panter.gmbh.indep.exceptions.myException;
+
+public class AA_MASK_BAMB_CheckBox_BEHEBUNG  extends XX_ActionAgent
+{
+	private E2_ComponentMAP oComponentMAP = null;
+	
+	
+	public AA_MASK_BAMB_CheckBox_BEHEBUNG(E2_ComponentMAP componentMAP)
+	{
+		super();
+		this.oComponentMAP = componentMAP;
+	}
+
+
+	public void executeAgentCode(ExecINFO oExecInfo) throws myException
+	{
+		/*
+		 * die action setzt den benutzer auf die eigene ID und sperrt die user-auswahl
+		 */
+		MyE2_DB_SelectField 	oSelectUSER_BEHEBUNG = (MyE2_DB_SelectField) this.oComponentMAP.get("ID_USER_BEHEBUNG");
+		MyE2_DB_CheckBox	 	oCheckBEHEBUNG	 = (MyE2_DB_CheckBox)bibE2.get_LAST_ACTIONEVENT().getSource();
+		MyE2_DB_TextField		oDatumBEHEBUNG =  (MyE2_DB_TextField) this.oComponentMAP.get("DATUM_BEHEBUNG");
+
+		MyE2_DB_SelectField 	oSelectUSER_KONTROLLE = (MyE2_DB_SelectField) this.oComponentMAP.get("ID_USER_KONTROLLE");
+		MyE2_DB_CheckBox	 	oCheckKONTROLLE	 = (MyE2_DB_CheckBox)	this.oComponentMAP.get("ABGESCHLOSSEN_KONTROLLE");
+		MyE2_DB_TextField		oDatumKONTROLLE=  (MyE2_DB_TextField) 	this.oComponentMAP.get("DATUM_KONTROLLE");
+
+		
+		try
+		{
+			if (oCheckBEHEBUNG.isSelected())
+			{
+				String cUser_ID = bibALL.get_ID_USER_FORMATTED();
+				
+				oSelectUSER_BEHEBUNG.set_ActiveValue(cUser_ID);
+				oSelectUSER_BEHEBUNG.EXT().set_bDisabledFromInteractive(true);
+				oSelectUSER_BEHEBUNG.set_bEnabled_For_Edit(true);
+				
+				String cSTATUS_MASKE = E2_ComponentMAP.STATUS_EDIT;
+				if (this.oComponentMAP.get_oSQLFieldMAP() == null) cSTATUS_MASKE= E2_ComponentMAP.STATUS_NEW_EMPTY;
+				
+				if (bibALL.isEmpty(oDatumBEHEBUNG.getText()))
+					oDatumBEHEBUNG.set_cActual_Formated_DBContent_To_Mask(bibALL.get_cDateNOW(), cSTATUS_MASKE, null);
+
+			}
+			else
+			{
+				oSelectUSER_BEHEBUNG.EXT().set_bDisabledFromInteractive(false);
+				oSelectUSER_BEHEBUNG.set_bEnabled_For_Edit(true);
+				
+				/*
+				 * dann muss die kontrolle wieder ausgeschaltet werden (falls sie eingeschaltet war)
+				 */
+				oSelectUSER_KONTROLLE.EXT().set_bDisabledFromInteractive(false);
+				oCheckKONTROLLE.EXT().set_bDisabledFromInteractive(false);
+				oDatumKONTROLLE.EXT().set_bDisabledFromInteractive(false);
+				oSelectUSER_KONTROLLE.set_bEnabled_For_Edit(true);
+				oCheckKONTROLLE.set_bEnabled_For_Edit(true);
+				oDatumKONTROLLE.set_bEnabled_For_Edit(true);
+				
+				oCheckKONTROLLE.setSelected(false);
+				
+				
+				
+				
+			}
+
+		}
+		catch (Exception ex)
+		{
+			oSelectUSER_BEHEBUNG.setSelectedIndex(0);   // leer
+			bibMSG.add_MESSAGE(new MyE2_Alarm_Message(new MyE2_String("BAM_ActionAgents:ActionAgent_CheckBox:doAction:Error Selection own USER-ID !",false)));
+		}
+		
+		
+	}
+	
+}

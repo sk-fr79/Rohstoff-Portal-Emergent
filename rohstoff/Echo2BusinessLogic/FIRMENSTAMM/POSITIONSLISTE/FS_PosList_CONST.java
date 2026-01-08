@@ -1,0 +1,8 @@
+package rohstoff.Echo2BusinessLogic.FIRMENSTAMM.POSITIONSLISTE;
+
+public class FS_PosList_CONST {
+	
+//	public static String HASHKEY_CONTAINER4ZAHLUNG = "HASHKEY_CONTAINER4ZAHLUNG";
+	public static String HASHKEY_LIST_BT_WERTSCHREIBEN = "HASHKEY_LIST_BT_WERTSCHREIBEN";
+	
+}

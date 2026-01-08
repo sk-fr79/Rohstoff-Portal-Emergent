@@ -1,0 +1,95 @@
+	public Double get_#FIELDNAME#_dValue(Double dValueWhenNULL) throws myException
+	{
+		Double dRueck = this.get("#FIELDNAME#").getDoubleValue();
+		if (dRueck==null) 
+		{ 
+			return dValueWhenNULL; 
+		} 
+		else 
+		{ 
+			return dRueck;
+		} 
+	}
+	
+
+	
+	public Double get_#FIELDNAME#_dValue(Double dValueWhenNULL, int iNachkommaRunden) throws myException
+	{
+		Double dRueck = this.get("#FIELDNAME#").getDoubleValue();
+		if (dRueck == null)
+		{
+			dRueck = dValueWhenNULL;           //der wert wird auch gerunden (falls nicht null)
+		}
+		
+		if (dRueck==null) 
+		{ 
+			return null; 
+		} 
+		else 
+		{ 
+			BigDecimal bdTemp = new BigDecimal(dRueck);
+			BigDecimal bdValue = bdTemp.setScale(iNachkommaRunden, BigDecimal.ROUND_HALF_UP);
+			dRueck = bdValue.doubleValue();
+			return new Double(dRueck);
+		} 
+	}
+	
+	
+	/**
+	 * 
+	 * @param dValueWhenNULL
+	 * @param iNachkommaRunden
+	 * @return "" wenn der double-Wert null ist
+	 * @throws myException
+	 */
+	public String get_#FIELDNAME#_cUF_NN(Double dValueWhenNULL, int iNachkommaRunden) throws myException
+	{
+		String cFormat = "#0," + "00000000000000000000000000000000".substring(0, iNachkommaRunden);
+		
+		DecimalFormat df = new DecimalFormat(cFormat);
+
+		Double dHelp = this.get_#FIELDNAME#_dValue(dValueWhenNULL,iNachkommaRunden);
+		if (dHelp==null)
+		{
+			return "";
+		}
+	   
+		//beim runden auf 0 formatiert er als letztes zeichen . oder ,
+		String cRueck =  df.format(dHelp.doubleValue());
+		if (cRueck.endsWith(",")||cRueck.endsWith("."))
+			cRueck = cRueck.substring(0,cRueck.length()-1);
+		
+		return cRueck;
+		
+	}
+
+	/**
+	 * 
+	 * @param dValueWhenNULL
+	 * @param iNachkommaRunden
+	 * @param bTausender
+	 * @return s "" wenn der double-Wert null ist
+	 * @throws myException
+	 */
+	public String get_#FIELDNAME#_cF_NN(Double dValueWhenNULL, int iNachkommaRunden, boolean bTausender) throws myException
+	{
+		String cFormat = "#,###,##0." + "00000000000000000000000000000000".substring(0, iNachkommaRunden);
+		if (!bTausender) cFormat = "#0." + "00000000000000000000000000000000".substring(0, iNachkommaRunden);
+		
+		DecimalFormat df = new DecimalFormat(cFormat);
+
+		Double dHelp = this.get_#FIELDNAME#_dValue(dValueWhenNULL,iNachkommaRunden);
+		if (dHelp==null)
+		{
+			return "";
+		}
+		
+		//beim runden auf 0 formatiert er als letztes zeichen . oder ,
+		String cRueck =  df.format(dHelp.doubleValue());
+		if (cRueck.endsWith(",")||cRueck.endsWith("."))
+			cRueck = cRueck.substring(0,cRueck.length()-1);
+		
+		return cRueck;
+
+	}
+	

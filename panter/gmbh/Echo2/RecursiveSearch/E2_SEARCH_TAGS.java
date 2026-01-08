@@ -1,0 +1,33 @@
+package panter.gmbh.Echo2.RecursiveSearch;
+
+public class E2_SEARCH_TAGS
+{
+	
+	//schreibweise der strings:  ST___<name des moduls oder ALL fuer alle module>__<Beschreibung der getaggten komponente>
+	//public static String ST__MODUL_MODUL_MANAGER_LISTE__SELEKTOR_COMPONENT_HAUPT_MENUE = 	"ST__MODUL_MODUL_MANAGER_LISTE__SELEKTOR_COMPONENT_HAUPT_MENUE";
+
+	public static enum SEARCH_TAGS 
+	{
+		ST__MODUL_MODUL_MANAGER_LISTE__SELEKTOR_COMPONENT_HAUPT_MENUE,
+		FUHRENMASKE_UMA_ANZEIGE,
+		NAVIGATIONLIST_IN_FUHRENZENTRALE_FAHRPLAN_FAHRPLANPOOL,
+		MODUL_UMA_KONTRAKT_MASKENFELD_ID_ADRESSE,
+		
+		//2012-03-26: searchtags zur suche der mengenfelder in der fuhre
+		FUHRENMASKE_ANTEIL_PLANMENGE_LIEF,
+		FUHRENMASKE_ANTEIL_LADEMENGE_LIEF,
+		FUHRENMASKE_ANTEIL_ABLADEMENGE_LIEF,
+		FUHRENMASKE_ANTEIL_PLANMENGE_ABN,
+		FUHRENMASKE_ANTEIL_LADEMENGE_ABN,
+		FUHRENMASKE_ANTEIL_ABLADEMENGE_ABN,
+		
+		// 2014-09-19: Searchtags zur Suche vom Nachrichten-Fenster und von Sofortnachrichten-Fenster
+		NACHRICHTEN_EDITOR,
+		NACHRICHTEN_EDITOR_SOFORT,
+		
+		
+	};
+	
+	
+	
+}

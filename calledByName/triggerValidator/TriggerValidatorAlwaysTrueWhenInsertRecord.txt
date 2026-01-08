@@ -1,0 +1,4 @@
+Validierung: 
+Der Trigger wird immer ausgeführt,
+wenn ein Datensatz erstellt wurde
+

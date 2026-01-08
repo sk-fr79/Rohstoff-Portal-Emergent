@@ -1,0 +1,2836 @@
+package panter.gmbh.basics4project.DB_RECORDS;
+
+import java.math.BigDecimal;
+import java.text.DecimalFormat;
+import java.util.GregorianCalendar;
+import java.util.HashMap;
+import java.util.Vector;
+
+import panter.gmbh.Echo2.bibE2;
+import panter.gmbh.Echo2.Messaging.MyE2_MessageVector;
+import panter.gmbh.basics4project.DB_ENUMS._TAB;
+import panter.gmbh.indep.S;
+import panter.gmbh.indep.bibALL;
+import panter.gmbh.indep.dataTools.MyConnection;
+import panter.gmbh.indep.dataTools.MyRECORD;
+import panter.gmbh.indep.dataTools.MyRECORD_IF_RECORDS;
+import panter.gmbh.indep.dataTools.MyRECORD_NEW;
+import panter.gmbh.indep.dataTools.MySqlStatementBuilder;
+import panter.gmbh.indep.exceptions.myException;
+
+public class RECORD_CONTAINERTYP extends MyRECORD implements MyRECORD_IF_RECORDS
+{
+
+    public static String TABLENAME = "JT_CONTAINERTYP";
+    public static String IDFIELD   = "ID_CONTAINERTYP";
+    
+
+	//erzeugen eines RECORDNEW_JT_CONTAINERTYP - felds
+	private RECORDNEW_CONTAINERTYP   recNEW = null;
+
+    private _TAB  tab = _TAB.containertyp;  
+
+
+
+	public RECORD_CONTAINERTYP() throws myException
+	{
+		super();
+		this.set_TABLE_NAME("JT_CONTAINERTYP");
+	}
+
+
+	public RECORD_CONTAINERTYP(MyConnection Conn)   throws myException 
+	{
+		super(Conn);
+		this.set_TABLE_NAME("JT_CONTAINERTYP");
+	}
+
+
+
+	public RECORD_CONTAINERTYP(RECORD_CONTAINERTYP recordOrig)
+	{
+		super(recordOrig);
+		this.set_TABLE_NAME("JT_CONTAINERTYP");
+		
+		//2013-09-20: jedem MetaFieldDef-Objekt den richtigen tabellenname uebergeben
+		this.set_Tablename_To_FieldMetaDefs(RECORD_CONTAINERTYP.TABLENAME);
+	}
+
+
+	//2014-04-03
+	public RECORD_CONTAINERTYP(MyRECORD recordOrig)
+	{
+		super(recordOrig);
+		this.set_TABLE_NAME("JT_CONTAINERTYP");
+		this.set_Tablename_To_FieldMetaDefs(RECORD_CONTAINERTYP.TABLENAME);
+	}
+
+
+
+
+	public RECORD_CONTAINERTYP(long lID_Unformated) throws myException
+	{
+		super("JT_CONTAINERTYP","ID_CONTAINERTYP",""+lID_Unformated);
+		this.set_TABLE_NAME("JT_CONTAINERTYP");
+
+		//2013-09-20: jedem MetaFieldDef-Objekt den richtigen tabellenname uebergeben
+		this.set_Tablename_To_FieldMetaDefs(RECORD_CONTAINERTYP.TABLENAME);
+	}
+
+	public RECORD_CONTAINERTYP(String c_ID_or_WHEREBLOCK_OR_SQL)   throws myException 
+	{
+		super();
+		this.set_TABLE_NAME("JT_CONTAINERTYP");
+
+		if (bibALL.isLong(c_ID_or_WHEREBLOCK_OR_SQL))
+		{
+			this.PrepareAndBuild("*", bibE2.cTO()+".JT_CONTAINERTYP", "ID_CONTAINERTYP="+c_ID_or_WHEREBLOCK_OR_SQL);
+		}
+		else
+		{
+			if (c_ID_or_WHEREBLOCK_OR_SQL.toUpperCase().trim().startsWith("SELECT "))
+			{
+				this.BuildRecord(c_ID_or_WHEREBLOCK_OR_SQL);
+			}
+			else
+			{
+				this.PrepareAndBuild("*", bibE2.cTO()+".JT_CONTAINERTYP", c_ID_or_WHEREBLOCK_OR_SQL);
+			}
+		}
+		
+		
+		//2013-09-20: jedem MetaFieldDef-Objekt den richtigen tabellenname uebergeben
+		this.set_Tablename_To_FieldMetaDefs(RECORD_CONTAINERTYP.TABLENAME);
+	}
+	
+	
+
+	public RECORD_CONTAINERTYP(long lID_Unformated, MyConnection Conn) throws myException
+	{
+		super("JT_CONTAINERTYP","ID_CONTAINERTYP",""+lID_Unformated, Conn);
+
+		this.set_TABLE_NAME("JT_CONTAINERTYP");
+
+
+		//2013-09-20: jedem MetaFieldDef-Objekt den richtigen tabellenname uebergeben
+		this.set_Tablename_To_FieldMetaDefs(RECORD_CONTAINERTYP.TABLENAME);
+
+	}
+
+
+	public RECORD_CONTAINERTYP(String c_ID_or_WHEREBLOCK_OR_SQL, MyConnection Conn)   throws myException 
+	{
+		super(Conn);
+		this.set_TABLE_NAME("JT_CONTAINERTYP");
+		
+		if (bibALL.isLong(c_ID_or_WHEREBLOCK_OR_SQL))
+		{
+			this.PrepareAndBuild("*", bibE2.cTO()+".JT_CONTAINERTYP", "ID_CONTAINERTYP="+c_ID_or_WHEREBLOCK_OR_SQL);
+		}
+		else
+		{
+			if (c_ID_or_WHEREBLOCK_OR_SQL.toUpperCase().trim().startsWith("SELECT "))
+			{
+				this.BuildRecord(c_ID_or_WHEREBLOCK_OR_SQL);
+			}
+			else
+			{
+				this.PrepareAndBuild("*", bibE2.cTO()+".JT_CONTAINERTYP", c_ID_or_WHEREBLOCK_OR_SQL);
+			}
+		}
+		
+		
+		
+		//2013-09-20: jedem MetaFieldDef-Objekt den richtigen tabellenname uebergeben
+		this.set_Tablename_To_FieldMetaDefs(RECORD_CONTAINERTYP.TABLENAME);
+		
+		
+	}
+
+	
+	
+	@Override
+	public MyRECORD_NEW  get_RECORD_NEW() throws myException {
+	   return this.get_RECORDNEW_CONTAINERTYP();
+	}
+
+	
+	
+    @Override
+	public String get_TABLENAME()
+	{
+		return RECORD_CONTAINERTYP.TABLENAME;
+	}
+	
+    @Override
+	public String get_PRIMARY_KEY_NAME()
+	{
+		return "ID_CONTAINERTYP";
+	}
+
+
+	public String get_PRIMARY_KEY_UF() throws myException
+	{
+		return this.get_ID_CONTAINERTYP_cUF();
+	}
+	
+
+	public long get_PRIMARY_KEY_VALUE() throws myException
+	{
+		return this.get_ID_CONTAINERTYP_lValue(null).longValue();
+	}
+	
+	
+	public String get_SQL_UPDATE_STATEMENT(Vector<String> vFieldsNotInUpdate, boolean bOnlyChangedFields) throws myException
+	{
+		MySqlStatementBuilder oSQLStatementBuilder = (bOnlyChangedFields?this.get_StatementBuilderFilledWithActualValues_ONLY_CHANGED_FIELDS():this.get_StatementBuilderFilledWithActualValues());
+		
+		if (oSQLStatementBuilder.size()==0)    // sonst keine aenderungen
+		{
+			throw new myException(this,"Error: No field in RECORD_CONTAINERTYP was changed !");
+		}
+		return oSQLStatementBuilder.get_CompleteUPDATEString("JT_CONTAINERTYP", bibE2.cTO(), "ID_CONTAINERTYP="+this.get_ID_CONTAINERTYP_cUF(), vFieldsNotInUpdate);
+	}
+	
+
+	/*
+	 * 2012-09-18: simples update-statement-erstellung, nur geaenderte felder 
+	 */
+	public String get_SQL_UPDATE_STD() throws myException
+	{
+		MySqlStatementBuilder oSQLStatementBuilder = this.get_StatementBuilderFilledWithActualValues_ONLY_CHANGED_FIELDS();
+		
+		if (oSQLStatementBuilder.size()==0)    // sonst keine aenderungen
+		{
+			throw new myException(this,"Error: No field in RECORD_CONTAINERTYP was changed !");
+		}
+		return oSQLStatementBuilder.get_CompleteUPDATEString("JT_CONTAINERTYP", bibE2.cTO(), "ID_CONTAINERTYP="+this.get_ID_CONTAINERTYP_cUF(), null);
+	}
+	
+	
+	/*
+	 * 2012-09-18: simples update, nur geaenderte felder 
+	 */
+	public MyE2_MessageVector UPDATE(boolean bCommit) throws myException
+	{
+	    //2015-05-06:  geaendert von bibDB.ExecMultiSQLVector() nach this.ExecMultiSQLVector()
+		return this.ExecMultiSQLVector(bibALL.get_Vector(this.get_SQL_UPDATE_STD()),bCommit);
+	}
+	
+		
+	/*
+	 * 2016-09-15: anderer name 
+	 */
+	public MyE2_MessageVector SAVE(boolean bCommit) throws myException {
+		return this.UPDATE(bCommit);
+	}
+	
+	
+	
+	public MyE2_MessageVector UPDATE(Vector<String> vFieldsNotInUpdate, boolean bOnlyChangedFields) throws myException
+	{
+	    //2015-05-06:  geaendert von bibDB.ExecMultiSQLVector() nach this.ExecMultiSQLVector()
+		return this.ExecMultiSQLVector(bibALL.get_Vector(this.get_SQL_UPDATE_STATEMENT(vFieldsNotInUpdate,bOnlyChangedFields)),true);
+	}
+	
+	public MyE2_MessageVector DELETE() throws myException
+	{
+        //2015-05-06:  geaendert von bibDB.ExecMultiSQLVector() nach this.ExecMultiSQLVector()
+        return this.ExecMultiSQLVector(bibALL.get_Vector("DELETE FROM "+bibE2.cTO()+".JT_CONTAINERTYP WHERE ID_CONTAINERTYP="+this.get_ID_CONTAINERTYP_cUF()),true);
+	}
+	
+	
+	public String get_DELETE_STATEMENT()  throws myException
+	{
+		return "DELETE FROM "+bibE2.cTO()+".JT_CONTAINERTYP WHERE ID_CONTAINERTYP="+this.get_ID_CONTAINERTYP_cUF();
+	}
+	
+	
+	
+	/**
+	 * REBUILD wird ueberschrieben, falls der record-datensatz von einer uebergeordnet recordlist rausgezogen wird
+	 * dort liegen keine sql-querys vor. deshalb muessen diese neu definiert werden
+	 * 
+	 */
+	public void REBUILD() throws myException
+	{
+		if (S.isEmpty(this.get_cSQL_4_Build()))
+		{
+			if (S.isFull(this.get_ID_CONTAINERTYP_cUF()))
+			{
+				this.PrepareAndBuild("*", bibE2.cTO()+".JT_CONTAINERTYP", "ID_CONTAINERTYP="+this.get_ID_CONTAINERTYP_cUF());
+			}
+		}
+		else
+		{
+			super.REBUILD();
+		}
+	}
+
+	
+	
+	
+	// 2013-09-20: gibt das recnew-objekt zurueck (falls leer, wird es erst gebaut) 
+	public RECORDNEW_CONTAINERTYP get_RECORDNEW_CONTAINERTYP() throws myException {
+
+	  if (this.size() ==0 && this.recNEW == null) {
+	     this.recNEW = new RECORDNEW_CONTAINERTYP();
+	  } else if (this.size()>0) {
+		  this.recNEW = new RECORDNEW_CONTAINERTYP(this.get_hm_FieldMetaDefs());
+	  }
+
+	
+	  return this.recNEW;
+	}
+	
+	
+	//2014-04-02: factory-klassen
+	public static RECORD_CONTAINERTYP create_Instance() throws myException {
+		return new RECORD_CONTAINERTYP();
+	}
+	
+	public static RECORD_CONTAINERTYP create_Instance(MyConnection Conn)   throws myException {
+		return new RECORD_CONTAINERTYP(Conn);
+    }
+
+	public static RECORD_CONTAINERTYP create_Instance(RECORD_CONTAINERTYP recordOrig) {
+		return new RECORD_CONTAINERTYP(recordOrig);
+    }
+
+	public static RECORD_CONTAINERTYP create_Instance(long lID_Unformated) throws myException {
+		return new RECORD_CONTAINERTYP(lID_Unformated);
+    }
+
+	public static RECORD_CONTAINERTYP create_Instance(String c_ID_or_WHEREBLOCK_OR_SQL)   throws myException  {
+		return new RECORD_CONTAINERTYP(c_ID_or_WHEREBLOCK_OR_SQL);
+    }
+
+	public static RECORD_CONTAINERTYP create_Instance(long lID_Unformated, MyConnection Conn) throws myException {
+		return new RECORD_CONTAINERTYP(lID_Unformated, Conn);
+	}
+
+	public static RECORD_CONTAINERTYP create_Instance(String c_ID_or_WHEREBLOCK_OR_SQL, MyConnection Conn)   throws myException {
+		return new RECORD_CONTAINERTYP(c_ID_or_WHEREBLOCK_OR_SQL, Conn);
+	}
+	
+	public static RECORD_CONTAINERTYP create_Instance(MyRECORD recordOrig) throws myException {
+		return new RECORD_CONTAINERTYP(recordOrig);	    
+	}
+	
+	
+//    /** 2015-02-03
+//     * hinzugefuegt, um interface MyRECORD_IF_FILLABLE zu erfuellen 
+//    */
+//    public MySqlStatementBuilder get_StatementBuilder(boolean bExcludeAutomaticFields) throws myException   {
+//      return this.get_StatementBuilderFilledWithActualValues(bExcludeAutomaticFields);
+//    }
+
+//    /** 2015-02-17
+//     * hinzugefuegt, um interface MyRECORD_IF_FILLABLE zu erfuellen 
+//    */
+//	@Override
+//	public boolean get_bHasSomething_to_save() throws myException {
+//		return this.get_bAnyFieldIsRealyChanged();
+//	}
+
+
+    /** 2015-02-17
+     * hinzugefuegt, um interface MyRECORD_IF_RECORDS zu erfuellen 
+     */
+    @Override
+    public RECORD_CONTAINERTYP build_NEW_INSTANCE_ACTUAL_DATABASEVALUES() throws myException {
+      if (S.isEmpty(this.get_cSQL_4_Build())) {
+         //2016-05-10: falls der RECORD aus einem RECORD_VEKTOR kommt, hat er keinen sql-build-string und muss ihn hier zusammenbauen      
+         // **alt**  throw new myException(this,"build_NEW_INSTANCE_ACTUAL_DATABASEVALUES is not possible, no valid sql-statement is inside !");
+         this.set_cSQL_4_Build("SELECT * FROM "+bibE2.cTO()+".JT_CONTAINERTYP WHERE ID_CONTAINERTYP="+this.get_ID_CONTAINERTYP_cUF());
+      }
+      //return new RECORD_CONTAINERTYP(this.get_cSQL_4_Build());
+      RECORD_CONTAINERTYP rec = new RECORD_CONTAINERTYP();
+      rec.set_DBToolBox_FAB(this.get_DBToolBox_FAB());
+      rec.BuildRecord(this.get_cSQL_4_Build());
+      return rec;
+     }
+
+	
+	
+     /**
+     * 
+     * martin: 2015-04-24: erzeugt ein gefuelltes RECORDNEW_CONTAINERTYP
+     * @param msg_sammler
+     * @param changeIdWithSeq
+     * @param bRemoveAutomaticField
+     * @return RECORDNEW_CONTAINERTYP-object filled with values of actual record (to generate copy)
+     * @throws myException
+     */
+     public RECORDNEW_CONTAINERTYP get_Record_NEW_FilledWithActualValues(MyE2_MessageVector msg_sammler, boolean changeIdWithSeq, boolean bRemoveAutomaticField) throws myException {
+        if (S.isEmpty(this.get_TABLENAME())) {
+            throw new myException(this, "get_RECORDNEW_CONTAINERTYP_FilledWithActualValues(): no Tablename is present !" );
+        }
+		
+        RECORDNEW_CONTAINERTYP  recNew = new RECORDNEW_CONTAINERTYP();
+		
+        Vector<String> vSonder = this.get_vSonderFelder();
+		
+        for (String Field: this.keySet()) {
+           if (bRemoveAutomaticField) {
+                //2015-05-06: geaendert von  bibALL.get_vSonderFelder() nach this.get_vSonderFelder()          
+                if (vSonder.contains(Field)) {
+                    continue;
+                }
+            }
+            msg_sammler.add_MESSAGE(recNew.set_NewValueForDatabase(Field, this.get_FormatedValue(Field,null)));
+        }
+		
+        if (changeIdWithSeq) {
+           recNew.set_NewValueForDatabase_RAW_AS_STRING_IN_STATEMENT(this.get_PRIMARY_KEY_NAME(), "SEQ_"+this.get_TABLE_NAME().substring(3)+".NEXTVAL");
+        }
+        return recNew;
+     }
+	
+	
+    /*
+     *
+     */
+    public RECORD_CONTAINERTYP set_recordNew(RECORDNEW_CONTAINERTYP recnew) throws myException {
+        if (this.is_ExistingRecord()) {
+            throw new myException(this,"set_recordNew() only allowed, when record is empty");
+        }
+        this.recNEW=recnew;
+        return this;
+    }
+	
+    //2016-10-27
+    public _TAB get_tab() {
+        return this.tab;
+    }
+	
+    public boolean is_ExistingRecord() {
+        return S.isFull(this.get_cSQL_4_Build());
+    }
+
+    public boolean is_NewRecord() {
+        return !this.is_ExistingRecord();
+    }
+	
+	
+
+
+
+		private RECLIST_ADR_CONTAINERTYP DOWN_RECLIST_ADR_CONTAINERTYP_id_containertyp = null ;
+
+
+
+
+		private RECLIST_BEWEGUNG DOWN_RECLIST_BEWEGUNG_id_containertyp_fp = null ;
+
+
+
+
+		private RECLIST_CONTAINER DOWN_RECLIST_CONTAINER_id_containertyp = null ;
+
+
+
+
+		private RECLIST_FAHRPLANPOS DOWN_RECLIST_FAHRPLANPOS_id_containertyp = null ;
+
+
+
+
+		private RECLIST_VPOS_TPA_FUHRE DOWN_RECLIST_VPOS_TPA_FUHRE_id_containertyp_fp = null ;
+
+
+
+
+		private RECLIST_WIEGEKARTE_CONTAINER DOWN_RECLIST_WIEGEKARTE_CONTAINER_id_containertyp = null ;
+
+
+
+
+
+
+	/**
+	 * References the Field ID_CONTAINERTYP 
+	 * Falls keine get_ID_CONTAINERTYP_cUF() leer ist, wird null zurueckgegeben 
+	 */
+	public RECLIST_ADR_CONTAINERTYP get_DOWN_RECORD_LIST_ADR_CONTAINERTYP_id_containertyp() throws myException
+	{
+		if (S.isEmpty(this.get_ID_CONTAINERTYP_cUF()))
+			return null;
+	
+		if (this.DOWN_RECLIST_ADR_CONTAINERTYP_id_containertyp==null)
+		{
+			this.DOWN_RECLIST_ADR_CONTAINERTYP_id_containertyp = new RECLIST_ADR_CONTAINERTYP (
+			       "SELECT * FROM "+bibE2.cTO()+".JT_ADR_CONTAINERTYP WHERE ID_CONTAINERTYP="+this.get_ID_CONTAINERTYP_cUF()+" ORDER BY ID_ADR_CONTAINERTYP",
+			       this.get_oConn());
+		}
+		return this.DOWN_RECLIST_ADR_CONTAINERTYP_id_containertyp;
+	}
+
+
+
+
+
+	/**
+	 * cZusatzWhere ODER NULL gibt eine weitere auswahl-Bedingung nach unten (z.B.NVL(DELETED,'N')='N')
+	 * cORDERKEY ODER NULL bestimmt die sortierung des subselects
+	 * buildNew  zwingt zum aufbau einer neuen subquery-list
+	 * References the Field ID_CONTAINERTYP 
+	 * Falls keine get_ID_CONTAINERTYP_cUF() leer ist, wird null zurueckgegeben 
+	 */
+	public RECLIST_ADR_CONTAINERTYP get_DOWN_RECORD_LIST_ADR_CONTAINERTYP_id_containertyp(String cZusatzWhere, String cORDERKEY, boolean buildNew) throws myException
+	{
+		if (S.isEmpty(this.get_ID_CONTAINERTYP_cUF()))
+			return null;
+	
+		if (this.DOWN_RECLIST_ADR_CONTAINERTYP_id_containertyp==null || buildNew)
+		{
+		    String cQuery = "SELECT * FROM "+bibE2.cTO()+".JT_ADR_CONTAINERTYP WHERE ID_CONTAINERTYP="+this.get_ID_CONTAINERTYP_cUF();
+		    if (S.isFull(cZusatzWhere))
+		    {
+		    	cQuery += (" AND "+cZusatzWhere);
+		    }
+		    
+		    if (S.isFull(cORDERKEY))
+		    {
+		    	cQuery += (" ORDER BY  "+cORDERKEY);
+		    }
+		    
+			this.DOWN_RECLIST_ADR_CONTAINERTYP_id_containertyp = new RECLIST_ADR_CONTAINERTYP (cQuery,this.get_oConn());
+		}
+		return this.DOWN_RECLIST_ADR_CONTAINERTYP_id_containertyp;
+	}
+
+
+	
+
+
+
+
+
+	/**
+	 * References the Field ID_CONTAINERTYP_FP 
+	 * Falls keine get_ID_CONTAINERTYP_cUF() leer ist, wird null zurueckgegeben 
+	 */
+	public RECLIST_BEWEGUNG get_DOWN_RECORD_LIST_BEWEGUNG_id_containertyp_fp() throws myException
+	{
+		if (S.isEmpty(this.get_ID_CONTAINERTYP_cUF()))
+			return null;
+	
+		if (this.DOWN_RECLIST_BEWEGUNG_id_containertyp_fp==null)
+		{
+			this.DOWN_RECLIST_BEWEGUNG_id_containertyp_fp = new RECLIST_BEWEGUNG (
+			       "SELECT * FROM "+bibE2.cTO()+".JT_BEWEGUNG WHERE ID_CONTAINERTYP_FP="+this.get_ID_CONTAINERTYP_cUF()+" ORDER BY ID_BEWEGUNG",
+			       this.get_oConn());
+		}
+		return this.DOWN_RECLIST_BEWEGUNG_id_containertyp_fp;
+	}
+
+
+
+
+
+	/**
+	 * cZusatzWhere ODER NULL gibt eine weitere auswahl-Bedingung nach unten (z.B.NVL(DELETED,'N')='N')
+	 * cORDERKEY ODER NULL bestimmt die sortierung des subselects
+	 * buildNew  zwingt zum aufbau einer neuen subquery-list
+	 * References the Field ID_CONTAINERTYP_FP 
+	 * Falls keine get_ID_CONTAINERTYP_cUF() leer ist, wird null zurueckgegeben 
+	 */
+	public RECLIST_BEWEGUNG get_DOWN_RECORD_LIST_BEWEGUNG_id_containertyp_fp(String cZusatzWhere, String cORDERKEY, boolean buildNew) throws myException
+	{
+		if (S.isEmpty(this.get_ID_CONTAINERTYP_cUF()))
+			return null;
+	
+		if (this.DOWN_RECLIST_BEWEGUNG_id_containertyp_fp==null || buildNew)
+		{
+		    String cQuery = "SELECT * FROM "+bibE2.cTO()+".JT_BEWEGUNG WHERE ID_CONTAINERTYP_FP="+this.get_ID_CONTAINERTYP_cUF();
+		    if (S.isFull(cZusatzWhere))
+		    {
+		    	cQuery += (" AND "+cZusatzWhere);
+		    }
+		    
+		    if (S.isFull(cORDERKEY))
+		    {
+		    	cQuery += (" ORDER BY  "+cORDERKEY);
+		    }
+		    
+			this.DOWN_RECLIST_BEWEGUNG_id_containertyp_fp = new RECLIST_BEWEGUNG (cQuery,this.get_oConn());
+		}
+		return this.DOWN_RECLIST_BEWEGUNG_id_containertyp_fp;
+	}
+
+
+	
+
+
+
+
+
+	/**
+	 * References the Field ID_CONTAINERTYP 
+	 * Falls keine get_ID_CONTAINERTYP_cUF() leer ist, wird null zurueckgegeben 
+	 */
+	public RECLIST_CONTAINER get_DOWN_RECORD_LIST_CONTAINER_id_containertyp() throws myException
+	{
+		if (S.isEmpty(this.get_ID_CONTAINERTYP_cUF()))
+			return null;
+	
+		if (this.DOWN_RECLIST_CONTAINER_id_containertyp==null)
+		{
+			this.DOWN_RECLIST_CONTAINER_id_containertyp = new RECLIST_CONTAINER (
+			       "SELECT * FROM "+bibE2.cTO()+".JT_CONTAINER WHERE ID_CONTAINERTYP="+this.get_ID_CONTAINERTYP_cUF()+" ORDER BY ID_CONTAINER",
+			       this.get_oConn());
+		}
+		return this.DOWN_RECLIST_CONTAINER_id_containertyp;
+	}
+
+
+
+
+
+	/**
+	 * cZusatzWhere ODER NULL gibt eine weitere auswahl-Bedingung nach unten (z.B.NVL(DELETED,'N')='N')
+	 * cORDERKEY ODER NULL bestimmt die sortierung des subselects
+	 * buildNew  zwingt zum aufbau einer neuen subquery-list
+	 * References the Field ID_CONTAINERTYP 
+	 * Falls keine get_ID_CONTAINERTYP_cUF() leer ist, wird null zurueckgegeben 
+	 */
+	public RECLIST_CONTAINER get_DOWN_RECORD_LIST_CONTAINER_id_containertyp(String cZusatzWhere, String cORDERKEY, boolean buildNew) throws myException
+	{
+		if (S.isEmpty(this.get_ID_CONTAINERTYP_cUF()))
+			return null;
+	
+		if (this.DOWN_RECLIST_CONTAINER_id_containertyp==null || buildNew)
+		{
+		    String cQuery = "SELECT * FROM "+bibE2.cTO()+".JT_CONTAINER WHERE ID_CONTAINERTYP="+this.get_ID_CONTAINERTYP_cUF();
+		    if (S.isFull(cZusatzWhere))
+		    {
+		    	cQuery += (" AND "+cZusatzWhere);
+		    }
+		    
+		    if (S.isFull(cORDERKEY))
+		    {
+		    	cQuery += (" ORDER BY  "+cORDERKEY);
+		    }
+		    
+			this.DOWN_RECLIST_CONTAINER_id_containertyp = new RECLIST_CONTAINER (cQuery,this.get_oConn());
+		}
+		return this.DOWN_RECLIST_CONTAINER_id_containertyp;
+	}
+
+
+	
+
+
+
+
+
+	/**
+	 * References the Field ID_CONTAINERTYP 
+	 * Falls keine get_ID_CONTAINERTYP_cUF() leer ist, wird null zurueckgegeben 
+	 */
+	public RECLIST_FAHRPLANPOS get_DOWN_RECORD_LIST_FAHRPLANPOS_id_containertyp() throws myException
+	{
+		if (S.isEmpty(this.get_ID_CONTAINERTYP_cUF()))
+			return null;
+	
+		if (this.DOWN_RECLIST_FAHRPLANPOS_id_containertyp==null)
+		{
+			this.DOWN_RECLIST_FAHRPLANPOS_id_containertyp = new RECLIST_FAHRPLANPOS (
+			       "SELECT * FROM "+bibE2.cTO()+".JT_FAHRPLANPOS WHERE ID_CONTAINERTYP="+this.get_ID_CONTAINERTYP_cUF()+" ORDER BY ID_FAHRPLANPOS",
+			       this.get_oConn());
+		}
+		return this.DOWN_RECLIST_FAHRPLANPOS_id_containertyp;
+	}
+
+
+
+
+
+	/**
+	 * cZusatzWhere ODER NULL gibt eine weitere auswahl-Bedingung nach unten (z.B.NVL(DELETED,'N')='N')
+	 * cORDERKEY ODER NULL bestimmt die sortierung des subselects
+	 * buildNew  zwingt zum aufbau einer neuen subquery-list
+	 * References the Field ID_CONTAINERTYP 
+	 * Falls keine get_ID_CONTAINERTYP_cUF() leer ist, wird null zurueckgegeben 
+	 */
+	public RECLIST_FAHRPLANPOS get_DOWN_RECORD_LIST_FAHRPLANPOS_id_containertyp(String cZusatzWhere, String cORDERKEY, boolean buildNew) throws myException
+	{
+		if (S.isEmpty(this.get_ID_CONTAINERTYP_cUF()))
+			return null;
+	
+		if (this.DOWN_RECLIST_FAHRPLANPOS_id_containertyp==null || buildNew)
+		{
+		    String cQuery = "SELECT * FROM "+bibE2.cTO()+".JT_FAHRPLANPOS WHERE ID_CONTAINERTYP="+this.get_ID_CONTAINERTYP_cUF();
+		    if (S.isFull(cZusatzWhere))
+		    {
+		    	cQuery += (" AND "+cZusatzWhere);
+		    }
+		    
+		    if (S.isFull(cORDERKEY))
+		    {
+		    	cQuery += (" ORDER BY  "+cORDERKEY);
+		    }
+		    
+			this.DOWN_RECLIST_FAHRPLANPOS_id_containertyp = new RECLIST_FAHRPLANPOS (cQuery,this.get_oConn());
+		}
+		return this.DOWN_RECLIST_FAHRPLANPOS_id_containertyp;
+	}
+
+
+	
+
+
+
+
+
+	/**
+	 * References the Field ID_CONTAINERTYP_FP 
+	 * Falls keine get_ID_CONTAINERTYP_cUF() leer ist, wird null zurueckgegeben 
+	 */
+	public RECLIST_VPOS_TPA_FUHRE get_DOWN_RECORD_LIST_VPOS_TPA_FUHRE_id_containertyp_fp() throws myException
+	{
+		if (S.isEmpty(this.get_ID_CONTAINERTYP_cUF()))
+			return null;
+	
+		if (this.DOWN_RECLIST_VPOS_TPA_FUHRE_id_containertyp_fp==null)
+		{
+			this.DOWN_RECLIST_VPOS_TPA_FUHRE_id_containertyp_fp = new RECLIST_VPOS_TPA_FUHRE (
+			       "SELECT * FROM "+bibE2.cTO()+".JT_VPOS_TPA_FUHRE WHERE ID_CONTAINERTYP_FP="+this.get_ID_CONTAINERTYP_cUF()+" ORDER BY ID_VPOS_TPA_FUHRE",
+			       this.get_oConn());
+		}
+		return this.DOWN_RECLIST_VPOS_TPA_FUHRE_id_containertyp_fp;
+	}
+
+
+
+
+
+	/**
+	 * cZusatzWhere ODER NULL gibt eine weitere auswahl-Bedingung nach unten (z.B.NVL(DELETED,'N')='N')
+	 * cORDERKEY ODER NULL bestimmt die sortierung des subselects
+	 * buildNew  zwingt zum aufbau einer neuen subquery-list
+	 * References the Field ID_CONTAINERTYP_FP 
+	 * Falls keine get_ID_CONTAINERTYP_cUF() leer ist, wird null zurueckgegeben 
+	 */
+	public RECLIST_VPOS_TPA_FUHRE get_DOWN_RECORD_LIST_VPOS_TPA_FUHRE_id_containertyp_fp(String cZusatzWhere, String cORDERKEY, boolean buildNew) throws myException
+	{
+		if (S.isEmpty(this.get_ID_CONTAINERTYP_cUF()))
+			return null;
+	
+		if (this.DOWN_RECLIST_VPOS_TPA_FUHRE_id_containertyp_fp==null || buildNew)
+		{
+		    String cQuery = "SELECT * FROM "+bibE2.cTO()+".JT_VPOS_TPA_FUHRE WHERE ID_CONTAINERTYP_FP="+this.get_ID_CONTAINERTYP_cUF();
+		    if (S.isFull(cZusatzWhere))
+		    {
+		    	cQuery += (" AND "+cZusatzWhere);
+		    }
+		    
+		    if (S.isFull(cORDERKEY))
+		    {
+		    	cQuery += (" ORDER BY  "+cORDERKEY);
+		    }
+		    
+			this.DOWN_RECLIST_VPOS_TPA_FUHRE_id_containertyp_fp = new RECLIST_VPOS_TPA_FUHRE (cQuery,this.get_oConn());
+		}
+		return this.DOWN_RECLIST_VPOS_TPA_FUHRE_id_containertyp_fp;
+	}
+
+
+	
+
+
+
+
+
+	/**
+	 * References the Field ID_CONTAINERTYP 
+	 * Falls keine get_ID_CONTAINERTYP_cUF() leer ist, wird null zurueckgegeben 
+	 */
+	public RECLIST_WIEGEKARTE_CONTAINER get_DOWN_RECORD_LIST_WIEGEKARTE_CONTAINER_id_containertyp() throws myException
+	{
+		if (S.isEmpty(this.get_ID_CONTAINERTYP_cUF()))
+			return null;
+	
+		if (this.DOWN_RECLIST_WIEGEKARTE_CONTAINER_id_containertyp==null)
+		{
+			this.DOWN_RECLIST_WIEGEKARTE_CONTAINER_id_containertyp = new RECLIST_WIEGEKARTE_CONTAINER (
+			       "SELECT * FROM "+bibE2.cTO()+".JT_WIEGEKARTE_CONTAINER WHERE ID_CONTAINERTYP="+this.get_ID_CONTAINERTYP_cUF()+" ORDER BY ID_WIEGEKARTE_CONTAINER",
+			       this.get_oConn());
+		}
+		return this.DOWN_RECLIST_WIEGEKARTE_CONTAINER_id_containertyp;
+	}
+
+
+
+
+
+	/**
+	 * cZusatzWhere ODER NULL gibt eine weitere auswahl-Bedingung nach unten (z.B.NVL(DELETED,'N')='N')
+	 * cORDERKEY ODER NULL bestimmt die sortierung des subselects
+	 * buildNew  zwingt zum aufbau einer neuen subquery-list
+	 * References the Field ID_CONTAINERTYP 
+	 * Falls keine get_ID_CONTAINERTYP_cUF() leer ist, wird null zurueckgegeben 
+	 */
+	public RECLIST_WIEGEKARTE_CONTAINER get_DOWN_RECORD_LIST_WIEGEKARTE_CONTAINER_id_containertyp(String cZusatzWhere, String cORDERKEY, boolean buildNew) throws myException
+	{
+		if (S.isEmpty(this.get_ID_CONTAINERTYP_cUF()))
+			return null;
+	
+		if (this.DOWN_RECLIST_WIEGEKARTE_CONTAINER_id_containertyp==null || buildNew)
+		{
+		    String cQuery = "SELECT * FROM "+bibE2.cTO()+".JT_WIEGEKARTE_CONTAINER WHERE ID_CONTAINERTYP="+this.get_ID_CONTAINERTYP_cUF();
+		    if (S.isFull(cZusatzWhere))
+		    {
+		    	cQuery += (" AND "+cZusatzWhere);
+		    }
+		    
+		    if (S.isFull(cORDERKEY))
+		    {
+		    	cQuery += (" ORDER BY  "+cORDERKEY);
+		    }
+		    
+			this.DOWN_RECLIST_WIEGEKARTE_CONTAINER_id_containertyp = new RECLIST_WIEGEKARTE_CONTAINER (cQuery,this.get_oConn());
+		}
+		return this.DOWN_RECLIST_WIEGEKARTE_CONTAINER_id_containertyp;
+	}
+
+
+	
+
+	public static String FIELD__ABLAUF = "ABLAUF";
+	public static String FIELD__ABROLL = "ABROLL";
+	public static String FIELD__ABSETZ = "ABSETZ";
+	public static String FIELD__AKTIV = "AKTIV";
+	public static String FIELD__BESCHREIBUNG = "BESCHREIBUNG";
+	public static String FIELD__CONTAINERINHALT = "CONTAINERINHALT";
+	public static String FIELD__DECKEL = "DECKEL";
+	public static String FIELD__DICHT = "DICHT";
+	public static String FIELD__ERZEUGT_AM = "ERZEUGT_AM";
+	public static String FIELD__ERZEUGT_VON = "ERZEUGT_VON";
+	public static String FIELD__GEAENDERT_VON = "GEAENDERT_VON";
+	public static String FIELD__ID_CONTAINERTYP = "ID_CONTAINERTYP";
+	public static String FIELD__ID_MANDANT = "ID_MANDANT";
+	public static String FIELD__KUERZEL = "KUERZEL";
+	public static String FIELD__KURZBEZEICHNUNG = "KURZBEZEICHNUNG";
+	public static String FIELD__LETZTE_AENDERUNG = "LETZTE_AENDERUNG";
+	public static String FIELD__PLANE = "PLANE";
+	public static String FIELD__SYMMETRISCH = "SYMMETRISCH";
+	public static String FIELD__SYS_TRIGGER_TIMESTAMP = "SYS_TRIGGER_TIMESTAMP";
+	public static String FIELD__SYS_TRIGGER_UUID = "SYS_TRIGGER_UUID";
+	public static String FIELD__SYS_TRIGGER_VERSION = "SYS_TRIGGER_VERSION";
+
+
+	public String get_ABLAUF_cUF() throws myException
+	{
+		return this.get_UnFormatedValue("ABLAUF");
+	}
+
+	public String get_ABLAUF_cF() throws myException
+	{
+		return this.get_FormatedValue("ABLAUF");	
+	}
+
+	public String get_ABLAUF_VALUE_FOR_SQLSTATEMENT() throws myException
+	{
+		return this.get_cVALUE_FOR_SQLSTATEMENT("ABLAUF");
+	}
+
+	public String get_ABLAUF_cUF_NN(String cNotNullValue) throws myException
+	{
+		return this.get_UnFormatedValue("ABLAUF",cNotNullValue);
+	}
+
+	public String get_ABLAUF_cF_NN(String cNotNullValue) throws myException
+	{
+		return this.get_FormatedValue("ABLAUF",cNotNullValue);	
+	}
+
+	public MyE2_MessageVector set_NEW_VALUE_ABLAUF(String cNewValueFormated) throws myException
+	{
+		return this.set_NewValueForDatabase("ABLAUF", cNewValueFormated);
+	}
+	
+	
+	//2013-09-18: new check_ Methode, die nichts schreibt
+	public MyE2_MessageVector check_NEW_VALUE_ABLAUF(String cNewValueFormated) throws myException
+	{
+		return super.check_NewValueForDatabase("ABLAUF", cNewValueFormated);
+	}
+	
+	
+	
+    //2013-07-17: new wetting-methods, like in recordnew-object
+	public MyE2_MessageVector set_NEW_VALUE_ABLAUF_(long lNewValueFormated) throws myException	{
+		 return super.set_NewValueForDatabase("ABLAUF", lNewValueFormated);
+	}
+
+    //2013-07-17: new wetting-methods, like in recordnew-object
+	public MyE2_MessageVector set_NEW_VALUE_ABLAUF_(double dNewValueFormated) throws myException {
+		 return super.set_NewValueForDatabase("ABLAUF", dNewValueFormated);
+	}
+
+    //2013-07-17: new wetting-methods, like in recordnew-object
+	public MyE2_MessageVector set_NEW_VALUE_ABLAUF_(BigDecimal bdNewValueFormated) throws myException {
+		 return super.set_NewValueForDatabase("ABLAUF", bdNewValueFormated);
+	}
+	
+    //2013-07-17: new wetting-methods, like in recordnew-object
+	public MyE2_MessageVector set_NEW_VALUE_ABLAUF_(GregorianCalendar calNewValueFormated) throws myException {
+		 return super.set_NewValueForDatabase("ABLAUF", calNewValueFormated);
+	}
+		public boolean is_ABLAUF_YES() throws myException
+	{
+		boolean bRueck = false;
+		
+		if (get_ABLAUF_cUF_NN("N").equals("Y"))
+		{ 
+			bRueck = true; 
+		}
+		
+		return bRueck; 
+	}
+
+	
+	
+	public boolean is_ABLAUF_NO() throws myException
+	{
+		boolean bRueck = false;
+		
+		if (get_ABLAUF_cUF_NN("N").equals("N"))
+		{ 
+			bRueck = true; 
+		}
+		
+		return bRueck; 
+	}
+		public String get_ABROLL_cUF() throws myException
+	{
+		return this.get_UnFormatedValue("ABROLL");
+	}
+
+	public String get_ABROLL_cF() throws myException
+	{
+		return this.get_FormatedValue("ABROLL");	
+	}
+
+	public String get_ABROLL_VALUE_FOR_SQLSTATEMENT() throws myException
+	{
+		return this.get_cVALUE_FOR_SQLSTATEMENT("ABROLL");
+	}
+
+	public String get_ABROLL_cUF_NN(String cNotNullValue) throws myException
+	{
+		return this.get_UnFormatedValue("ABROLL",cNotNullValue);
+	}
+
+	public String get_ABROLL_cF_NN(String cNotNullValue) throws myException
+	{
+		return this.get_FormatedValue("ABROLL",cNotNullValue);	
+	}
+
+	public MyE2_MessageVector set_NEW_VALUE_ABROLL(String cNewValueFormated) throws myException
+	{
+		return this.set_NewValueForDatabase("ABROLL", cNewValueFormated);
+	}
+	
+	
+	//2013-09-18: new check_ Methode, die nichts schreibt
+	public MyE2_MessageVector check_NEW_VALUE_ABROLL(String cNewValueFormated) throws myException
+	{
+		return super.check_NewValueForDatabase("ABROLL", cNewValueFormated);
+	}
+	
+	
+	
+    //2013-07-17: new wetting-methods, like in recordnew-object
+	public MyE2_MessageVector set_NEW_VALUE_ABROLL_(long lNewValueFormated) throws myException	{
+		 return super.set_NewValueForDatabase("ABROLL", lNewValueFormated);
+	}
+
+    //2013-07-17: new wetting-methods, like in recordnew-object
+	public MyE2_MessageVector set_NEW_VALUE_ABROLL_(double dNewValueFormated) throws myException {
+		 return super.set_NewValueForDatabase("ABROLL", dNewValueFormated);
+	}
+
+    //2013-07-17: new wetting-methods, like in recordnew-object
+	public MyE2_MessageVector set_NEW_VALUE_ABROLL_(BigDecimal bdNewValueFormated) throws myException {
+		 return super.set_NewValueForDatabase("ABROLL", bdNewValueFormated);
+	}
+	
+    //2013-07-17: new wetting-methods, like in recordnew-object
+	public MyE2_MessageVector set_NEW_VALUE_ABROLL_(GregorianCalendar calNewValueFormated) throws myException {
+		 return super.set_NewValueForDatabase("ABROLL", calNewValueFormated);
+	}
+		public boolean is_ABROLL_YES() throws myException
+	{
+		boolean bRueck = false;
+		
+		if (get_ABROLL_cUF_NN("N").equals("Y"))
+		{ 
+			bRueck = true; 
+		}
+		
+		return bRueck; 
+	}
+
+	
+	
+	public boolean is_ABROLL_NO() throws myException
+	{
+		boolean bRueck = false;
+		
+		if (get_ABROLL_cUF_NN("N").equals("N"))
+		{ 
+			bRueck = true; 
+		}
+		
+		return bRueck; 
+	}
+		public String get_ABSETZ_cUF() throws myException
+	{
+		return this.get_UnFormatedValue("ABSETZ");
+	}
+
+	public String get_ABSETZ_cF() throws myException
+	{
+		return this.get_FormatedValue("ABSETZ");	
+	}
+
+	public String get_ABSETZ_VALUE_FOR_SQLSTATEMENT() throws myException
+	{
+		return this.get_cVALUE_FOR_SQLSTATEMENT("ABSETZ");
+	}
+
+	public String get_ABSETZ_cUF_NN(String cNotNullValue) throws myException
+	{
+		return this.get_UnFormatedValue("ABSETZ",cNotNullValue);
+	}
+
+	public String get_ABSETZ_cF_NN(String cNotNullValue) throws myException
+	{
+		return this.get_FormatedValue("ABSETZ",cNotNullValue);	
+	}
+
+	public MyE2_MessageVector set_NEW_VALUE_ABSETZ(String cNewValueFormated) throws myException
+	{
+		return this.set_NewValueForDatabase("ABSETZ", cNewValueFormated);
+	}
+	
+	
+	//2013-09-18: new check_ Methode, die nichts schreibt
+	public MyE2_MessageVector check_NEW_VALUE_ABSETZ(String cNewValueFormated) throws myException
+	{
+		return super.check_NewValueForDatabase("ABSETZ", cNewValueFormated);
+	}
+	
+	
+	
+    //2013-07-17: new wetting-methods, like in recordnew-object
+	public MyE2_MessageVector set_NEW_VALUE_ABSETZ_(long lNewValueFormated) throws myException	{
+		 return super.set_NewValueForDatabase("ABSETZ", lNewValueFormated);
+	}
+
+    //2013-07-17: new wetting-methods, like in recordnew-object
+	public MyE2_MessageVector set_NEW_VALUE_ABSETZ_(double dNewValueFormated) throws myException {
+		 return super.set_NewValueForDatabase("ABSETZ", dNewValueFormated);
+	}
+
+    //2013-07-17: new wetting-methods, like in recordnew-object
+	public MyE2_MessageVector set_NEW_VALUE_ABSETZ_(BigDecimal bdNewValueFormated) throws myException {
+		 return super.set_NewValueForDatabase("ABSETZ", bdNewValueFormated);
+	}
+	
+    //2013-07-17: new wetting-methods, like in recordnew-object
+	public MyE2_MessageVector set_NEW_VALUE_ABSETZ_(GregorianCalendar calNewValueFormated) throws myException {
+		 return super.set_NewValueForDatabase("ABSETZ", calNewValueFormated);
+	}
+		public boolean is_ABSETZ_YES() throws myException
+	{
+		boolean bRueck = false;
+		
+		if (get_ABSETZ_cUF_NN("N").equals("Y"))
+		{ 
+			bRueck = true; 
+		}
+		
+		return bRueck; 
+	}
+
+	
+	
+	public boolean is_ABSETZ_NO() throws myException
+	{
+		boolean bRueck = false;
+		
+		if (get_ABSETZ_cUF_NN("N").equals("N"))
+		{ 
+			bRueck = true; 
+		}
+		
+		return bRueck; 
+	}
+		public String get_AKTIV_cUF() throws myException
+	{
+		return this.get_UnFormatedValue("AKTIV");
+	}
+
+	public String get_AKTIV_cF() throws myException
+	{
+		return this.get_FormatedValue("AKTIV");	
+	}
+
+	public String get_AKTIV_VALUE_FOR_SQLSTATEMENT() throws myException
+	{
+		return this.get_cVALUE_FOR_SQLSTATEMENT("AKTIV");
+	}
+
+	public String get_AKTIV_cUF_NN(String cNotNullValue) throws myException
+	{
+		return this.get_UnFormatedValue("AKTIV",cNotNullValue);
+	}
+
+	public String get_AKTIV_cF_NN(String cNotNullValue) throws myException
+	{
+		return this.get_FormatedValue("AKTIV",cNotNullValue);	
+	}
+
+	public MyE2_MessageVector set_NEW_VALUE_AKTIV(String cNewValueFormated) throws myException
+	{
+		return this.set_NewValueForDatabase("AKTIV", cNewValueFormated);
+	}
+	
+	
+	//2013-09-18: new check_ Methode, die nichts schreibt
+	public MyE2_MessageVector check_NEW_VALUE_AKTIV(String cNewValueFormated) throws myException
+	{
+		return super.check_NewValueForDatabase("AKTIV", cNewValueFormated);
+	}
+	
+	
+	
+    //2013-07-17: new wetting-methods, like in recordnew-object
+	public MyE2_MessageVector set_NEW_VALUE_AKTIV_(long lNewValueFormated) throws myException	{
+		 return super.set_NewValueForDatabase("AKTIV", lNewValueFormated);
+	}
+
+    //2013-07-17: new wetting-methods, like in recordnew-object
+	public MyE2_MessageVector set_NEW_VALUE_AKTIV_(double dNewValueFormated) throws myException {
+		 return super.set_NewValueForDatabase("AKTIV", dNewValueFormated);
+	}
+
+    //2013-07-17: new wetting-methods, like in recordnew-object
+	public MyE2_MessageVector set_NEW_VALUE_AKTIV_(BigDecimal bdNewValueFormated) throws myException {
+		 return super.set_NewValueForDatabase("AKTIV", bdNewValueFormated);
+	}
+	
+    //2013-07-17: new wetting-methods, like in recordnew-object
+	public MyE2_MessageVector set_NEW_VALUE_AKTIV_(GregorianCalendar calNewValueFormated) throws myException {
+		 return super.set_NewValueForDatabase("AKTIV", calNewValueFormated);
+	}
+		public boolean is_AKTIV_YES() throws myException
+	{
+		boolean bRueck = false;
+		
+		if (get_AKTIV_cUF_NN("N").equals("Y"))
+		{ 
+			bRueck = true; 
+		}
+		
+		return bRueck; 
+	}
+
+	
+	
+	public boolean is_AKTIV_NO() throws myException
+	{
+		boolean bRueck = false;
+		
+		if (get_AKTIV_cUF_NN("N").equals("N"))
+		{ 
+			bRueck = true; 
+		}
+		
+		return bRueck; 
+	}
+		public String get_BESCHREIBUNG_cUF() throws myException
+	{
+		return this.get_UnFormatedValue("BESCHREIBUNG");
+	}
+
+	public String get_BESCHREIBUNG_cF() throws myException
+	{
+		return this.get_FormatedValue("BESCHREIBUNG");	
+	}
+
+	public String get_BESCHREIBUNG_VALUE_FOR_SQLSTATEMENT() throws myException
+	{
+		return this.get_cVALUE_FOR_SQLSTATEMENT("BESCHREIBUNG");
+	}
+
+	public String get_BESCHREIBUNG_cUF_NN(String cNotNullValue) throws myException
+	{
+		return this.get_UnFormatedValue("BESCHREIBUNG",cNotNullValue);
+	}
+
+	public String get_BESCHREIBUNG_cF_NN(String cNotNullValue) throws myException
+	{
+		return this.get_FormatedValue("BESCHREIBUNG",cNotNullValue);	
+	}
+
+	public MyE2_MessageVector set_NEW_VALUE_BESCHREIBUNG(String cNewValueFormated) throws myException
+	{
+		return this.set_NewValueForDatabase("BESCHREIBUNG", cNewValueFormated);
+	}
+	
+	
+	//2013-09-18: new check_ Methode, die nichts schreibt
+	public MyE2_MessageVector check_NEW_VALUE_BESCHREIBUNG(String cNewValueFormated) throws myException
+	{
+		return super.check_NewValueForDatabase("BESCHREIBUNG", cNewValueFormated);
+	}
+	
+	
+	
+    //2013-07-17: new wetting-methods, like in recordnew-object
+	public MyE2_MessageVector set_NEW_VALUE_BESCHREIBUNG_(long lNewValueFormated) throws myException	{
+		 return super.set_NewValueForDatabase("BESCHREIBUNG", lNewValueFormated);
+	}
+
+    //2013-07-17: new wetting-methods, like in recordnew-object
+	public MyE2_MessageVector set_NEW_VALUE_BESCHREIBUNG_(double dNewValueFormated) throws myException {
+		 return super.set_NewValueForDatabase("BESCHREIBUNG", dNewValueFormated);
+	}
+
+    //2013-07-17: new wetting-methods, like in recordnew-object
+	public MyE2_MessageVector set_NEW_VALUE_BESCHREIBUNG_(BigDecimal bdNewValueFormated) throws myException {
+		 return super.set_NewValueForDatabase("BESCHREIBUNG", bdNewValueFormated);
+	}
+	
+    //2013-07-17: new wetting-methods, like in recordnew-object
+	public MyE2_MessageVector set_NEW_VALUE_BESCHREIBUNG_(GregorianCalendar calNewValueFormated) throws myException {
+		 return super.set_NewValueForDatabase("BESCHREIBUNG", calNewValueFormated);
+	}
+		public String get_CONTAINERINHALT_cUF() throws myException
+	{
+		return this.get_UnFormatedValue("CONTAINERINHALT");
+	}
+
+	public String get_CONTAINERINHALT_cF() throws myException
+	{
+		return this.get_FormatedValue("CONTAINERINHALT");	
+	}
+
+	public String get_CONTAINERINHALT_VALUE_FOR_SQLSTATEMENT() throws myException
+	{
+		return this.get_cVALUE_FOR_SQLSTATEMENT("CONTAINERINHALT");
+	}
+
+	public String get_CONTAINERINHALT_cUF_NN(String cNotNullValue) throws myException
+	{
+		return this.get_UnFormatedValue("CONTAINERINHALT",cNotNullValue);
+	}
+
+	public String get_CONTAINERINHALT_cF_NN(String cNotNullValue) throws myException
+	{
+		return this.get_FormatedValue("CONTAINERINHALT",cNotNullValue);	
+	}
+
+	public MyE2_MessageVector set_NEW_VALUE_CONTAINERINHALT(String cNewValueFormated) throws myException
+	{
+		return this.set_NewValueForDatabase("CONTAINERINHALT", cNewValueFormated);
+	}
+	
+	
+	//2013-09-18: new check_ Methode, die nichts schreibt
+	public MyE2_MessageVector check_NEW_VALUE_CONTAINERINHALT(String cNewValueFormated) throws myException
+	{
+		return super.check_NewValueForDatabase("CONTAINERINHALT", cNewValueFormated);
+	}
+	
+	
+	
+    //2013-07-17: new wetting-methods, like in recordnew-object
+	public MyE2_MessageVector set_NEW_VALUE_CONTAINERINHALT_(long lNewValueFormated) throws myException	{
+		 return super.set_NewValueForDatabase("CONTAINERINHALT", lNewValueFormated);
+	}
+
+    //2013-07-17: new wetting-methods, like in recordnew-object
+	public MyE2_MessageVector set_NEW_VALUE_CONTAINERINHALT_(double dNewValueFormated) throws myException {
+		 return super.set_NewValueForDatabase("CONTAINERINHALT", dNewValueFormated);
+	}
+
+    //2013-07-17: new wetting-methods, like in recordnew-object
+	public MyE2_MessageVector set_NEW_VALUE_CONTAINERINHALT_(BigDecimal bdNewValueFormated) throws myException {
+		 return super.set_NewValueForDatabase("CONTAINERINHALT", bdNewValueFormated);
+	}
+	
+    //2013-07-17: new wetting-methods, like in recordnew-object
+	public MyE2_MessageVector set_NEW_VALUE_CONTAINERINHALT_(GregorianCalendar calNewValueFormated) throws myException {
+		 return super.set_NewValueForDatabase("CONTAINERINHALT", calNewValueFormated);
+	}
+		public Long get_CONTAINERINHALT_lValue(Long lValueWhenNULL) throws myException
+	{
+		Long lRueck = this.get("CONTAINERINHALT").getLongValue();
+		if (lRueck==null) 
+		{ 
+			return lValueWhenNULL; 
+		} 
+		else 
+		{ 
+			return lRueck;
+		} 
+	}
+	public Double get_CONTAINERINHALT_dValue(Double dValueWhenNULL) throws myException
+	{
+		Double dRueck = this.get("CONTAINERINHALT").getDoubleValue();
+		if (dRueck==null) 
+		{ 
+			return dValueWhenNULL; 
+		} 
+		else 
+		{ 
+			return dRueck;
+		} 
+	}
+	
+
+	
+	public Double get_CONTAINERINHALT_dValue(Double dValueWhenNULL, int iNachkommaRunden) throws myException
+	{
+		Double dRueck = this.get("CONTAINERINHALT").getDoubleValue();
+		if (dRueck == null)
+		{
+			dRueck = dValueWhenNULL;           //der wert wird auch gerunden (falls nicht null)
+		}
+		
+		if (dRueck==null) 
+		{ 
+			return null; 
+		} 
+		else 
+		{ 
+			BigDecimal bdTemp = new BigDecimal(dRueck);
+			BigDecimal bdValue = bdTemp.setScale(iNachkommaRunden, BigDecimal.ROUND_HALF_UP);
+			dRueck = bdValue.doubleValue();
+			return new Double(dRueck);
+		} 
+	}
+	
+	
+	/**
+	 * 
+	 * @param dValueWhenNULL
+	 * @param iNachkommaRunden
+	 * @return "" wenn der double-Wert null ist
+	 * @throws myException
+	 */
+	public String get_CONTAINERINHALT_cUF_NN(Double dValueWhenNULL, int iNachkommaRunden) throws myException
+	{
+		String cFormat = "#0," + "00000000000000000000000000000000".substring(0, iNachkommaRunden);
+		
+		DecimalFormat df = new DecimalFormat(cFormat);
+
+		Double dHelp = this.get_CONTAINERINHALT_dValue(dValueWhenNULL,iNachkommaRunden);
+		if (dHelp==null)
+		{
+			return "";
+		}
+	   
+		//beim runden auf 0 formatiert er als letztes zeichen . oder ,
+		String cRueck =  df.format(dHelp.doubleValue());
+		if (cRueck.endsWith(",")||cRueck.endsWith("."))
+			cRueck = cRueck.substring(0,cRueck.length()-1);
+		
+		return cRueck;
+		
+	}
+
+	/**
+	 * 
+	 * @param dValueWhenNULL
+	 * @param iNachkommaRunden
+	 * @param bTausender
+	 * @return s "" wenn der double-Wert null ist
+	 * @throws myException
+	 */
+	public String get_CONTAINERINHALT_cF_NN(Double dValueWhenNULL, int iNachkommaRunden, boolean bTausender) throws myException
+	{
+		String cFormat = "#,###,##0." + "00000000000000000000000000000000".substring(0, iNachkommaRunden);
+		if (!bTausender) cFormat = "#0." + "00000000000000000000000000000000".substring(0, iNachkommaRunden);
+		
+		DecimalFormat df = new DecimalFormat(cFormat);
+
+		Double dHelp = this.get_CONTAINERINHALT_dValue(dValueWhenNULL,iNachkommaRunden);
+		if (dHelp==null)
+		{
+			return "";
+		}
+		
+		//beim runden auf 0 formatiert er als letztes zeichen . oder ,
+		String cRueck =  df.format(dHelp.doubleValue());
+		if (cRueck.endsWith(",")||cRueck.endsWith("."))
+			cRueck = cRueck.substring(0,cRueck.length()-1);
+		
+		return cRueck;
+
+	}
+		public BigDecimal get_CONTAINERINHALT_bdValue(BigDecimal bdValueWhenNULL) throws myException
+	{
+		BigDecimal bdRueck = this.get("CONTAINERINHALT").getBigDecimalValue();
+		if (bdRueck==null) 
+		{ 
+			return bdValueWhenNULL; 
+		} 
+		else 
+		{ 
+			return bdRueck;
+		} 
+	}
+	
+
+	
+	public BigDecimal get_CONTAINERINHALT_bdValue(BigDecimal bdValueWhenNULL, int iNachkommaRunden) throws myException
+	{
+		BigDecimal bdRueck = this.get("CONTAINERINHALT").getBigDecimalValue();
+		if (bdRueck == null)
+		{
+			bdRueck = bdValueWhenNULL;           //der wert wird auch gerunden (falls nicht null)
+		}
+		
+		if (bdRueck==null) 
+		{ 
+			return null; 
+		} 
+		else 
+		{ 
+			return bdRueck.setScale(iNachkommaRunden, BigDecimal.ROUND_HALF_UP);
+		} 
+	}
+	
+	
+	public String get_DECKEL_cUF() throws myException
+	{
+		return this.get_UnFormatedValue("DECKEL");
+	}
+
+	public String get_DECKEL_cF() throws myException
+	{
+		return this.get_FormatedValue("DECKEL");	
+	}
+
+	public String get_DECKEL_VALUE_FOR_SQLSTATEMENT() throws myException
+	{
+		return this.get_cVALUE_FOR_SQLSTATEMENT("DECKEL");
+	}
+
+	public String get_DECKEL_cUF_NN(String cNotNullValue) throws myException
+	{
+		return this.get_UnFormatedValue("DECKEL",cNotNullValue);
+	}
+
+	public String get_DECKEL_cF_NN(String cNotNullValue) throws myException
+	{
+		return this.get_FormatedValue("DECKEL",cNotNullValue);	
+	}
+
+	public MyE2_MessageVector set_NEW_VALUE_DECKEL(String cNewValueFormated) throws myException
+	{
+		return this.set_NewValueForDatabase("DECKEL", cNewValueFormated);
+	}
+	
+	
+	//2013-09-18: new check_ Methode, die nichts schreibt
+	public MyE2_MessageVector check_NEW_VALUE_DECKEL(String cNewValueFormated) throws myException
+	{
+		return super.check_NewValueForDatabase("DECKEL", cNewValueFormated);
+	}
+	
+	
+	
+    //2013-07-17: new wetting-methods, like in recordnew-object
+	public MyE2_MessageVector set_NEW_VALUE_DECKEL_(long lNewValueFormated) throws myException	{
+		 return super.set_NewValueForDatabase("DECKEL", lNewValueFormated);
+	}
+
+    //2013-07-17: new wetting-methods, like in recordnew-object
+	public MyE2_MessageVector set_NEW_VALUE_DECKEL_(double dNewValueFormated) throws myException {
+		 return super.set_NewValueForDatabase("DECKEL", dNewValueFormated);
+	}
+
+    //2013-07-17: new wetting-methods, like in recordnew-object
+	public MyE2_MessageVector set_NEW_VALUE_DECKEL_(BigDecimal bdNewValueFormated) throws myException {
+		 return super.set_NewValueForDatabase("DECKEL", bdNewValueFormated);
+	}
+	
+    //2013-07-17: new wetting-methods, like in recordnew-object
+	public MyE2_MessageVector set_NEW_VALUE_DECKEL_(GregorianCalendar calNewValueFormated) throws myException {
+		 return super.set_NewValueForDatabase("DECKEL", calNewValueFormated);
+	}
+		public boolean is_DECKEL_YES() throws myException
+	{
+		boolean bRueck = false;
+		
+		if (get_DECKEL_cUF_NN("N").equals("Y"))
+		{ 
+			bRueck = true; 
+		}
+		
+		return bRueck; 
+	}
+
+	
+	
+	public boolean is_DECKEL_NO() throws myException
+	{
+		boolean bRueck = false;
+		
+		if (get_DECKEL_cUF_NN("N").equals("N"))
+		{ 
+			bRueck = true; 
+		}
+		
+		return bRueck; 
+	}
+		public String get_DICHT_cUF() throws myException
+	{
+		return this.get_UnFormatedValue("DICHT");
+	}
+
+	public String get_DICHT_cF() throws myException
+	{
+		return this.get_FormatedValue("DICHT");	
+	}
+
+	public String get_DICHT_VALUE_FOR_SQLSTATEMENT() throws myException
+	{
+		return this.get_cVALUE_FOR_SQLSTATEMENT("DICHT");
+	}
+
+	public String get_DICHT_cUF_NN(String cNotNullValue) throws myException
+	{
+		return this.get_UnFormatedValue("DICHT",cNotNullValue);
+	}
+
+	public String get_DICHT_cF_NN(String cNotNullValue) throws myException
+	{
+		return this.get_FormatedValue("DICHT",cNotNullValue);	
+	}
+
+	public MyE2_MessageVector set_NEW_VALUE_DICHT(String cNewValueFormated) throws myException
+	{
+		return this.set_NewValueForDatabase("DICHT", cNewValueFormated);
+	}
+	
+	
+	//2013-09-18: new check_ Methode, die nichts schreibt
+	public MyE2_MessageVector check_NEW_VALUE_DICHT(String cNewValueFormated) throws myException
+	{
+		return super.check_NewValueForDatabase("DICHT", cNewValueFormated);
+	}
+	
+	
+	
+    //2013-07-17: new wetting-methods, like in recordnew-object
+	public MyE2_MessageVector set_NEW_VALUE_DICHT_(long lNewValueFormated) throws myException	{
+		 return super.set_NewValueForDatabase("DICHT", lNewValueFormated);
+	}
+
+    //2013-07-17: new wetting-methods, like in recordnew-object
+	public MyE2_MessageVector set_NEW_VALUE_DICHT_(double dNewValueFormated) throws myException {
+		 return super.set_NewValueForDatabase("DICHT", dNewValueFormated);
+	}
+
+    //2013-07-17: new wetting-methods, like in recordnew-object
+	public MyE2_MessageVector set_NEW_VALUE_DICHT_(BigDecimal bdNewValueFormated) throws myException {
+		 return super.set_NewValueForDatabase("DICHT", bdNewValueFormated);
+	}
+	
+    //2013-07-17: new wetting-methods, like in recordnew-object
+	public MyE2_MessageVector set_NEW_VALUE_DICHT_(GregorianCalendar calNewValueFormated) throws myException {
+		 return super.set_NewValueForDatabase("DICHT", calNewValueFormated);
+	}
+		public boolean is_DICHT_YES() throws myException
+	{
+		boolean bRueck = false;
+		
+		if (get_DICHT_cUF_NN("N").equals("Y"))
+		{ 
+			bRueck = true; 
+		}
+		
+		return bRueck; 
+	}
+
+	
+	
+	public boolean is_DICHT_NO() throws myException
+	{
+		boolean bRueck = false;
+		
+		if (get_DICHT_cUF_NN("N").equals("N"))
+		{ 
+			bRueck = true; 
+		}
+		
+		return bRueck; 
+	}
+		public String get_ERZEUGT_AM_cUF() throws myException
+	{
+		return this.get_UnFormatedValue("ERZEUGT_AM");
+	}
+
+	public String get_ERZEUGT_AM_cF() throws myException
+	{
+		return this.get_FormatedValue("ERZEUGT_AM");	
+	}
+
+	public String get_ERZEUGT_AM_VALUE_FOR_SQLSTATEMENT() throws myException
+	{
+		return this.get_cVALUE_FOR_SQLSTATEMENT("ERZEUGT_AM");
+	}
+
+	public String get_ERZEUGT_AM_cUF_NN(String cNotNullValue) throws myException
+	{
+		return this.get_UnFormatedValue("ERZEUGT_AM",cNotNullValue);
+	}
+
+	public String get_ERZEUGT_AM_cF_NN(String cNotNullValue) throws myException
+	{
+		return this.get_FormatedValue("ERZEUGT_AM",cNotNullValue);	
+	}
+
+	public MyE2_MessageVector set_NEW_VALUE_ERZEUGT_AM(String cNewValueFormated) throws myException
+	{
+		return this.set_NewValueForDatabase("ERZEUGT_AM", cNewValueFormated);
+	}
+	
+	
+	//2013-09-18: new check_ Methode, die nichts schreibt
+	public MyE2_MessageVector check_NEW_VALUE_ERZEUGT_AM(String cNewValueFormated) throws myException
+	{
+		return super.check_NewValueForDatabase("ERZEUGT_AM", cNewValueFormated);
+	}
+	
+	
+	
+    //2013-07-17: new wetting-methods, like in recordnew-object
+	public MyE2_MessageVector set_NEW_VALUE_ERZEUGT_AM_(long lNewValueFormated) throws myException	{
+		 return super.set_NewValueForDatabase("ERZEUGT_AM", lNewValueFormated);
+	}
+
+    //2013-07-17: new wetting-methods, like in recordnew-object
+	public MyE2_MessageVector set_NEW_VALUE_ERZEUGT_AM_(double dNewValueFormated) throws myException {
+		 return super.set_NewValueForDatabase("ERZEUGT_AM", dNewValueFormated);
+	}
+
+    //2013-07-17: new wetting-methods, like in recordnew-object
+	public MyE2_MessageVector set_NEW_VALUE_ERZEUGT_AM_(BigDecimal bdNewValueFormated) throws myException {
+		 return super.set_NewValueForDatabase("ERZEUGT_AM", bdNewValueFormated);
+	}
+	
+    //2013-07-17: new wetting-methods, like in recordnew-object
+	public MyE2_MessageVector set_NEW_VALUE_ERZEUGT_AM_(GregorianCalendar calNewValueFormated) throws myException {
+		 return super.set_NewValueForDatabase("ERZEUGT_AM", calNewValueFormated);
+	}
+		public String get_ERZEUGT_VON_cUF() throws myException
+	{
+		return this.get_UnFormatedValue("ERZEUGT_VON");
+	}
+
+	public String get_ERZEUGT_VON_cF() throws myException
+	{
+		return this.get_FormatedValue("ERZEUGT_VON");	
+	}
+
+	public String get_ERZEUGT_VON_VALUE_FOR_SQLSTATEMENT() throws myException
+	{
+		return this.get_cVALUE_FOR_SQLSTATEMENT("ERZEUGT_VON");
+	}
+
+	public String get_ERZEUGT_VON_cUF_NN(String cNotNullValue) throws myException
+	{
+		return this.get_UnFormatedValue("ERZEUGT_VON",cNotNullValue);
+	}
+
+	public String get_ERZEUGT_VON_cF_NN(String cNotNullValue) throws myException
+	{
+		return this.get_FormatedValue("ERZEUGT_VON",cNotNullValue);	
+	}
+
+	public MyE2_MessageVector set_NEW_VALUE_ERZEUGT_VON(String cNewValueFormated) throws myException
+	{
+		return this.set_NewValueForDatabase("ERZEUGT_VON", cNewValueFormated);
+	}
+	
+	
+	//2013-09-18: new check_ Methode, die nichts schreibt
+	public MyE2_MessageVector check_NEW_VALUE_ERZEUGT_VON(String cNewValueFormated) throws myException
+	{
+		return super.check_NewValueForDatabase("ERZEUGT_VON", cNewValueFormated);
+	}
+	
+	
+	
+    //2013-07-17: new wetting-methods, like in recordnew-object
+	public MyE2_MessageVector set_NEW_VALUE_ERZEUGT_VON_(long lNewValueFormated) throws myException	{
+		 return super.set_NewValueForDatabase("ERZEUGT_VON", lNewValueFormated);
+	}
+
+    //2013-07-17: new wetting-methods, like in recordnew-object
+	public MyE2_MessageVector set_NEW_VALUE_ERZEUGT_VON_(double dNewValueFormated) throws myException {
+		 return super.set_NewValueForDatabase("ERZEUGT_VON", dNewValueFormated);
+	}
+
+    //2013-07-17: new wetting-methods, like in recordnew-object
+	public MyE2_MessageVector set_NEW_VALUE_ERZEUGT_VON_(BigDecimal bdNewValueFormated) throws myException {
+		 return super.set_NewValueForDatabase("ERZEUGT_VON", bdNewValueFormated);
+	}
+	
+    //2013-07-17: new wetting-methods, like in recordnew-object
+	public MyE2_MessageVector set_NEW_VALUE_ERZEUGT_VON_(GregorianCalendar calNewValueFormated) throws myException {
+		 return super.set_NewValueForDatabase("ERZEUGT_VON", calNewValueFormated);
+	}
+		public String get_GEAENDERT_VON_cUF() throws myException
+	{
+		return this.get_UnFormatedValue("GEAENDERT_VON");
+	}
+
+	public String get_GEAENDERT_VON_cF() throws myException
+	{
+		return this.get_FormatedValue("GEAENDERT_VON");	
+	}
+
+	public String get_GEAENDERT_VON_VALUE_FOR_SQLSTATEMENT() throws myException
+	{
+		return this.get_cVALUE_FOR_SQLSTATEMENT("GEAENDERT_VON");
+	}
+
+	public String get_GEAENDERT_VON_cUF_NN(String cNotNullValue) throws myException
+	{
+		return this.get_UnFormatedValue("GEAENDERT_VON",cNotNullValue);
+	}
+
+	public String get_GEAENDERT_VON_cF_NN(String cNotNullValue) throws myException
+	{
+		return this.get_FormatedValue("GEAENDERT_VON",cNotNullValue);	
+	}
+
+	public MyE2_MessageVector set_NEW_VALUE_GEAENDERT_VON(String cNewValueFormated) throws myException
+	{
+		return this.set_NewValueForDatabase("GEAENDERT_VON", cNewValueFormated);
+	}
+	
+	
+	//2013-09-18: new check_ Methode, die nichts schreibt
+	public MyE2_MessageVector check_NEW_VALUE_GEAENDERT_VON(String cNewValueFormated) throws myException
+	{
+		return super.check_NewValueForDatabase("GEAENDERT_VON", cNewValueFormated);
+	}
+	
+	
+	
+    //2013-07-17: new wetting-methods, like in recordnew-object
+	public MyE2_MessageVector set_NEW_VALUE_GEAENDERT_VON_(long lNewValueFormated) throws myException	{
+		 return super.set_NewValueForDatabase("GEAENDERT_VON", lNewValueFormated);
+	}
+
+    //2013-07-17: new wetting-methods, like in recordnew-object
+	public MyE2_MessageVector set_NEW_VALUE_GEAENDERT_VON_(double dNewValueFormated) throws myException {
+		 return super.set_NewValueForDatabase("GEAENDERT_VON", dNewValueFormated);
+	}
+
+    //2013-07-17: new wetting-methods, like in recordnew-object
+	public MyE2_MessageVector set_NEW_VALUE_GEAENDERT_VON_(BigDecimal bdNewValueFormated) throws myException {
+		 return super.set_NewValueForDatabase("GEAENDERT_VON", bdNewValueFormated);
+	}
+	
+    //2013-07-17: new wetting-methods, like in recordnew-object
+	public MyE2_MessageVector set_NEW_VALUE_GEAENDERT_VON_(GregorianCalendar calNewValueFormated) throws myException {
+		 return super.set_NewValueForDatabase("GEAENDERT_VON", calNewValueFormated);
+	}
+		public String get_ID_CONTAINERTYP_cUF() throws myException
+	{
+		return this.get_UnFormatedValue("ID_CONTAINERTYP");
+	}
+
+	public String get_ID_CONTAINERTYP_cF() throws myException
+	{
+		return this.get_FormatedValue("ID_CONTAINERTYP");	
+	}
+
+	public String get_ID_CONTAINERTYP_VALUE_FOR_SQLSTATEMENT() throws myException
+	{
+		return this.get_cVALUE_FOR_SQLSTATEMENT("ID_CONTAINERTYP");
+	}
+
+	public String get_ID_CONTAINERTYP_cUF_NN(String cNotNullValue) throws myException
+	{
+		return this.get_UnFormatedValue("ID_CONTAINERTYP",cNotNullValue);
+	}
+
+	public String get_ID_CONTAINERTYP_cF_NN(String cNotNullValue) throws myException
+	{
+		return this.get_FormatedValue("ID_CONTAINERTYP",cNotNullValue);	
+	}
+
+	public MyE2_MessageVector set_NEW_VALUE_ID_CONTAINERTYP(String cNewValueFormated) throws myException
+	{
+		return this.set_NewValueForDatabase("ID_CONTAINERTYP", cNewValueFormated);
+	}
+	
+	
+	//2013-09-18: new check_ Methode, die nichts schreibt
+	public MyE2_MessageVector check_NEW_VALUE_ID_CONTAINERTYP(String cNewValueFormated) throws myException
+	{
+		return super.check_NewValueForDatabase("ID_CONTAINERTYP", cNewValueFormated);
+	}
+	
+	
+	
+    //2013-07-17: new wetting-methods, like in recordnew-object
+	public MyE2_MessageVector set_NEW_VALUE_ID_CONTAINERTYP_(long lNewValueFormated) throws myException	{
+		 return super.set_NewValueForDatabase("ID_CONTAINERTYP", lNewValueFormated);
+	}
+
+    //2013-07-17: new wetting-methods, like in recordnew-object
+	public MyE2_MessageVector set_NEW_VALUE_ID_CONTAINERTYP_(double dNewValueFormated) throws myException {
+		 return super.set_NewValueForDatabase("ID_CONTAINERTYP", dNewValueFormated);
+	}
+
+    //2013-07-17: new wetting-methods, like in recordnew-object
+	public MyE2_MessageVector set_NEW_VALUE_ID_CONTAINERTYP_(BigDecimal bdNewValueFormated) throws myException {
+		 return super.set_NewValueForDatabase("ID_CONTAINERTYP", bdNewValueFormated);
+	}
+	
+    //2013-07-17: new wetting-methods, like in recordnew-object
+	public MyE2_MessageVector set_NEW_VALUE_ID_CONTAINERTYP_(GregorianCalendar calNewValueFormated) throws myException {
+		 return super.set_NewValueForDatabase("ID_CONTAINERTYP", calNewValueFormated);
+	}
+		public Long get_ID_CONTAINERTYP_lValue(Long lValueWhenNULL) throws myException
+	{
+		Long lRueck = this.get("ID_CONTAINERTYP").getLongValue();
+		if (lRueck==null) 
+		{ 
+			return lValueWhenNULL; 
+		} 
+		else 
+		{ 
+			return lRueck;
+		} 
+	}
+	public Double get_ID_CONTAINERTYP_dValue(Double dValueWhenNULL) throws myException
+	{
+		Double dRueck = this.get("ID_CONTAINERTYP").getDoubleValue();
+		if (dRueck==null) 
+		{ 
+			return dValueWhenNULL; 
+		} 
+		else 
+		{ 
+			return dRueck;
+		} 
+	}
+	
+
+	
+	public Double get_ID_CONTAINERTYP_dValue(Double dValueWhenNULL, int iNachkommaRunden) throws myException
+	{
+		Double dRueck = this.get("ID_CONTAINERTYP").getDoubleValue();
+		if (dRueck == null)
+		{
+			dRueck = dValueWhenNULL;           //der wert wird auch gerunden (falls nicht null)
+		}
+		
+		if (dRueck==null) 
+		{ 
+			return null; 
+		} 
+		else 
+		{ 
+			BigDecimal bdTemp = new BigDecimal(dRueck);
+			BigDecimal bdValue = bdTemp.setScale(iNachkommaRunden, BigDecimal.ROUND_HALF_UP);
+			dRueck = bdValue.doubleValue();
+			return new Double(dRueck);
+		} 
+	}
+	
+	
+	/**
+	 * 
+	 * @param dValueWhenNULL
+	 * @param iNachkommaRunden
+	 * @return "" wenn der double-Wert null ist
+	 * @throws myException
+	 */
+	public String get_ID_CONTAINERTYP_cUF_NN(Double dValueWhenNULL, int iNachkommaRunden) throws myException
+	{
+		String cFormat = "#0," + "00000000000000000000000000000000".substring(0, iNachkommaRunden);
+		
+		DecimalFormat df = new DecimalFormat(cFormat);
+
+		Double dHelp = this.get_ID_CONTAINERTYP_dValue(dValueWhenNULL,iNachkommaRunden);
+		if (dHelp==null)
+		{
+			return "";
+		}
+	   
+		//beim runden auf 0 formatiert er als letztes zeichen . oder ,
+		String cRueck =  df.format(dHelp.doubleValue());
+		if (cRueck.endsWith(",")||cRueck.endsWith("."))
+			cRueck = cRueck.substring(0,cRueck.length()-1);
+		
+		return cRueck;
+		
+	}
+
+	/**
+	 * 
+	 * @param dValueWhenNULL
+	 * @param iNachkommaRunden
+	 * @param bTausender
+	 * @return s "" wenn der double-Wert null ist
+	 * @throws myException
+	 */
+	public String get_ID_CONTAINERTYP_cF_NN(Double dValueWhenNULL, int iNachkommaRunden, boolean bTausender) throws myException
+	{
+		String cFormat = "#,###,##0." + "00000000000000000000000000000000".substring(0, iNachkommaRunden);
+		if (!bTausender) cFormat = "#0." + "00000000000000000000000000000000".substring(0, iNachkommaRunden);
+		
+		DecimalFormat df = new DecimalFormat(cFormat);
+
+		Double dHelp = this.get_ID_CONTAINERTYP_dValue(dValueWhenNULL,iNachkommaRunden);
+		if (dHelp==null)
+		{
+			return "";
+		}
+		
+		//beim runden auf 0 formatiert er als letztes zeichen . oder ,
+		String cRueck =  df.format(dHelp.doubleValue());
+		if (cRueck.endsWith(",")||cRueck.endsWith("."))
+			cRueck = cRueck.substring(0,cRueck.length()-1);
+		
+		return cRueck;
+
+	}
+		public BigDecimal get_ID_CONTAINERTYP_bdValue(BigDecimal bdValueWhenNULL) throws myException
+	{
+		BigDecimal bdRueck = this.get("ID_CONTAINERTYP").getBigDecimalValue();
+		if (bdRueck==null) 
+		{ 
+			return bdValueWhenNULL; 
+		} 
+		else 
+		{ 
+			return bdRueck;
+		} 
+	}
+	
+
+	
+	public BigDecimal get_ID_CONTAINERTYP_bdValue(BigDecimal bdValueWhenNULL, int iNachkommaRunden) throws myException
+	{
+		BigDecimal bdRueck = this.get("ID_CONTAINERTYP").getBigDecimalValue();
+		if (bdRueck == null)
+		{
+			bdRueck = bdValueWhenNULL;           //der wert wird auch gerunden (falls nicht null)
+		}
+		
+		if (bdRueck==null) 
+		{ 
+			return null; 
+		} 
+		else 
+		{ 
+			return bdRueck.setScale(iNachkommaRunden, BigDecimal.ROUND_HALF_UP);
+		} 
+	}
+	
+	
+	public String get_ID_MANDANT_cUF() throws myException
+	{
+		return this.get_UnFormatedValue("ID_MANDANT");
+	}
+
+	public String get_ID_MANDANT_cF() throws myException
+	{
+		return this.get_FormatedValue("ID_MANDANT");	
+	}
+
+	public String get_ID_MANDANT_VALUE_FOR_SQLSTATEMENT() throws myException
+	{
+		return this.get_cVALUE_FOR_SQLSTATEMENT("ID_MANDANT");
+	}
+
+	public String get_ID_MANDANT_cUF_NN(String cNotNullValue) throws myException
+	{
+		return this.get_UnFormatedValue("ID_MANDANT",cNotNullValue);
+	}
+
+	public String get_ID_MANDANT_cF_NN(String cNotNullValue) throws myException
+	{
+		return this.get_FormatedValue("ID_MANDANT",cNotNullValue);	
+	}
+
+	public MyE2_MessageVector set_NEW_VALUE_ID_MANDANT(String cNewValueFormated) throws myException
+	{
+		return this.set_NewValueForDatabase("ID_MANDANT", cNewValueFormated);
+	}
+	
+	
+	//2013-09-18: new check_ Methode, die nichts schreibt
+	public MyE2_MessageVector check_NEW_VALUE_ID_MANDANT(String cNewValueFormated) throws myException
+	{
+		return super.check_NewValueForDatabase("ID_MANDANT", cNewValueFormated);
+	}
+	
+	
+	
+    //2013-07-17: new wetting-methods, like in recordnew-object
+	public MyE2_MessageVector set_NEW_VALUE_ID_MANDANT_(long lNewValueFormated) throws myException	{
+		 return super.set_NewValueForDatabase("ID_MANDANT", lNewValueFormated);
+	}
+
+    //2013-07-17: new wetting-methods, like in recordnew-object
+	public MyE2_MessageVector set_NEW_VALUE_ID_MANDANT_(double dNewValueFormated) throws myException {
+		 return super.set_NewValueForDatabase("ID_MANDANT", dNewValueFormated);
+	}
+
+    //2013-07-17: new wetting-methods, like in recordnew-object
+	public MyE2_MessageVector set_NEW_VALUE_ID_MANDANT_(BigDecimal bdNewValueFormated) throws myException {
+		 return super.set_NewValueForDatabase("ID_MANDANT", bdNewValueFormated);
+	}
+	
+    //2013-07-17: new wetting-methods, like in recordnew-object
+	public MyE2_MessageVector set_NEW_VALUE_ID_MANDANT_(GregorianCalendar calNewValueFormated) throws myException {
+		 return super.set_NewValueForDatabase("ID_MANDANT", calNewValueFormated);
+	}
+		public Long get_ID_MANDANT_lValue(Long lValueWhenNULL) throws myException
+	{
+		Long lRueck = this.get("ID_MANDANT").getLongValue();
+		if (lRueck==null) 
+		{ 
+			return lValueWhenNULL; 
+		} 
+		else 
+		{ 
+			return lRueck;
+		} 
+	}
+	public Double get_ID_MANDANT_dValue(Double dValueWhenNULL) throws myException
+	{
+		Double dRueck = this.get("ID_MANDANT").getDoubleValue();
+		if (dRueck==null) 
+		{ 
+			return dValueWhenNULL; 
+		} 
+		else 
+		{ 
+			return dRueck;
+		} 
+	}
+	
+
+	
+	public Double get_ID_MANDANT_dValue(Double dValueWhenNULL, int iNachkommaRunden) throws myException
+	{
+		Double dRueck = this.get("ID_MANDANT").getDoubleValue();
+		if (dRueck == null)
+		{
+			dRueck = dValueWhenNULL;           //der wert wird auch gerunden (falls nicht null)
+		}
+		
+		if (dRueck==null) 
+		{ 
+			return null; 
+		} 
+		else 
+		{ 
+			BigDecimal bdTemp = new BigDecimal(dRueck);
+			BigDecimal bdValue = bdTemp.setScale(iNachkommaRunden, BigDecimal.ROUND_HALF_UP);
+			dRueck = bdValue.doubleValue();
+			return new Double(dRueck);
+		} 
+	}
+	
+	
+	/**
+	 * 
+	 * @param dValueWhenNULL
+	 * @param iNachkommaRunden
+	 * @return "" wenn der double-Wert null ist
+	 * @throws myException
+	 */
+	public String get_ID_MANDANT_cUF_NN(Double dValueWhenNULL, int iNachkommaRunden) throws myException
+	{
+		String cFormat = "#0," + "00000000000000000000000000000000".substring(0, iNachkommaRunden);
+		
+		DecimalFormat df = new DecimalFormat(cFormat);
+
+		Double dHelp = this.get_ID_MANDANT_dValue(dValueWhenNULL,iNachkommaRunden);
+		if (dHelp==null)
+		{
+			return "";
+		}
+	   
+		//beim runden auf 0 formatiert er als letztes zeichen . oder ,
+		String cRueck =  df.format(dHelp.doubleValue());
+		if (cRueck.endsWith(",")||cRueck.endsWith("."))
+			cRueck = cRueck.substring(0,cRueck.length()-1);
+		
+		return cRueck;
+		
+	}
+
+	/**
+	 * 
+	 * @param dValueWhenNULL
+	 * @param iNachkommaRunden
+	 * @param bTausender
+	 * @return s "" wenn der double-Wert null ist
+	 * @throws myException
+	 */
+	public String get_ID_MANDANT_cF_NN(Double dValueWhenNULL, int iNachkommaRunden, boolean bTausender) throws myException
+	{
+		String cFormat = "#,###,##0." + "00000000000000000000000000000000".substring(0, iNachkommaRunden);
+		if (!bTausender) cFormat = "#0." + "00000000000000000000000000000000".substring(0, iNachkommaRunden);
+		
+		DecimalFormat df = new DecimalFormat(cFormat);
+
+		Double dHelp = this.get_ID_MANDANT_dValue(dValueWhenNULL,iNachkommaRunden);
+		if (dHelp==null)
+		{
+			return "";
+		}
+		
+		//beim runden auf 0 formatiert er als letztes zeichen . oder ,
+		String cRueck =  df.format(dHelp.doubleValue());
+		if (cRueck.endsWith(",")||cRueck.endsWith("."))
+			cRueck = cRueck.substring(0,cRueck.length()-1);
+		
+		return cRueck;
+
+	}
+		public BigDecimal get_ID_MANDANT_bdValue(BigDecimal bdValueWhenNULL) throws myException
+	{
+		BigDecimal bdRueck = this.get("ID_MANDANT").getBigDecimalValue();
+		if (bdRueck==null) 
+		{ 
+			return bdValueWhenNULL; 
+		} 
+		else 
+		{ 
+			return bdRueck;
+		} 
+	}
+	
+
+	
+	public BigDecimal get_ID_MANDANT_bdValue(BigDecimal bdValueWhenNULL, int iNachkommaRunden) throws myException
+	{
+		BigDecimal bdRueck = this.get("ID_MANDANT").getBigDecimalValue();
+		if (bdRueck == null)
+		{
+			bdRueck = bdValueWhenNULL;           //der wert wird auch gerunden (falls nicht null)
+		}
+		
+		if (bdRueck==null) 
+		{ 
+			return null; 
+		} 
+		else 
+		{ 
+			return bdRueck.setScale(iNachkommaRunden, BigDecimal.ROUND_HALF_UP);
+		} 
+	}
+	
+	
+	public String get_KUERZEL_cUF() throws myException
+	{
+		return this.get_UnFormatedValue("KUERZEL");
+	}
+
+	public String get_KUERZEL_cF() throws myException
+	{
+		return this.get_FormatedValue("KUERZEL");	
+	}
+
+	public String get_KUERZEL_VALUE_FOR_SQLSTATEMENT() throws myException
+	{
+		return this.get_cVALUE_FOR_SQLSTATEMENT("KUERZEL");
+	}
+
+	public String get_KUERZEL_cUF_NN(String cNotNullValue) throws myException
+	{
+		return this.get_UnFormatedValue("KUERZEL",cNotNullValue);
+	}
+
+	public String get_KUERZEL_cF_NN(String cNotNullValue) throws myException
+	{
+		return this.get_FormatedValue("KUERZEL",cNotNullValue);	
+	}
+
+	public MyE2_MessageVector set_NEW_VALUE_KUERZEL(String cNewValueFormated) throws myException
+	{
+		return this.set_NewValueForDatabase("KUERZEL", cNewValueFormated);
+	}
+	
+	
+	//2013-09-18: new check_ Methode, die nichts schreibt
+	public MyE2_MessageVector check_NEW_VALUE_KUERZEL(String cNewValueFormated) throws myException
+	{
+		return super.check_NewValueForDatabase("KUERZEL", cNewValueFormated);
+	}
+	
+	
+	
+    //2013-07-17: new wetting-methods, like in recordnew-object
+	public MyE2_MessageVector set_NEW_VALUE_KUERZEL_(long lNewValueFormated) throws myException	{
+		 return super.set_NewValueForDatabase("KUERZEL", lNewValueFormated);
+	}
+
+    //2013-07-17: new wetting-methods, like in recordnew-object
+	public MyE2_MessageVector set_NEW_VALUE_KUERZEL_(double dNewValueFormated) throws myException {
+		 return super.set_NewValueForDatabase("KUERZEL", dNewValueFormated);
+	}
+
+    //2013-07-17: new wetting-methods, like in recordnew-object
+	public MyE2_MessageVector set_NEW_VALUE_KUERZEL_(BigDecimal bdNewValueFormated) throws myException {
+		 return super.set_NewValueForDatabase("KUERZEL", bdNewValueFormated);
+	}
+	
+    //2013-07-17: new wetting-methods, like in recordnew-object
+	public MyE2_MessageVector set_NEW_VALUE_KUERZEL_(GregorianCalendar calNewValueFormated) throws myException {
+		 return super.set_NewValueForDatabase("KUERZEL", calNewValueFormated);
+	}
+		public String get_KURZBEZEICHNUNG_cUF() throws myException
+	{
+		return this.get_UnFormatedValue("KURZBEZEICHNUNG");
+	}
+
+	public String get_KURZBEZEICHNUNG_cF() throws myException
+	{
+		return this.get_FormatedValue("KURZBEZEICHNUNG");	
+	}
+
+	public String get_KURZBEZEICHNUNG_VALUE_FOR_SQLSTATEMENT() throws myException
+	{
+		return this.get_cVALUE_FOR_SQLSTATEMENT("KURZBEZEICHNUNG");
+	}
+
+	public String get_KURZBEZEICHNUNG_cUF_NN(String cNotNullValue) throws myException
+	{
+		return this.get_UnFormatedValue("KURZBEZEICHNUNG",cNotNullValue);
+	}
+
+	public String get_KURZBEZEICHNUNG_cF_NN(String cNotNullValue) throws myException
+	{
+		return this.get_FormatedValue("KURZBEZEICHNUNG",cNotNullValue);	
+	}
+
+	public MyE2_MessageVector set_NEW_VALUE_KURZBEZEICHNUNG(String cNewValueFormated) throws myException
+	{
+		return this.set_NewValueForDatabase("KURZBEZEICHNUNG", cNewValueFormated);
+	}
+	
+	
+	//2013-09-18: new check_ Methode, die nichts schreibt
+	public MyE2_MessageVector check_NEW_VALUE_KURZBEZEICHNUNG(String cNewValueFormated) throws myException
+	{
+		return super.check_NewValueForDatabase("KURZBEZEICHNUNG", cNewValueFormated);
+	}
+	
+	
+	
+    //2013-07-17: new wetting-methods, like in recordnew-object
+	public MyE2_MessageVector set_NEW_VALUE_KURZBEZEICHNUNG_(long lNewValueFormated) throws myException	{
+		 return super.set_NewValueForDatabase("KURZBEZEICHNUNG", lNewValueFormated);
+	}
+
+    //2013-07-17: new wetting-methods, like in recordnew-object
+	public MyE2_MessageVector set_NEW_VALUE_KURZBEZEICHNUNG_(double dNewValueFormated) throws myException {
+		 return super.set_NewValueForDatabase("KURZBEZEICHNUNG", dNewValueFormated);
+	}
+
+    //2013-07-17: new wetting-methods, like in recordnew-object
+	public MyE2_MessageVector set_NEW_VALUE_KURZBEZEICHNUNG_(BigDecimal bdNewValueFormated) throws myException {
+		 return super.set_NewValueForDatabase("KURZBEZEICHNUNG", bdNewValueFormated);
+	}
+	
+    //2013-07-17: new wetting-methods, like in recordnew-object
+	public MyE2_MessageVector set_NEW_VALUE_KURZBEZEICHNUNG_(GregorianCalendar calNewValueFormated) throws myException {
+		 return super.set_NewValueForDatabase("KURZBEZEICHNUNG", calNewValueFormated);
+	}
+		public String get_LETZTE_AENDERUNG_cUF() throws myException
+	{
+		return this.get_UnFormatedValue("LETZTE_AENDERUNG");
+	}
+
+	public String get_LETZTE_AENDERUNG_cF() throws myException
+	{
+		return this.get_FormatedValue("LETZTE_AENDERUNG");	
+	}
+
+	public String get_LETZTE_AENDERUNG_VALUE_FOR_SQLSTATEMENT() throws myException
+	{
+		return this.get_cVALUE_FOR_SQLSTATEMENT("LETZTE_AENDERUNG");
+	}
+
+	public String get_LETZTE_AENDERUNG_cUF_NN(String cNotNullValue) throws myException
+	{
+		return this.get_UnFormatedValue("LETZTE_AENDERUNG",cNotNullValue);
+	}
+
+	public String get_LETZTE_AENDERUNG_cF_NN(String cNotNullValue) throws myException
+	{
+		return this.get_FormatedValue("LETZTE_AENDERUNG",cNotNullValue);	
+	}
+
+	public MyE2_MessageVector set_NEW_VALUE_LETZTE_AENDERUNG(String cNewValueFormated) throws myException
+	{
+		return this.set_NewValueForDatabase("LETZTE_AENDERUNG", cNewValueFormated);
+	}
+	
+	
+	//2013-09-18: new check_ Methode, die nichts schreibt
+	public MyE2_MessageVector check_NEW_VALUE_LETZTE_AENDERUNG(String cNewValueFormated) throws myException
+	{
+		return super.check_NewValueForDatabase("LETZTE_AENDERUNG", cNewValueFormated);
+	}
+	
+	
+	
+    //2013-07-17: new wetting-methods, like in recordnew-object
+	public MyE2_MessageVector set_NEW_VALUE_LETZTE_AENDERUNG_(long lNewValueFormated) throws myException	{
+		 return super.set_NewValueForDatabase("LETZTE_AENDERUNG", lNewValueFormated);
+	}
+
+    //2013-07-17: new wetting-methods, like in recordnew-object
+	public MyE2_MessageVector set_NEW_VALUE_LETZTE_AENDERUNG_(double dNewValueFormated) throws myException {
+		 return super.set_NewValueForDatabase("LETZTE_AENDERUNG", dNewValueFormated);
+	}
+
+    //2013-07-17: new wetting-methods, like in recordnew-object
+	public MyE2_MessageVector set_NEW_VALUE_LETZTE_AENDERUNG_(BigDecimal bdNewValueFormated) throws myException {
+		 return super.set_NewValueForDatabase("LETZTE_AENDERUNG", bdNewValueFormated);
+	}
+	
+    //2013-07-17: new wetting-methods, like in recordnew-object
+	public MyE2_MessageVector set_NEW_VALUE_LETZTE_AENDERUNG_(GregorianCalendar calNewValueFormated) throws myException {
+		 return super.set_NewValueForDatabase("LETZTE_AENDERUNG", calNewValueFormated);
+	}
+		public String get_PLANE_cUF() throws myException
+	{
+		return this.get_UnFormatedValue("PLANE");
+	}
+
+	public String get_PLANE_cF() throws myException
+	{
+		return this.get_FormatedValue("PLANE");	
+	}
+
+	public String get_PLANE_VALUE_FOR_SQLSTATEMENT() throws myException
+	{
+		return this.get_cVALUE_FOR_SQLSTATEMENT("PLANE");
+	}
+
+	public String get_PLANE_cUF_NN(String cNotNullValue) throws myException
+	{
+		return this.get_UnFormatedValue("PLANE",cNotNullValue);
+	}
+
+	public String get_PLANE_cF_NN(String cNotNullValue) throws myException
+	{
+		return this.get_FormatedValue("PLANE",cNotNullValue);	
+	}
+
+	public MyE2_MessageVector set_NEW_VALUE_PLANE(String cNewValueFormated) throws myException
+	{
+		return this.set_NewValueForDatabase("PLANE", cNewValueFormated);
+	}
+	
+	
+	//2013-09-18: new check_ Methode, die nichts schreibt
+	public MyE2_MessageVector check_NEW_VALUE_PLANE(String cNewValueFormated) throws myException
+	{
+		return super.check_NewValueForDatabase("PLANE", cNewValueFormated);
+	}
+	
+	
+	
+    //2013-07-17: new wetting-methods, like in recordnew-object
+	public MyE2_MessageVector set_NEW_VALUE_PLANE_(long lNewValueFormated) throws myException	{
+		 return super.set_NewValueForDatabase("PLANE", lNewValueFormated);
+	}
+
+    //2013-07-17: new wetting-methods, like in recordnew-object
+	public MyE2_MessageVector set_NEW_VALUE_PLANE_(double dNewValueFormated) throws myException {
+		 return super.set_NewValueForDatabase("PLANE", dNewValueFormated);
+	}
+
+    //2013-07-17: new wetting-methods, like in recordnew-object
+	public MyE2_MessageVector set_NEW_VALUE_PLANE_(BigDecimal bdNewValueFormated) throws myException {
+		 return super.set_NewValueForDatabase("PLANE", bdNewValueFormated);
+	}
+	
+    //2013-07-17: new wetting-methods, like in recordnew-object
+	public MyE2_MessageVector set_NEW_VALUE_PLANE_(GregorianCalendar calNewValueFormated) throws myException {
+		 return super.set_NewValueForDatabase("PLANE", calNewValueFormated);
+	}
+		public boolean is_PLANE_YES() throws myException
+	{
+		boolean bRueck = false;
+		
+		if (get_PLANE_cUF_NN("N").equals("Y"))
+		{ 
+			bRueck = true; 
+		}
+		
+		return bRueck; 
+	}
+
+	
+	
+	public boolean is_PLANE_NO() throws myException
+	{
+		boolean bRueck = false;
+		
+		if (get_PLANE_cUF_NN("N").equals("N"))
+		{ 
+			bRueck = true; 
+		}
+		
+		return bRueck; 
+	}
+		public String get_SYMMETRISCH_cUF() throws myException
+	{
+		return this.get_UnFormatedValue("SYMMETRISCH");
+	}
+
+	public String get_SYMMETRISCH_cF() throws myException
+	{
+		return this.get_FormatedValue("SYMMETRISCH");	
+	}
+
+	public String get_SYMMETRISCH_VALUE_FOR_SQLSTATEMENT() throws myException
+	{
+		return this.get_cVALUE_FOR_SQLSTATEMENT("SYMMETRISCH");
+	}
+
+	public String get_SYMMETRISCH_cUF_NN(String cNotNullValue) throws myException
+	{
+		return this.get_UnFormatedValue("SYMMETRISCH",cNotNullValue);
+	}
+
+	public String get_SYMMETRISCH_cF_NN(String cNotNullValue) throws myException
+	{
+		return this.get_FormatedValue("SYMMETRISCH",cNotNullValue);	
+	}
+
+	public MyE2_MessageVector set_NEW_VALUE_SYMMETRISCH(String cNewValueFormated) throws myException
+	{
+		return this.set_NewValueForDatabase("SYMMETRISCH", cNewValueFormated);
+	}
+	
+	
+	//2013-09-18: new check_ Methode, die nichts schreibt
+	public MyE2_MessageVector check_NEW_VALUE_SYMMETRISCH(String cNewValueFormated) throws myException
+	{
+		return super.check_NewValueForDatabase("SYMMETRISCH", cNewValueFormated);
+	}
+	
+	
+	
+    //2013-07-17: new wetting-methods, like in recordnew-object
+	public MyE2_MessageVector set_NEW_VALUE_SYMMETRISCH_(long lNewValueFormated) throws myException	{
+		 return super.set_NewValueForDatabase("SYMMETRISCH", lNewValueFormated);
+	}
+
+    //2013-07-17: new wetting-methods, like in recordnew-object
+	public MyE2_MessageVector set_NEW_VALUE_SYMMETRISCH_(double dNewValueFormated) throws myException {
+		 return super.set_NewValueForDatabase("SYMMETRISCH", dNewValueFormated);
+	}
+
+    //2013-07-17: new wetting-methods, like in recordnew-object
+	public MyE2_MessageVector set_NEW_VALUE_SYMMETRISCH_(BigDecimal bdNewValueFormated) throws myException {
+		 return super.set_NewValueForDatabase("SYMMETRISCH", bdNewValueFormated);
+	}
+	
+    //2013-07-17: new wetting-methods, like in recordnew-object
+	public MyE2_MessageVector set_NEW_VALUE_SYMMETRISCH_(GregorianCalendar calNewValueFormated) throws myException {
+		 return super.set_NewValueForDatabase("SYMMETRISCH", calNewValueFormated);
+	}
+		public boolean is_SYMMETRISCH_YES() throws myException
+	{
+		boolean bRueck = false;
+		
+		if (get_SYMMETRISCH_cUF_NN("N").equals("Y"))
+		{ 
+			bRueck = true; 
+		}
+		
+		return bRueck; 
+	}
+
+	
+	
+	public boolean is_SYMMETRISCH_NO() throws myException
+	{
+		boolean bRueck = false;
+		
+		if (get_SYMMETRISCH_cUF_NN("N").equals("N"))
+		{ 
+			bRueck = true; 
+		}
+		
+		return bRueck; 
+	}
+		public String get_SYS_TRIGGER_TIMESTAMP_cUF() throws myException
+	{
+		return this.get_UnFormatedValue("SYS_TRIGGER_TIMESTAMP");
+	}
+
+	public String get_SYS_TRIGGER_TIMESTAMP_cF() throws myException
+	{
+		return this.get_FormatedValue("SYS_TRIGGER_TIMESTAMP");	
+	}
+
+	public String get_SYS_TRIGGER_TIMESTAMP_VALUE_FOR_SQLSTATEMENT() throws myException
+	{
+		return this.get_cVALUE_FOR_SQLSTATEMENT("SYS_TRIGGER_TIMESTAMP");
+	}
+
+	public String get_SYS_TRIGGER_TIMESTAMP_cUF_NN(String cNotNullValue) throws myException
+	{
+		return this.get_UnFormatedValue("SYS_TRIGGER_TIMESTAMP",cNotNullValue);
+	}
+
+	public String get_SYS_TRIGGER_TIMESTAMP_cF_NN(String cNotNullValue) throws myException
+	{
+		return this.get_FormatedValue("SYS_TRIGGER_TIMESTAMP",cNotNullValue);	
+	}
+
+	public MyE2_MessageVector set_NEW_VALUE_SYS_TRIGGER_TIMESTAMP(String cNewValueFormated) throws myException
+	{
+		return this.set_NewValueForDatabase("SYS_TRIGGER_TIMESTAMP", cNewValueFormated);
+	}
+	
+	
+	//2013-09-18: new check_ Methode, die nichts schreibt
+	public MyE2_MessageVector check_NEW_VALUE_SYS_TRIGGER_TIMESTAMP(String cNewValueFormated) throws myException
+	{
+		return super.check_NewValueForDatabase("SYS_TRIGGER_TIMESTAMP", cNewValueFormated);
+	}
+	
+	
+	
+    //2013-07-17: new wetting-methods, like in recordnew-object
+	public MyE2_MessageVector set_NEW_VALUE_SYS_TRIGGER_TIMESTAMP_(long lNewValueFormated) throws myException	{
+		 return super.set_NewValueForDatabase("SYS_TRIGGER_TIMESTAMP", lNewValueFormated);
+	}
+
+    //2013-07-17: new wetting-methods, like in recordnew-object
+	public MyE2_MessageVector set_NEW_VALUE_SYS_TRIGGER_TIMESTAMP_(double dNewValueFormated) throws myException {
+		 return super.set_NewValueForDatabase("SYS_TRIGGER_TIMESTAMP", dNewValueFormated);
+	}
+
+    //2013-07-17: new wetting-methods, like in recordnew-object
+	public MyE2_MessageVector set_NEW_VALUE_SYS_TRIGGER_TIMESTAMP_(BigDecimal bdNewValueFormated) throws myException {
+		 return super.set_NewValueForDatabase("SYS_TRIGGER_TIMESTAMP", bdNewValueFormated);
+	}
+	
+    //2013-07-17: new wetting-methods, like in recordnew-object
+	public MyE2_MessageVector set_NEW_VALUE_SYS_TRIGGER_TIMESTAMP_(GregorianCalendar calNewValueFormated) throws myException {
+		 return super.set_NewValueForDatabase("SYS_TRIGGER_TIMESTAMP", calNewValueFormated);
+	}
+		public String get_SYS_TRIGGER_UUID_cUF() throws myException
+	{
+		return this.get_UnFormatedValue("SYS_TRIGGER_UUID");
+	}
+
+	public String get_SYS_TRIGGER_UUID_cF() throws myException
+	{
+		return this.get_FormatedValue("SYS_TRIGGER_UUID");	
+	}
+
+	public String get_SYS_TRIGGER_UUID_VALUE_FOR_SQLSTATEMENT() throws myException
+	{
+		return this.get_cVALUE_FOR_SQLSTATEMENT("SYS_TRIGGER_UUID");
+	}
+
+	public String get_SYS_TRIGGER_UUID_cUF_NN(String cNotNullValue) throws myException
+	{
+		return this.get_UnFormatedValue("SYS_TRIGGER_UUID",cNotNullValue);
+	}
+
+	public String get_SYS_TRIGGER_UUID_cF_NN(String cNotNullValue) throws myException
+	{
+		return this.get_FormatedValue("SYS_TRIGGER_UUID",cNotNullValue);	
+	}
+
+	public MyE2_MessageVector set_NEW_VALUE_SYS_TRIGGER_UUID(String cNewValueFormated) throws myException
+	{
+		return this.set_NewValueForDatabase("SYS_TRIGGER_UUID", cNewValueFormated);
+	}
+	
+	
+	//2013-09-18: new check_ Methode, die nichts schreibt
+	public MyE2_MessageVector check_NEW_VALUE_SYS_TRIGGER_UUID(String cNewValueFormated) throws myException
+	{
+		return super.check_NewValueForDatabase("SYS_TRIGGER_UUID", cNewValueFormated);
+	}
+	
+	
+	
+    //2013-07-17: new wetting-methods, like in recordnew-object
+	public MyE2_MessageVector set_NEW_VALUE_SYS_TRIGGER_UUID_(long lNewValueFormated) throws myException	{
+		 return super.set_NewValueForDatabase("SYS_TRIGGER_UUID", lNewValueFormated);
+	}
+
+    //2013-07-17: new wetting-methods, like in recordnew-object
+	public MyE2_MessageVector set_NEW_VALUE_SYS_TRIGGER_UUID_(double dNewValueFormated) throws myException {
+		 return super.set_NewValueForDatabase("SYS_TRIGGER_UUID", dNewValueFormated);
+	}
+
+    //2013-07-17: new wetting-methods, like in recordnew-object
+	public MyE2_MessageVector set_NEW_VALUE_SYS_TRIGGER_UUID_(BigDecimal bdNewValueFormated) throws myException {
+		 return super.set_NewValueForDatabase("SYS_TRIGGER_UUID", bdNewValueFormated);
+	}
+	
+    //2013-07-17: new wetting-methods, like in recordnew-object
+	public MyE2_MessageVector set_NEW_VALUE_SYS_TRIGGER_UUID_(GregorianCalendar calNewValueFormated) throws myException {
+		 return super.set_NewValueForDatabase("SYS_TRIGGER_UUID", calNewValueFormated);
+	}
+		public String get_SYS_TRIGGER_VERSION_cUF() throws myException
+	{
+		return this.get_UnFormatedValue("SYS_TRIGGER_VERSION");
+	}
+
+	public String get_SYS_TRIGGER_VERSION_cF() throws myException
+	{
+		return this.get_FormatedValue("SYS_TRIGGER_VERSION");	
+	}
+
+	public String get_SYS_TRIGGER_VERSION_VALUE_FOR_SQLSTATEMENT() throws myException
+	{
+		return this.get_cVALUE_FOR_SQLSTATEMENT("SYS_TRIGGER_VERSION");
+	}
+
+	public String get_SYS_TRIGGER_VERSION_cUF_NN(String cNotNullValue) throws myException
+	{
+		return this.get_UnFormatedValue("SYS_TRIGGER_VERSION",cNotNullValue);
+	}
+
+	public String get_SYS_TRIGGER_VERSION_cF_NN(String cNotNullValue) throws myException
+	{
+		return this.get_FormatedValue("SYS_TRIGGER_VERSION",cNotNullValue);	
+	}
+
+	public MyE2_MessageVector set_NEW_VALUE_SYS_TRIGGER_VERSION(String cNewValueFormated) throws myException
+	{
+		return this.set_NewValueForDatabase("SYS_TRIGGER_VERSION", cNewValueFormated);
+	}
+	
+	
+	//2013-09-18: new check_ Methode, die nichts schreibt
+	public MyE2_MessageVector check_NEW_VALUE_SYS_TRIGGER_VERSION(String cNewValueFormated) throws myException
+	{
+		return super.check_NewValueForDatabase("SYS_TRIGGER_VERSION", cNewValueFormated);
+	}
+	
+	
+	
+    //2013-07-17: new wetting-methods, like in recordnew-object
+	public MyE2_MessageVector set_NEW_VALUE_SYS_TRIGGER_VERSION_(long lNewValueFormated) throws myException	{
+		 return super.set_NewValueForDatabase("SYS_TRIGGER_VERSION", lNewValueFormated);
+	}
+
+    //2013-07-17: new wetting-methods, like in recordnew-object
+	public MyE2_MessageVector set_NEW_VALUE_SYS_TRIGGER_VERSION_(double dNewValueFormated) throws myException {
+		 return super.set_NewValueForDatabase("SYS_TRIGGER_VERSION", dNewValueFormated);
+	}
+
+    //2013-07-17: new wetting-methods, like in recordnew-object
+	public MyE2_MessageVector set_NEW_VALUE_SYS_TRIGGER_VERSION_(BigDecimal bdNewValueFormated) throws myException {
+		 return super.set_NewValueForDatabase("SYS_TRIGGER_VERSION", bdNewValueFormated);
+	}
+	
+    //2013-07-17: new wetting-methods, like in recordnew-object
+	public MyE2_MessageVector set_NEW_VALUE_SYS_TRIGGER_VERSION_(GregorianCalendar calNewValueFormated) throws myException {
+		 return super.set_NewValueForDatabase("SYS_TRIGGER_VERSION", calNewValueFormated);
+	}
+		public Long get_SYS_TRIGGER_VERSION_lValue(Long lValueWhenNULL) throws myException
+	{
+		Long lRueck = this.get("SYS_TRIGGER_VERSION").getLongValue();
+		if (lRueck==null) 
+		{ 
+			return lValueWhenNULL; 
+		} 
+		else 
+		{ 
+			return lRueck;
+		} 
+	}
+	public Double get_SYS_TRIGGER_VERSION_dValue(Double dValueWhenNULL) throws myException
+	{
+		Double dRueck = this.get("SYS_TRIGGER_VERSION").getDoubleValue();
+		if (dRueck==null) 
+		{ 
+			return dValueWhenNULL; 
+		} 
+		else 
+		{ 
+			return dRueck;
+		} 
+	}
+	
+
+	
+	public Double get_SYS_TRIGGER_VERSION_dValue(Double dValueWhenNULL, int iNachkommaRunden) throws myException
+	{
+		Double dRueck = this.get("SYS_TRIGGER_VERSION").getDoubleValue();
+		if (dRueck == null)
+		{
+			dRueck = dValueWhenNULL;           //der wert wird auch gerunden (falls nicht null)
+		}
+		
+		if (dRueck==null) 
+		{ 
+			return null; 
+		} 
+		else 
+		{ 
+			BigDecimal bdTemp = new BigDecimal(dRueck);
+			BigDecimal bdValue = bdTemp.setScale(iNachkommaRunden, BigDecimal.ROUND_HALF_UP);
+			dRueck = bdValue.doubleValue();
+			return new Double(dRueck);
+		} 
+	}
+	
+	
+	/**
+	 * 
+	 * @param dValueWhenNULL
+	 * @param iNachkommaRunden
+	 * @return "" wenn der double-Wert null ist
+	 * @throws myException
+	 */
+	public String get_SYS_TRIGGER_VERSION_cUF_NN(Double dValueWhenNULL, int iNachkommaRunden) throws myException
+	{
+		String cFormat = "#0," + "00000000000000000000000000000000".substring(0, iNachkommaRunden);
+		
+		DecimalFormat df = new DecimalFormat(cFormat);
+
+		Double dHelp = this.get_SYS_TRIGGER_VERSION_dValue(dValueWhenNULL,iNachkommaRunden);
+		if (dHelp==null)
+		{
+			return "";
+		}
+	   
+		//beim runden auf 0 formatiert er als letztes zeichen . oder ,
+		String cRueck =  df.format(dHelp.doubleValue());
+		if (cRueck.endsWith(",")||cRueck.endsWith("."))
+			cRueck = cRueck.substring(0,cRueck.length()-1);
+		
+		return cRueck;
+		
+	}
+
+	/**
+	 * 
+	 * @param dValueWhenNULL
+	 * @param iNachkommaRunden
+	 * @param bTausender
+	 * @return s "" wenn der double-Wert null ist
+	 * @throws myException
+	 */
+	public String get_SYS_TRIGGER_VERSION_cF_NN(Double dValueWhenNULL, int iNachkommaRunden, boolean bTausender) throws myException
+	{
+		String cFormat = "#,###,##0." + "00000000000000000000000000000000".substring(0, iNachkommaRunden);
+		if (!bTausender) cFormat = "#0." + "00000000000000000000000000000000".substring(0, iNachkommaRunden);
+		
+		DecimalFormat df = new DecimalFormat(cFormat);
+
+		Double dHelp = this.get_SYS_TRIGGER_VERSION_dValue(dValueWhenNULL,iNachkommaRunden);
+		if (dHelp==null)
+		{
+			return "";
+		}
+		
+		//beim runden auf 0 formatiert er als letztes zeichen . oder ,
+		String cRueck =  df.format(dHelp.doubleValue());
+		if (cRueck.endsWith(",")||cRueck.endsWith("."))
+			cRueck = cRueck.substring(0,cRueck.length()-1);
+		
+		return cRueck;
+
+	}
+		public BigDecimal get_SYS_TRIGGER_VERSION_bdValue(BigDecimal bdValueWhenNULL) throws myException
+	{
+		BigDecimal bdRueck = this.get("SYS_TRIGGER_VERSION").getBigDecimalValue();
+		if (bdRueck==null) 
+		{ 
+			return bdValueWhenNULL; 
+		} 
+		else 
+		{ 
+			return bdRueck;
+		} 
+	}
+	
+
+	
+	public BigDecimal get_SYS_TRIGGER_VERSION_bdValue(BigDecimal bdValueWhenNULL, int iNachkommaRunden) throws myException
+	{
+		BigDecimal bdRueck = this.get("SYS_TRIGGER_VERSION").getBigDecimalValue();
+		if (bdRueck == null)
+		{
+			bdRueck = bdValueWhenNULL;           //der wert wird auch gerunden (falls nicht null)
+		}
+		
+		if (bdRueck==null) 
+		{ 
+			return null; 
+		} 
+		else 
+		{ 
+			return bdRueck.setScale(iNachkommaRunden, BigDecimal.ROUND_HALF_UP);
+		} 
+	}
+	
+	
+
+
+	public static HashMap<String, MyRECORD.DATATYPES>  HM_FIELDS = new HashMap<String, MyRECORD.DATATYPES>() {{
+	put("ABLAUF",MyRECORD.DATATYPES.YESNO);
+	put("ABROLL",MyRECORD.DATATYPES.YESNO);
+	put("ABSETZ",MyRECORD.DATATYPES.YESNO);
+	put("AKTIV",MyRECORD.DATATYPES.YESNO);
+	put("BESCHREIBUNG",MyRECORD.DATATYPES.TEXT);
+	put("CONTAINERINHALT",MyRECORD.DATATYPES.NUMBER);
+	put("DECKEL",MyRECORD.DATATYPES.YESNO);
+	put("DICHT",MyRECORD.DATATYPES.YESNO);
+	put("ERZEUGT_AM",MyRECORD.DATATYPES.DATE);
+	put("ERZEUGT_VON",MyRECORD.DATATYPES.TEXT);
+	put("GEAENDERT_VON",MyRECORD.DATATYPES.TEXT);
+	put("ID_CONTAINERTYP",MyRECORD.DATATYPES.NUMBER);
+	put("ID_MANDANT",MyRECORD.DATATYPES.NUMBER);
+	put("KUERZEL",MyRECORD.DATATYPES.TEXT);
+	put("KURZBEZEICHNUNG",MyRECORD.DATATYPES.TEXT);
+	put("LETZTE_AENDERUNG",MyRECORD.DATATYPES.DATE);
+	put("PLANE",MyRECORD.DATATYPES.YESNO);
+	put("SYMMETRISCH",MyRECORD.DATATYPES.YESNO);
+	put("SYS_TRIGGER_TIMESTAMP",MyRECORD.DATATYPES.DATE);
+	put("SYS_TRIGGER_UUID",MyRECORD.DATATYPES.TEXT);
+	put("SYS_TRIGGER_VERSION",MyRECORD.DATATYPES.NUMBER);
+	}};
+
+
+
+    @Override 
+	public HashMap<String, DATATYPES> get_HM_FIELDNAMES() 
+	{ 		
+		return RECORD_CONTAINERTYP.HM_FIELDS;	
+	}
+
+}

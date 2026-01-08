@@ -1,0 +1,54 @@
+package rohstoff.Echo2BusinessLogic.FIRMENSTAMM.INFO_ZENTRUM_NG.INFO_BLOCK_FUHRE_NG_SQL_ABFRAGE;
+
+import panter.gmbh.basics4project.DB_ENUMS._TAB;
+import panter.gmbh.indep.dataTools.TERM.SELECT.SEL;
+import panter.gmbh.indep.exceptions.myException;
+
+public class Abfrage_Ort_EK extends SEL{
+	public Abfrage_Ort_EK(String oIdAdresse) throws myException {
+		super();
+		
+		this.ADDFIELD("FO.DEF_QUELLE_ZIEL",  									ABFRAGE_FELD.DEF_QUELLE_ZIEL.db_val())
+		.ADDFIELD("FO.ID_VPOS_TPA_FUHRE", 										ABFRAGE_FELD.ID_VPOS_TPA_FUHRE.db_val())
+		.ADDFIELD("FO.ID_VPOS_TPA_FUHRE_ORT",  									ABFRAGE_FELD.ID_VPOS_TPA_FUHRE_ORT.db_val())
+		.ADDFIELD("CASE WHEN NVL(FO.DEF_QUELLE_ZIEL,'EK')='EK' "
+				+ "THEN NVL(FU.ID_ADRESSE_LAGER_ZIEL,FU.ID_ADRESSE_ZIEL) "
+				+ "ELSE NVL(FU.ID_ADRESSE_LAGER_START,FU.ID_ADRESSE_START) "
+				+ "END",  														ABFRAGE_FELD.ID_ADRESSE_STATION.db_val())
+		.ADDFIELD("FO.ID_ARTIKEL", 												ABFRAGE_FELD.ID_ARTIKEL.db_val())
+		.ADDFIELD("FO.ANTEIL_PLANMENGE", 										ABFRAGE_FELD.PLAN.db_val())
+		.ADDFIELD("CASE WHEN NVL(FO.DEF_QUELLE_ZIEL,'EK')='EK' "
+				+ "THEN FO.ANTEIL_LADEMENGE "
+				+ "ELSE FO.ANTEIL_ABLADEMENGE "
+				+ "END",  														ABFRAGE_FELD.MENGE_BRUTTO.db_val())
+		.ADDFIELD("FO.ABZUG_MENGE", 											ABFRAGE_FELD.ABZUG_MENGE.db_val())
+		.ADDFIELD("FO.EINZELPREIS", 											ABFRAGE_FELD.EPREIS.db_val())
+		.ADDFIELD("FO.EPREIS_RESULT_NETTO_MGE", 								ABFRAGE_FELD.EPREIS_RESULT.db_val())
+		.ADDFIELD("FO.ANR1||'-'||FO.ANR2", 										ABFRAGE_FELD.ANR1_2.db_val())
+		.ADDFIELD("FO.ARTBEZ1", 												ABFRAGE_FELD.ART_BEZ1.db_val())
+		.ADDFIELD("NVL(RK.BUCHUNGSNUMMER,'<>')",								ABFRAGE_FELD.BUCHUNGSNUMMER.db_val())
+		.ADDFIELD("FO.DATUM_LADE_ABLADE", 										ABFRAGE_FELD.DATUM.db_val())
+		.ADDFIELD("FU.STATUS_BUCHUNG",											ABFRAGE_FELD.BUCHUNG_STATUS.db_val())
+		.ADDFIELD("NVL(FU.A_ORT,'<Abladeort>')", 									ABFRAGE_FELD.A_ORT.db_val())
+        .ADDFIELD("NVL(FU.A_NAME1,'<Abnehmer>')",                     			ABFRAGE_FELD.A_FIRMA.db_val())
+        .ADDFIELD("RK.ID_VKOPF_RG", 											ABFRAGE_FELD.ID_VKOPF_RG.db_val())
+		
+		.FROM(_TAB.vpos_tpa_fuhre_ort.n(), "FO")
+		.INNERJOIN("JT_VPOS_TPA_FUHRE FU", "FO.ID_VPOS_TPA_FUHRE", "FU.ID_VPOS_TPA_FUHRE")
+		.LEFTOUTER("JT_VPOS_RG RP", "FU.ID_VPOS_TPA_FUHRE", "RP.ID_VPOS_TPA_FUHRE_ZUGEORD"
+				+" AND FO.ID_VPOS_TPA_FUHRE_ORT=RP.ID_VPOS_TPA_FUHRE_ORT_ZUGEORD"
+				+" AND NVL(RP.ID_VPOS_RG_STORNO_VORGAENGER,0) = 0"
+				+" AND NVL(RP.ID_VPOS_RG_STORNO_NACHFOLGER,0) = 0"
+				+" AND NVL(RP.DELETED,'N')='N'"
+				+" AND RP.LAGER_VORZEICHEN = 1"
+				)
+		.LEFTOUTER("JT_VKOPF_RG RK", "RP.ID_VKOPF_RG", "RK.ID_VKOPF_RG")
+		
+		.WHERE("NVL(FU.DELETED,'N')", "'N'")
+		.AND("NVL(FO.DELETED,'N')", "'N'")
+		.AND("NVL(FU.IST_STORNIERT,'N')", "'N'")
+		.AND("NVL(FO.DEF_QUELLE_ZIEL,'EK')", "'EK'")
+		.AND("NVL(FO.ID_ADRESSE,0)", oIdAdresse);
+	}
+
+}

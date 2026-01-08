@@ -1,0 +1,80 @@
+CREATE OR REPLACE FUNCTION STR_NORMALIZE(p_str_in IN VARCHAR2) RETURN VARCHAR2
+IS
+  str_in        VARCHAR2(2000) := p_str_in;
+
+BEGIN
+
+  str_in := REPLACE(str_in, 'ä','ae'); 
+  str_in := REPLACE(str_in, 'ö','oe'); 
+  str_in := REPLACE(str_in, 'ü','ue'); 
+  str_in := REPLACE(str_in, 'Ä','AE'); 
+  str_in := REPLACE(str_in, 'Ö','OE'); 
+  str_in := REPLACE(str_in, 'Ü','UE'); 
+  str_in := REPLACE(str_in, 'ß','ss'); 
+  str_in := REPLACE(str_in, '$','_'); 
+  str_in := REPLACE(str_in, '#','_'); 
+  str_in := REPLACE(str_in, '~','_'); 
+  str_in := REPLACE(str_in, ',','_'); 
+  str_in := REPLACE(str_in, ';','_'); 
+  str_in := REPLACE(str_in, '=','_'); 
+  str_in := REPLACE(str_in, '{','_'); 
+  str_in := REPLACE(str_in, '}','_'); 
+  str_in := REPLACE(str_in, '[','_'); 
+  str_in := REPLACE(str_in, ']','_'); 
+  
+  str_in := REPLACE(str_in, '+','_'); 
+  str_in := REPLACE(str_in, '-','_'); 
+  str_in := REPLACE(str_in, '/','_'); 
+  str_in := REPLACE(str_in, '\','_'); 
+  str_in := REPLACE(str_in, '_','_'); 
+  str_in := REPLACE(str_in, '-','_'); 
+  str_in := REPLACE(str_in, ':','_'); 
+  str_in := REPLACE(str_in, '*','_'); 
+  str_in := REPLACE(str_in, '.','_'); 
+  str_in := REPLACE(str_in, '(','_'); 
+  str_in := REPLACE(str_in, ')','_'); 
+  
+  str_in := REPLACE(str_in, '&','_'); 
+  str_in := REPLACE(str_in, '%','_'); 
+  str_in := REPLACE(str_in, '§','_'); 
+   
+  
+  str_in := REPLACE(str_in, chr(1),'_'); 
+  str_in := REPLACE(str_in, chr(2),'_'); 
+  str_in := REPLACE(str_in, chr(3),'_'); 
+  str_in := REPLACE(str_in, chr(4),'_'); 
+  str_in := REPLACE(str_in, chr(5),'_'); 
+  str_in := REPLACE(str_in, chr(6),'_'); 
+  str_in := REPLACE(str_in, chr(7),'_'); 
+  str_in := REPLACE(str_in, chr(8),'_'); 
+  str_in := REPLACE(str_in, chr(9),'_'); 
+  str_in := REPLACE(str_in, chr(10),'_'); 
+  str_in := REPLACE(str_in, chr(11),'_'); 
+  str_in := REPLACE(str_in, chr(12),'_'); 
+  str_in := REPLACE(str_in, chr(13),'_'); 
+  str_in := REPLACE(str_in, chr(14),'_'); 
+  str_in := REPLACE(str_in, chr(15),'_'); 
+  str_in := REPLACE(str_in, chr(16),'_'); 
+  str_in := REPLACE(str_in, chr(17),'_'); 
+  str_in := REPLACE(str_in, chr(18),'_'); 
+  str_in := REPLACE(str_in, chr(19),'_'); 
+
+  str_in := REPLACE(str_in, chr(20),'_'); 
+  str_in := REPLACE(str_in, chr(21),'_'); 
+  str_in := REPLACE(str_in, chr(22),'_'); 
+  str_in := REPLACE(str_in, chr(23),'_'); 
+  str_in := REPLACE(str_in, chr(24),'_'); 
+  str_in := REPLACE(str_in, chr(25),'_'); 
+  str_in := REPLACE(str_in, chr(26),'_'); 
+  str_in := REPLACE(str_in, chr(27),'_'); 
+  str_in := REPLACE(str_in, chr(28),'_'); 
+  str_in := REPLACE(str_in, chr(29),'_'); 
+  str_in := REPLACE(str_in, chr(30),'_'); 
+  str_in := REPLACE(str_in, chr(31),'_'); 
+  str_in := REPLACE(str_in, chr(32),'_'); 
+  
+  RETURN str_in;
+
+EXCEPTION WHEN OTHERS THEN
+  RETURN p_str_in;
+END STR_NORMALIZE;

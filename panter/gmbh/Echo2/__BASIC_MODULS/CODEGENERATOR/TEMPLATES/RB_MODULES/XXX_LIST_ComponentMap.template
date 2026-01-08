@@ -1,0 +1,164 @@
+package #PACKAGE#;
+  
+  
+import java.util.Collection;
+import nextapp.echo2.app.Extent;
+import nextapp.echo2.app.Color;
+import nextapp.echo2.app.Component;
+import panter.gmbh.Echo2.MyE2_String;
+import panter.gmbh.Echo2.FontsAndColors.E2_ColorBase;
+import panter.gmbh.Echo2.FontsAndColors.E2_ColorDark;
+import panter.gmbh.Echo2.ListAndMask.E2_ComponentMAP;
+import panter.gmbh.Echo2.ListAndMask.E2_ComponentMAP_V22;
+import panter.gmbh.Echo2.ListAndMask.E2_ComponentMapMarker;
+import panter.gmbh.Echo2.ListAndMask.E2_ComponentMAP_Factory4Records;
+import panter.gmbh.Echo2.ListAndMask.List.E2_ButtonListMarker;
+import panter.gmbh.Echo2.ListAndMask.List.E2_CheckBoxForList;
+import panter.gmbh.Echo2.RB.BASICS.RB_TransportHashMap;
+import panter.gmbh.Echo2.RB.TOOLS.RB_gld;
+import panter.gmbh.Echo2.__BASIC_COMPONENTS.UP_AND_DOWNLOAD.E2_ButtonAttachmentUseInListRow;
+import panter.gmbh.Echo2.components.DB.MyE2_DB_CheckBox;
+import panter.gmbh.Echo2.components.DB.MyE2_DB_Label_INGRID;
+import panter.gmbh.basics4project.DB_ENUMS.#BASETABLENAME#;
+import panter.gmbh.basics4project.DB_RECORDS.RECORD_#BASETABLENAME#;
+import panter.gmbh.basics4project.validation.ENUM_VALIDATION;
+import panter.gmbh.indep.S;
+import panter.gmbh.indep.dataTools.MyRECORD_IF_RECORDS;
+import panter.gmbh.indep.dataTools.SQLFieldMAP;
+import panter.gmbh.indep.dataTools.RECORD2.Rec22;
+import panter.gmbh.indep.exceptions.myException;
+import panter.gmbh.indep.exceptions.myExceptionCopy;
+  
+public class #PREFIX#_LIST_ComponentMap extends E2_ComponentMAP_V22  {
+	
+    private RB_TransportHashMap   m_tpHashMap = null;
+    
+    public #PREFIX#_LIST_ComponentMap(RB_TransportHashMap  p_tpHashMap) throws myException  {
+  
+    	super(new #PREFIX#_LIST_SqlFieldMAP(p_tpHashMap));
+        
+        this.m_tpHashMap = p_tpHashMap;        
+        
+        SQLFieldMAP  oFM = this.get_oSQLFieldMAP();
+        
+        this.add_Component(#PREFIX#_CONST.#PREFIX#_NAMES.CHECKBOX_LISTE.db_val(), new E2_CheckBoxForList(),new MyE2_String("?"));
+        this.add_Component(#PREFIX#_CONST.#PREFIX#_NAMES.MARKER_LISTE.db_val(),   new E2_ButtonListMarker(),new MyE2_String("?"));
+        //hier optionale spalten fuer direktes loeschen/edit/view
+        this.add_Component(#PREFIX#_CONST.#PREFIX#_NAMES.DIRECT_DEL.db_val(),    	new #PREFIX#_LIST_bt_DeleteInListRow(this.m_tpHashMap)
+        																			._setGridLayout4List(new RB_gld()._ins(4))
+        																			._setLongText4ColumnSelection(S.ms("Loeschknopf in der Listenzeile")),	
+        																new MyE2_String("?"));
+        
+        this.add_Component(#PREFIX#_CONST.#PREFIX#_NAMES.DIRECT_EDIT.db_val(),   	new #PREFIX#_LIST_bt_ListToMaskInListRow(true,this.m_tpHashMap)
+        																			._setGridLayout4List(new RB_gld()._ins(4))
+        																			._setLongText4ColumnSelection(S.ms("Bearbeitungsknopf in der Listenzeile")),
+        																new MyE2_String("?"));
+        this.add_Component(#PREFIX#_CONST.#PREFIX#_NAMES.DIRECT_VIEW.db_val(),   	new #PREFIX#_LIST_bt_ListToMaskInListRow(false,this.m_tpHashMap)
+																					._setGridLayout4List(new RB_gld()._ins(4))
+																					._setLongText4ColumnSelection(S.ms("Anzeigeknopf in der Listenzeile")),
+																		new MyE2_String("?"));
+
+
+        this.add_Component(#PREFIX#_CONST.#PREFIX#_NAMES.DIRECT_UPLOAD.db_val(), new E2_ButtonAttachmentUseInListRow()
+																					._addGlobalValidator(#PREFIX#_VALIDATORS.ATTACHMENT.getValidator())
+        																			._setGridLayout4List(new RB_gld()._ins(4))
+        																			._setLongText4ColumnSelection(S.ms("Anlagen verwalten"))
+        																			, S.ms("?"));
+        
+
+
+        //hier kommen die Felder  
+        <fieldloop>  
+        this.add_Component(#LISTCOMPONENT#,     new MyE2_String(#PREFIX#_READABLE_FIELD_NAME.getReadableForList(#BASETABLENAME#.#FIELDNAME_LOWERCASE#)));
+        </fieldloop>
+ 
+        //neu ab 20171025        
+        this._setLineWrapListHeader(true 
+        <fieldloop>
+                                  ,#BASETABLENAME#.#FIELDNAME_LOWERCASE#.fn()
+        </fieldloop>
+        
+        );
+        
+        RB_gld gldElementCenter = 	new RB_gld()._center_top()._ins(2,4,2,2)._col(new E2_ColorBase());
+       	this._setLayoutElements(gldElementCenter
+         <fieldloop>
+                                 ,#BASETABLENAME#.#FIELDNAME_LOWERCASE#.fn()
+        </fieldloop>
+      	
+      	);
+      	
+      	RB_gld gldTitelCenter = 	new RB_gld()._center_top()._ins(1,2,1,1)._col(new E2_ColorDark());
+       	this._setLayoutTitles(gldTitelCenter
+         <fieldloop>
+                                 ,#BASETABLENAME#.#FIELDNAME_LOWERCASE#.fn()
+        </fieldloop>
+        
+      	);
+  
+  
+        //hier kann das layout der einzelnen spalten definiert werden 
+        <fieldloop>
+        // spaltenlayout fuer:  #BASETABLENAME#.#FIELDNAME_LOWERCASE#.fn()
+        this._setColExtent(     new Extent(#PREFIX#_READABLE_FIELD_NAME.getMaxComponentOrLabelSize(#BASETABLENAME#.#FIELDNAME_LOWERCASE#)), #BASETABLENAME#.#FIELDNAME_LOWERCASE#.fn());
+        this._setLayoutElements(new RB_gld()._al(#PREFIX#_READABLE_FIELD_NAME.getAlignment(#BASETABLENAME#.#FIELDNAME_LOWERCASE#))._ins(3,1,3,1)._col(new E2_ColorDark()), #BASETABLENAME#.#FIELDNAME_LOWERCASE#.fn());
+        this._setLayoutTitles(  new RB_gld()._al(#PREFIX#_READABLE_FIELD_NAME.getAlignment(#BASETABLENAME#.#FIELDNAME_LOWERCASE#))._ins(1,2,1,1)._col(new E2_ColorDark()), #BASETABLENAME#.#FIELDNAME_LOWERCASE#.fn());
+        // ----
+        //
+        </fieldloop>
+
+
+        this.setComponentMapMarker(new #PREFIX#_LIST_ComponentMapMapMarker(this));
+        this.set_oSubQueryAgent(new #PREFIX#_LIST_FORMATING_Agent(this.m_tpHashMap));
+        	
+    }
+    
+
+    
+    @Override
+    public Object get_Copy(Object objHelp) throws myExceptionCopy {
+    	#PREFIX#_LIST_ComponentMap mapCopy = null;
+    	try {
+			mapCopy = new #PREFIX#_LIST_ComponentMap(m_tpHashMap);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+    	return mapCopy;
+    }    
+
+
+	/*
+     * umstellung auf E2_ComponentMAP_V22 mit marker-option
+     * korrespontiert mit  
+     */
+    public class #PREFIX#_LIST_ComponentMapMapMarker extends E2_ComponentMapMarker {
+        public #PREFIX#_LIST_ComponentMapMapMarker(E2_ComponentMAP_V22 p_map) {
+            super(p_map);
+        }
+
+        @Override
+        protected void innerFormat(Collection<Component> v) {
+            super.innerFormat(v);
+    		
+            E2_ComponentMAP_V22 map = (E2_ComponentMAP_V22)this.getMap();
+    		
+            try {
+
+                Rec22 rec#PREFIX# = map.getRec22();
+                //hier koennen formatierungsoptionen hinterlegt werden
+                
+//                if (rec#PREFIX#.is_no_db_val(#BASETABLENAME#.aktiv)) {
+//                    this.setLayoutBackgroundColorInMap(v,new Color(230,230,230));
+//                    this.setTextColorInMap(v,Color.DARKGRAY);
+//                }
+    			
+            } catch (myException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+  
+    
+}
+ 

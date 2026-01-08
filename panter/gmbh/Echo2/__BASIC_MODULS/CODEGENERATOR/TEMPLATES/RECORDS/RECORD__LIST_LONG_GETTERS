@@ -1,0 +1,69 @@
+
+	public long get_#FIELDNAME#_l_Summe(RECLIST_#TABLEBASE#.Validation oValidator) throws myException
+	{
+		Iterator<Map.Entry<String,RECORD_#TABLEBASE#>>  oIter = this.entrySet().iterator(); 
+		
+		long dRueck = 0;
+		
+		while (oIter.hasNext())
+		{
+			RECORD_#TABLEBASE# 	oRec = oIter.next().getValue();
+			Long 				oD = oRec.get_#FIELDNAME#_lValue(new Long(0));
+			
+			if (oValidator == null || oValidator.isValid(oRec))
+			{
+				if (oD != null)
+				{
+					dRueck += oD.doubleValue();
+				}
+			}
+		}
+		
+		return dRueck;
+	}
+
+	
+
+	public long get_#FIELDNAME#_l_Count_NotNull(RECLIST_#TABLEBASE#.Validation oValidator) throws myException
+	{
+		Iterator<Map.Entry<String,RECORD_#TABLEBASE#>>  oIter = this.entrySet().iterator(); 
+		
+		long dRueck = 0;
+		
+		while (oIter.hasNext())
+		{
+			RECORD_#TABLEBASE# 	oRec = oIter.next().getValue();
+			Long 				oD = oRec.get_#FIELDNAME#_lValue(new Long(0));
+			
+			if (oValidator == null || oValidator.isValid(oRec))
+			{
+				if (oD != null)
+				{
+					dRueck ++;
+				}
+			}
+		}
+		
+		return dRueck;
+	}
+
+
+
+
+	
+	public HashMap<String, Long>  get_#FIELDNAME#_hmLong(Long NullValue) throws myException
+	{
+		HashMap<String, Long> hmRueck = new HashMap<String, Long>();
+		
+		for (java.util.Map.Entry<String,RECORD_#TABLEBASE#> oEntry: this.entrySet())
+		{
+			RECORD_#TABLEBASE# 	oRec = oEntry.getValue();
+			Long 				oL =   oRec.get_#FIELDNAME#_lValue(NullValue);
+			
+			hmRueck.put(oEntry.getKey(), oL);
+		}
+		return hmRueck;
+	}
+	
+	
+	

@@ -1,0 +1,12 @@
+	public Long get_#FIELDNAME#_lValue(Long lValueWhenNULL) throws myException
+	{
+		Long lRueck = this.get("#FIELDNAME#").getLongValue();
+		if (lRueck==null) 
+		{ 
+			return lValueWhenNULL; 
+		} 
+		else 
+		{ 
+			return lRueck;
+		} 
+	}

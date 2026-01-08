@@ -1,0 +1,53 @@
+package #PACKAGE#;
+  
+import panter.gmbh.Echo2.MyE2_String;
+import panter.gmbh.Echo2.bibE2;
+import panter.gmbh.Echo2.ListAndMask.List.Search.E2_DataSearch;
+import panter.gmbh.Echo2.ListAndMask.List.Search.E2_DataSearchAgentList;
+import panter.gmbh.Echo2.RB.BASICS.RB_TransportHashMap;
+import panter.gmbh.basics4project.E2_MODULNAME_ENUM;
+import panter.gmbh.basics4project.DB_ENUMS.#BASETABLENAME#;
+import panter.gmbh.basics4project.DB_ENUMS._TAB;
+import panter.gmbh.indep.exceptions.myException;
+  
+public class #PREFIX#_LIST_DATASEARCH extends E2_DataSearch {
+    
+  	
+	//zentrale hashmap fuer transport von infos
+	private RB_TransportHashMap   m_tpHashMap = null;
+    
+    
+    public #PREFIX#_LIST_DATASEARCH(RB_TransportHashMap  p_tpHashMap) throws myException    {
+        super(_TAB.#BASETABLENAME_LOWERCASE#.n(),_TAB.#BASETABLENAME_LOWERCASE#.keyFieldName(),E2_MODULNAME_ENUM.MODUL.#KEYNAME#_LIST.get_callKey());
+        
+        this.m_tpHashMap = p_tpHashMap;        
+        
+        
+        E2_DataSearchAgentList oSearchAgent = new E2_DataSearchAgentList(this.m_tpHashMap.getNavigationList());
+        this.set_oSearchAgent(oSearchAgent);
+        
+        <fieldloop>  
+        this.addSearchDef(#BASETABLENAME#.#FIELDNAME_LOWERCASE#.fn(),#PREFIX#_READABLE_FIELD_NAME.getReadableForMask(#BASETABLENAME#.#FIELDNAME_LOWERCASE#),	true);
+        </fieldloop>
+        
+  
+        //20180523: datenbank gestuetzte suche zufuegen
+        this.initAfterConstruction();
+    }
+    
+    
+    private void addSearchDef(String cFieldName, String cInfoText, boolean searchWithLike) throws myException   {
+    
+        String cSearch = null;
+        if (searchWithLike) {
+           cSearch = "SELECT id_#BASETABLENAME#  FROM "+bibE2.cTO()+"."+_TAB.#BASETABLENAME_LOWERCASE#.n()+" WHERE UPPER(TO_CHAR("+_TAB.#BASETABLENAME_LOWERCASE#.n()+"."+cFieldName+")) like UPPER('%#WERT#%')";
+        } else {
+           cSearch = "SELECT id_#BASETABLENAME#  FROM "+bibE2.cTO()+"."+_TAB.#BASETABLENAME_LOWERCASE#.n()+" WHERE UPPER(TO_CHAR("+_TAB.#BASETABLENAME_LOWERCASE#.n()+"."+cFieldName+"))=UPPER('#WERT#')";
+        }           
+        
+        this.add_SearchElement(cSearch,new MyE2_String(cInfoText));
+    }
+    
+        
+}
+ 

@@ -1,0 +1,60 @@
+package rohstoff.Echo2BusinessLogic.WIEGEKARTE_RB.REC;
+
+
+import panter.gmbh.basics4project.DB_ENUMS.WIEGEKARTE_MGE_ABZ;
+import panter.gmbh.basics4project.DB_ENUMS._TAB;
+import panter.gmbh.indep.bibALL;
+import panter.gmbh.indep.dataTools.RECORD2.RecList22;
+import panter.gmbh.indep.dataTools.RECORD2.SqlStringExtended;
+import panter.gmbh.indep.dataTools.RECORD2.ParamTypes.ParamDataObject;
+import panter.gmbh.indep.dataTools.RECORD2.ParamTypes.Param_Long;
+import panter.gmbh.indep.dataTools.TERM.TermLMR;
+import panter.gmbh.indep.dataTools.TERM.TermSimple;
+import panter.gmbh.indep.dataTools.TERM._TermCONST;
+import panter.gmbh.indep.dataTools.TERM.SELECT.And;
+import panter.gmbh.indep.dataTools.TERM.SELECT.SEL;
+import panter.gmbh.indep.exceptions.myException;
+import panter.gmbh.indep.myVectors.VEK;
+
+public class RecList_WK_Mge_Abz extends RecList22 {
+
+	public RecList_WK_Mge_Abz() {
+		super(_TAB.wiegekarte_mge_abz);
+		
+	}
+	
+	public RecList_WK_Mge_Abz(String idWiegekarte) throws myException {
+		this();
+		this._fill(getSqlExt_Default(idWiegekarte));
+	}
+
+	
+	public RecList_WK_Mge_Abz( SqlStringExtended sql ) throws myException{
+		super (_TAB.wiegekarte_mge_abz);
+		this._fill(sql);
+	}
+	
+	
+	public static SqlStringExtended getSqlExt_Default(String idWiegekarte) throws myException{
+		
+		VEK<ParamDataObject> vecParam = new VEK<ParamDataObject>();
+		
+		SEL sel = new SEL("*")
+				.FROM(_TAB.wiegekarte_mge_abz)
+				.WHERE(new TermSimple(WIEGEKARTE_MGE_ABZ.id_mandant.fn() + " = ? "));
+		vecParam._a(new Param_Long(Long.parseLong(bibALL.get_ID_MANDANT())));
+		
+		// aktiv-Schalter
+		And and_wk = new And( new TermLMR (new TermSimple(WIEGEKARTE_MGE_ABZ.id_wiegekarte.fn()) ,_TermCONST.COMP.EQ.s()," ? " ));
+		vecParam._a(new Param_Long(Long.parseLong(idWiegekarte) ) );
+		sel.getAnd().add(and_wk);
+		
+		// order by
+		sel.ORDERUP(WIEGEKARTE_MGE_ABZ.id_wiegekarte_mge_abz);
+
+		
+		SqlStringExtended  sql = new SqlStringExtended(sel.s())._addParameters(vecParam);
+		
+		return sql;
+	}
+}

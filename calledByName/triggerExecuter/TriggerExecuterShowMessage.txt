@@ -1,0 +1,3 @@
+Anzeige einer Meldung:
+Der ganze Text wird als Meldung 
+in einem Popup-Fenster angezeigt

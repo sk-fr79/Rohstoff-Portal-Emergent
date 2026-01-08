@@ -1,0 +1,33 @@
+package <PACKAGENAME>;
+
+import panter.gmbh.Echo2.MyE2_String;
+import panter.gmbh.Echo2.ListAndMask.E2_ComponentMAP;
+import panter.gmbh.Echo2.ListAndMask.List.E2_ButtonListMarker;
+import panter.gmbh.Echo2.ListAndMask.List.E2_CheckBoxForList;
+import panter.gmbh.Echo2.components.DB.MyE2_DB_Label;
+import panter.gmbh.Echo2.components.DB.MyE2_DB_CheckBox;
+import panter.gmbh.indep.dataTools.SQLFieldMAP;
+import panter.gmbh.indep.exceptions.myException;
+
+public class <BASISNAME>_LIST_ComponentMap extends E2_ComponentMAP 
+{
+
+	public <BASISNAME>_LIST_ComponentMap() throws myException
+	{
+		super(new <BASISNAME>_LIST_SqlFieldMAP());
+		
+		SQLFieldMAP  oFM = this.get_oSQLFieldMAP();
+		
+		this.add_Component(<BASISNAME>_LIST_BasicModuleContainer.NAME_OF_CHECKBOX_IN_LIST,		new E2_CheckBoxForList(),new MyE2_String("?"));
+		this.add_Component(<BASISNAME>_LIST_BasicModuleContainer.NAME_OF_LISTMARKER_IN_LIST,	new E2_ButtonListMarker(),new MyE2_String("?"));
+
+		//hier kommen die Felder	
+		</FIELDNAME/>
+		this.add_Component(<FIELDLISTGENERATOR>, new MyE2_String("<FIELDNAME>"));
+		
+
+
+		this.set_oSubQueryAgent(new <BASISNAME>_LIST_FORMATING_Agent());
+	}
+
+}

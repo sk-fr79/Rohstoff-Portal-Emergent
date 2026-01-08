@@ -1,0 +1,105 @@
+SQL-Statements zum testweise einfuegen der befundungsdatensaetze;
+
+
+insert into jt_bam_import (
+ID_BAM_IMPORT
+,ID_MANDANT
+,GEAENDERT_VON
+,LETZTE_AENDERUNG
+,BELEGNUMMER
+,ID_WIEGEKARTE
+,ID_VPOS_TPA_FUHRE
+,ABGESCHLOSSEN
+,ID_VPOS_TPA_FUHRE_ORT
+,BAM_ANGELEGT_AM
+,BAM_GESENDET_AM) values
+(SEQ_BAM_IMPORT.NEXTVAL
+,1
+,'test'
+,sysdate
+,'FU-'||$$FUHRE$$
+,null
+,$$FUHRE$$
+,'N'
+,null
+,'2015-06-05 18:57:56'	
+,'2015-06-05 19:01:55'
+);
+
+
+
+insert into jt_bam_import_info (
+ID_BAM_IMPORT_INFO
+,ID_BAM_IMPORT
+,ID_MANDANT
+,GEAENDERT_VON
+,LETZTE_AENDERUNG
+,ID_ABZUGSGRUND
+,TEXT
+,ZUSATZINFOS
+,GEWICHT) values (
+SEQ_BAM_IMPORT_INFO.NEXTVAL
+,SEQ_BAM_IMPORT.currval
+,1
+,'test'
+,sysdate
+,1005
+,'Abzuege wegen Verunreinigung'
+,'Bitte unbedingt beruecksichtigen'
+,50
+);
+
+
+
+
+
+-- ditto fuhrenorte
+
+
+insert into jt_bam_import (
+ID_BAM_IMPORT
+,ID_MANDANT
+,GEAENDERT_VON
+,LETZTE_AENDERUNG
+,BELEGNUMMER
+,ID_WIEGEKARTE
+,ID_VPOS_TPA_FUHRE
+,ABGESCHLOSSEN
+,ID_VPOS_TPA_FUHRE_ORT
+,BAM_ANGELEGT_AM
+,BAM_GESENDET_AM) values
+(SEQ_BAM_IMPORT.NEXTVAL
+,1
+,'test'
+,sysdate
+,'FU-'||$$FUHRE$$
+,null
+,$$FUHRE$$
+,'N'
+,$$FUHRE_ORT$$
+,'2015-06-05 18:57:56'	
+,'2015-06-05 19:01:55'
+);
+
+
+
+insert into jt_bam_import_info (
+ID_BAM_IMPORT_INFO
+,ID_BAM_IMPORT
+,ID_MANDANT
+,GEAENDERT_VON
+,LETZTE_AENDERUNG
+,ID_ABZUGSGRUND
+,TEXT
+,ZUSATZINFOS
+,GEWICHT) values (
+SEQ_BAM_IMPORT_INFO.NEXTVAL
+,SEQ_BAM_IMPORT.currval
+,1
+,'test'
+,sysdate
+,1005
+,'Abzuege wegen Verunreinigung'
+,'Bitte unbedingt beruecksichtigen'
+,50
+);

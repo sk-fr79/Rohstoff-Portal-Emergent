@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+  
+  
+  <bean id="pdServiceCheckAndAddRoutingKostenTyp" 		class="panter.gmbh.BasicInterfaces.Service.PdServiceCheckAndAddRoutingKostenTyp" />
+  <bean id="pdServiceExportIntoCsv" 					class="panter.gmbh.BasicInterfaces.Service.PdServiceExportIntoCsv" />
+  <bean id="pdServiceFindHandelsdefSettings" 			class="panter.gmbh.BasicInterfaces.Service.PdServiceFindHandelsdefSettings" />
+  <bean id="pdServiceMessagePopup" 						class="panter.gmbh.BasicInterfaces.Service.PdServiceMessagePopup" />
+  
+  <bean id="pdServiceGeoCodeExistingAdressBean" 		class="panter.gmbh.BasicInterfaces.ServiceBean.PdServiceGeoCodeExistingAdressBean" />
+  <bean id="pdServiceGeoCodeNameStrassePlzOrtLandBean" 	class="panter.gmbh.BasicInterfaces.ServiceBean.PdServiceGeoCodeNameStrassePlzOrtLandBean" />
+  <bean id="pdServiceGeoCodeShowRouteBean" 				class="panter.gmbh.BasicInterfaces.ServiceBean.PdServiceGeoCodeShowRouteBean" />
+  <bean id="pdServiceGeoDifferenceBetweenTwoPointsBean" class="panter.gmbh.BasicInterfaces.ServiceBean.PdServiceGeoDifferenceBetweenTwoPointsBean" />
+  <bean id="pdServiceGeoRoutingEntfernungUndKostenBean" class="panter.gmbh.BasicInterfaces.ServiceBean.PdServiceGeoRoutingEntfernungUndKostenBean" />
+  <bean id="pdServiceLkwKostenBean" 					class="panter.gmbh.BasicInterfaces.ServiceBean.PdServiceLkwKostenBean" />
+  
+</beans>

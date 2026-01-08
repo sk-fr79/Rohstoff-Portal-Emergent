@@ -1,0 +1,25 @@
+package <PACKAGENAME>;
+
+import panter.gmbh.Echo2.RB.BETA_MASK_DEF.RB_Cell;
+import panter.gmbh.Echo2.RB.BETA_MASK_DEF.RB_Mask_Descriptor;
+import panter.gmbh.Echo2.RB.BETA_MASK_DEF.RB_Mask_Grid;
+import panter.gmbh.basics4project.DB_ENUMS._TAB;
+import panter.gmbh.indep.dataTools.RECORD2.Rec20;
+import panter.gmbh.indep.exceptions.myException;
+
+public class <BASISNAME>_Mask_Grid extends RB_Mask_Descriptor{
+
+	public <BASISNAME>_Mask_Grid throws myException {
+		super();
+	}
+	
+	@Override
+	public void define_mask() throws myException {
+		this.set_spaltenzahl(<SPALTENZAHL>).set_tab(_TAB.<TAB>).set_maskname(<MASKNAME>).set_mask_offset(<MASK_OFFSET>);
+	}
+	
+	@Override
+	public void define_mask_cell() throws myException {
+		<GRID_DESCRIPTION>
+	}
+}f

@@ -1,0 +1,576 @@
+CREATE OR REPLACE VIEW
+    VIEW_FUHREN_RECHNUNGEN_2
+    (
+        ID_MANDANT ,
+        TYP ,
+        ID_SONDERLAGER ,
+        ID_VPOS_TPA_FUHRE ,
+        ID_VPOS_TPA_FUHRE_ORT ,
+        ID_ADRESSE_START ,
+        ID_ADRESSE_STANDORT_START ,
+        ID_ADRESSE_ZIEL ,
+        ID_ADRESSE_STANDORT_ZIEL ,
+        ID_LAGER ,
+        ID_LAGER_GEGENSEITE ,
+        MENGEN_VORZEICHEN ,
+        BUCHUNGS_NR ,
+        ID_VPOS_KON ,
+        R_BUCHUNGS_NR ,
+        LEISTUNGSDATUM_LAGER ,
+        LEISTUNGSDATUM ,
+        ID_ARTIKEL ,
+        ID_VKOPF_RG ,
+        ID_VPOS_RG ,
+        ID_LAGER_KONTO ,
+        ANR1 ,
+        R_ID_ARTIKEL_BEZ ,
+        R_ID_ADRESSE ,
+        MENGE ,
+        MENGE_ABZUG ,
+        MENGE_NACH_ABZUG ,
+        R_PREIS_GESAMT ,
+        R_PREIS_ABZUG ,
+        R_PREIS_NACH_ABZUG ,
+        R_PREIS_EINZEL ,
+        R_PREIS_ABZUG_EINZEL ,
+        R_PREIS_EINZEL_RESULT ,
+        R_LAGER_VORZEICHEN ,
+        R_PCT_ABZUG ,
+        R_PCT_METALL ,
+        IST_DIENSTLEISTUNG ,
+        ID_EAK_CODE ,
+        TYP_STRECKE_LAGER_MIXED ,
+        MENGE_LAGER ,
+        USER_FUHRE_ERZEUGER ,
+        USER_FUHRE_BEARBEITER
+    ) AS
+    (
+        SELECT
+            V.ID_MANDANT ,
+            'RECHNUNGSWERTE' ,
+            V.ID_SONDERLAGER ,
+            V.ID_VPOS_TPA_FUHRE ,
+            V.ID_VPOS_TPA_FUHRE_ORT ,
+            V.ID_ADRESSE_START ,
+            V.ID_ADRESSE_STANDORT_START ,
+            V.ID_ADRESSE_ZIEL ,
+            V.ID_ADRESSE_STANDORT_ZIEL ,
+            V.ID_LAGER ,
+            V.ID_LAGER_GEGENSEITE ,
+            V.MENGEN_VORZEICHEN ,
+            V.BUCHUNGSNR_FUHRE ,
+            V.ID_VPOS_KON ,
+            RK.BUCHUNGSNUMMER ,
+            V.DATUM_LADEN ,
+            V.DATUM_KUNDE ,
+            CASE
+                WHEN RP.ID_VPOS_RG IS NULL
+                THEN V.ID_ARTIKEL
+                ELSE RP.ID_ARTIKEL
+            END ,
+            RP.ID_VKOPF_RG ,
+            RP.ID_VPOS_RG ,
+            NULL ,
+            CASE
+                WHEN RP.ID_VPOS_RG IS NULL
+                THEN V.ANR1
+                ELSE RP.ANR1
+            END ,
+            CASE
+                WHEN RP.ID_VPOS_RG IS NULL
+                THEN V.ID_ARTIKEL_BEZ
+                ELSE RP.ID_ARTIKEL_BEZ
+            END ,
+            RP.ID_ADRESSE ,
+            CASE
+                WHEN RP.ID_VPOS_RG IS NULL
+                THEN V.MENGE_VOR_ABZUG
+                ELSE (RP.ANZAHL )
+            END ,
+            CASE
+                WHEN RP.ID_VPOS_RG IS NULL
+                THEN V.ABZUG_MENGE
+                ELSE RP.ANZAHL_ABZUG_LAGER
+            END ,
+            CASE
+                WHEN RP.ID_VPOS_RG IS NULL
+                THEN ( V.MENGE_VOR_ABZUG - NVL(V.ABZUG_MENGE,0) )
+                ELSE (RP.ANZAHL - NVL(RP.ANZAHL_ABZUG_LAGER,0) )
+            END ,
+            (RP.GESAMTPREIS ) ,
+            (NVL(RP.GPREIS_ABZ_MGE,0) + NVL(RP.GPREIS_ABZ_AUF_NETTOMGE,0) ) ,
+            (RP.GESAMTPREIS - NVL(RP.GPREIS_ABZ_MGE,0) - NVL( RP.GPREIS_ABZ_AUF_NETTOMGE,0) ) ,
+            (RP.EINZELPREIS ) ,
+            (RP.EINZELPREIS_ABZUG ) ,
+            (RP.EINZELPREIS_RESULT ) ,
+            RP.LAGER_VORZEICHEN ,
+            ROUND((NVL(RP.ANZAHL_ABZUG_LAGER,0) / RP.ANZAHL) * 100,2) ,
+            ROUND( ( (1- ( NVL(RP.ANZAHL_ABZUG,0) - NVL(RP.ANZAHL_ABZUG_LAGER,0) ) / RP.ANZAHL ) ) * 100 ,2) ,
+            'N' ,
+            V.ID_EAK_CODE ,
+            V.TYP_STRECKE_LAGER_MIXED ,
+            KTO.MENGE ,
+            V.USER_FUHRE_ERZEUGER ,
+            V.USER_FUHRE_BEARBEITER
+        FROM
+            VIEW_FUHREN_SONDERLAGER_2 V
+        LEFT OUTER JOIN
+            JT_VPOS_RG RP
+        ON
+            V.ID_MANDANT = RP.ID_MANDANT
+        AND V.ID_VPOS_TPA_FUHRE = RP.ID_VPOS_TPA_FUHRE_ZUGEORD
+        AND NVL(V.ID_VPOS_TPA_FUHRE_ORT,-1) = NVL(RP.ID_VPOS_TPA_FUHRE_ORT_ZUGEORD,-1)
+        AND V.MENGEN_VORZEICHEN = -1 * RP.LAGER_VORZEICHEN
+        AND RP.ID_VPOS_RG_STORNO_VORGAENGER IS NULL
+        AND RP.ID_VPOS_RG_STORNO_NACHFOLGER IS NULL
+        AND NVL(RP.DELETED,'N') = 'N'
+        LEFT OUTER JOIN
+            JT_VKOPF_RG RK
+        ON
+            RK.ID_MANDANT = RP.ID_MANDANT
+        AND RK.ID_VKOPF_RG = RP.ID_VKOPF_RG
+        AND NVL(RK.DELETED,'N') = 'N'
+        LEFT OUTER JOIN
+            JT_LAGER_KONTO KTO
+        ON
+            KTO.ID_MANDANT = V.ID_MANDANT
+        AND KTO.ID_VPOS_TPA_FUHRE = V.ID_VPOS_TPA_FUHRE
+        AND NVL(v.id_vpos_tpa_fuhre_ort,-1) = NVL(kto.id_vpos_tpa_fuhre_ort,-1)
+        AND NVL(KTO.STORNO,'N') = 'N'
+        INNER JOIN
+            JD_MANDANT M
+        ON
+            M.ID_MANDANT = V.ID_MANDANT
+        WHERE
+            1 = 1
+        AND (
+                V.STATUS_BUCHUNG > 4
+            OR  RP.ID_VPOS_RG IS NOT NULL)
+        AND ( (
+                    V.ID_ADRESSE_START < 0
+                AND V.ID_ADRESSE_ZIEL != M.EIGENE_ADRESS_ID )
+            OR  (
+                    V.ID_ADRESSE_START != M.EIGENE_ADRESS_ID
+                AND V.ID_ADRESSE_ZIEL < 0 )
+            OR  V.ID_ADRESSE_START = 0
+            OR  V.ID_ADRESSE_ZIEL = 0 )
+        UNION
+        SELECT
+            V.ID_MANDANT ,
+            'ORTE Lagerseitige Mengen' ,
+            V.ID_SONDERLAGER ,
+            V.ID_VPOS_TPA_FUHRE ,
+            V.ID_VPOS_TPA_FUHRE_ORT ,
+            V.ID_ADRESSE_START ,
+            V.ID_ADRESSE_STANDORT_START ,
+            V.ID_ADRESSE_ZIEL ,
+            V.ID_ADRESSE_STANDORT_ZIEL ,
+            V.ID_LAGER ,
+            V.ID_LAGER_GEGENSEITE ,
+            -1 * V.MENGEN_VORZEICHEN ,
+            V.BUCHUNGSNR_FUHRE ,
+            V.ID_VPOS_KON ,
+            NULL ,
+            V.DATUM_LADEN ,
+            V.DATUM_KUNDE ,
+            V.ID_ARTIKEL ,
+            NULL ,
+            NULL ,
+            NULL ,
+            V.ANR1 ,
+            V.ID_ARTIKEL_BEZ ,
+            NULL ,
+            0 ,
+            0 ,
+            0 ,
+            0 ,
+            0 ,
+            0 ,
+            KTO.PREIS ,
+            (0) ,
+            KTO.PREIS ,
+            NULL ,
+            NULL ,
+            NULL ,
+            'N' ,
+            NULL ,
+            V.TYP_STRECKE_LAGER_MIXED ,
+            KTO.MENGE ,
+            V.USER_FUHRE_ERZEUGER ,
+            V.USER_FUHRE_BEARBEITER
+        FROM
+            VIEW_FUHREN_SONDERLAGER_2 V
+        INNER JOIN
+            JT_LAGER_KONTO KTO
+        ON
+            KTO.ID_MANDANT = V.ID_MANDANT
+        AND KTO.ID_VPOS_TPA_FUHRE = V.ID_VPOS_TPA_FUHRE
+        AND KTO.ID_VPOS_TPA_FUHRE_ORT = V.ID_VPOS_TPA_FUHRE_ORT
+        AND NVL(KTO.STORNO,'N') = 'N'
+        INNER JOIN
+            JT_ARTIKEL A
+        ON
+            V.ID_MANDANT = A.ID_MANDANT
+        AND V.ID_ARTIKEL = A.ID_ARTIKEL
+        INNER JOIN
+            JD_MANDANT M
+        ON
+            M.ID_MANDANT = V.ID_MANDANT
+        WHERE
+            1 = 1
+        AND V.STATUS_BUCHUNG > 4
+        AND ( (
+                    V.ID_ADRESSE_START < 0
+                AND V.ID_ADRESSE_ZIEL = M.EIGENE_ADRESS_ID )
+            OR  (
+                    V.ID_ADRESSE_START = M.EIGENE_ADRESS_ID
+                AND V.ID_ADRESSE_ZIEL < 0 )
+            OR  V.ID_ADRESSE_START = 0
+            OR  V.ID_ADRESSE_ZIEL = 0 )
+        AND V.ID_SONDERLAGER != -4
+        AND V.ID_SONDERLAGER != -5
+        UNION
+        SELECT
+            V.ID_MANDANT ,
+            'LAGER_KONTO' ,
+            V.ID_SONDERLAGER ,
+            V.ID_VPOS_TPA_FUHRE ,
+            V.ID_VPOS_TPA_FUHRE_ORT ,
+            V.ID_ADRESSE_START ,
+            V.ID_ADRESSE_STANDORT_START ,
+            V.ID_ADRESSE_ZIEL ,
+            V.ID_ADRESSE_STANDORT_ZIEL ,
+            V.ID_LAGER ,
+            V.ID_LAGER_GEGENSEITE ,
+            -1 * V.MENGEN_VORZEICHEN ,
+            V.BUCHUNGSNR_FUHRE ,
+            V.ID_VPOS_KON ,
+            NULL ,
+            V.DATUM_LADEN ,
+            V.DATUM_KUNDE ,
+            V.ID_ARTIKEL ,
+            NULL ,
+            NULL ,
+            V.ID_LAGER_KONTO ,
+            V.ANR1 ,
+            V.ID_ARTIKEL_BEZ ,
+            NULL ,
+            V.MENGE_VOR_ABZUG ,
+            V.ABZUG_MENGE ,
+            V.MENGE_NACH_ABZUG ,
+            (NVL(V.EINZELPREIS_FUHRE,0) * NVL(V.MENGE_NACH_ABZUG,0) ) / (
+                CASE
+                    WHEN NVL(A.MENGENDIVISOR,1) = 0
+                    THEN 1
+                    ELSE NVL(A.MENGENDIVISOR,1)
+                END) ,
+            0 ,
+            (NVL(V.EINZELPREIS_FUHRE,0) * NVL(V.MENGE_NACH_ABZUG,0) ) / (
+                CASE
+                    WHEN NVL(A.MENGENDIVISOR,1) = 0
+                    THEN 1
+                    ELSE NVL(A.MENGENDIVISOR,1)
+                END) ,
+            V.EINZELPREIS_FUHRE ,
+            (0) ,
+            V.EINZELPREIS_FUHRE ,
+            NULL ,
+            NULL ,
+            NULL ,
+            'N' ,
+            NULL ,
+            V.TYP_STRECKE_LAGER_MIXED ,
+            K.MENGE ,
+            V.USER_FUHRE_ERZEUGER ,
+            V.USER_FUHRE_BEARBEITER
+        FROM
+            VIEW_FUHREN_SONDERLAGER_2 V
+        LEFT OUTER JOIN
+            JT_LAGER_KONTO K
+        ON
+            V.ID_MANDANT = K.ID_MANDANT
+        AND V.ID_LAGER_KONTO = K.ID_LAGER_KONTO
+        AND NVL(K.STORNO,'N') = 'N'
+        INNER JOIN
+            JT_ARTIKEL A
+        ON
+            V.ID_MANDANT = A.ID_MANDANT
+        AND V.ID_ARTIKEL = A.ID_ARTIKEL
+        INNER JOIN
+            JD_MANDANT M
+        ON
+            M.ID_MANDANT = V.ID_MANDANT
+        WHERE
+            V.ID_SONDERLAGER = -5
+        UNION
+        SELECT
+            V.ID_MANDANT ,
+            'LAGER LAGER' ,
+            V.ID_SONDERLAGER ,
+            V.ID_VPOS_TPA_FUHRE ,
+            V.ID_VPOS_TPA_FUHRE_ORT ,
+            V.ID_ADRESSE_START ,
+            V.ID_ADRESSE_STANDORT_START ,
+            V.ID_ADRESSE_ZIEL ,
+            V.ID_ADRESSE_STANDORT_ZIEL ,
+            V.ID_LAGER ,
+            V.ID_LAGER_GEGENSEITE ,
+            -1 * V.MENGEN_VORZEICHEN ,
+            V.BUCHUNGSNR_FUHRE ,
+            V.ID_VPOS_KON ,
+            NULL ,
+            V.DATUM_LADEN ,
+            V.DATUM_KUNDE ,
+            V.ID_ARTIKEL ,
+            NULL ,
+            NULL ,
+            NULL ,
+            V.ANR1 ,
+            V.ID_ARTIKEL_BEZ ,
+            NULL ,
+            V.MENGE_VOR_ABZUG ,
+            V.ABZUG_MENGE ,
+            V.MENGE_NACH_ABZUG ,
+            (NVL(K.PREIS,0) * NVL(V.MENGE_NACH_ABZUG,0) ) / (
+                CASE
+                    WHEN NVL(A.MENGENDIVISOR,1) = 0
+                    THEN 1
+                    ELSE NVL(A.MENGENDIVISOR,1)
+                END) ,
+            0 ,
+            (NVL(K.PREIS,0) * NVL(V.MENGE_NACH_ABZUG,0) ) / (
+                CASE
+                    WHEN NVL(A.MENGENDIVISOR,1) = 0
+                    THEN 1
+                    ELSE NVL(A.MENGENDIVISOR,1)
+                END) ,
+            K.PREIS ,
+            (0) ,
+            K.PREIS ,
+            NULL ,
+            NULL ,
+            NULL ,
+            'N' ,
+            V.ID_EAK_CODE ,
+            V.TYP_STRECKE_LAGER_MIXED ,
+            NVL(K.MENGE,0) ,
+            V.USER_FUHRE_ERZEUGER ,
+            V.USER_FUHRE_BEARBEITER
+        FROM
+            VIEW_FUHREN_SONDERLAGER_2 V
+        LEFT OUTER JOIN
+            JT_LAGER_KONTO K
+        ON
+            V.ID_MANDANT = K.ID_MANDANT
+        AND V.ID_VPOS_TPA_FUHRE = K.ID_VPOS_TPA_FUHRE
+        AND NVL(V.ID_VPOS_TPA_FUHRE_ORT,-1) = NVL(K.ID_VPOS_TPA_FUHRE_ORT,-1)
+        AND NVL(K.STORNO,'N' ) = 'N'
+        AND ( (
+                    V.MENGEN_VORZEICHEN = +1
+                AND K.BUCHUNGSTYP = 'WE')
+            OR  (
+                    V.MENGEN_VORZEICHEN = -1
+                AND K.BUCHUNGSTYP = 'WA') )
+        INNER JOIN
+            JT_ARTIKEL A
+        ON
+            V.ID_MANDANT = A.ID_MANDANT
+        AND V.ID_ARTIKEL = A.ID_ARTIKEL
+        INNER JOIN
+            JD_MANDANT M
+        ON
+            M.ID_MANDANT = V.ID_MANDANT
+        WHERE
+            V.ID_SONDERLAGER = -4
+        AND V.DATUM_LADEN IS NOT NULL
+        UNION
+        SELECT
+            V.ID_MANDANT ,
+            'OHNE ABRECHNUNG' ,
+            V.ID_SONDERLAGER ,
+            V.ID_VPOS_TPA_FUHRE ,
+            V.ID_VPOS_TPA_FUHRE_ORT ,
+            V.ID_ADRESSE_START ,
+            V.ID_ADRESSE_STANDORT_START ,
+            V.ID_ADRESSE_ZIEL ,
+            V.ID_ADRESSE_STANDORT_ZIEL ,
+            V.ID_LAGER ,
+            V.ID_LAGER_GEGENSEITE ,
+            V.MENGEN_VORZEICHEN ,
+            V.BUCHUNGSNR_FUHRE ,
+            V.ID_VPOS_KON ,
+            RK.BUCHUNGSNUMMER ,
+            V.DATUM_LADEN ,
+            V.DATUM_KUNDE ,
+            CASE
+                WHEN RP.ID_VPOS_RG IS NULL
+                THEN V.ID_ARTIKEL
+                ELSE RP.ID_ARTIKEL
+            END ,
+            RP.ID_VKOPF_RG ,
+            RP.ID_VPOS_RG ,
+            NULL ,
+            CASE
+                WHEN RP.ID_VPOS_RG IS NULL
+                THEN V.ANR1
+                ELSE RP.ANR1
+            END ,
+            CASE
+                WHEN RP.ID_VPOS_RG IS NULL
+                THEN V.ID_ARTIKEL_BEZ
+                ELSE RP.ID_ARTIKEL_BEZ
+            END ,
+            RP.ID_ADRESSE ,
+            CASE
+                WHEN RP.ID_VPOS_RG IS NULL
+                THEN V.MENGE_VOR_ABZUG
+                ELSE (RP.ANZAHL )
+            END ,
+            CASE
+                WHEN RP.ID_VPOS_RG IS NULL
+                THEN V.ABZUG_MENGE
+                ELSE RP.ANZAHL_ABZUG_LAGER
+            END ,
+            CASE
+                WHEN RP.ID_VPOS_RG IS NULL
+                THEN ( V.MENGE_VOR_ABZUG - NVL(V.ABZUG_MENGE,0) )
+                ELSE (RP.ANZAHL - NVL(RP.ANZAHL_ABZUG_LAGER,0) )
+            END ,
+            (RP.GESAMTPREIS ) ,
+            (NVL(RP.GPREIS_ABZ_MGE,0) + NVL(RP.GPREIS_ABZ_AUF_NETTOMGE,0) ) ,
+            (RP.GESAMTPREIS - NVL(RP.GPREIS_ABZ_MGE,0) - NVL( RP.GPREIS_ABZ_AUF_NETTOMGE,0) ) ,
+            (RP.EINZELPREIS ) ,
+            (RP.EINZELPREIS_ABZUG ) ,
+            (RP.EINZELPREIS_RESULT ) ,
+            RP.LAGER_VORZEICHEN ,
+            ROUND((NVL(RP.ANZAHL_ABZUG_LAGER,0) / RP.ANZAHL) * 100,2) ,
+            ROUND( ( (1- ( NVL(RP.ANZAHL_ABZUG,0) - NVL(RP.ANZAHL_ABZUG_LAGER,0) ) / RP.ANZAHL ) ) * 100 ,2) ,
+            'Y' ,
+            V.ID_EAK_CODE ,
+            V.TYP_STRECKE_LAGER_MIXED ,
+            KTO.MENGE ,
+            V.USER_FUHRE_ERZEUGER ,
+            V.USER_FUHRE_BEARBEITER
+        FROM
+            VIEW_FUHREN_SONDERLAGER_2 V
+        LEFT OUTER JOIN
+            JT_VPOS_RG RP
+        ON
+            V.ID_MANDANT = RP.ID_MANDANT
+        AND V.ID_VPOS_TPA_FUHRE = RP.ID_VPOS_TPA_FUHRE_ZUGEORD
+        AND NVL(V.ID_VPOS_TPA_FUHRE_ORT,-1) = NVL(RP.ID_VPOS_TPA_FUHRE_ORT_ZUGEORD,-1)
+        AND V.MENGEN_VORZEICHEN = -1 * RP.LAGER_VORZEICHEN
+        AND RP.ID_VPOS_RG_STORNO_VORGAENGER IS NULL
+        AND RP.ID_VPOS_RG_STORNO_NACHFOLGER IS NULL
+        AND NVL(RP.DELETED,'N') = 'N'
+        LEFT OUTER JOIN
+            JT_VKOPF_RG RK
+        ON
+            RK.ID_MANDANT = RP.ID_MANDANT
+        AND RK.ID_VKOPF_RG = RP.ID_VKOPF_RG
+        AND NVL(RK.DELETED,'N') = 'N'
+        LEFT OUTER JOIN
+            JT_LAGER_KONTO KTO
+        ON
+            KTO.ID_MANDANT = V.ID_MANDANT
+        AND KTO.ID_VPOS_TPA_FUHRE = V.ID_VPOS_TPA_FUHRE
+        AND NVL(v.id_vpos_tpa_fuhre_ort,-1) = NVL(kto.id_vpos_tpa_fuhre_ort,-1)
+        AND NVL(KTO.STORNO,'N') = 'N'
+        INNER JOIN
+            JD_MANDANT M
+        ON
+            M.ID_MANDANT = V.ID_MANDANT
+        WHERE
+            1 = 1
+        AND V.STATUS_BUCHUNG = 2
+        AND (
+                NVL(V.OHNE_ABRECHNUNG,'N') = 'Y'
+            OR  V.ID_ADRESSE_FREMDAUFTRAG IS NOT NULL )
+        AND ( (
+                    V.ID_ADRESSE_START < 0
+                AND V.ID_ADRESSE_ZIEL != M.EIGENE_ADRESS_ID )
+            OR  (
+                    V.ID_ADRESSE_START != M.EIGENE_ADRESS_ID
+                AND V.ID_ADRESSE_ZIEL < 0 )
+            OR  V.ID_ADRESSE_START = 0
+            OR  V.ID_ADRESSE_ZIEL = 0 )
+        AND V.ID_SONDERLAGER != -4
+        UNION
+        SELECT
+            V.ID_MANDANT ,
+            'ORTE Lagerseitige Mengen' ,
+            V.ID_SONDERLAGER ,
+            V.ID_VPOS_TPA_FUHRE ,
+            V.ID_VPOS_TPA_FUHRE_ORT ,
+            V.ID_ADRESSE_START ,
+            V.ID_ADRESSE_STANDORT_START ,
+            V.ID_ADRESSE_ZIEL ,
+            V.ID_ADRESSE_STANDORT_ZIEL ,
+            V.ID_LAGER ,
+            V.ID_LAGER_GEGENSEITE ,
+            -1 * V.MENGEN_VORZEICHEN ,
+            V.BUCHUNGSNR_FUHRE ,
+            V.ID_VPOS_KON ,
+            NULL ,
+            V.DATUM_LADEN ,
+            V.DATUM_KUNDE ,
+            V.ID_ARTIKEL ,
+            NULL ,
+            NULL ,
+            NULL ,
+            V.ANR1 ,
+            V.ID_ARTIKEL_BEZ ,
+            NULL ,
+            0 ,
+            0 ,
+            0 ,
+            0 ,
+            0 ,
+            0 ,
+            KTO.PREIS ,
+            (0) ,
+            KTO.PREIS ,
+            NULL ,
+            NULL ,
+            NULL ,
+            'N' ,
+            NULL ,
+            V.TYP_STRECKE_LAGER_MIXED ,
+            KTO.MENGE ,
+            V.USER_FUHRE_ERZEUGER ,
+            V.USER_FUHRE_BEARBEITER
+        FROM
+            VIEW_FUHREN_SONDERLAGER_2 V
+        INNER JOIN
+            JT_LAGER_KONTO KTO
+        ON
+            KTO.ID_MANDANT = V.ID_MANDANT
+        AND KTO.ID_VPOS_TPA_FUHRE = V.ID_VPOS_TPA_FUHRE
+        AND KTO.ID_VPOS_TPA_FUHRE_ORT = V.ID_VPOS_TPA_FUHRE_ORT
+        AND NVL(KTO.STORNO,'N') = 'N'
+        INNER JOIN
+            JT_ARTIKEL A
+        ON
+            V.ID_MANDANT = A.ID_MANDANT
+        AND V.ID_ARTIKEL = A.ID_ARTIKEL
+        INNER JOIN
+            JD_MANDANT M
+        ON
+            M.ID_MANDANT = V.ID_MANDANT
+        WHERE
+            1 = 1
+        AND V.STATUS_BUCHUNG = 2
+        AND (
+                NVL(V.OHNE_ABRECHNUNG,'N') = 'Y'
+            OR  V.ID_ADRESSE_FREMDAUFTRAG IS NOT NULL )
+        AND ( (
+                    V.ID_ADRESSE_START < 0
+                AND V.ID_ADRESSE_ZIEL = M.EIGENE_ADRESS_ID )
+            OR  (
+                    V.ID_ADRESSE_START = M.EIGENE_ADRESS_ID
+                AND V.ID_ADRESSE_ZIEL < 0 )
+            OR  V.ID_ADRESSE_START = 0
+            OR  V.ID_ADRESSE_ZIEL = 0 )
+        AND V.ID_SONDERLAGER != -4
+        AND V.ID_SONDERLAGER != -5
+    )

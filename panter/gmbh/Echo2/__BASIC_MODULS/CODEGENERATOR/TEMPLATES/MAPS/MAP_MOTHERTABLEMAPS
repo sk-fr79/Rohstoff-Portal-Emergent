@@ -1,0 +1,54 @@
+	/**
+     * References the Field #DAUGHTERFIELD# 
+     */
+	public MAP_#MOTHERTABLEBASE# get_UP_MAP_#NAME_OF_MOTHERMAP#() throws myException
+	{
+		if (vIDs.size()!=1)
+			throw new myException(this,"Method only in singular MAP-Objects allowed ");
+		
+		
+		if (this.hmMAP_UP_#NAME_OF_MOTHERMAP#.get(this.get_cUF_ID_#TABLEBASE#())==null)
+		{
+			this.hmMAP_UP_#NAME_OF_MOTHERMAP#.put(this.get_cUF_ID_#TABLEBASE#(),new MAP_#MOTHERTABLEBASE#("#MOTHERFIELD#="+this.get_cUF_#DAUGHTERFIELD#(),this.oConn));
+		}
+		return this.hmMAP_UP_#NAME_OF_MOTHERMAP#.get(this.get_cUF_ID_#TABLEBASE#());
+	}
+
+
+	/**
+     * References the Field #DAUGHTERFIELD# 
+     */
+	public MAP_#MOTHERTABLEBASE# get_UP_MAP_#NAME_OF_MOTHERMAP#(String cID) throws myException
+	{
+		if (!this.vIDs.contains(cID))
+			throw new myException(this, "ID is not in the collection");
+		
+		if (this.hmMAP_UP_#NAME_OF_MOTHERMAP#.get(cID)==null)
+		{
+			this.hmMAP_UP_#NAME_OF_MOTHERMAP#.put(cID,new MAP_#MOTHERTABLEBASE#("#MOTHERFIELD#="+this.get_cUF_#DAUGHTERFIELD#(cID),this.oConn));
+		}
+		return this.hmMAP_UP_#NAME_OF_MOTHERMAP#.get(this.get_cUF_ID_#TABLEBASE#(cID));
+	}
+
+
+	/**
+     * References the Field #DAUGHTERFIELD# 
+     */
+	public MAP_#MOTHERTABLEBASE# get_UP_MAP_#NAME_OF_MOTHERMAP#(int iPos)  throws myException
+	{
+		if (iPos < 0)
+			throw new myException(this, "Number MUST be greater equal 0 ");
+		
+		if (iPos >= this.vIDs.size())
+			throw new myException(this, "Number of Row smaller than " + iPos);
+		
+		String cID = this.vIDs.get(iPos);
+		
+		if (this.hmMAP_UP_#NAME_OF_MOTHERMAP#.get(cID)==null)
+		{
+			this.hmMAP_UP_#NAME_OF_MOTHERMAP#.put(cID,new MAP_#MOTHERTABLEBASE#("#MOTHERFIELD#="+this.get_cUF_#DAUGHTERFIELD#(cID),this.oConn));
+			
+		}
+		return this.hmMAP_UP_#NAME_OF_MOTHERMAP#.get(this.get_cUF_ID_#TABLEBASE#(cID));
+		
+	}

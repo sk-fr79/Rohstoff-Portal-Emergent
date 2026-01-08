@@ -1,0 +1,59 @@
+	public String get_#FIELDNAME#_cUF() throws myException
+	{
+		return this.get_UnFormatedValue("#FIELDNAME#");
+	}
+
+	public String get_#FIELDNAME#_cF() throws myException
+	{
+		return this.get_FormatedValue("#FIELDNAME#");	
+	}
+
+	public String get_#FIELDNAME#_VALUE_FOR_SQLSTATEMENT() throws myException
+	{
+		return this.get_cVALUE_FOR_SQLSTATEMENT("#FIELDNAME#");
+	}
+
+	public String get_#FIELDNAME#_cUF_NN(String cNotNullValue) throws myException
+	{
+		return this.get_UnFormatedValue("#FIELDNAME#",cNotNullValue);
+	}
+
+	public String get_#FIELDNAME#_cF_NN(String cNotNullValue) throws myException
+	{
+		return this.get_FormatedValue("#FIELDNAME#",cNotNullValue);	
+	}
+
+	public MyE2_MessageVector set_NEW_VALUE_#FIELDNAME#(String cNewValueFormated) throws myException
+	{
+		return this.set_NewValueForDatabase("#FIELDNAME#", cNewValueFormated);
+	}
+	
+	
+	//2013-09-18: new check_ Methode, die nichts schreibt
+	public MyE2_MessageVector check_NEW_VALUE_#FIELDNAME#(String cNewValueFormated) throws myException
+	{
+		return super.check_NewValueForDatabase("#FIELDNAME#", cNewValueFormated);
+	}
+	
+	
+	
+    //2013-07-17: new wetting-methods, like in recordnew-object
+	public MyE2_MessageVector set_NEW_VALUE_#FIELDNAME#_(long lNewValueFormated) throws myException	{
+		 return super.set_NewValueForDatabase("#FIELDNAME#", lNewValueFormated);
+	}
+
+    //2013-07-17: new wetting-methods, like in recordnew-object
+	public MyE2_MessageVector set_NEW_VALUE_#FIELDNAME#_(double dNewValueFormated) throws myException {
+		 return super.set_NewValueForDatabase("#FIELDNAME#", dNewValueFormated);
+	}
+
+    //2013-07-17: new wetting-methods, like in recordnew-object
+	public MyE2_MessageVector set_NEW_VALUE_#FIELDNAME#_(BigDecimal bdNewValueFormated) throws myException {
+		 return super.set_NewValueForDatabase("#FIELDNAME#", bdNewValueFormated);
+	}
+	
+    //2013-07-17: new wetting-methods, like in recordnew-object
+	public MyE2_MessageVector set_NEW_VALUE_#FIELDNAME#_(GregorianCalendar calNewValueFormated) throws myException {
+		 return super.set_NewValueForDatabase("#FIELDNAME#", calNewValueFormated);
+	}
+	

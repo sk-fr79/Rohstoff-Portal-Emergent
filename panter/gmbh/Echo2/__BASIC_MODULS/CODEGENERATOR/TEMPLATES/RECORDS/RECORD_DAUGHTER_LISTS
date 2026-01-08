@@ -1,0 +1,56 @@
+
+
+	/**
+	 * References the Field #DAUGHTERFIELD# 
+	 * Falls keine get_#MOTHERFIELD#_cUF() leer ist, wird null zurueckgegeben 
+	 */
+	public RECLIST_#DAUGHTERTABLEBASE# get_DOWN_RECORD_LIST_#DAUGHTERTABLEBASE#_#daughterfield#() throws myException
+	{
+		if (S.isEmpty(this.get_#MOTHERFIELD#_cUF()))
+			return null;
+	
+		if (this.DOWN_RECLIST_#DAUGHTERTABLEBASE#_#daughterfield#==null)
+		{
+			this.DOWN_RECLIST_#DAUGHTERTABLEBASE#_#daughterfield# = new RECLIST_#DAUGHTERTABLEBASE# (
+			       "SELECT * FROM "+bibE2.cTO()+".#DAUGHTERTABLENAME# WHERE #DAUGHTERFIELD#="+this.get_#MOTHERFIELD#_cUF()+" ORDER BY ID_#DAUGHTERTABLEBASE#",
+			       this.get_oConn());
+		}
+		return this.DOWN_RECLIST_#DAUGHTERTABLEBASE#_#daughterfield#;
+	}
+
+
+
+
+
+	/**
+	 * cZusatzWhere ODER NULL gibt eine weitere auswahl-Bedingung nach unten (z.B.NVL(DELETED,'N')='N')
+	 * cORDERKEY ODER NULL bestimmt die sortierung des subselects
+	 * buildNew  zwingt zum aufbau einer neuen subquery-list
+	 * References the Field #DAUGHTERFIELD# 
+	 * Falls keine get_#MOTHERFIELD#_cUF() leer ist, wird null zurueckgegeben 
+	 */
+	public RECLIST_#DAUGHTERTABLEBASE# get_DOWN_RECORD_LIST_#DAUGHTERTABLEBASE#_#daughterfield#(String cZusatzWhere, String cORDERKEY, boolean buildNew) throws myException
+	{
+		if (S.isEmpty(this.get_#MOTHERFIELD#_cUF()))
+			return null;
+	
+		if (this.DOWN_RECLIST_#DAUGHTERTABLEBASE#_#daughterfield#==null || buildNew)
+		{
+		    String cQuery = "SELECT * FROM "+bibE2.cTO()+".#DAUGHTERTABLENAME# WHERE #DAUGHTERFIELD#="+this.get_#MOTHERFIELD#_cUF();
+		    if (S.isFull(cZusatzWhere))
+		    {
+		    	cQuery += (" AND "+cZusatzWhere);
+		    }
+		    
+		    if (S.isFull(cORDERKEY))
+		    {
+		    	cQuery += (" ORDER BY  "+cORDERKEY);
+		    }
+		    
+			this.DOWN_RECLIST_#DAUGHTERTABLEBASE#_#daughterfield# = new RECLIST_#DAUGHTERTABLEBASE# (cQuery,this.get_oConn());
+		}
+		return this.DOWN_RECLIST_#DAUGHTERTABLEBASE#_#daughterfield#;
+	}
+
+
+	

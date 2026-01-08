@@ -1,0 +1,32 @@
+package <PACKAGENAME>;
+
+import panter.gmbh.Echo2.E2_CONSTANTS_AND_NAMES;
+import panter.gmbh.Echo2.E2_INSETS;
+import panter.gmbh.Echo2.Container.E2_BasicModuleContainer;
+import panter.gmbh.Echo2.ListAndMask.List.E2_NavigationList;
+import panter.gmbh.Echo2.__CONTAINER_ADDONS.HILFE_ZU_MODULEN.HELP_BUTTON_FOR_MODULES;
+import panter.gmbh.basics4project.E2_MODULNAMES;
+import panter.gmbh.basics4project.Project_BasicModuleContainer;
+import panter.gmbh.indep.exceptions.myException;
+
+public class <BASISNAME>_LIST_BasicModuleContainer extends Project_BasicModuleContainer 
+{
+	public static final String NAME_OF_CHECKBOX_IN_LIST =		"NAME_OF_CHECKBOX_IN_LIST";
+	public static final String NAME_OF_LISTMARKER_IN_LIST =		"NAME_OF_LISTMARKER_IN_LIST";
+
+	public <BASISNAME>_LIST_BasicModuleContainer() throws myException
+	{
+		super(<MODULKENNERLIST>);
+		
+		this.set_bVisible_Row_For_Messages(true);
+		
+		E2_NavigationList oNaviList = new E2_NavigationList();
+		oNaviList.INIT_WITH_ComponentMAP(new <BASISNAME>_LIST_ComponentMap(),E2_NavigationList.STYLE__4_2_4_2,this.get_MODUL_IDENTIFIER());
+		<BASISNAME>_LIST_BedienPanel oPanel = new <BASISNAME>_LIST_BedienPanel(oNaviList,new <BASISNAME>_MASK_BasicModuleContainer());
+		this.add(oPanel);
+		this.add(oNaviList, E2_INSETS.I_2_2_2_2);
+		
+		oPanel.get_o<BASISNAME>_LIST_Selector().get_oSelVector().doActionPassiv();
+	}
+		
+}

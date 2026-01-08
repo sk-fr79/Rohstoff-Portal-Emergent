@@ -1,0 +1,24 @@
+package panter.gmbh.Echo2.Messaging;
+
+import nextapp.echo2.app.Color;
+import nextapp.echo2.app.Extent;
+import panter.gmbh.Echo2.FontsAndColors.E2_ColorEditBackground;
+import panter.gmbh.Echo2.components.MyE2IF__Component;
+import panter.gmbh.indep.MyString;
+
+public class MyE2_BASIC_InfoMessageWithAddonComponent extends MyE2_BASIC_MessageWithAddonComponent  implements IF_Message_WithButtons {
+
+	public MyE2_BASIC_InfoMessageWithAddonComponent(MyString cmessage, MyE2IF__Component oComponent, Extent oExtMessage, Extent oExtComponent) {
+		super(MyE2_Message.TYP_INFO, cmessage,  oComponent,  oExtMessage,  oExtComponent);
+	}
+
+	public MyE2_BASIC_InfoMessageWithAddonComponent(MyString cmessage, MyE2IF__Component oComponent) {
+		super(MyE2_Message.TYP_INFO, cmessage, oComponent);
+	}
+
+	@Override
+	public Color get_Color_4_MessageBackground(MyE2_Message oMessage) {
+		return new E2_ColorEditBackground();
+	}
+
+}

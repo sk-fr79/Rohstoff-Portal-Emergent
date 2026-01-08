@@ -1,0 +1,32 @@
+package <PACKAGENAME>;
+
+import panter.gmbh.basics4project.db.Project_SQLFieldMAP;
+import panter.gmbh.indep.exceptions.myException;
+
+public class <BASISNAME>_MASK_SQLFieldMAP extends Project_SQLFieldMAP 
+{
+
+	public <BASISNAME>_MASK_SQLFieldMAP() throws myException 
+	{
+		super("<MAINTABLE>", "", false);
+	
+		/*
+		 * beispiel fuer die definition von standard-werten
+		 */
+		</FIELDNAME/>
+		this.get_("<FIELDNAME>").set_cDefaultValueFormated("");
+		</FIELDNAME/>
+		this.get_("<FIELDNAME>").set_bIsNullableByUserDef_Before_INIT_SQLFieldMAP(false);
+		
+		/*
+		 * beispiel fuer felder
+		 *		
+		this.get_("GENERIERUNGSDATUM").set_cDefaultValueFormated(bibALL.get_cDateNOW());
+		this.get_("ERLEDIGT").set_cDefaultValueFormated("N");
+		this.get_("ID_USER").set_cDefaultValueFormated(bibALL.get_ID_USER_FORMATTED(bibE2.get_CurrSession()));
+		*/
+
+		this.initFields();
+	}
+
+}

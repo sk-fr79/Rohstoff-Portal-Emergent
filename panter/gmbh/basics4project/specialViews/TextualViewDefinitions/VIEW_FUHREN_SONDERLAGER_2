@@ -1,0 +1,1155 @@
+CREATE OR REPLACE VIEW
+    VIEW_FUHREN_SONDERLAGER_2
+    (
+        TYP ,
+        MENGEN_VORZEICHEN ,
+        ID_VPOS_TPA_FUHRE ,
+        ID_VPOS_TPA_FUHRE_ORT ,
+        ID_VPOS_TPA ,
+        ID_MANDANT ,
+        ID_ADRESSE_START ,
+        ID_ADRESSE_STANDORT_START ,
+        ID_SONDERLAGER ,
+        ID_ADRESSE_ZIEL ,
+        ID_ADRESSE_STANDORT_ZIEL ,
+        ID_LAGER ,
+        ID_LAGER_GEGENSEITE ,
+        ID_VPOS_KON ,
+        NAME1 ,
+        NAME2 ,
+        NAME3 ,
+        PLZ ,
+        ORT ,
+        TELEFON ,
+        LAENDERCODE ,
+        ID_ARTIKEL ,
+        ID_ARTIKEL_BEZ ,
+        ANR1 ,
+        ANR2 ,
+        ARTBEZ1 ,
+        ARTBEZ2 ,
+        BUCHUNGSNR_FUHRE ,
+        EINHEIT_MENGEN ,
+        DATUM_LADEN ,
+        DATUM_KUNDE ,
+        ABGESCHLOSSEN ,
+        ID_ADRESSE_SPEDITION ,
+        NATIONALER_ABFALL_CODE ,
+        ID_ADRESSE_FREMDAUFTRAG ,
+        OHNE_ABRECHNUNG ,
+        STATUS_BUCHUNG ,
+        ID_VPOS_TPA_FUHRE_SONDER ,
+        PLANMENGE ,
+        MENGE_VOR_ABZUG ,
+        ABZUG_MENGE ,
+        MENGE_NACH_ABZUG ,
+        LIEFERINFO_TPA ,
+        WIEGEKARTENKENNER ,
+        FUHRE_KOMPLETT ,
+        ID_WIEGEKARTE ,
+        ID_LAGER_KONTO ,
+        ID_VPOS_STD ,
+        MANUELL_PREIS_FUHRE ,
+        EINZELPREIS_FUHRE ,
+        STEUERSATZ_FUHRE ,
+        EU_STEUER_VERMERK ,
+        PRUEFUNG_MENGE ,
+        EPREIS_RESULT_NETTO_MGE ,
+        TYP_STRECKE_LAGER_MIXED ,
+        ID_EAK_CODE ,
+        USER_FUHRE_ERZEUGER ,
+        USER_FUHRE_BEARBEITER
+    ) AS
+    (
+        SELECT
+            CASE
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 1
+                THEN 'IN-LAGER'
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 2
+                THEN 'EX-LAGER'
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 3
+                THEN 'MIXED'
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 4
+                THEN 'LAGER-LAGER'
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 0
+                THEN 'STRECKE'
+              END ,
+            - 1 ,
+            F1.ID_VPOS_TPA_FUHRE ,
+            NULL ,
+            F1.ID_VPOS_TPA ,
+            F1.ID_MANDANT ,
+            F1.ID_ADRESSE_START ,
+            F1.ID_ADRESSE_LAGER_START ,
+            CASE
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 1
+                THEN -1
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 2
+                THEN -1
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 3
+                THEN
+                    CASE
+                        WHEN (F1.ID_ADRESSE_ZIEL = M.EIGENE_ADRESS_ID
+                            AND F1.ID_ADRESSE_START = M.EIGENE_ADRESS_ID )
+                        THEN -4
+                        ELSE
+                            CASE
+                                WHEN (F1.ID_ADRESSE_ZIEL = M.EIGENE_ADRESS_ID
+                                    OR  F1.ID_ADRESSE_START = M.EIGENE_ADRESS_ID )
+                                THEN -1
+                                ELSE 0
+                            END
+                    END
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 4
+                THEN -4
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 0
+                THEN 0
+            END ,
+            CASE
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 1
+                THEN -1
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 2
+                THEN -1
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 3
+                THEN
+                    CASE
+                        WHEN (F1.ID_ADRESSE_ZIEL = M.EIGENE_ADRESS_ID
+                            AND F1.ID_ADRESSE_START = M.EIGENE_ADRESS_ID )
+                        THEN -4
+                        ELSE
+                            CASE
+                                WHEN (F1.ID_ADRESSE_ZIEL = M.EIGENE_ADRESS_ID
+                                    OR  F1.ID_ADRESSE_START = M.EIGENE_ADRESS_ID )
+                                THEN -1
+                                ELSE 0
+                            END
+                    END
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 4
+                THEN -4
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 0
+                THEN 0
+            END ,
+            CASE
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 1
+                THEN -1
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 2
+                THEN -1
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 3
+                THEN
+                    CASE
+                        WHEN (F1.ID_ADRESSE_ZIEL = M.EIGENE_ADRESS_ID
+                            AND F1.ID_ADRESSE_START = M.EIGENE_ADRESS_ID )
+                        THEN -4
+                        ELSE
+                            CASE
+                                WHEN (F1.ID_ADRESSE_ZIEL = M.EIGENE_ADRESS_ID
+                                    OR  F1.ID_ADRESSE_START = M.EIGENE_ADRESS_ID )
+                                THEN -1
+                                ELSE 0
+                            END
+                    END
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 4
+                THEN -4
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 0
+                THEN 0
+            END ,
+            CASE
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 1
+                THEN F1.ID_ADRESSE_LAGER_ZIEL
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 2
+                THEN F1.ID_ADRESSE_LAGER_START
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 3
+                THEN
+                    CASE
+                        WHEN (F1.ID_ADRESSE_ZIEL = M.EIGENE_ADRESS_ID
+                            AND F1.ID_ADRESSE_START = M.EIGENE_ADRESS_ID )
+                        THEN F1.ID_ADRESSE_LAGER_START
+                        WHEN (F1.ID_ADRESSE_ZIEL = M.EIGENE_ADRESS_ID )
+                        THEN F1.ID_ADRESSE_LAGER_ZIEL
+                        WHEN (F1.ID_ADRESSE_START = M.EIGENE_ADRESS_ID )
+                        THEN F1.ID_ADRESSE_LAGER_START
+                        ELSE NULL
+                    END
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 4
+                THEN f1.ID_ADRESSE_LAGER_START
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 0
+                THEN NULL
+            END ,
+            CASE
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 4
+                THEN F1.ID_ADRESSE_LAGER_ZIEL
+                ELSE NULL
+            END ,
+            F1.ID_VPOS_KON_EK ,
+            F1.L_NAME1 ,
+            F1.L_NAME2 ,
+            F1.L_NAME3 ,
+            F1.L_PLZ ,
+            F1.L_ORT ,
+            F1.TEL_LIEFERANT ,
+            F1.L_LAENDERCODE ,
+            B.ID_ARTIKEL ,
+            F1.ID_ARTIKEL_BEZ_EK ,
+            F1.ANR1_EK ,
+            F1.ANR2_EK ,
+            F1.ARTBEZ1_EK ,
+            F1.ARTBEZ2_EK ,
+            F1.BUCHUNGSNR_FUHRE ,
+            F1.EINHEIT_MENGEN ,
+            F1.DATUM_AUFLADEN ,
+            CASE
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 1
+                THEN F1.DATUM_AUFLADEN
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 2
+                THEN F1.DATUM_ABLADEN
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 3
+                THEN
+                    CASE
+                        WHEN (F1.ID_ADRESSE_START = M.EIGENE_ADRESS_ID )
+                        THEN F1.DATUM_ABLADEN
+                        ELSE F1.DATUM_AUFLADEN
+                    END
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 4
+                THEN F1.DATUM_AUFLADEN
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 0
+                THEN F1.DATUM_AUFLADEN
+            END ,
+            F1.ABGESCHLOSSEN ,
+            F1.ID_ADRESSE_SPEDITION ,
+            F1.NATIONALER_ABFALL_CODE ,
+            F1.ID_ADRESSE_FREMDAUFTRAG ,
+            F1.OHNE_ABRECHNUNG ,
+            CASE
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 3
+                THEN
+                    CASE
+                        WHEN (F1.ID_ADRESSE_ZIEL != M.EIGENE_ADRESS_ID
+                            AND F1.ID_ADRESSE_START = M.EIGENE_ADRESS_ID
+                            AND NVL(F1.ANTEIL_ABLADEMENGE_ABN,'0') = 0 )
+                        THEN 10
+                        ELSE F1.STATUS_BUCHUNG
+                    END
+                ELSE F1.STATUS_BUCHUNG
+            END ,
+            F1.ID_VPOS_TPA_FUHRE_SONDER ,
+            NVL(F1.ANTEIL_PLANMENGE_LIEF,0) ,
+            NVL(F1.ANTEIL_LADEMENGE_LIEF,0) ,
+            NVL(F1.ABZUG_LADEMENGE_LIEF,0) ,
+            NVL(F1.ANTEIL_LADEMENGE_LIEF,0) - NVL(F1.ABZUG_LADEMENGE_LIEF,0) ,
+            F1.LIEFERINFO_TPA ,
+            F1.WIEGEKARTENKENNER_LADEN ,
+            F1.FUHRE_KOMPLETT ,
+            F1.ID_WIEGEKARTE_LIEF ,
+            NULL ,
+            F1.ID_VPOS_STD_EK ,
+            F1.MANUELL_PREIS_EK ,
+            F1.EINZELPREIS_EK ,
+            F1.STEUERSATZ_EK ,
+            F1.EU_STEUER_VERMERK_EK ,
+            F1.PRUEFUNG_LADEMENGE ,
+            F1.EPREIS_RESULT_NETTO_MGE_EK ,
+            F1.TYP_STRECKE_LAGER_MIXED ,
+            F1.ID_EAK_CODE ,
+            F1.ERZEUGT_VON ,
+            F1.GEAENDERT_VON
+        FROM
+            JT_VPOS_TPA_FUHRE F1
+        LEFT OUTER JOIN
+            JT_ARTIKEL_BEZ B
+        ON
+            F1.ID_ARTIKEL_BEZ_EK=B.ID_ARTIKEL_BEZ
+        AND F1.ID_MANDANT = B.ID_MANDANT
+        INNER JOIN
+            JD_MANDANT M
+        ON
+            M.ID_MANDANT = F1.ID_MANDANT
+        WHERE
+            1 = 1
+        AND NVL(F1.IST_STORNIERT,'N') = 'N'
+        AND NVL(F1.DELETED,'N') = 'N'
+        AND NVL(F1.ALT_WIRD_NICHT_GEBUCHT,'N') = 'N'
+        AND F1.TYP_STRECKE_LAGER_MIXED IN (0,1,2,3,4)
+        UNION
+        SELECT
+            CASE
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 1
+                THEN 'IN-LAGER'
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 2
+                THEN 'EX-LAGER'
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 3
+                THEN 'MIXED'
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 4
+                THEN 'LAGER-LAGER'
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 0
+                THEN 'STRECKE'
+              END ,
+            + 1 ,
+            F1.ID_VPOS_TPA_FUHRE ,
+            NULL ,
+            F1.ID_VPOS_TPA ,
+            F1.ID_MANDANT ,
+            CASE
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 1
+                THEN -1
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 2
+                THEN -1
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 3
+                THEN
+                    CASE
+                        WHEN (F1.ID_ADRESSE_ZIEL = M.EIGENE_ADRESS_ID
+                            OR  F1.ID_ADRESSE_START = M.EIGENE_ADRESS_ID )
+                        THEN -1
+                        ELSE 0
+                    END
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 4
+                THEN -4
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 0
+                THEN 0
+            END ,
+            CASE
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 1
+                THEN -1
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 2
+                THEN -1
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 3
+                THEN
+                    CASE
+                        WHEN (F1.ID_ADRESSE_ZIEL = M.EIGENE_ADRESS_ID
+                            OR  F1.ID_ADRESSE_START = M.EIGENE_ADRESS_ID )
+                        THEN -1
+                        ELSE 0
+                    END
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 4
+                THEN -4
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 0
+                THEN 0
+            END ,
+            CASE
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 1
+                THEN -1
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 2
+                THEN -1
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 3
+                THEN
+                    CASE
+                        WHEN (F1.ID_ADRESSE_ZIEL = M.EIGENE_ADRESS_ID
+                            OR  F1.ID_ADRESSE_START = M.EIGENE_ADRESS_ID )
+                        THEN -1
+                        ELSE 0
+                    END
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 4
+                THEN -4
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 0
+                THEN 0
+            END ,
+            F1.ID_ADRESSE_ZIEL ,
+            F1.ID_ADRESSE_LAGER_ZIEL ,
+            CASE
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 1
+                THEN F1.ID_ADRESSE_LAGER_ZIEL
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 2
+                THEN F1.ID_ADRESSE_LAGER_START
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 3
+                THEN
+                    CASE
+                        WHEN (F1.ID_ADRESSE_ZIEL = M.EIGENE_ADRESS_ID
+                            AND F1.ID_ADRESSE_START = M.EIGENE_ADRESS_ID )
+                        THEN F1.ID_ADRESSE_LAGER_ZIEL
+                        WHEN (F1.ID_ADRESSE_ZIEL = M.EIGENE_ADRESS_ID )
+                        THEN F1.ID_ADRESSE_LAGER_ZIEL
+                        WHEN (F1.ID_ADRESSE_START = M.EIGENE_ADRESS_ID )
+                        THEN F1.ID_ADRESSE_LAGER_START
+                        ELSE NULL
+                    END
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 4
+                THEN f1.ID_ADRESSE_LAGER_ZIEL
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 0
+                THEN NULL
+            END ,
+            CASE
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 4
+                THEN F1.ID_ADRESSE_LAGER_START
+                ELSE NULL
+            END ,
+            F1.ID_VPOS_KON_VK ,
+            F1.A_NAME1 ,
+            F1.A_NAME2 ,
+            F1.A_NAME3 ,
+            F1.A_PLZ ,
+            F1.A_ORT ,
+            F1.TEL_ABNEHMER ,
+            F1.A_LAENDERCODE ,
+            B.ID_ARTIKEL ,
+            F1.ID_ARTIKEL_BEZ_VK ,
+            F1.ANR1_VK ,
+            F1.ANR2_VK ,
+            F1.ARTBEZ1_VK ,
+            F1.ARTBEZ2_VK ,
+            F1.BUCHUNGSNR_FUHRE ,
+            F1.EINHEIT_MENGEN ,
+            F1.DATUM_ABLADEN ,
+            CASE
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 1
+                THEN F1.DATUM_AUFLADEN
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 2
+                THEN F1.DATUM_ABLADEN
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 3
+                THEN
+                    CASE
+                        WHEN (F1.ID_ADRESSE_START = M.EIGENE_ADRESS_ID )
+                        THEN F1.DATUM_ABLADEN
+                        ELSE F1.DATUM_AUFLADEN
+                    END
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 4
+                THEN F1.DATUM_ABLADEN
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 0
+                THEN F1.DATUM_ABLADEN
+            END ,
+            F1.ABGESCHLOSSEN ,
+            F1.ID_ADRESSE_SPEDITION ,
+            F1.NATIONALER_ABFALL_CODE ,
+            F1.ID_ADRESSE_FREMDAUFTRAG ,
+            F1.OHNE_ABRECHNUNG ,
+            CASE
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 3
+                THEN
+                    CASE
+                        WHEN (F1.ID_ADRESSE_ZIEL != M.EIGENE_ADRESS_ID
+                            AND F1.ID_ADRESSE_START = M.EIGENE_ADRESS_ID
+                            AND NVL(F1.ANTEIL_ABLADEMENGE_ABN,'0') = 0 )
+                        THEN 10
+                        ELSE F1.STATUS_BUCHUNG
+                    END
+                ELSE F1.STATUS_BUCHUNG
+            END ,
+            F1.ID_VPOS_TPA_FUHRE_SONDER ,
+            NVL(F1.ANTEIL_PLANMENGE_ABN ,0) ,
+            NVL(F1.ANTEIL_ABLADEMENGE_ABN ,0) ,
+            NVL(F1.ABZUG_ABLADEMENGE_ABN ,0) ,
+            NVL(F1.ANTEIL_ABLADEMENGE_ABN,0) - NVL(F1.ABZUG_ABLADEMENGE_ABN,0) ,
+            LIEFERINFO_TPA ,
+            F1.WIEGEKARTENKENNER_ABLADEN ,
+            F1.FUHRE_KOMPLETT ,
+            F1.ID_WIEGEKARTE_LIEF ,
+            NULL ,
+            F1.ID_VPOS_STD_VK ,
+            F1.MANUELL_PREIS_VK ,
+            F1.EINZELPREIS_VK ,
+            F1.STEUERSATZ_VK ,
+            F1.EU_STEUER_VERMERK_VK ,
+            F1.PRUEFUNG_ABLADEMENGE ,
+            F1.EPREIS_RESULT_NETTO_MGE_VK ,
+            F1.TYP_STRECKE_LAGER_MIXED ,
+            F1.ID_EAK_CODE ,
+            F1.ERZEUGT_VON ,
+            F1.GEAENDERT_VON
+        FROM
+            JT_VPOS_TPA_FUHRE F1
+        LEFT OUTER JOIN
+            JT_ARTIKEL_BEZ B
+        ON
+            F1.ID_ARTIKEL_BEZ_VK=B.ID_ARTIKEL_BEZ
+        AND F1.ID_MANDANT = B.ID_MANDANT
+        INNER JOIN
+            JD_MANDANT M
+        ON
+            M.ID_MANDANT = F1.ID_MANDANT
+        WHERE
+            1 = 1
+        AND NVL(F1.IST_STORNIERT,'N') = 'N'
+        AND NVL(F1.DELETED,'N') = 'N'
+        AND NVL(F1.ALT_WIRD_NICHT_GEBUCHT,'N') = 'N'
+        AND F1.TYP_STRECKE_LAGER_MIXED IN ( 0,1,2,3,4 )
+        UNION
+        SELECT
+            CASE
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 1
+                THEN 'IN-LAGER'
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 2
+                THEN 'EX-LAGER'
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 3
+                THEN 'MIXED'
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 4
+                THEN 'LAGER-LAGER'
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 0
+                THEN 'STRECKE'
+            END ,
+            -1 ,
+            F1.ID_VPOS_TPA_FUHRE ,
+            FO1.ID_VPOS_TPA_FUHRE_ORT ,
+            F1.ID_VPOS_TPA ,
+            F1.ID_MANDANT ,
+            FO1.ID_ADRESSE ,
+            FO1.ID_ADRESSE_LAGER ,
+            CASE
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 1
+                THEN -1
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 2
+                THEN -1
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 3
+                THEN
+                    CASE
+                        WHEN (FO1.ID_ADRESSE = M.EIGENE_ADRESS_ID
+                            AND F1.ID_ADRESSE_ZIEL = M.EIGENE_ADRESS_ID)
+                        THEN -4
+                        WHEN (FO1.ID_ADRESSE != M.EIGENE_ADRESS_ID
+                            AND F1.ID_ADRESSE_ZIEL != M.EIGENE_ADRESS_ID)
+                        THEN 0
+                        ELSE -1
+                    END
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 4
+                THEN -4
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 0
+                THEN 0
+            END ,
+            CASE
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 1
+                THEN -1
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 2
+                THEN -1
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 3
+                THEN
+                    CASE
+                        WHEN (FO1.ID_ADRESSE = M.EIGENE_ADRESS_ID
+                            AND F1.ID_ADRESSE_ZIEL = M.EIGENE_ADRESS_ID)
+                        THEN -4
+                        WHEN (FO1.ID_ADRESSE != M.EIGENE_ADRESS_ID
+                            AND F1.ID_ADRESSE_ZIEL != M.EIGENE_ADRESS_ID)
+                        THEN 0
+                        ELSE -1
+                    END
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 4
+                THEN -4
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 0
+                THEN 0
+            END ,
+            CASE
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 1
+                THEN -1
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 2
+                THEN -1
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 3
+                THEN
+                    CASE
+                        WHEN (FO1.ID_ADRESSE = M.EIGENE_ADRESS_ID
+                            AND F1.ID_ADRESSE_ZIEL = M.EIGENE_ADRESS_ID)
+                        THEN -4
+                        WHEN (FO1.ID_ADRESSE != M.EIGENE_ADRESS_ID
+                            AND F1.ID_ADRESSE_ZIEL != M.EIGENE_ADRESS_ID)
+                        THEN 0
+                        ELSE -1
+                    END
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 4
+                THEN -4
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 0
+                THEN 0
+            END ,
+            CASE
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 1
+                THEN F1.ID_ADRESSE_LAGER_ZIEL
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 2
+                THEN FO1.ID_ADRESSE_LAGER
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 3
+                THEN
+                    CASE
+                        WHEN (FO1.ID_ADRESSE = M.EIGENE_ADRESS_ID
+                            AND F1.ID_ADRESSE_ZIEL = M.EIGENE_ADRESS_ID)
+                        THEN FO1.ID_ADRESSE_LAGER
+                        WHEN (FO1.ID_ADRESSE != M.EIGENE_ADRESS_ID
+                            AND F1.ID_ADRESSE_ZIEL != M.EIGENE_ADRESS_ID)
+                        THEN NULL
+                        ELSE
+                            CASE
+                                WHEN FO1.ID_ADRESSE = M.EIGENE_ADRESS_ID
+                                THEN FO1.ID_ADRESSE_LAGER
+                                ELSE F1.ID_ADRESSE_LAGER_ZIEL
+                            END
+                    END
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 4
+                THEN FO1.ID_ADRESSE_LAGER
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 0
+                THEN NULL
+            END ,
+            CASE
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 1
+                THEN NULL
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 2
+                THEN NULL
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 3
+                THEN
+                    CASE
+                        WHEN (FO1.ID_ADRESSE = M.EIGENE_ADRESS_ID
+                            AND F1.ID_ADRESSE_ZIEL = M.EIGENE_ADRESS_ID)
+                        THEN F1.ID_ADRESSE_LAGER_ZIEL
+                        ELSE NULL
+                    END
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 4
+                THEN F1.ID_ADRESSE_LAGER_ZIEL
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 0
+                THEN NULL
+            END ,
+            FO1.ID_VPOS_KON ,
+            FO1.NAME1 ,
+            FO1.NAME2 ,
+            FO1.NAME3 ,
+            FO1.PLZ ,
+            FO1.ORT ,
+            FO1.TEL ,
+            FO1.LAENDERCODE ,
+            B.ID_ARTIKEL ,
+            FO1.ID_ARTIKEL_BEZ ,
+            FO1.ANR1 ,
+            FO1.ANR2 ,
+            FO1.ARTBEZ1 ,
+            FO1.ARTBEZ2 ,
+            F1.BUCHUNGSNR_FUHRE || '-' ||FO1.BUCHUNGSNUMMER_ZUSATZ ,
+            FO1.EINHEIT_MENGEN ,
+            FO1.DATUM_LADE_ABLADE ,
+            CASE
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 1
+                THEN FO1.DATUM_LADE_ABLADE
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 2
+                THEN F1.DATUM_ABLADEN
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 3
+                THEN
+                    CASE
+                        WHEN FO1.ID_ADRESSE = M.EIGENE_ADRESS_ID
+                        THEN F1.DATUM_ABLADEN
+                        ELSE FO1.DATUM_LADE_ABLADE
+                    END
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 4
+                THEN FO1.DATUM_LADE_ABLADE
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 0
+                THEN FO1.DATUM_LADE_ABLADE
+            END ,
+            F1.ABGESCHLOSSEN ,
+            F1.ID_ADRESSE_SPEDITION ,
+            FO1.NATIONALER_ABFALL_CODE ,
+            F1.ID_ADRESSE_FREMDAUFTRAG ,
+            FO1.OHNE_ABRECHNUNG ,
+            F1.STATUS_BUCHUNG ,
+            FO1.ID_VPOS_TPA_FUHRE_SONDER ,
+            NVL(FO1.ANTEIL_PLANMENGE,0) ,
+            NVL(FO1.ANTEIL_LADEMENGE,0) ,
+            NVL(FO1.ABZUG_MENGE,0) ,
+            CASE
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 1
+                THEN NVL(FO1.ANTEIL_LADEMENGE,0) - NVL(FO1.ABZUG_MENGE,0)
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 2
+                THEN NVL(FO1.ANTEIL_LADEMENGE,0)
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 3
+                THEN
+                    CASE
+                        WHEN FO1.ID_ADRESSE = M.EIGENE_ADRESS_ID
+                        THEN NVL(FO1.ANTEIL_LADEMENGE,0)
+                        ELSE NVL(FO1.ANTEIL_LADEMENGE,0) - NVL(FO1.ABZUG_MENGE,0)
+                    END
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 4
+                THEN
+                    CASE
+                        WHEN FO1.ID_ADRESSE = M.EIGENE_ADRESS_ID
+                        THEN NVL(FO1.ANTEIL_LADEMENGE,0)
+                        ELSE NVL(FO1.ANTEIL_LADEMENGE,0) - NVL(FO1.ABZUG_MENGE,0)
+                    END
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 0
+                THEN NVL(FO1.ANTEIL_LADEMENGE,0) - NVL(FO1.ABZUG_MENGE,0)
+            END ,
+            F1.LIEFERINFO_TPA ,
+            FO1.WIEGEKARTENKENNER ,
+            F1.FUHRE_KOMPLETT ,
+            FO1.ID_WIEGEKARTE ,
+            NULL ,
+            FO1.ID_VPOS_STD ,
+            FO1.MANUELL_PREIS ,
+            FO1.EINZELPREIS ,
+            FO1.STEUERSATZ ,
+            FO1.EU_STEUER_VERMERK ,
+            FO1.PRUEFUNG_MENGE ,
+            FO1.EPREIS_RESULT_NETTO_MGE ,
+            F1.TYP_STRECKE_LAGER_MIXED ,
+            FO1.ID_EAK_CODE ,
+            FO1.ERZEUGT_VON ,
+            FO1.GEAENDERT_VON
+        FROM
+            JT_VPOS_TPA_FUHRE_ORT FO1
+        INNER JOIN
+            JT_VPOS_TPA_FUHRE F1
+        ON
+            F1.ID_VPOS_TPA_FUHRE = FO1.ID_VPOS_TPA_FUHRE
+        AND F1.ID_MANDANT = FO1.ID_MANDANT
+        LEFT OUTER JOIN
+            JT_ARTIKEL_BEZ B
+        ON
+            FO1.ID_ARTIKEL_BEZ=B.ID_ARTIKEL_BEZ
+        AND FO1.ID_MANDANT = B.ID_MANDANT
+        INNER JOIN
+            JD_MANDANT M
+        ON
+            M.ID_MANDANT = FO1.ID_MANDANT
+        WHERE
+            1 = 1
+        AND NVL(F1.IST_STORNIERT,'N') = 'N'
+        AND NVL(FO1.DELETED,'N') = 'N'
+        AND NVL(F1.DELETED,'N') = 'N'
+        AND NVL(F1.ALT_WIRD_NICHT_GEBUCHT,'N') = 'N'
+        AND FO1.DEF_QUELLE_ZIEL = 'EK'
+        UNION
+        SELECT
+            CASE
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 1
+                THEN 'IN-LAGER'
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 2
+                THEN 'EX-LAGER'
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 3
+                THEN 'MIXED'
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 4
+                THEN 'LAGER-LAGER'
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 0
+                THEN 'STRECKE'
+              END ,
+            + 1 ,
+            FO1.ID_VPOS_TPA_FUHRE ,
+            FO1.ID_VPOS_TPA_FUHRE_ORT ,
+            F1.ID_VPOS_TPA ,
+            F1.ID_MANDANT ,
+            CASE
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 1
+                THEN -1
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 2
+                THEN -1
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 3
+                THEN
+                    CASE
+                        WHEN (FO1.ID_ADRESSE = M.EIGENE_ADRESS_ID
+                            AND F1.ID_ADRESSE_START = M.EIGENE_ADRESS_ID)
+                        THEN -4
+                        WHEN (FO1.ID_ADRESSE != M.EIGENE_ADRESS_ID
+                            AND F1.ID_ADRESSE_START != M.EIGENE_ADRESS_ID)
+                        THEN 0
+                        ELSE -1
+                    END
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 4
+                THEN -4
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 0
+                THEN 0
+            END ,
+            CASE
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 1
+                THEN -1
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 2
+                THEN -1
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 3
+                THEN
+                    CASE
+                        WHEN (FO1.ID_ADRESSE = M.EIGENE_ADRESS_ID
+                            AND F1.ID_ADRESSE_START = M.EIGENE_ADRESS_ID)
+                        THEN -4
+                        WHEN (FO1.ID_ADRESSE != M.EIGENE_ADRESS_ID
+                            AND F1.ID_ADRESSE_START != M.EIGENE_ADRESS_ID)
+                        THEN 0
+                        ELSE -1
+                    END
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 4
+                THEN -4
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 0
+                THEN 0
+            END ,
+            CASE
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 1
+                THEN -1
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 2
+                THEN -1
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 3
+                THEN
+                    CASE
+                        WHEN (FO1.ID_ADRESSE = M.EIGENE_ADRESS_ID
+                            AND F1.ID_ADRESSE_START = M.EIGENE_ADRESS_ID)
+                        THEN -4
+                        WHEN (FO1.ID_ADRESSE != M.EIGENE_ADRESS_ID
+                            AND F1.ID_ADRESSE_START != M.EIGENE_ADRESS_ID)
+                        THEN 0
+                        ELSE -1
+                    END
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 4
+                THEN -4
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 0
+                THEN 0
+            END ,
+            FO1.ID_ADRESSE ,
+            FO1.ID_ADRESSE_LAGER ,
+            CASE
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 1
+                THEN F1.ID_ADRESSE_LAGER_ZIEL
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 2
+                THEN F1.ID_ADRESSE_LAGER_START
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 3
+                THEN
+                    CASE
+                        WHEN (FO1.ID_ADRESSE = M.EIGENE_ADRESS_ID
+                            AND F1.ID_ADRESSE_START = M.EIGENE_ADRESS_ID)
+                        THEN FO1.ID_ADRESSE_LAGER
+                        WHEN (FO1.ID_ADRESSE != M.EIGENE_ADRESS_ID
+                            AND F1.ID_ADRESSE_START != M.EIGENE_ADRESS_ID)
+                        THEN NULL
+                        ELSE
+                            CASE
+                                WHEN FO1.ID_ADRESSE = M.EIGENE_ADRESS_ID
+                                THEN FO1.ID_ADRESSE_LAGER
+                                ELSE F1.ID_ADRESSE_LAGER_START
+                            END
+                    END
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 4
+                THEN FO1.ID_ADRESSE_LAGER
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 0
+                THEN NULL
+            END ,
+            CASE
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 1
+                THEN NULL
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 2
+                THEN NULL
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 3
+                THEN
+                    CASE
+                        WHEN (FO1.ID_ADRESSE = M.EIGENE_ADRESS_ID
+                            AND F1.ID_ADRESSE_START = M.EIGENE_ADRESS_ID)
+                        THEN F1.ID_ADRESSE_LAGER_START
+                        ELSE NULL
+                    END
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 4
+                THEN F1.ID_ADRESSE_LAGER_START
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 0
+                THEN NULL
+            END ,
+            FO1.ID_VPOS_KON ,
+            FO1.NAME1 ,
+            FO1.NAME2 ,
+            FO1.NAME3 ,
+            FO1.PLZ ,
+            FO1.ORT ,
+            FO1.TEL ,
+            FO1.LAENDERCODE ,
+            B.ID_ARTIKEL ,
+            FO1.ID_ARTIKEL_BEZ ,
+            FO1.ANR1 ,
+            FO1.ANR2 ,
+            FO1.ARTBEZ1 ,
+            FO1.ARTBEZ2 ,
+            F1.BUCHUNGSNR_FUHRE || '-' ||FO1.BUCHUNGSNUMMER_ZUSATZ ,
+            FO1.EINHEIT_MENGEN ,
+            FO1.DATUM_LADE_ABLADE ,
+            CASE
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 1
+                THEN F1.DATUM_AUFLADEN
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 2
+                THEN FO1.DATUM_LADE_ABLADE
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 3
+                THEN
+                    CASE
+                        WHEN FO1.ID_ADRESSE = M.EIGENE_ADRESS_ID
+                        THEN F1.DATUM_AUFLADEN
+                        ELSE FO1.DATUM_LADE_ABLADE
+                    END
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 4
+                THEN FO1.DATUM_LADE_ABLADE
+                WHEN F1.TYP_STRECKE_LAGER_MIXED = 0
+                THEN FO1.DATUM_LADE_ABLADE
+            END ,
+            F1.ABGESCHLOSSEN ,
+            F1.ID_ADRESSE_SPEDITION ,
+            FO1.NATIONALER_ABFALL_CODE ,
+            F1.ID_ADRESSE_FREMDAUFTRAG ,
+            FO1.OHNE_ABRECHNUNG ,
+            F1.STATUS_BUCHUNG ,
+            FO1.ID_VPOS_TPA_FUHRE_SONDER ,
+            NVL(FO1.ANTEIL_PLANMENGE,0) ,
+            NVL(FO1.ANTEIL_ABLADEMENGE,0) ,
+            NVL(FO1.ABZUG_MENGE,0) ,
+            NVL(FO1.ANTEIL_ABLADEMENGE,0) - NVL(FO1.ABZUG_MENGE,0) ,
+            LIEFERINFO_TPA ,
+            FO1.WIEGEKARTENKENNER ,
+            F1.FUHRE_KOMPLETT ,
+            FO1.ID_WIEGEKARTE ,
+            NULL ,
+            FO1.ID_VPOS_STD ,
+            FO1.MANUELL_PREIS ,
+            FO1.EINZELPREIS ,
+            FO1.STEUERSATZ ,
+            FO1.EU_STEUER_VERMERK ,
+            FO1.PRUEFUNG_MENGE ,
+            FO1.EPREIS_RESULT_NETTO_MGE ,
+            F1.TYP_STRECKE_LAGER_MIXED ,
+            FO1.ID_EAK_CODE ,
+            FO1.ERZEUGT_VON ,
+            FO1.GEAENDERT_VON
+        FROM
+            JT_VPOS_TPA_FUHRE_ORT FO1
+        INNER JOIN
+            JT_VPOS_TPA_FUHRE F1
+        ON
+            F1.ID_VPOS_TPA_FUHRE = FO1.ID_VPOS_TPA_FUHRE
+        AND F1.ID_MANDANT = FO1.ID_MANDANT
+        LEFT OUTER JOIN
+            JT_ARTIKEL_BEZ B
+        ON
+            FO1.ID_ARTIKEL_BEZ=B.ID_ARTIKEL_BEZ
+        AND FO1.ID_MANDANT = B.ID_MANDANT
+        INNER JOIN
+            JD_MANDANT M
+        ON
+            M.ID_MANDANT = FO1.ID_MANDANT
+        WHERE
+            1 = 1
+        AND NVL(F1.IST_STORNIERT,'N') = 'N'
+        AND NVL(FO1.DELETED,'N') = 'N'
+        AND NVL(F1.DELETED,'N') = 'N'
+        AND NVL(F1.ALT_WIRD_NICHT_GEBUCHT,'N') = 'N'
+        AND FO1.DEF_QUELLE_ZIEL = 'VK'
+        UNION
+        SELECT
+            'LAGER-LAGER' ,
+            -1 ,
+            FO1.ID_VPOS_TPA_FUHRE ,
+            FO1.ID_VPOS_TPA_FUHRE_ORT ,
+            F1.ID_VPOS_TPA ,
+            F1.ID_MANDANT ,
+            F1.ID_ADRESSE_START ,
+            F1.ID_ADRESSE_LAGER_START ,
+            -4 ,
+            -4 ,
+            -4 ,
+            F1.ID_ADRESSE_LAGER_START ,
+            FO1.ID_ADRESSE_LAGER ,
+            FO1.ID_VPOS_KON ,
+            FO1.NAME1 ,
+            FO1.NAME2 ,
+            FO1.NAME3 ,
+            FO1.PLZ ,
+            FO1.ORT ,
+            FO1.TEL ,
+            FO1.LAENDERCODE ,
+            B.ID_ARTIKEL ,
+            FO1.ID_ARTIKEL_BEZ ,
+            FO1.ANR1 ,
+            FO1.ANR2 ,
+            FO1.ARTBEZ1 ,
+            FO1.ARTBEZ2 ,
+            F1.BUCHUNGSNR_FUHRE || '-' ||FO1.BUCHUNGSNUMMER_ZUSATZ ,
+            FO1.EINHEIT_MENGEN ,
+            FO1.DATUM_LADE_ABLADE ,
+            FO1.DATUM_LADE_ABLADE ,
+            F1.ABGESCHLOSSEN ,
+            F1.ID_ADRESSE_SPEDITION ,
+            FO1.NATIONALER_ABFALL_CODE ,
+            F1.ID_ADRESSE_FREMDAUFTRAG ,
+            FO1.OHNE_ABRECHNUNG ,
+            F1.STATUS_BUCHUNG ,
+            FO1.ID_VPOS_TPA_FUHRE_SONDER ,
+            NVL(FO1.ANTEIL_PLANMENGE,0) ,
+            NVL(FO1.ANTEIL_ABLADEMENGE,0) ,
+            NVL(FO1.ABZUG_MENGE,0) ,
+            NVL(FO1.ANTEIL_ABLADEMENGE,0) - NVL(FO1.ABZUG_MENGE,0) ,
+            LIEFERINFO_TPA ,
+            FO1.WIEGEKARTENKENNER ,
+            F1.FUHRE_KOMPLETT ,
+            FO1.ID_WIEGEKARTE ,
+            NULL ,
+            FO1.ID_VPOS_STD ,
+            FO1.MANUELL_PREIS ,
+            FO1.EINZELPREIS ,
+            FO1.STEUERSATZ ,
+            FO1.EU_STEUER_VERMERK ,
+            FO1.PRUEFUNG_MENGE ,
+            FO1.EPREIS_RESULT_NETTO_MGE ,
+            F1.TYP_STRECKE_LAGER_MIXED ,
+            FO1.ID_EAK_CODE ,
+            FO1.ERZEUGT_VON ,
+            FO1.GEAENDERT_VON
+        FROM
+            JT_VPOS_TPA_FUHRE_ORT FO1
+        INNER JOIN
+            JT_VPOS_TPA_FUHRE F1
+        ON
+            F1.ID_VPOS_TPA_FUHRE = FO1.ID_VPOS_TPA_FUHRE
+        AND F1.ID_MANDANT = FO1.ID_MANDANT
+        LEFT OUTER JOIN
+            JT_ARTIKEL_BEZ B
+        ON
+            FO1.ID_ARTIKEL_BEZ=B.ID_ARTIKEL_BEZ
+        AND FO1.ID_MANDANT = B.ID_MANDANT
+        INNER JOIN
+            JD_MANDANT M
+        ON
+            M.ID_MANDANT = FO1.ID_MANDANT
+        WHERE
+            1 = 1
+        AND NVL(F1.IST_STORNIERT,'N') = 'N'
+        AND NVL(FO1.DELETED,'N') = 'N'
+        AND NVL(F1.DELETED,'N') = 'N'
+        AND F1.TYP_STRECKE_LAGER_MIXED = 3
+        AND NVL(F1.ALT_WIRD_NICHT_GEBUCHT,'N') = 'N'
+        AND FO1.DEF_QUELLE_ZIEL = 'VK'
+        AND (
+                FO1.ID_ADRESSE = M.EIGENE_ADRESS_ID
+            AND F1.ID_ADRESSE_START = M.EIGENE_ADRESS_ID)
+        UNION
+        SELECT
+            'LAGER KORREKTUR' ,
+            - 1 ,
+            NULL ,
+            NULL ,
+            NULL ,
+            K.ID_MANDANT ,
+            M.EIGENE_ADRESS_ID ,
+            K.ID_ADRESSE_LAGER ,
+            -5 ,
+            -5 ,
+            -5 ,
+            K.ID_ADRESSE_LAGER ,
+            NULL ,
+            NULL ,
+            CASE
+                WHEN K.BUCHUNG_HAND = 'K'
+                THEN to_nchar('Korrekturbuchung')
+                ELSE to_nchar('Umbuchung')
+            END ,
+            NULL ,
+            NULL ,
+            NULL ,
+            NULL ,
+            NULL ,
+            NULL ,
+            K.ID_ARTIKEL_SORTE ,
+            NULL ,
+            A.ANR1 ,
+            NULL ,
+            A.ARTBEZ1 ,
+            NULL ,
+            NULL ,
+            NULL ,
+            K.BUCHUNGSDATUM ,
+            K.BUCHUNGSDATUM ,
+            NULL ,
+            NULL ,
+            NULL ,
+            NULL ,
+            to_nchar('Y') ,
+            5 ,
+            NULL ,
+            NULL ,
+            ABS(NVL(K.MENGE_BUCH,K.MENGE)) ,
+            0 ,
+            ABS(NVL(K.MENGE_BUCH,K.MENGE) ) ,
+            NULL ,
+            NULL ,
+            NULL ,
+            NULL ,
+            K.ID_LAGER_KONTO ,
+            NULL ,
+            NULL ,
+            K.PREIS ,
+            NULL ,
+            NULL ,
+            NULL ,
+            K.PREIS ,
+            5 ,
+            NULL ,
+            K.ERZEUGT_VON ,
+            K.GEAENDERT_VON
+        FROM
+            JT_LAGER_KONTO K
+        INNER JOIN
+            JT_ARTIKEL A
+        ON
+            K.ID_MANDANT = A.ID_MANDANT
+        AND K.ID_ARTIKEL_SORTE = A.ID_ARTIKEL
+        INNER JOIN
+            JD_MANDANT M
+        ON
+            M.ID_MANDANT = K.ID_MANDANT
+        WHERE
+            1 = 1
+        AND NVL(K.STORNO,'N') = 'N'
+        AND K.BUCHUNG_HAND IS NOT NULL
+        AND K.BUCHUNGSTYP = 'WA'
+        UNION
+        SELECT
+            'LAGER KORREKTUR' ,
+            + 1 ,
+            NULL ,
+            NULL ,
+            NULL ,
+            K.ID_MANDANT ,
+            -5 ,
+            -5 ,
+            -5 ,
+            M.EIGENE_ADRESS_ID ,
+            K.ID_ADRESSE_LAGER ,
+            K.ID_ADRESSE_LAGER ,
+            NULL ,
+            NULL ,
+            CASE
+                WHEN K.BUCHUNG_HAND = 'K'
+                THEN to_nchar('Korrekturbuchung')
+                ELSE to_nchar('Umbuchung')
+            END ,
+            NULL ,
+            NULL ,
+            NULL ,
+            NULL ,
+            NULL ,
+            NULL ,
+            K.ID_ARTIKEL_SORTE ,
+            NULL ,
+            A.ANR1 ,
+            NULL ,
+            A.ARTBEZ1 ,
+            NULL ,
+            NULL ,
+            NULL ,
+            K.BUCHUNGSDATUM ,
+            K.BUCHUNGSDATUM ,
+            NULL ,
+            NULL ,
+            NULL ,
+            NULL ,
+            to_nchar('Y') ,
+            5 ,
+            NULL ,
+            NULL ,
+            ABS(NVL(K.MENGE_BUCH,K.MENGE)) ,
+            0 ,
+            ABS(NVL(K.MENGE_BUCH,K.MENGE)) ,
+            NULL ,
+            NULL ,
+            NULL ,
+            NULL ,
+            K.ID_LAGER_KONTO ,
+            NULL ,
+            NULL ,
+            K.PREIS ,
+            NULL ,
+            NULL ,
+            NULL ,
+            K.PREIS ,
+            5 ,
+            NULL ,
+            K.ERZEUGT_VON ,
+            K.GEAENDERT_VON
+        FROM
+            JT_LAGER_KONTO K
+        INNER JOIN
+            JT_ARTIKEL A
+        ON
+            K.ID_MANDANT = A.ID_MANDANT
+        AND K.ID_ARTIKEL_SORTE = A.ID_ARTIKEL
+        INNER JOIN
+            JD_MANDANT M
+        ON
+            M.ID_MANDANT = K.ID_MANDANT
+        WHERE
+            1 = 1
+        AND NVL(K.STORNO,'N') = 'N'
+        AND K.BUCHUNG_HAND IS NOT NULL
+        AND K.BUCHUNGSTYP = 'WE'
+    )

@@ -1,0 +1,112 @@
+package panter.gmbh.basics4project.DB_MAPPINGS;
+
+import java.util.HashMap;
+import java.util.Vector;
+import panter.gmbh.Echo2.bibE2;
+import panter.gmbh.indep.S;
+import panter.gmbh.indep.bibALL;
+import panter.gmbh.indep.dataTools.MyConnection;
+import panter.gmbh.indep.dataTools.MyDBToolBox;
+import panter.gmbh.indep.dataTools.MyDataRecordHashMap;
+import panter.gmbh.indep.exceptions.myException;
+
+
+public class MAP_#TABLEBASE#
+{
+	private HashMap<String,MyDataRecordHashMap>  	oHM_aus_MyDataRecordHashMaps = new HashMap<String, MyDataRecordHashMap>();
+	private Vector<String> 			     			vIDs = new Vector<String>(); 
+	private MyDataRecordHashMap 					oHM_First = 		null;
+	private MyConnection 							oConn = bibALL.get_oConnectionNormal();
+	private boolean  								bMapHasRecords = false;
+
+	public MAP_#TABLEBASE#(long lID_Unformated) throws myException
+	{
+		super();
+		if (lID_Unformated<=0) 
+			return;
+		this.__init(""+lID_Unformated);
+	}
+
+	public MAP_#TABLEBASE#(String c_ID_or_WHEREBLOCK)   throws myException 
+	{
+		super();
+		if (S.isEmpty(c_ID_or_WHEREBLOCK)) 
+			return;
+		this.__init(c_ID_or_WHEREBLOCK);
+	}
+
+	public MAP_#TABLEBASE#(long lID_Unformated, MyConnection Conn) throws myException
+	{
+		super();
+		this.oConn=Conn;
+		if (lID_Unformated<=0) 
+			return;
+		this.__init(""+lID_Unformated);
+	}
+
+	public MAP_#TABLEBASE#(String c_ID_or_WHEREBLOCK, MyConnection Conn)   throws myException 
+	{
+		super();
+		this.oConn=Conn;
+		if (S.isEmpty(c_ID_or_WHEREBLOCK)) 
+			return;
+		this.__init(c_ID_or_WHEREBLOCK);
+	}
+
+	private void __init(String c_ID_or_WHEREBLOCK)   throws myException 
+	{
+		String cQuery = "";
+		if (bibALL.isLong(c_ID_or_WHEREBLOCK))
+		{
+			cQuery = "SELECT ID_#TABLEBASE# FROM "+bibE2.cTO()+".#TABLENAME# WHERE ID_#TABLEBASE#="+c_ID_or_WHEREBLOCK; 
+		}
+		else
+		{
+			cQuery ="SELECT ID_#TABLEBASE# FROM "+bibE2.cTO()+".#TABLENAME# WHERE "+c_ID_or_WHEREBLOCK; 
+		}
+ 		
+ 		MyDBToolBox oDB = bibALL.get_myDBToolBox(this.oConn);
+ 		String[][] cIDs = oDB.EinzelAbfrageInArray(cQuery);
+ 		bibALL.destroy_myDBToolBox(oDB);
+ 		
+		if (cIDs==null)
+		{
+			throw new myException(this,"Error in __init-Query !");
+		}
+		
+		for (int i=0;i<cIDs.length;i++)
+		{
+			this.bMapHasRecords=true;	
+			if (i==0)
+			{
+				this.oHM_First = new MyDataRecordHashMap("#TABLENAME#",cIDs[i][0],this.oConn);
+				vIDs.add(cIDs[i][0]);
+				this.oHM_aus_MyDataRecordHashMaps.put(cIDs[i][0], this.oHM_First);
+			}
+			else
+			{
+				vIDs.add(cIDs[i][0]);
+				this.oHM_aus_MyDataRecordHashMaps.put(cIDs[i][0], new MyDataRecordHashMap("#TABLENAME#",cIDs[i][0],this.oConn));
+			}
+			
+		}
+	}
+
+
+
+	public Vector<String> get_vIDs()
+	{
+		return this.vIDs;
+	}
+
+	public boolean get_bMapHasRecords()
+	{
+		return this.bMapHasRecords;
+	}
+
+
+	public static abstract class ValidSummation
+	{
+   		public abstract boolean isValidForSummation(MAP_#TABLEBASE# dbMap#TABLEBASE#, String cID_#TABLEBASE#);
+	}
+

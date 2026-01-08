@@ -1,0 +1,7 @@
+package panter.gmbh.Echo2.__CONTAINER_ADDONS.HELP_V2;
+
+public enum HELP2_CALLSETTINGS {
+	VORGABE_MODUL
+	,CHECKBOX_ZEIGE_BILDER
+	;
+}

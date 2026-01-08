@@ -1,0 +1,19 @@
+Validierung:
+Hier wird eine XML-Struktur benoetigt, die prueft, ob das 
+ueberwachte Feld von einem Wert auf den naechsten geaendert wurde.
+Wenn ja, dann wird der Validierer true, sonst false.
+Bei einem Trigger ohne Feldspezifikation wird immer false uebergeben.
+Der Vergleichstyp kann folgende Werte haben: DATE, LONG, CHAR  
+!!Es wird nur der erste angegebene Vergleichsblock benutzt !!
+ 
+ 
+ 
+<!--Beispiel --- ausfuehrung erfolgt, wenn ein Feld von Y auf N geaendert wird  -->
+
+<valid>
+<vergleich>
+<wertalt>Y</wertalt>
+<wertneu>N</wertneu>
+<vergleichstyp>CHAR</vergleichstyp>
+</vergleich>
+</valid>

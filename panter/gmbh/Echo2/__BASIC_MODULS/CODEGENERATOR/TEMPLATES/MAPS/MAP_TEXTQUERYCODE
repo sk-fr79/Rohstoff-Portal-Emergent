@@ -1,0 +1,134 @@
+	public String get_cUF_#FIELDNAME#() throws myException
+	{
+		if (vIDs.size()!=1)
+			throw new myException(this,"Method only in singular MAP-Objects allowed ");
+		return this.oHM_First.get_UnFormatedValue("#FIELDNAME#");
+	}
+
+	public String get_cF_#FIELDNAME#() throws myException
+	{
+		if (vIDs.size()!=1)
+			throw new myException(this,"Method only in singular MAP-Objects allowed ");
+		return this.oHM_First.get_FormatedValue("#FIELDNAME#");
+	}
+
+
+	public String get_c#FIELDNAME#_VALUE_FOR_SQLSTATEMENT() throws myException
+	{
+		if (vIDs.size()!=1)
+			throw new myException(this,"Method only in singular MAP-Objects allowed ");
+		return this.oHM_First.get_ValueStringForSQLStatement("#FIELDNAME#");
+	}
+
+
+	public String get_cUF_#FIELDNAME#(int iPos) throws myException
+	{
+		if (iPos<0)
+			throw new myException(this,"Number MUST be greater equal 0 ");
+
+		if (iPos>=this.vIDs.size())
+			throw new myException(this,"Number of Row smaller than "+iPos);
+
+		String cID = this.vIDs.get(iPos);
+		return this.oHM_aus_MyDataRecordHashMaps.get(cID).get_UnFormatedValue("#FIELDNAME#");
+	}
+
+	public String get_cF_#FIELDNAME#(int iPos) throws myException
+	{
+		if (iPos<0)
+			throw new myException(this,"Number MUST be greater equal 0 ");
+
+		if (iPos>=this.vIDs.size())
+			throw new myException(this,"Number of Row smaller than "+iPos);
+
+		String cID = this.vIDs.get(iPos);
+		return this.oHM_aus_MyDataRecordHashMaps.get(cID).get_FormatedValue("#FIELDNAME#");
+	}
+
+
+	public String get_c#FIELDNAME#_VALUE_FOR_SQLSTATEMENT(int iPos) throws myException
+	{
+		if (iPos<0)
+			throw new myException(this,"Number MUST be greater equal 0 ");
+
+		if (iPos>=this.vIDs.size())
+			throw new myException(this,"Number of Row smaller than "+iPos);
+
+		String cID = this.vIDs.get(iPos);
+
+		return this.oHM_aus_MyDataRecordHashMaps.get(cID).get_ValueStringForSQLStatement("#FIELDNAME#");
+	}
+
+	public String get_cUF_#FIELDNAME#(String cID) throws myException
+	{
+		if (!this.vIDs.contains(cID))
+			throw new myException(this,"ID is not in the collection");
+
+		return this.oHM_aus_MyDataRecordHashMaps.get(cID).get_UnFormatedValue("#FIELDNAME#");
+	}
+
+	public String get_cF_#FIELDNAME#(String cID) throws myException
+	{
+		if (!this.vIDs.contains(cID))
+			throw new myException(this,"ID is not in the collection");
+
+		return this.oHM_aus_MyDataRecordHashMaps.get(cID).get_FormatedValue("#FIELDNAME#");
+	}
+
+
+	public String get_c#FIELDNAME#_VALUE_FOR_SQLSTATEMENT(String cID) throws myException
+	{
+		if (!this.vIDs.contains(cID))
+			throw new myException(this,"ID is not in the collection");
+
+		return this.oHM_aus_MyDataRecordHashMaps.get(cID).get_ValueStringForSQLStatement("#FIELDNAME#");
+	}
+
+
+	public String get_cF_#FIELDNAME#_NN(int iPos, String cValue4NULL) throws myException 
+	{ 
+		return get_cF_#FIELDNAME#(iPos)==null?cValue4NULL:get_cF_#FIELDNAME#(iPos); 
+	} 
+
+
+	public String get_cUF_#FIELDNAME#_NN(int iPos, String cValue4NULL) throws myException 
+	{ 
+		return get_cUF_#FIELDNAME#(iPos)==null?cValue4NULL:get_cUF_#FIELDNAME#(iPos); 
+	} 
+
+
+	public String get_cF_#FIELDNAME#_NN(String cID, String cValue4NULL) throws myException 
+	{ 
+		return get_cF_#FIELDNAME#(cID)==null?cValue4NULL:get_cF_#FIELDNAME#(cID); 
+	} 
+
+
+	public String get_cUF_#FIELDNAME#_NN(String cID, String cValue4NULL) throws myException 
+	{ 
+		return get_cUF_#FIELDNAME#(cID)==null?cValue4NULL:get_cUF_#FIELDNAME#(cID); 
+	} 
+
+
+	public String get_cF_#FIELDNAME#_NN(String cValue4NULL) throws myException 
+	{ 
+		return get_cF_#FIELDNAME#()==null?cValue4NULL:get_cF_#FIELDNAME#(); 
+	} 
+
+
+	public String get_cUF_#FIELDNAME#_NN(String cValue4NULL) throws myException 
+	{ 
+		return get_cUF_#FIELDNAME#()==null?cValue4NULL:get_cUF_#FIELDNAME#(); 
+	} 
+
+
+   	public HashMap<String,String> get_hmUF_#FIELDNAME#(String cValueForNULL) throws myException 
+ 	{
+ 		HashMap<String,String> hmRueck = new HashMap<String,String>();
+     	for (String cID:this.vIDs)
+		{
+			hmRueck.put(cID, this.get_cUF_#FIELDNAME#_NN(cID,cValueForNULL));
+		}
+		return hmRueck;
+  	}
+
+

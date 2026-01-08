@@ -1,0 +1,32 @@
+	public MyE2_MessageVector set_NEW_VALUE_#FIELDNAME#(String cNewValueFormated) throws myException
+	{
+		 return super.set_NewValueForDatabase("#FIELDNAME#", cNewValueFormated);
+	}
+
+
+	public MyE2_MessageVector check_NEW_VALUE_#FIELDNAME#(String cNewValueFormated) throws myException
+	{
+		 return super.check_NewValueForDatabase("#FIELDNAME#", cNewValueFormated);
+	}
+
+	
+	public MyE2_MessageVector set_NEW_VALUE_#FIELDNAME#(long lNewValueFormated) throws myException
+	{
+		 return super.set_NewValueForDatabase("#FIELDNAME#", lNewValueFormated);
+	}
+
+	public MyE2_MessageVector set_NEW_VALUE_#FIELDNAME#(double dNewValueFormated) throws myException
+	{
+		 return super.set_NewValueForDatabase("#FIELDNAME#", dNewValueFormated);
+	}
+
+	public MyE2_MessageVector set_NEW_VALUE_#FIELDNAME#(BigDecimal bdNewValueFormated) throws myException
+	{
+		 return super.set_NewValueForDatabase("#FIELDNAME#", bdNewValueFormated);
+	}
+	
+	public MyE2_MessageVector set_NEW_VALUE_#FIELDNAME#(GregorianCalendar calNewValueFormated) throws myException
+	{
+		 return super.set_NewValueForDatabase("#FIELDNAME#", calNewValueFormated);
+	}
+	

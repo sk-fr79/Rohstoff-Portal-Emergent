@@ -1,0 +1,73 @@
+    insert into JD_DATUM 
+    select 
+    SEQ_DATUM.NEXTVAL, 
+        d.id_mandant,
+        d.geaendert_von,
+        d.letzte_aenderung,
+        d.erzeugt_von,
+        d.erzeugt_am,
+        
+        d.date_ori,
+        d.date_iso,
+        d.date_german,
+        d.year,
+        d.month,
+        d.day,
+        
+        d.month_iso ,
+        d.month_name,
+        d.day_name,
+        
+        d.quarter_of_year,
+        d.week_of_year_iso,
+        d.day_of_week,
+        d.day_of_month,
+        d.day_of_year,
+        
+        d.week_of_year,
+        d.week_of_month,
+        d.roman_month,
+        d.days_left_in_month,
+        d.days_in_month,
+        
+        d.julian_date,
+        d.julian_months
+    from (
+        select 
+        null as id_mandant,
+        'system' as geaendert_von,
+        sysdate as letzte_aenderung,
+        'system' as erzeugt_von,
+        sysdate as erzeugt_am,
+        
+        new_date as date_ori,
+        to_char(new_date, 'yyyy-mm-dd') as date_iso,
+        to_char(new_date, 'dd.mm.yyyy') as date_german,
+        extract(year from new_date) as year,
+        extract(month from new_date) as month,
+        extract(day from new_date) as day,
+        
+        to_char(new_date,'MM') as month_iso ,
+        initcap(to_char(new_date,'MONTH')) as month_name,
+        initcap(to_char(new_date,'DAY')) as day_name,
+        
+        to_number(to_char(new_date,'Q')) as quarter_of_year,
+        to_number(to_char(new_date,'IW')) as week_of_year_iso,
+        to_number(to_char(new_date,'D')) as day_of_week,
+        to_number(to_char(new_date,'DD')) as day_of_month,
+        to_number(to_char(new_date,'DDD')) as day_of_year,
+        
+        to_number(to_char(new_date,'WW')) as week_of_year,
+        to_number(to_char(new_date,'W')) as week_of_month,
+        to_char(new_date,'RM') as roman_month,
+        last_day(new_date)-new_date as days_left_in_month,
+        1+trunc(last_day(new_date))-trunc(new_date,'MM') days_in_month,
+        to_char(new_date, 'J') as julian_date,
+        trunc(months_between(new_date,to_date('-4712/01/01','syyyy/mm/dd'))) as julian_months
+        from 
+        
+        (SELECT TRUNC (to_date('2010-01-01','yyyy-mm-dd') + ROWNUM) new_date
+          FROM DUAL CONNECT BY ROWNUM < 30000 )
+        order by 1 
+        ) d
+

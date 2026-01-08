@@ -1,0 +1,31 @@
+
+ 	public MyDataRecordHashMap get_MyDataRecordHashMap_#TABLEBASE#() throws myException 
+ 	{ 
+ 		if (vIDs.size()!=1) 
+ 			throw new myException(this,"Method only in singular MAP-Objects allowed "); 
+ 		return this.oHM_First; 
+ 	} 
+  
+ 	 
+
+ 	public MyDataRecordHashMap get_MyDataRecordHashMap_#TABLEBASE#(int iPos) throws myException 
+ 	{ 
+ 		if (iPos<0) 
+ 			throw new myException(this,"Number MUST be greater equal 0 "); 
+  
+ 		if (iPos>=this.vIDs.size()) 
+ 			throw new myException(this,"Number of Row smaller than "+iPos); 
+  
+ 		String cID = this.vIDs.get(iPos); 
+ 		return this.oHM_aus_MyDataRecordHashMaps.get(cID); 
+ 	} 
+  
+
+ 	public MyDataRecordHashMap get_MyDataRecordHashMap_#TABLEBASE#(String cID) throws myException 
+ 	{ 
+ 		if (!this.vIDs.contains(cID)) 
+ 			throw new myException(this,"ID is not in the collection"); 
+  
+ 		return this.oHM_aus_MyDataRecordHashMaps.get(cID); 
+ 	} 
+

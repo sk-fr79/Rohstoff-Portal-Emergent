@@ -1,0 +1,78 @@
+package rohstoff.Echo2BusinessLogic.BEWEGUNG.KONTRAKTE;
+
+import java.util.Vector;
+
+import panter.gmbh.Echo2.MyE2_String;
+import panter.gmbh.Echo2.ActionEventTools.XX_ActionAgent;
+import panter.gmbh.Echo2.AgentsAndValidators.E2_Validator_ID_DBQuery;
+import panter.gmbh.Echo2.ListAndMask.List.E2_NavigationList;
+import panter.gmbh.Echo2.MAIL_AND_REPORT.REPORTING.E2_JasperHASH;
+import panter.gmbh.Echo2.components.MyE2_Button;
+import panter.gmbh.indep.MyString;
+import panter.gmbh.indep.bibALL;
+import panter.gmbh.indep.exceptions.myException;
+import rohstoff.Echo2BusinessLogic.BEWEGUNG.BS_K_LIST_ActionAgent_Mail_Print;
+import rohstoff.Echo2BusinessLogic.BEWEGUNG.BS_K_Validator_BELEG_MENGEN_UND_PREISE_GEFUELLT;
+import rohstoff.Echo2BusinessLogic.BEWEGUNG.BS__SETTING;
+
+public class BSK_K_LIST_BT_Mail_and_Print extends MyE2_Button
+{
+	
+	public BSK_K_LIST_BT_Mail_and_Print(MyString cButtonText, E2_NavigationList navList,BS__SETTING setting, String MODUL_KENNER, boolean preview)
+	{
+		super(cButtonText);
+		
+		this.add_IDValidator(new BS_K_Validator_BELEG_MENGEN_UND_PREISE_GEFUELLT(setting.get_oVorgangTableNames()));
+		this.add_IDValidator(new E2_Validator_ID_DBQuery("JT_VKOPF_KON","  NVL(DELETED,'N')",bibALL.get_Array("N"),true, new MyE2_String("Der Kontrakt wurde bereits gelöscht !")));
+		
+		
+		this.add_oActionAgent(
+				new ownActionAgent(
+						new MyE2_String("Drucke / Maile Kontrakt"), 
+						null, 
+						"kontrakt",
+						navList, 
+						null,
+						setting, 
+						"id_vkopf_kon", 
+						MODUL_KENNER, 
+						preview));
+
+		this.setToolTipText(new MyE2_String("Drucke oder Maile einen Kontrakt !").CTrans());
+
+	}
+
+	private class ownActionAgent extends BS_K_LIST_ActionAgent_Mail_Print
+	{
+		
+		public ownActionAgent(	MyE2_String 		fensterTitel,	
+								XX_ActionAgent 		actionAfterPrintOrMail, 
+								String 				jasperFileName,
+								E2_NavigationList 	navList, 
+								Vector<String> 		ds_statt_Navilist,
+								BS__SETTING 		setting, 
+								String 				parameterNameOfHeadIDField,
+								String 				MODUL_KENNER, 
+								boolean 			preview)
+		{
+			super(fensterTitel, actionAfterPrintOrMail, jasperFileName, navList,
+					ds_statt_Navilist, setting, parameterNameOfHeadIDField, MODUL_KENNER,
+					preview, true);
+			
+		}
+
+		@Override
+		public void complete_JasperHASH(E2_JasperHASH jasperHASH)	throws myException
+		{
+		}
+		
+		
+		@Override
+		public void manipulate_IDS_To_Print_From_Other_Source(Vector<String> vIDs)	throws myException 
+		{
+		}
+
+
+	}
+
+}

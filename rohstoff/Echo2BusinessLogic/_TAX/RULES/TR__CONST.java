@@ -1,0 +1,35 @@
+package rohstoff.Echo2BusinessLogic._TAX.RULES;
+
+public class TR__CONST
+{
+
+	public static String VALID_KEY_ERLAUBE_AKTIV_PASSIV_STEUER_IN_TR_LISTE = "AKTIV_PASSIV_REGEL_IN_LISTE"; 
+	public static String VALID_KEY_ERLAUBE_AKTIV_PASSIV_STEUER_IN_TR_MASKE = "AKTIV_PASSIV_REGEL_IN_MASKE"; 
+	
+	
+	public static String KEY_BLOCK_LAND_QUELLE = 	"KEY_BLOCK_LAND_QUELLE";
+	public static String KEY_BLOCK_LAND_ZIEL = 		"KEY_BLOCK_LAND_ZIEL";
+	public static String KEY_BLOCK_SORTE_QUELLE = 	"KEY_BLOCK_SORTE_QUELLE";
+	public static String KEY_BLOCK_SORTE_ZIEL = 	"KEY_BLOCK_SORTE_ZIEL";
+	public static String KEY_BLOCK_BUTTONS = 		"KEY_BLOCK_BUTTONS";
+
+	
+	public static String KEY_BT_JUMP_TO_FUHREN = 	"KEY_BT_JUMP_TO_FUHREN";
+	public static String KEY_BT_JUMP_TO_FUHREN10 = 	"KEY_BT_JUMP_TO_FUHREN10";
+	public static String KEY_BT_EMPTY_BLOCK = 		"KEY_BT_EMPTY_BLOCK";
+	public static String KEY_BT_EDIT_MASK_DIREKT = 	"KEY_BT_EDIT_MASK_DIREKT";
+	
+	
+	
+	public static String KEY_MASK_SORTENTYPBLOCK_EK = "KEY_MASK_SORTENTYPBLOCK_EK";
+	public static String KEY_MASK_SORTENTYPBLOCK_VK = "KEY_MASK_SORTENTYPBLOCK_VK";
+
+	public static String KEY_MASK_TITEL_EK = "KEY_MASK_TITEL_EK";
+	public static String KEY_MASK_TITEL_VK = "KEY_MASK_TITEL_VK";
+	
+	public static String KEY_MASK_SCHROTTSELEKTOR_EK = "KEY_MASK_SCHROTTSELEKTOR_EK";
+	public static String KEY_MASK_SCHROTTSELEKTOR_VK = "KEY_MASK_SCHROTTSELEKTOR_VK";
+	
+	
+
+}

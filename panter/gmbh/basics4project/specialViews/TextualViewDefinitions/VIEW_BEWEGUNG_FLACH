@@ -1,0 +1,612 @@
+CREATE OR REPLACE VIEW
+    V#MANDANT#_BEWEGUNG_FLACH
+    (
+        ID_BEWEGUNGSATOM ,
+        ID_BEWEGUNGSVEKTOR ,
+        ID_BEWEGUNG ,
+        ID_MANDANT ,
+        LETZTE_AENDERUNG_ATOM ,
+        GEAENDERT_VON_ATOM ,
+        ID_LADE_LIEFER ,
+        ID_LADE_HAUPT ,
+        ID_TYP_LAGER_START ,
+        ATTRIB_LAGER_START ,
+        ID_ABLADE_LIEFER ,
+        ID_ABLADE_HAUPT ,
+        ID_TYP_LAGER_ZIEL ,
+        ATTRIB_LAGER_ZIEL ,
+        ID_LAGER ,
+        LAGER_NAME1 ,
+        LAGER_NAME2 ,
+        LAGER_NAME3 ,
+        LAGER_STRASSE ,
+        LAGER_HAUSNUMMER ,
+        LAGER_PLZ ,
+        LAGER_ORT ,
+        LAGER_ORTZUSATZ ,
+        ID_ADR_KUNDE_LAGER ,
+        KUNDE_NAME1 ,
+        KUNDE_NAME2 ,
+        KUNDE_NAME3 ,
+        KUNDE_STRASSE ,
+        KUNDE_HAUSNUMMER ,
+        KUNDE_PLZ ,
+        KUNDE_ORT ,
+        KUNDE_LAENDERCODE ,
+        KUNDE_ORTZUSATZ ,
+        KUNDE_OEFFNUNGSZEITEN ,
+        KUNDE_BESTELLNUMMER ,
+        KUNDE_TELEFON ,
+        KUNDE_FAX ,
+        KUNDE_WIEGEKARTENKENNER ,
+        ID_ADR_KUNDE_HAUPT ,
+        KUNDE_HAUPT_NAME1 ,
+        KUNDE_HAUPT_NAME2 ,
+        KUNDE_HAUPT_NAME3 ,
+        KUNDE_HAUPT_STRASSE ,
+        KUNDE_HAUPT_HAUSNUMMER ,
+        KUNDE_HAUPT_PLZ ,
+        KUNDE_HAUPT_ORTZUSATZ ,
+        ID_ARTIKEL ,
+        ID_ARTIKEL_BEZ ,
+        ARTBEZ1 ,
+        ARTBEZ2 ,
+        ARTBEZ1_1 ,
+        ARTBEZ2_2 ,
+        ANR1 ,
+        ANR2 ,
+        VORZEICHEN_LAGER ,
+        PLANMENGE ,
+        MENGE ,
+        ABZUG_MENGE ,
+        PRUEFUNG_MENGE ,
+        PRUEFUNG_MENGE_AM ,
+        PRUEFUNG_MENGE_VON ,
+        KONTROLLMENGE_LAGER ,
+        KONTROLLMENGE_KUNDE ,
+        E_PREIS ,
+        E_PREIS_RESULT_NETTO_MGE ,
+        ID_VPOS_KON ,
+        ID_VPOS_STD ,
+        ABRECHENBAR ,
+        KONTRAKTZWANG ,
+        KONTRAKTZWANG_AUS_VON ,
+        KONTRAKTZWANG_AUS_GRUND ,
+        KONTRAKTZWANG_AUS_AM ,
+        LEISTUNGSDATUM ,
+        POSTENNUMMER ,
+        STEUERSATZ ,
+        EU_STEUER_VERMERK ,
+        BEM_ATOM ,
+        BEM_SACHB_ATOM ,
+        BESTELLNUMMER ,
+        BUCHUNGSNUMMER ,
+        NOTIFIKATION_NR ,
+        DELETED ,
+        DEL_DATE ,
+        DEL_GRUND ,
+        DEL_KUERZEL ,
+        LIEFERINFO_TPA ,
+        PREISERMITTLUNG ,
+        NATIONALER_ABFALL_CODE ,
+        ORDNUNGSNUMMER_CMR ,
+        ZEITSTEMPEL_ATOM ,
+        SETZKASTEN_KOMPLETT ,
+        STORNIERT_ATOM ,
+        STORNIERT_AM_ATOM ,
+        STORNIERT_VON_ATOM ,
+        STORNIERT_GRUND_ATOM ,
+        POSNR_ATOM ,
+        STATUS ,
+        ABGESCHLOSSEN_VON ,
+        ABGESCHLOSSEN_AM ,
+        VARIANTE ,
+        ID_ADRESSE_START_LOGISTIK ,
+        LADE_DATUM_VON_VEKTOR ,
+        LADE_DATUM_BIS_VEKTOR ,
+        ABLADE_DATUM_VON_VEKTOR ,
+        ABLADE_DATUM_BIS_VEKTOR ,
+        LAENDERCODE_TRANSIT1 ,
+        LAENDERCODE_TRANSIT2 ,
+        LAENDERCODE_TRANSIT3 ,
+        WARENKLASSE ,
+        ID_ADRESSE_FREMDWARE ,
+        ID_UMA_KONTRAKT ,
+        TRANSPORTMITTEL ,
+        TRANSPORTKENNZEICHEN ,
+        ANHAENGERKENNZEICHEN ,
+        ID_EAK_CODE ,
+        PRINT_EU_AMTSBLATT ,
+        EU_BLATT_MENGE ,
+        EU_BLATT_VOLUMEN ,
+        AVV_AUSSTELLUNG_DATUM ,
+        BEM_VEKTOR ,
+        BEM_SACHB_VEKTOR ,
+        EK_VK_ZUORD_ZWANG ,
+        ID_ADRESSE_SPEDITION ,
+        ZEITSTEMPEL_VEKTOR ,
+        POSNR_VEKTOR ,
+        ID_VEKTOR_GRUPPE ,
+        ID_VPOS_TPA_NG ,
+        ID_VPOS_TPA_FUHRE ,
+        FAHRPLAN_SATZ ,
+        BEM_BEWEGUNG ,
+        BEM_SACHB_BEWEGUNG ,
+        ANRUFDATUM_FP ,
+        ANRUFER_FP ,
+        ANZAHL_CONTAINER_FP ,
+        BEMERKUNG_START_FP ,
+        BEMERKUNG_ZIEL_FP ,
+        DAT_FAHRPLAN_FP ,
+        DAT_VORGEMERKT_ENDE_FP ,
+        DAT_VORGEMERKT_FP ,
+        EAN_CODE_FP ,
+        FAHRPLANGRUPPE_FP ,
+        ERFASSER_FP ,
+        FAHRER_FP ,
+        FAHRT_ANFANG_FP ,
+        FAHRT_ENDE_FP ,
+        ID_CONTAINERTYP_FP ,
+        ID_MASCHINEN_ANH_FP ,
+        ID_MASCHINEN_LKW_FP ,
+        IST_GEPLANT_FP ,
+        SORTIERUNG_FP ,
+        TAETIGKEIT_FP ,
+        LADE_DATUM_VON_BEW ,
+        LADE_DATUM_BIS_BEW ,
+        ABLADE_DATUM_VON_BEW ,
+        ABLADE_DATUM_BIS_BEW ,
+        ZEITSTEMPEL_BEWEGUNG ,
+        ERZEUGT_VON_ATOM ,
+        ERZEUGT_AM_ATOM ,
+        ERZEUGT_VON_BEWEGUNG ,
+        ERZEUGT_AM_BEWEGUNG ,
+        ERZEUGT_VON_VEKTOR ,
+        ERZEUGT_AM_VEKTOR ,
+        ID_EINHEIT ,
+        ID_EINHEIT_PREIS ,
+        MENGENDIVSOR
+    ) AS
+    (
+        SELECT
+            A.ID_BEWEGUNGSATOM ,
+            V.ID_BEWEGUNGSVEKTOR ,
+            B.ID_BEWEGUNG ,
+            A.ID_MANDANT ,
+            A.LETZTE_AENDERUNG ,
+            A.GEAENDERT_VON ,
+            A.ID_ADRESSE_LADESTATION ,
+            NVL(ADR_LADE_HAUPT.ID_ADRESSE ,A.ID_ADRESSE_LADESTATION) ,
+            A.ID_TYP_LAGER_START ,
+            A.ATTRIB_LAGER_START ,
+            A.ID_ADRESSE_ABLADESTATION ,
+            NVL(ADR_ABLADE_HAUPT.ID_ADRESSE, A.ID_ADRESSE_ABLADESTATION) ,
+            A.ID_TYP_LAGER_ZIEL ,
+            A.ATTRIB_LAGER_ZIEL ,
+            A.ID_ADRESSE_LAGER,
+            CASE
+                WHEN A.ID_TYP_LAGER_START = 0
+                THEN ADR_LADE.NAME1
+                WHEN A.ID_TYP_LAGER_ZIEL = 0
+                THEN ADR_ABLADE.NAME1
+                WHEN A.ID_TYP_LAGER_START = 2
+                THEN to_nchar('STRECKE')
+                WHEN A.ID_TYP_LAGER_ZIEL = 2
+                THEN to_nchar('STRECKE')
+                ELSE NULL
+            END ,
+            CASE
+                WHEN A.ID_TYP_LAGER_START = 0
+                THEN ADR_LADE.NAME2
+                WHEN A.ID_TYP_LAGER_ZIEL = 0
+                THEN ADR_ABLADE.NAME2
+                ELSE NULL
+            END ,
+            CASE
+                WHEN A.ID_TYP_LAGER_START = 0
+                THEN ADR_LADE.NAME3
+                WHEN A.ID_TYP_LAGER_ZIEL = 0
+                THEN ADR_ABLADE.NAME3
+                ELSE NULL
+            END ,
+            CASE
+                WHEN A.ID_TYP_LAGER_START = 0
+                THEN ADR_LADE.STRASSE
+                WHEN A.ID_TYP_LAGER_ZIEL = 0
+                THEN ADR_ABLADE.STRASSE
+                ELSE NULL
+            END ,
+            CASE
+                WHEN A.ID_TYP_LAGER_START = 0
+                THEN ADR_LADE.HAUSNUMMER
+                WHEN A.ID_TYP_LAGER_ZIEL = 0
+                THEN ADR_ABLADE.HAUSNUMMER
+                ELSE NULL
+            END ,
+            CASE
+                WHEN A.ID_TYP_LAGER_START = 0
+                THEN ADR_LADE.PLZ
+                WHEN A.ID_TYP_LAGER_ZIEL = 0
+                THEN ADR_ABLADE.PLZ
+                ELSE NULL
+            END ,
+            CASE
+                WHEN A.ID_TYP_LAGER_START = 0
+                THEN ADR_LADE.ORT
+                WHEN A.ID_TYP_LAGER_ZIEL = 0
+                THEN ADR_ABLADE.ORT
+                ELSE NULL
+            END ,
+            CASE
+                WHEN A.ID_TYP_LAGER_START = 0
+                THEN ADR_LADE.ORTZUSATZ
+                WHEN A.ID_TYP_LAGER_ZIEL = 0
+                THEN ADR_ABLADE.ORTZUSATZ
+                ELSE NULL
+            END ,
+            CASE
+                WHEN A.ID_TYP_LAGER_START = 1
+                THEN A.ID_ADRESSE_LADESTATION
+                WHEN A.ID_TYP_LAGER_ZIEL = 1
+                THEN A.ID_ADRESSE_ABLADESTATION
+                ELSE NULL
+            END AS ID_ADR_KUNDE_LAGER ,
+            CASE
+                WHEN A.ID_TYP_LAGER_START = 1
+                THEN A.L_NAME1
+                WHEN A.ID_TYP_LAGER_ZIEL = 1
+                THEN A.A_NAME1
+                ELSE NULL
+            END AS KUNDE_NAME1 ,
+            CASE
+                WHEN A.ID_TYP_LAGER_START = 1
+                THEN A.L_NAME2
+                WHEN A.ID_TYP_LAGER_ZIEL = 1
+                THEN A.A_NAME2
+                ELSE NULL
+            END AS KUNDE_NAME2 ,
+            CASE
+                WHEN A.ID_TYP_LAGER_START = 1
+                THEN A.L_NAME3
+                WHEN A.ID_TYP_LAGER_ZIEL = 1
+                THEN A.A_NAME3
+                ELSE NULL
+            END AS KUNDE_NAME3 ,
+            CASE
+                WHEN A.ID_TYP_LAGER_START = 1
+                THEN A.L_STRASSE
+                WHEN A.ID_TYP_LAGER_ZIEL = 1
+                THEN A.A_STRASSE
+                ELSE NULL
+            END AS KUNDE_STRASSE ,
+            CASE
+                WHEN A.ID_TYP_LAGER_START = 1
+                THEN A.L_HAUSNUMMER
+                WHEN A.ID_TYP_LAGER_ZIEL = 1
+                THEN A.A_HAUSNUMMER
+                ELSE NULL
+            END AS KUNDE_HAUSNUMMER ,
+            CASE
+                WHEN A.ID_TYP_LAGER_START = 1
+                THEN A.L_PLZ
+                WHEN A.ID_TYP_LAGER_ZIEL = 1
+                THEN A.A_PLZ
+                ELSE NULL
+            END AS KUNDE_PLZ ,
+            CASE
+                WHEN A.ID_TYP_LAGER_START = 1
+                THEN A.L_ORT
+                WHEN A.ID_TYP_LAGER_ZIEL = 1
+                THEN A.A_ORT
+                ELSE NULL
+            END AS KUNDE_ORT ,
+            CASE
+                WHEN A.ID_TYP_LAGER_START = 1
+                THEN A.L_LAENDERCODE
+                WHEN A.ID_TYP_LAGER_ZIEL = 1
+                THEN A.A_LAENDERCODE
+                ELSE NULL
+            END AS KUNDE_LAENDERCODE ,
+            CASE
+                WHEN A.ID_TYP_LAGER_START = 1
+                THEN A.L_ORTZUSATZ
+                WHEN A.ID_TYP_LAGER_ZIEL = 1
+                THEN A.A_ORTZUSATZ
+                ELSE NULL
+            END AS KUNDE_ORTZUSATZ ,
+            CASE
+                WHEN A.ID_TYP_LAGER_START = 1
+                THEN A.L_OEFFNUNGSZEITEN
+                WHEN A.ID_TYP_LAGER_ZIEL = 1
+                THEN A.A_OEFFNUNGSZEITEN
+                ELSE NULL
+            END AS KUNDE_OEFFNUNGSZEITEN ,
+            CASE
+                WHEN A.ID_TYP_LAGER_START = 1
+                THEN A.L_BESTELLNUMMER
+                WHEN A.ID_TYP_LAGER_ZIEL = 1
+                THEN A.A_BESTELLNUMMER
+                ELSE NULL
+            END AS KUNDE_BESTELLNUMMER ,
+            CASE
+                WHEN A.ID_TYP_LAGER_START = 1
+                THEN A.L_TELEFON
+                WHEN A.ID_TYP_LAGER_ZIEL = 1
+                THEN A.A_TELEFON
+                ELSE NULL
+            END AS KUNDE_TELEFON ,
+            CASE
+                WHEN A.ID_TYP_LAGER_START = 1
+                THEN A.L_FAX
+                WHEN A.ID_TYP_LAGER_ZIEL = 1
+                THEN A.A_FAX
+                ELSE NULL
+            END AS KUNDE_FAX ,
+            CASE
+                WHEN A.ID_TYP_LAGER_START = 1
+                THEN A.L_WIEGEKARTENKENNER
+                WHEN A.ID_TYP_LAGER_ZIEL = 1
+                THEN A.A_WIEGEKARTENKENNER
+                ELSE NULL
+            END AS KUNDE_WIEGEKARTENKENNER ,
+            CASE
+                WHEN A.ID_TYP_LAGER_START = 1
+                THEN NVL(ADR_LADE_HAUPT.ID_ADRESSE,A.ID_ADRESSE_LADESTATION)
+                WHEN A.ID_TYP_LAGER_ZIEL = 1
+                THEN NVL(ADR_ABLADE_HAUPT.ID_ADRESSE,A.ID_ADRESSE_ABLADESTATION)
+                ELSE NULL
+            END AS ID_ADR_KUNDE_HAUPT ,
+            CASE
+                WHEN A.ID_TYP_LAGER_START = 1
+                THEN NVL(ADR_LADE_HAUPT.NAME1 ,A.L_NAME1)
+                WHEN A.ID_TYP_LAGER_ZIEL = 1
+                THEN NVL(ADR_ABLADE_HAUPT.NAME1, A.A_NAME1)
+                ELSE NULL
+            END AS KUNDE_HAUPT_NAME1 ,
+            CASE
+                WHEN A.ID_TYP_LAGER_START = 1
+                THEN NVL(ADR_LADE_HAUPT.NAME2 ,A.L_NAME2)
+                WHEN A.ID_TYP_LAGER_ZIEL = 1
+                THEN NVL(ADR_ABLADE_HAUPT.NAME2 , A.A_NAME2)
+                ELSE NULL
+            END AS KUNDE_HAUPT_NAME2 ,
+            CASE
+                WHEN A.ID_TYP_LAGER_START = 1
+                THEN NVL(ADR_LADE_HAUPT.NAME3 ,A.L_NAME3)
+                WHEN A.ID_TYP_LAGER_ZIEL = 1
+                THEN NVL(ADR_ABLADE_HAUPT.NAME3 , A.A_NAME3)
+            END AS KUNDE_HAUPT_NAME3 ,
+            CASE
+                WHEN A.ID_TYP_LAGER_START = 1
+                THEN NVL(ADR_LADE_HAUPT.STRASSE ,A.L_STRASSE)
+                WHEN A.ID_TYP_LAGER_ZIEL = 1
+                THEN NVL(ADR_ABLADE_HAUPT.STRASSE , A.A_STRASSE)
+                ELSE NULL
+            END AS KUNDE_HAUPT_STRASSE ,
+            CASE
+                WHEN A.ID_TYP_LAGER_START = 1
+                THEN NVL(ADR_LADE_HAUPT.HAUSNUMMER ,A.L_HAUSNUMMER)
+                WHEN A.ID_TYP_LAGER_ZIEL = 1
+                THEN NVL(ADR_ABLADE_HAUPT.HAUSNUMMER , A.A_HAUSNUMMER)
+                ELSE NULL
+            END AS KUNDE_HAUPT_HAUSNUMMER ,
+            CASE
+                WHEN A.ID_TYP_LAGER_START = 1
+                THEN NVL(ADR_LADE_HAUPT.PLZ ,A.L_PLZ)
+                WHEN A.ID_TYP_LAGER_ZIEL = 1
+                THEN NVL(ADR_ABLADE_HAUPT.PLZ , A.A_PLZ)
+                ELSE NULL
+            END AS KUNDE_HAUPT_PLZ ,
+            CASE
+                WHEN A.ID_TYP_LAGER_START = 1
+                THEN NVL(ADR_LADE_HAUPT.ORTZUSATZ ,A.L_ORTZUSATZ)
+                WHEN A.ID_TYP_LAGER_ZIEL = 1
+                THEN NVL(ADR_ABLADE_HAUPT.ORTZUSATZ , A.A_ORTZUSATZ)
+                ELSE NULL
+            END AS KUNDE_HAUPT_ORTZUSATZ ,
+            A.ID_ARTIKEL ,
+            A.ID_ARTIKEL_BEZ ,
+            A.ARTBEZ1 ,
+            A.ARTBEZ2 ,
+            ART.ARTBEZ1 ,
+            ART_BEZ.ARTBEZ2 ,
+            ART.ANR1 ,
+            ART_BEZ.ANR2 ,
+            A.VORZEICHEN_LAGER ,
+            A.PLANMENGE ,
+            A.MENGE ,
+            A.ABZUG_MENGE ,
+            A.PRUEFUNG_MENGE ,
+            A.PRUEFUNG_MENGE_AM ,
+            A.PRUEFUNG_MENGE_VON ,
+            CASE
+                WHEN A.ID_TYP_LAGER_START = 0
+                THEN A.KONTROLLMENGE_LADESTATION
+                WHEN A.ID_TYP_LAGER_ZIEL = 0
+                THEN A.KONTROLLMENGE_ABLADESTATION
+                ELSE NULL
+            END AS KONTROLLMENGE_LAGER ,
+            CASE
+                WHEN A.ID_TYP_LAGER_START = 1
+                THEN A.KONTROLLMENGE_LADESTATION
+                WHEN A.ID_TYP_LAGER_ZIEL = 1
+                THEN A.KONTROLLMENGE_ABLADESTATION
+                ELSE NULL
+            END AS KONTROLLMENGE_KUNDE ,
+            A.E_PREIS ,
+            A.E_PREIS_RESULT_NETTO_MGE ,
+            A.ID_VPOS_KON ,
+            A.ID_VPOS_STD ,
+            A.ABRECHENBAR ,
+            A.KONTRAKTZWANG ,
+            A.KONTRAKTZWANG_AUS_VON ,
+            A.KONTRAKTZWANG_AUS_GRUND ,
+            A.KONTRAKTZWANG_AUS_AM ,
+            A.LEISTUNGSDATUM ,
+            A.POSTENNUMMER ,
+            A.STEUERSATZ ,
+            A.EU_STEUER_VERMERK ,
+            A.BEMERKUNG ,
+            A.BEMERKUNG_SACHBEARBEITER ,
+            A.BESTELLNUMMER ,
+            A.BUCHUNGSNUMMER ,
+            A.NOTIFIKATION_NR ,
+            A.DELETED ,
+            A.DEL_DATE ,
+            A.DEL_GRUND ,
+            A.DEL_KUERZEL ,
+            A.LIEFERINFO_TPA ,
+            A.PREISERMITTLUNG ,
+            A.NATIONALER_ABFALL_CODE ,
+            A.ORDNUNGSNUMMER_CMR ,
+            A.ZEITSTEMPEL ,
+            A.SETZKASTEN_KOMPLETT ,
+            A.STORNIERT ,
+            A.STORNIERT_AM ,
+            A.STORNIERT_VON ,
+            A.STORNIERT_GRUND ,
+            A.POSNR ,
+            V.STATUS ,
+            V.ABGESCHLOSSEN_VON ,
+            V.ABGESCHLOSSEN_AM ,
+            V.VARIANTE ,
+            V.ID_ADRESSE_START_LOGISTIK ,
+            V.L_DATUM_VON ,
+            V.L_DATUM_BIS ,
+            V.A_DATUM_VON ,
+            V.A_DATUM_BIS ,
+            V.LAENDERCODE_TRANSIT1 ,
+            V.LAENDERCODE_TRANSIT2 ,
+            V.LAENDERCODE_TRANSIT3 ,
+            V.WARENKLASSE ,
+            V.ID_ADRESSE_FREMDWARE ,
+            V.ID_UMA_KONTRAKT ,
+            V.TRANSPORTMITTEL ,
+            V.TRANSPORTKENNZEICHEN ,
+            V.ANHAENGERKENNZEICHEN ,
+            V.ID_EAK_CODE ,
+            V.PRINT_EU_AMTSBLATT ,
+            V.EU_BLATT_MENGE ,
+            V.EU_BLATT_VOLUMEN ,
+            V.AVV_AUSSTELLUNG_DATUM ,
+            V.BEMERKUNG ,
+            V.BEMERKUNG_SACHBEARBEITER ,
+            V.EK_VK_ZUORD_ZWANG ,
+            V.ID_ADRESSE_SPEDITION ,
+            V.ZEITSTEMPEL ,
+            V.POSNR ,
+            V.ID_VEKTOR_GRUPPE ,
+            B.ID_VPOS_TPA_NG ,
+            B.ID_VPOS_TPA_FUHRE ,
+            B.FAHRPLAN_SATZ ,
+            B.BEMERKUNG ,
+            B.BEMERKUNG_SACHBEARBEITER ,
+            B.ANRUFDATUM_FP ,
+            B.ANRUFER_FP ,
+            B.ANZAHL_CONTAINER_FP ,
+            B.BEMERKUNG_START_FP ,
+            B.BEMERKUNG_ZIEL_FP ,
+            B.DAT_FAHRPLAN_FP ,
+            B.DAT_VORGEMERKT_ENDE_FP ,
+            B.DAT_VORGEMERKT_FP ,
+            B.EAN_CODE_FP ,
+            B.FAHRPLANGRUPPE_FP ,
+            B.ERFASSER_FP ,
+            B.FAHRER_FP ,
+            B.FAHRT_ANFANG_FP ,
+            B.FAHRT_ENDE_FP ,
+            B.ID_CONTAINERTYP_FP ,
+            B.ID_MASCHINEN_ANH_FP ,
+            B.ID_MASCHINEN_LKW_FP ,
+            B.IST_GEPLANT_FP ,
+            B.SORTIERUNG_FP ,
+            B.TAETIGKEIT_FP ,
+            B.LADE_DATUM_VON ,
+            B.LADE_DATUM_BIS ,
+            B.ABLADE_DATUM_VON ,
+            B.ABLADE_DATUM_BIS ,
+            B.ZEITSTEMPEL ,
+            A.ERZEUGT_VON ,
+            A.ERZEUGT_AM ,
+            B.ERZEUGT_VON ,
+            B.ERZEUGT_AM ,
+            V.ERZEUGT_VON ,
+            V.ERZEUGT_AM ,
+            ART.ID_EINHEIT ,
+            ART.ID_EINHEIT_PREIS ,
+            ART.MENGENDIVISOR
+        FROM
+            JT_BEWEGUNGSATOM A
+        INNER JOIN
+            JT_BEWEGUNGSVEKTOR V
+        ON
+            (
+                A.ID_BEWEGUNGSVEKTOR = V.ID_BEWEGUNGSVEKTOR)
+        AND (
+                A.ID_MANDANT = V.ID_MANDANT )
+        LEFT OUTER JOIN
+            JT_BEWEGUNG B
+        ON
+            (
+                V.ID_BEWEGUNG = B.ID_BEWEGUNG)
+        AND (
+                V.ID_MANDANT = B.ID_MANDANT)
+        LEFT OUTER JOIN
+            JT_ADRESSE ADR_LADE
+        ON
+            (
+                ADR_LADE.ID_ADRESSE = A.ID_ADRESSE_LADESTATION)
+        AND (
+                ADR_LADE.ID_MANDANT = A.ID_MANDANT)
+        LEFT OUTER JOIN
+            JT_LIEFERADRESSE LIEF_LADE
+        ON
+            (
+                LIEF_LADE.ID_ADRESSE_LIEFER = A.ID_ADRESSE_LADESTATION)
+        AND (
+                LIEF_LADE.ID_MANDANT = A.ID_MANDANT)
+        LEFT OUTER JOIN
+            JT_ADRESSE ADR_LADE_HAUPT
+        ON
+            (
+                ADR_LADE_HAUPT.ID_ADRESSE = LIEF_LADE.ID_ADRESSE_BASIS)
+        AND (
+                ADR_LADE_HAUPT.ID_MANDANT = LIEF_LADE.ID_MANDANT)
+        LEFT OUTER JOIN
+            JT_ADRESSE ADR_ABLADE
+        ON
+            (
+                ADR_ABLADE.ID_ADRESSE = A.ID_ADRESSE_ABLADESTATION)
+        AND (
+                ADR_ABLADE.ID_MANDANT = A.ID_MANDANT)
+        LEFT OUTER JOIN
+            JT_LIEFERADRESSE LIEF_ABLADE
+        ON
+            (
+                LIEF_ABLADE.ID_ADRESSE_LIEFER = A.ID_ADRESSE_ABLADESTATION)
+        AND (
+                LIEF_ABLADE.ID_MANDANT = A.ID_MANDANT)
+        LEFT OUTER JOIN
+            JT_ADRESSE ADR_ABLADE_HAUPT
+        ON
+            (
+                ADR_ABLADE_HAUPT.ID_ADRESSE = LIEF_ABLADE.ID_ADRESSE_BASIS)
+        AND (
+                ADR_ABLADE_HAUPT.ID_MANDANT = LIEF_ABLADE.ID_MANDANT)
+        LEFT OUTER JOIN
+            JT_ARTIKEL_BEZ ART_BEZ
+        ON
+            (
+                ART_BEZ.ID_ARTIKEL_BEZ = A.ID_ARTIKEL_BEZ)
+        AND (
+                ART_BEZ.ID_MANDANT = A.ID_MANDANT)
+        LEFT OUTER JOIN
+            JT_ARTIKEL ART
+        ON
+            (
+                ART.ID_ARTIKEL = ART_BEZ.ID_ARTIKEL)
+        AND (
+                ART.ID_MANDANT = ART_BEZ.ID_MANDANT)
+        WHERE
+            A.ID_MANDANT = #MANDANT#
+    )

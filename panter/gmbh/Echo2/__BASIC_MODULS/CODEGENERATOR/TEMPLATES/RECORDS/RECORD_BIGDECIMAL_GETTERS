@@ -1,0 +1,34 @@
+	public BigDecimal get_#FIELDNAME#_bdValue(BigDecimal bdValueWhenNULL) throws myException
+	{
+		BigDecimal bdRueck = this.get("#FIELDNAME#").getBigDecimalValue();
+		if (bdRueck==null) 
+		{ 
+			return bdValueWhenNULL; 
+		} 
+		else 
+		{ 
+			return bdRueck;
+		} 
+	}
+	
+
+	
+	public BigDecimal get_#FIELDNAME#_bdValue(BigDecimal bdValueWhenNULL, int iNachkommaRunden) throws myException
+	{
+		BigDecimal bdRueck = this.get("#FIELDNAME#").getBigDecimalValue();
+		if (bdRueck == null)
+		{
+			bdRueck = bdValueWhenNULL;           //der wert wird auch gerunden (falls nicht null)
+		}
+		
+		if (bdRueck==null) 
+		{ 
+			return null; 
+		} 
+		else 
+		{ 
+			return bdRueck.setScale(iNachkommaRunden, BigDecimal.ROUND_HALF_UP);
+		} 
+	}
+	
+	

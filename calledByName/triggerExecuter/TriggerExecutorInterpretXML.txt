@@ -1,0 +1,50 @@
+ <!--Beispiel fuer eine Definitionsdatei 
+mit 2 messages und einer eMail.
+
+Weiterhin können die Standard-Ersetzungen und Systemvariable in den Datenfeldern
+hinterlegt werden. Z.B. könnte statt der Nummer 1000 als UserID der String #SYS_USERID#
+stehen und es wird ersetzt durch die ID des eingeloggten Benutzers
+-->
+ 
+ 
+ 
+<block>
+<message>
+<titel>Test Titel Zeile</titel>
+<text>Das ist ein Test-Text
+für eine Meldung
+</text>
+<user>4000</user>
+<user>4001</user>
+<user>4003</user>
+ 
+</message>
+ 
+ 
+ 
+ 
+<message>
+<titel>Test Titel Zeile</titel>
+<text>Das ist ein Test-Text
+für eine Meldung
+</text>
+<user>4000</user>
+<user>4001</user>
+<user>4003</user>
+ 
+</message>
+  
+ 
+ 
+ 
+<email>
+<absender>martinpanter@googlemail.com</absender>
+<betreff>Test Titel Zeile</betreff>
+<text>Das ist ein Test-Text
+für eine Meldung
+</text>
+<target>martinpanter@googlemail.com</target>
+<target>martinpanter.1@googlemail.com</target>
+</email>
+ 
+</block> 
