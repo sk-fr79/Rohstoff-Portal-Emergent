@@ -1337,6 +1337,15 @@ export function AdressenPage() {
         </DialogContent>
       </Dialog>
 
+      {/* UST-ID Protokoll Dialog */}
+      <UstIdProtokollDialog
+        open={showUstIdProtokoll}
+        onOpenChange={setShowUstIdProtokoll}
+        protokoll={ustIdProtokoll}
+        loading={ustIdProtokollLoading}
+        onRefresh={loadUstIdProtokoll}
+      />
+
       {/* Ansprechpartner Dialog */}
       <AnsprechpartnerDialog
         open={showApDialog}
