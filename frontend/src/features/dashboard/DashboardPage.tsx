@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import { useEffect, useState } from 'react';
 import {
   Users,
   Package,
@@ -11,6 +12,7 @@ import {
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuthStore } from '@/store/authStore';
+import { api } from '@/services/api/client';
 
 // Dashboard Karten mit Statistiken
 const stats = [
