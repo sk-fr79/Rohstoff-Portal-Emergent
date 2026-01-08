@@ -163,10 +163,16 @@ Passwort: Admin123!
 
 ## Offene/Kommende Aufgaben
 
+### P0 - Aktueller Fokus
+- [x] Geschäftslogik aus Java-Code integrieren (Adress-Validierung) ✅ ERLEDIGT
+- [ ] Geschäftslogik für Artikel-Validierung integrieren
+- [ ] Geschäftslogik für Kontrakt-Validierung integrieren
+
 ### P1 - Hohe Priorität
+- [ ] Backend-Refactoring: `server.py` in Module aufteilen (routers, models, services)
 - [ ] Fuhren-Modul implementieren
 - [ ] Rechnungen-Modul implementieren
-- [ ] Adresse bearbeiten im Frontend
+- [ ] Adresse bearbeiten mit PUT-API verbinden
 - [ ] Artikel bearbeiten/löschen im Frontend
 
 ### P2 - Mittlere Priorität
