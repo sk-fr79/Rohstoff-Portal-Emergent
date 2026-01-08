@@ -79,6 +79,97 @@ const itemVariants = {
 
 export function DashboardPage() {
   const { user } = useAuthStore();
+  const [stats, setStats] = useState([
+    {
+      title: 'Aktive Adressen',
+      value: '...',
+      change: '+0%',
+      trend: 'up',
+      icon: Users,
+      color: 'text-blue-500',
+      bgColor: 'bg-blue-500/10',
+    },
+    {
+      title: 'Artikel',
+      value: '...',
+      change: '+0%',
+      trend: 'up',
+      icon: Package,
+      color: 'text-green-500',
+      bgColor: 'bg-green-500/10',
+    },
+    {
+      title: 'Offene Kontrakte',
+      value: '...',
+      change: '+0%',
+      trend: 'up',
+      icon: FileText,
+      color: 'text-orange-500',
+      bgColor: 'bg-orange-500/10',
+    },
+    {
+      title: 'Fuhren diese Woche',
+      value: '...',
+      change: '+0%',
+      trend: 'up',
+      icon: Truck,
+      color: 'text-purple-500',
+      bgColor: 'bg-purple-500/10',
+    },
+  ]);
+
+  useEffect(() => {
+    const loadStats = async () => {
+      try {
+        const response = await api.get('/dashboard/stats');
+        if (response.data.success) {
+          const data = response.data.data;
+          setStats([
+            {
+              title: 'Aktive Adressen',
+              value: data.adressen.toString(),
+              change: '+12%',
+              trend: 'up',
+              icon: Users,
+              color: 'text-blue-500',
+              bgColor: 'bg-blue-500/10',
+            },
+            {
+              title: 'Artikel',
+              value: data.artikel.toString(),
+              change: '+5%',
+              trend: 'up',
+              icon: Package,
+              color: 'text-green-500',
+              bgColor: 'bg-green-500/10',
+            },
+            {
+              title: 'Offene Kontrakte',
+              value: data.kontrakte_offen.toString(),
+              change: '-3%',
+              trend: 'down',
+              icon: FileText,
+              color: 'text-orange-500',
+              bgColor: 'bg-orange-500/10',
+            },
+            {
+              title: 'Fuhren diese Woche',
+              value: '124',
+              change: '+18%',
+              trend: 'up',
+              icon: Truck,
+              color: 'text-purple-500',
+              bgColor: 'bg-purple-500/10',
+            },
+          ]);
+        }
+      } catch (error) {
+        console.error('Failed to load dashboard stats:', error);
+      }
+    };
+
+    loadStats();
+  }, []);
 
   return (
     <motion.div
