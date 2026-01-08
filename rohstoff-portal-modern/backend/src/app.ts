@@ -17,6 +17,10 @@ import { standardLimiter } from './middleware/rateLimiter.js';
 
 // Modul-Router importieren
 import authRoutes from './modules/auth/routes.js';
+import mandantRoutes from './modules/mandant/routes.js';
+import adresseRoutes from './modules/adresse/routes.js';
+import artikelRoutes from './modules/artikel/routes.js';
+import kontraktRoutes from './modules/kontrakt/routes.js';
 
 // Express App erstellen
 const app: Express = express();
