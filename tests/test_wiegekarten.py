@@ -118,12 +118,10 @@ class TestWiegekartenAPI:
         data = response.json()
         assert data.get("success") is True
         assert "data" in data
-        assert "pagination" in data
+        assert "total" in data  # API returns total, skip, limit directly
         
-        pagination = data["pagination"]
-        assert "total" in pagination
-        assert "page" in pagination
-        print(f"✓ Wiegekarten list: {pagination['total']} total entries")
+        total = data["total"]
+        print(f"✓ Wiegekarten list: {total} total entries")
     
     def test_get_wiegekarten_nur_offene(self):
         """Test GET /api/wiegekarten?nur_offene=true - Filter only open cards"""
