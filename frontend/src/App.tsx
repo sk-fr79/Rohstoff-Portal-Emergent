@@ -7,6 +7,7 @@ import { DashboardPage } from '@/features/dashboard/DashboardPage';
 import { AdressenPage } from '@/features/adressen/AdressenPage';
 import { ArtikelPage } from '@/features/artikel/ArtikelPage';
 import { KontraktePage } from '@/features/kontrakte/KontraktePage';
+import { WiegekartenPage } from '@/features/wiegekarten/WiegekartenPage';
 
 // Protected Route Wrapper
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -40,6 +41,7 @@ export default function App() {
           <Route path="adressen" element={<AdressenPage />} />
           <Route path="artikel" element={<ArtikelPage />} />
           <Route path="kontrakte" element={<KontraktePage />} />
+          <Route path="wiegekarten" element={<WiegekartenPage />} />
         </Route>
         
         {/* Fallback */}
