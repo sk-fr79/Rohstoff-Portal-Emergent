@@ -460,7 +460,7 @@ export function MainLayout() {
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+              onClick={toggleSidebar}
               className="hidden lg:flex text-gray-600 hover:text-gray-900"
             >
               {sidebarCollapsed ? (
