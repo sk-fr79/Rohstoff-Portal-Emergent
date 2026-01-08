@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useCallback } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { ColumnDef } from '@tanstack/react-table';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -10,7 +10,7 @@ import {
   Plus, MoreHorizontal, Pencil, Trash2, Eye, Building2, User, MapPin, 
   Save, Phone, Mail, Globe, CreditCard, FileText, Users, X, Upload,
   Banknote, Shield, Clock, MessageSquare, AlertTriangle, UserCircle,
-  Image as ImageIcon, Camera
+  Image as ImageIcon, Camera, Scan, Loader2, EyeOff
 } from 'lucide-react';
 import { adressenApi, api } from '@/services/api/client';
 import { Button } from '@/components/ui/button';
@@ -160,6 +160,7 @@ export function AdressenPage() {
   const [selectedAdresse, setSelectedAdresse] = useState<Adresse | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [activeSection, setActiveSection] = useState('stamm');
+  const [showInactive, setShowInactive] = useState(false); // Filter für inaktive Adressen
   
   // States für neue Features
   const [weitereUstIds, setWeitereUstIds] = useState<UstId[]>([]);
@@ -202,14 +203,19 @@ export function AdressenPage() {
     mutationFn: ({ id, data }: { id: string; data: any }) => adressenApi.update(id, data),
     onSuccess: (response) => {
       queryClient.invalidateQueries({ queryKey: ['adressen'] });
-      setSelectedAdresse(response.data.data);
+      if (response.data?.data) {
+        setSelectedAdresse(response.data.data);
+      }
       setIsEditing(false);
       toast.success('Adresse erfolgreich aktualisiert');
     },
     onError: (error: any) => {
+      console.error('Update error:', error);
       const detail = error.response?.data?.detail;
       if (detail?.fehler) {
         detail.fehler.forEach((f: string) => toast.error(f));
+      } else if (typeof detail === 'string') {
+        toast.error(detail);
       } else {
         toast.error('Fehler beim Aktualisieren');
       }
@@ -239,16 +245,23 @@ export function AdressenPage() {
     }
   }, [selectedAdresse, setValue]);
 
-  const onSubmit = (data: AdresseForm) => {
+  // FIXED: onSubmit function
+  const onSubmit = async (data: AdresseForm) => {
     const fullData = {
       ...data,
       weitere_ustids: weitereUstIds,
     };
+    
     if (isEditing && selectedAdresse) {
       updateMutation.mutate({ id: selectedAdresse.id, data: fullData });
     } else {
       createMutation.mutate(fullData as any);
     }
+  };
+
+  // Manual save handler for the button
+  const handleSave = () => {
+    handleSubmit(onSubmit)();
   };
 
   const handleRowDoubleClick = (adresse: Adresse) => {
@@ -337,7 +350,19 @@ export function AdressenPage() {
   // Table Columns
   const columns: ColumnDef<Adresse>[] = useMemo(() => [
     { accessorKey: 'kdnr', header: 'Kd.Nr', size: 100 },
-    { accessorKey: 'name1', header: 'Name/Firma', size: 200 },
+    { 
+      accessorKey: 'name1', 
+      header: 'Name/Firma', 
+      size: 200,
+      cell: ({ row }) => (
+        <div className="flex items-center gap-2">
+          {row.original.firmenlogo ? (
+            <img src={row.original.firmenlogo} alt="" className="h-6 w-6 rounded object-contain" />
+          ) : null}
+          <span>{row.original.name1}</span>
+        </div>
+      ),
+    },
     { accessorKey: 'ort', header: 'Ort', size: 150 },
     { accessorKey: 'telefon', header: 'Telefon', size: 150 },
     {
@@ -397,7 +422,10 @@ export function AdressenPage() {
     },
   ], []);
 
-  const adressen = adressenData?.data?.data || adressenData?.data || [];
+  // Gefilterte Adressen (inaktive ausblenden wenn nicht aktiviert)
+  const allAdressen = adressenData?.data?.data || adressenData?.data || [];
+  const adressen = showInactive ? allAdressen : allAdressen.filter((a: Adresse) => a.aktiv !== false);
+  const inactiveCount = allAdressen.filter((a: Adresse) => a.aktiv === false).length;
 
   // ========================== RENDER ==========================
   return (
@@ -407,11 +435,23 @@ export function AdressenPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-xl font-semibold text-gray-900">Adressen</h1>
-            <p className="text-sm text-gray-500 mt-0.5">{adressen.length} Einträge</p>
+            <p className="text-sm text-gray-500 mt-0.5">{adressen.length} Einträge {!showInactive && inactiveCount > 0 && `(${inactiveCount} inaktive ausgeblendet)`}</p>
           </div>
-          <Button onClick={() => { reset(); setShowCreateDialog(true); }} className="bg-emerald-500 hover:bg-emerald-600">
-            <Plus className="h-4 w-4 mr-2" />Neue Adresse
-          </Button>
+          <div className="flex items-center gap-4">
+            {/* Inaktive Toggle */}
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 rounded-lg">
+              <EyeOff className="h-4 w-4 text-gray-500" />
+              <span className="text-sm text-gray-600">Inaktive</span>
+              <Switch 
+                checked={showInactive} 
+                onCheckedChange={setShowInactive}
+                className="data-[state=checked]:bg-emerald-500"
+              />
+            </div>
+            <Button onClick={() => { reset(); setShowCreateDialog(true); }} className="bg-emerald-500 hover:bg-emerald-600">
+              <Plus className="h-4 w-4 mr-2" />Neue Adresse
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -442,25 +482,27 @@ export function AdressenPage() {
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
               className="w-full lg:w-1/2 border-l border-gray-200 bg-white flex flex-col overflow-hidden"
             >
-              {/* Detail Header */}
-              <div className="bg-gray-50 border-b border-gray-200 px-4 py-3 flex items-center justify-between">
+              {/* Detail Header - mit transparentem Logo */}
+              <div className="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  {/* Firmenlogo / Avatar */}
+                  {/* Firmenlogo / Avatar - transparent embedded */}
                   <div className="relative group">
                     {selectedAdresse.firmenlogo ? (
-                      <img 
-                        src={selectedAdresse.firmenlogo} 
-                        alt="Logo" 
-                        className="h-12 w-12 rounded-lg object-cover border border-gray-200"
-                      />
+                      <div className="h-12 w-12 flex items-center justify-center">
+                        <img 
+                          src={selectedAdresse.firmenlogo} 
+                          alt="Logo" 
+                          className="max-h-12 max-w-12 object-contain"
+                        />
+                      </div>
                     ) : (
                       <div className={cn(
                         "h-12 w-12 rounded-lg flex items-center justify-center",
-                        watchFields.ist_firma ? "bg-blue-100" : "bg-purple-100"
+                        watchFields.ist_firma ? "bg-blue-50" : "bg-purple-50"
                       )}>
                         {watchFields.ist_firma ? 
-                          <Building2 className="h-6 w-6 text-blue-600" /> : 
-                          <User className="h-6 w-6 text-purple-600" />
+                          <Building2 className="h-6 w-6 text-blue-400" /> : 
+                          <User className="h-6 w-6 text-purple-400" />
                         }
                       </div>
                     )}
@@ -482,8 +524,18 @@ export function AdressenPage() {
                       <Pencil className="h-4 w-4 mr-1" />Bearbeiten
                     </Button>
                   ) : (
-                    <Button size="sm" onClick={handleSubmit(onSubmit)} className="bg-emerald-500 hover:bg-emerald-600">
-                      <Save className="h-4 w-4 mr-1" />Speichern
+                    <Button 
+                      size="sm" 
+                      onClick={handleSave}
+                      disabled={updateMutation.isPending}
+                      className="bg-emerald-500 hover:bg-emerald-600"
+                    >
+                      {updateMutation.isPending ? (
+                        <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                      ) : (
+                        <Save className="h-4 w-4 mr-1" />
+                      )}
+                      Speichern
                     </Button>
                   )}
                   <Button variant="ghost" size="icon" onClick={() => { setSelectedAdresse(null); setIsEditing(false); }}>
@@ -515,544 +567,528 @@ export function AdressenPage() {
 
                 {/* Section Content */}
                 <div className="flex-1 overflow-auto p-6">
-                  <form onSubmit={handleSubmit(onSubmit)}>
-                    {/* Stammdaten Section */}
-                    {activeSection === 'stamm' && (
-                      <div className="space-y-6">
-                        {/* Firmenlogo Upload */}
-                        {watchFields.ist_firma && (
-                          <div className="p-4 bg-gray-50 rounded-lg">
-                            <h3 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                              <ImageIcon className="h-4 w-4 text-emerald-500" />
-                              Firmenlogo
-                            </h3>
-                            <div className="flex items-center gap-4">
-                              {selectedAdresse?.firmenlogo ? (
-                                <img 
-                                  src={selectedAdresse.firmenlogo} 
-                                  alt="Logo" 
-                                  className="h-20 w-20 rounded-lg object-cover border border-gray-200"
-                                />
-                              ) : (
-                                <div className="h-20 w-20 rounded-lg bg-gray-200 flex items-center justify-center">
-                                  <Building2 className="h-10 w-10 text-gray-400" />
-                                </div>
-                              )}
-                              {isEditing && (
-                                <div className="flex-1">
-                                  <label className="flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-emerald-400 transition-colors">
-                                    <Upload className="h-5 w-5 text-gray-400" />
-                                    <span className="text-sm text-gray-600">Logo hochladen</span>
-                                    <input type="file" accept="image/*" className="hidden" onChange={handleLogoUpload} />
-                                  </label>
-                                  <p className="text-xs text-gray-500 mt-2">PNG, JPG bis 5MB</p>
-                                </div>
-                              )}
+                  {/* Stammdaten Section */}
+                  {activeSection === 'stamm' && (
+                    <div className="space-y-6">
+                      {/* Firmenlogo Upload - verbessert */}
+                      {watchFields.ist_firma && isEditing && (
+                        <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
+                          {selectedAdresse?.firmenlogo ? (
+                            <img 
+                              src={selectedAdresse.firmenlogo} 
+                              alt="Logo" 
+                              className="h-16 max-w-32 object-contain"
+                            />
+                          ) : (
+                            <div className="h-16 w-16 rounded-lg bg-white border-2 border-dashed border-gray-300 flex items-center justify-center">
+                              <Building2 className="h-8 w-8 text-gray-300" />
+                            </div>
+                          )}
+                          <label className="flex-1 flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-emerald-400 hover:bg-emerald-50/50 transition-colors">
+                            <Upload className="h-5 w-5 text-gray-400" />
+                            <span className="text-sm text-gray-600">Logo hochladen (PNG, JPG)</span>
+                            <input type="file" accept="image/*" className="hidden" onChange={handleLogoUpload} />
+                          </label>
+                        </div>
+                      )}
+
+                      <div>
+                        <h3 className="text-sm font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                          <Building2 className="h-4 w-4 text-emerald-500" />
+                          Grundinformationen
+                        </h3>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="col-span-2 flex items-center gap-4 p-3 bg-gray-50 rounded-lg">
+                            <Label className="text-sm font-medium text-gray-700">Typ:</Label>
+                            <div className="flex items-center gap-2">
+                              <Switch 
+                                checked={watchFields.ist_firma} 
+                                onCheckedChange={(c) => setValue('ist_firma', c)} 
+                                disabled={!isEditing} 
+                              />
+                              <span className={cn(
+                                "text-sm font-medium",
+                                watchFields.ist_firma ? "text-blue-600" : "text-purple-600"
+                              )}>
+                                {watchFields.ist_firma ? 'Firma' : 'Privatperson'}
+                              </span>
                             </div>
                           </div>
-                        )}
-
-                        <div>
-                          <h3 className="text-sm font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                            <Building2 className="h-4 w-4 text-emerald-500" />
-                            Grundinformationen
-                          </h3>
-                          <div className="grid grid-cols-2 gap-4">
-                            <div className="col-span-2 flex items-center gap-4 p-3 bg-gray-50 rounded-lg">
-                              <Label className="text-sm font-medium text-gray-700">Typ:</Label>
-                              <div className="flex items-center gap-2">
-                                <Switch 
-                                  checked={watchFields.ist_firma} 
-                                  onCheckedChange={(c) => setValue('ist_firma', c)} 
-                                  disabled={!isEditing} 
-                                />
-                                <span className={cn(
-                                  "text-sm font-medium",
-                                  watchFields.ist_firma ? "text-blue-600" : "text-purple-600"
-                                )}>
-                                  {watchFields.ist_firma ? 'Firma' : 'Privatperson'}
-                                </span>
-                              </div>
-                            </div>
-                            <div className="space-y-1.5">
-                              <Label className="text-sm text-gray-600">Anrede</Label>
-                              <Select value={watchFields.anrede || ""} onValueChange={(v) => setValue('anrede', v)} disabled={!isEditing}>
-                                <SelectTrigger className="bg-white"><SelectValue placeholder="Wählen..." /></SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="Herr">Herr</SelectItem>
-                                  <SelectItem value="Frau">Frau</SelectItem>
-                                  <SelectItem value="Firma">Firma</SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </div>
-                            <div className="space-y-1.5">
-                              <Label className="text-sm text-gray-600">Vorname</Label>
-                              <Input {...register('vorname')} disabled={!isEditing} className="bg-white" />
-                            </div>
-                            <div className="col-span-2 space-y-1.5">
-                              <Label className="text-sm text-gray-600">Name / Firma *</Label>
-                              <Input {...register('name1')} disabled={!isEditing} className="bg-white" />
-                              {errors.name1 && <p className="text-xs text-red-500">{errors.name1.message}</p>}
-                            </div>
-                            <div className="space-y-1.5">
-                              <Label className="text-sm text-gray-600">Name 2</Label>
-                              <Input {...register('name2')} disabled={!isEditing} className="bg-white" />
-                            </div>
-                            <div className="space-y-1.5">
-                              <Label className="text-sm text-gray-600">Rechtsform</Label>
-                              <Select value={watchFields.rechtsform || ""} onValueChange={(v) => setValue('rechtsform', v)} disabled={!isEditing}>
-                                <SelectTrigger className="bg-white"><SelectValue placeholder="Wählen..." /></SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="GmbH">GmbH</SelectItem>
-                                  <SelectItem value="AG">AG</SelectItem>
-                                  <SelectItem value="KG">KG</SelectItem>
-                                  <SelectItem value="OHG">OHG</SelectItem>
-                                  <SelectItem value="e.K.">e.K.</SelectItem>
-                                  <SelectItem value="GbR">GbR</SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </div>
+                          <div className="space-y-1.5">
+                            <Label className="text-sm text-gray-600">Anrede</Label>
+                            <Select value={watchFields.anrede || ""} onValueChange={(v) => setValue('anrede', v)} disabled={!isEditing}>
+                              <SelectTrigger className="bg-white"><SelectValue placeholder="Wählen..." /></SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="Herr">Herr</SelectItem>
+                                <SelectItem value="Frau">Frau</SelectItem>
+                                <SelectItem value="Firma">Firma</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="space-y-1.5">
+                            <Label className="text-sm text-gray-600">Vorname</Label>
+                            <Input {...register('vorname')} disabled={!isEditing} className="bg-white" />
+                          </div>
+                          <div className="col-span-2 space-y-1.5">
+                            <Label className="text-sm text-gray-600">Name / Firma *</Label>
+                            <Input {...register('name1')} disabled={!isEditing} className="bg-white" />
+                            {errors.name1 && <p className="text-xs text-red-500">{errors.name1.message}</p>}
+                          </div>
+                          <div className="space-y-1.5">
+                            <Label className="text-sm text-gray-600">Name 2</Label>
+                            <Input {...register('name2')} disabled={!isEditing} className="bg-white" />
+                          </div>
+                          <div className="space-y-1.5">
+                            <Label className="text-sm text-gray-600">Rechtsform</Label>
+                            <Select value={watchFields.rechtsform || ""} onValueChange={(v) => setValue('rechtsform', v)} disabled={!isEditing}>
+                              <SelectTrigger className="bg-white"><SelectValue placeholder="Wählen..." /></SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="GmbH">GmbH</SelectItem>
+                                <SelectItem value="AG">AG</SelectItem>
+                                <SelectItem value="KG">KG</SelectItem>
+                                <SelectItem value="OHG">OHG</SelectItem>
+                                <SelectItem value="e.K.">e.K.</SelectItem>
+                                <SelectItem value="GbR">GbR</SelectItem>
+                              </SelectContent>
+                            </Select>
                           </div>
                         </div>
+                      </div>
 
-                        <div>
-                          <h3 className="text-sm font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                            <MapPin className="h-4 w-4 text-emerald-500" />
-                            Adresse
-                          </h3>
-                          <div className="grid grid-cols-3 gap-4">
-                            <div className="col-span-2 space-y-1.5">
-                              <Label className="text-sm text-gray-600">Straße</Label>
-                              <Input {...register('strasse')} disabled={!isEditing} className="bg-white" />
-                            </div>
-                            <div className="space-y-1.5">
-                              <Label className="text-sm text-gray-600">Hausnr.</Label>
-                              <Input {...register('hausnummer')} disabled={!isEditing} className="bg-white" />
-                            </div>
-                            <div className="space-y-1.5">
-                              <Label className="text-sm text-gray-600">PLZ</Label>
-                              <Input {...register('plz')} disabled={!isEditing} className="bg-white" />
-                            </div>
-                            <div className="col-span-2 space-y-1.5">
-                              <Label className="text-sm text-gray-600">Ort</Label>
-                              <Input {...register('ort')} disabled={!isEditing} className="bg-white" />
-                            </div>
-                            <div className="col-span-3 space-y-1.5">
-                              <Label className="text-sm text-gray-600">Land</Label>
-                              <Select value={watchFields.land || "Deutschland"} onValueChange={(v) => setValue('land', v)} disabled={!isEditing}>
-                                <SelectTrigger className="bg-white"><SelectValue /></SelectTrigger>
-                                <SelectContent>
-                                  {EU_LAENDER.map(l => (
-                                    <SelectItem key={l.land} value={l.land}>{l.land}</SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                            </div>
+                      <div>
+                        <h3 className="text-sm font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                          <MapPin className="h-4 w-4 text-emerald-500" />
+                          Adresse
+                        </h3>
+                        <div className="grid grid-cols-3 gap-4">
+                          <div className="col-span-2 space-y-1.5">
+                            <Label className="text-sm text-gray-600">Straße</Label>
+                            <Input {...register('strasse')} disabled={!isEditing} className="bg-white" />
+                          </div>
+                          <div className="space-y-1.5">
+                            <Label className="text-sm text-gray-600">Hausnr.</Label>
+                            <Input {...register('hausnummer')} disabled={!isEditing} className="bg-white" />
+                          </div>
+                          <div className="space-y-1.5">
+                            <Label className="text-sm text-gray-600">PLZ</Label>
+                            <Input {...register('plz')} disabled={!isEditing} className="bg-white" />
+                          </div>
+                          <div className="col-span-2 space-y-1.5">
+                            <Label className="text-sm text-gray-600">Ort</Label>
+                            <Input {...register('ort')} disabled={!isEditing} className="bg-white" />
+                          </div>
+                          <div className="col-span-3 space-y-1.5">
+                            <Label className="text-sm text-gray-600">Land</Label>
+                            <Select value={watchFields.land || "Deutschland"} onValueChange={(v) => setValue('land', v)} disabled={!isEditing}>
+                              <SelectTrigger className="bg-white"><SelectValue /></SelectTrigger>
+                              <SelectContent>
+                                {EU_LAENDER.map(l => (
+                                  <SelectItem key={l.land} value={l.land}>{l.land}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
                           </div>
                         </div>
+                      </div>
 
-                        <div>
-                          <h3 className="text-sm font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                      <div>
+                        <h3 className="text-sm font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                          <Users className="h-4 w-4 text-emerald-500" />
+                          Betreuer
+                        </h3>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-1.5">
+                            <Label className="text-sm text-gray-600">Betreuer 1</Label>
+                            <Input {...register('betreuer')} disabled={!isEditing} className="bg-white" />
+                          </div>
+                          <div className="space-y-1.5">
+                            <Label className="text-sm text-gray-600">Betreuer 2</Label>
+                            <Input {...register('betreuer2')} disabled={!isEditing} className="bg-white" />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Kontakt Section */}
+                  {activeSection === 'kontakt' && (
+                    <div className="space-y-6">
+                      <div>
+                        <h3 className="text-sm font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                          <Phone className="h-4 w-4 text-emerald-500" />
+                          Telefon & Fax
+                        </h3>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-1.5">
+                            <Label className="text-sm text-gray-600">Telefon</Label>
+                            <Input {...register('telefon')} disabled={!isEditing} className="bg-white" placeholder="+49 123 456789" />
+                          </div>
+                          <div className="space-y-1.5">
+                            <Label className="text-sm text-gray-600">Telefax</Label>
+                            <Input {...register('telefax')} disabled={!isEditing} className="bg-white" placeholder="+49 123 456789" />
+                          </div>
+                        </div>
+                      </div>
+
+                      <div>
+                        <h3 className="text-sm font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                          <Mail className="h-4 w-4 text-emerald-500" />
+                          E-Mail & Web
+                        </h3>
+                        <div className="grid grid-cols-1 gap-4">
+                          <div className="space-y-1.5">
+                            <Label className="text-sm text-gray-600">E-Mail</Label>
+                            <Input type="email" {...register('email')} disabled={!isEditing} className="bg-white" placeholder="kontakt@firma.de" />
+                          </div>
+                          <div className="space-y-1.5">
+                            <Label className="text-sm text-gray-600">Webseite</Label>
+                            <Input {...register('webseite')} disabled={!isEditing} className="bg-white" placeholder="https://www.firma.de" />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Ansprechpartner */}
+                      <div>
+                        <div className="flex items-center justify-between mb-4">
+                          <h3 className="text-sm font-semibold text-gray-900 flex items-center gap-2">
                             <Users className="h-4 w-4 text-emerald-500" />
-                            Betreuer
+                            Ansprechpartner
                           </h3>
-                          <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-1.5">
-                              <Label className="text-sm text-gray-600">Betreuer 1</Label>
-                              <Input {...register('betreuer')} disabled={!isEditing} className="bg-white" />
-                            </div>
-                            <div className="space-y-1.5">
-                              <Label className="text-sm text-gray-600">Betreuer 2</Label>
-                              <Input {...register('betreuer2')} disabled={!isEditing} className="bg-white" />
-                            </div>
-                          </div>
+                          {isEditing && (
+                            <Button 
+                              type="button" 
+                              size="sm" 
+                              variant="outline"
+                              onClick={() => { setEditingAp(null); setShowApDialog(true); }}
+                            >
+                              <Plus className="h-4 w-4 mr-1" />Hinzufügen
+                            </Button>
+                          )}
                         </div>
-                      </div>
-                    )}
-
-                    {/* Kontakt Section */}
-                    {activeSection === 'kontakt' && (
-                      <div className="space-y-6">
-                        <div>
-                          <h3 className="text-sm font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                            <Phone className="h-4 w-4 text-emerald-500" />
-                            Telefon & Fax
-                          </h3>
-                          <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-1.5">
-                              <Label className="text-sm text-gray-600">Telefon</Label>
-                              <Input {...register('telefon')} disabled={!isEditing} className="bg-white" placeholder="+49 123 456789" />
-                            </div>
-                            <div className="space-y-1.5">
-                              <Label className="text-sm text-gray-600">Telefax</Label>
-                              <Input {...register('telefax')} disabled={!isEditing} className="bg-white" placeholder="+49 123 456789" />
-                            </div>
-                          </div>
-                        </div>
-
-                        <div>
-                          <h3 className="text-sm font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                            <Mail className="h-4 w-4 text-emerald-500" />
-                            E-Mail & Web
-                          </h3>
-                          <div className="grid grid-cols-1 gap-4">
-                            <div className="space-y-1.5">
-                              <Label className="text-sm text-gray-600">E-Mail</Label>
-                              <Input type="email" {...register('email')} disabled={!isEditing} className="bg-white" placeholder="kontakt@firma.de" />
-                            </div>
-                            <div className="space-y-1.5">
-                              <Label className="text-sm text-gray-600">Webseite</Label>
-                              <Input {...register('webseite')} disabled={!isEditing} className="bg-white" placeholder="https://www.firma.de" />
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Ansprechpartner */}
-                        <div>
-                          <div className="flex items-center justify-between mb-4">
-                            <h3 className="text-sm font-semibold text-gray-900 flex items-center gap-2">
-                              <Users className="h-4 w-4 text-emerald-500" />
-                              Ansprechpartner
-                            </h3>
-                            {isEditing && (
-                              <Button 
-                                type="button" 
-                                size="sm" 
-                                variant="outline"
-                                onClick={() => { setEditingAp(null); setShowApDialog(true); }}
+                        
+                        <div className="space-y-3">
+                          {ansprechpartnerList.length === 0 ? (
+                            <p className="text-sm text-gray-500 text-center py-4 bg-gray-50 rounded-lg">
+                              Keine Ansprechpartner vorhanden
+                            </p>
+                          ) : (
+                            ansprechpartnerList.map((ap) => (
+                              <div 
+                                key={ap.id} 
+                                className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
                               >
-                                <Plus className="h-4 w-4 mr-1" />Hinzufügen
-                              </Button>
-                            )}
-                          </div>
-                          
-                          <div className="space-y-3">
-                            {ansprechpartnerList.length === 0 ? (
-                              <p className="text-sm text-gray-500 text-center py-4 bg-gray-50 rounded-lg">
-                                Keine Ansprechpartner vorhanden
-                              </p>
-                            ) : (
-                              ansprechpartnerList.map((ap) => (
-                                <div 
-                                  key={ap.id} 
-                                  className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-                                >
-                                  {/* Profilbild */}
-                                  {ap.profilbild ? (
-                                    <img 
-                                      src={ap.profilbild} 
-                                      alt={`${ap.vorname} ${ap.nachname}`}
-                                      className="h-12 w-12 rounded-full object-cover border-2 border-white shadow"
-                                    />
-                                  ) : (
-                                    <div className="h-12 w-12 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center shadow">
-                                      <UserCircle className="h-7 w-7 text-white" />
-                                    </div>
-                                  )}
-                                  
-                                  <div className="flex-1 min-w-0">
-                                    <p className="font-medium text-gray-900">{ap.vorname} {ap.nachname}</p>
-                                    {ap.funktion && <p className="text-sm text-gray-500">{ap.funktion}</p>}
-                                    <div className="flex gap-4 mt-1 text-xs text-gray-500">
-                                      {ap.telefon && <span className="flex items-center gap-1"><Phone className="h-3 w-3" />{ap.telefon}</span>}
-                                      {ap.email && <span className="flex items-center gap-1"><Mail className="h-3 w-3" />{ap.email}</span>}
-                                    </div>
+                                {ap.profilbild ? (
+                                  <img 
+                                    src={ap.profilbild} 
+                                    alt={`${ap.vorname} ${ap.nachname}`}
+                                    className="h-12 w-12 rounded-full object-cover border-2 border-white shadow"
+                                  />
+                                ) : (
+                                  <div className="h-12 w-12 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center shadow">
+                                    <UserCircle className="h-7 w-7 text-white" />
                                   </div>
-                                  
-                                  {isEditing && (
-                                    <div className="flex gap-1">
-                                      <Button 
-                                        type="button" 
-                                        variant="ghost" 
-                                        size="icon"
-                                        onClick={() => { setEditingAp(ap); setShowApDialog(true); }}
-                                      >
-                                        <Pencil className="h-4 w-4" />
-                                      </Button>
-                                      <Button 
-                                        type="button" 
-                                        variant="ghost" 
-                                        size="icon"
-                                        className="text-red-500 hover:text-red-700"
-                                        onClick={() => deleteAnsprechpartner(ap.id)}
-                                      >
-                                        <Trash2 className="h-4 w-4" />
-                                      </Button>
-                                    </div>
-                                  )}
+                                )}
+                                
+                                <div className="flex-1 min-w-0">
+                                  <p className="font-medium text-gray-900">{ap.vorname} {ap.nachname}</p>
+                                  {ap.funktion && <p className="text-sm text-gray-500">{ap.funktion}</p>}
+                                  <div className="flex gap-4 mt-1 text-xs text-gray-500">
+                                    {ap.telefon && <span className="flex items-center gap-1"><Phone className="h-3 w-3" />{ap.telefon}</span>}
+                                    {ap.email && <span className="flex items-center gap-1"><Mail className="h-3 w-3" />{ap.email}</span>}
+                                  </div>
                                 </div>
-                              ))
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Finanzen Section */}
-                    {activeSection === 'finanzen' && (
-                      <div className="space-y-6">
-                        <div>
-                          <h3 className="text-sm font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                            <Banknote className="h-4 w-4 text-emerald-500" />
-                            Nummern & Codes
-                          </h3>
-                          <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-1.5">
-                              <Label className="text-sm text-gray-600">Kreditor-Nr</Label>
-                              <Input {...register('kreditor_nr')} disabled={!isEditing} className="bg-white" />
-                            </div>
-                            <div className="space-y-1.5">
-                              <Label className="text-sm text-gray-600">Debitor-Nr</Label>
-                              <Input {...register('debitor_nr')} disabled={!isEditing} className="bg-white" />
-                            </div>
-                            <div className="space-y-1.5">
-                              <Label className="text-sm text-gray-600">Alt. Lief.-Nr</Label>
-                              <Input {...register('lief_nr')} disabled={!isEditing} className="bg-white" />
-                            </div>
-                            <div className="space-y-1.5">
-                              <Label className="text-sm text-gray-600">Alt. Abn.-Nr</Label>
-                              <Input {...register('abn_nr')} disabled={!isEditing} className="bg-white" />
-                            </div>
-                          </div>
-                        </div>
-
-                        <div>
-                          <h3 className="text-sm font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                            <CreditCard className="h-4 w-4 text-emerald-500" />
-                            Zahlungsbedingungen
-                          </h3>
-                          <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-1.5">
-                              <Label className="text-sm text-gray-600">Währung</Label>
-                              <Select value={watchFields.waehrung || "EUR"} onValueChange={(v) => setValue('waehrung', v)} disabled={!isEditing}>
-                                <SelectTrigger className="bg-white"><SelectValue /></SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="EUR">EUR</SelectItem>
-                                  <SelectItem value="CHF">CHF</SelectItem>
-                                  <SelectItem value="USD">USD</SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </div>
-                            <div className="space-y-1.5">
-                              <Label className="text-sm text-gray-600">Handelsregister</Label>
-                              <Input {...register('handelsregister')} disabled={!isEditing} className="bg-white" />
-                            </div>
-                            <div className="space-y-1.5">
-                              <Label className="text-sm text-gray-600">Zahlungsbedingung (EK)</Label>
-                              <Input {...register('zahlungsbedingung_ek')} disabled={!isEditing} className="bg-white" placeholder="30 Tage netto" />
-                            </div>
-                            <div className="space-y-1.5">
-                              <Label className="text-sm text-gray-600">Zahlungsbedingung (VK)</Label>
-                              <Input {...register('zahlungsbedingung_vk')} disabled={!isEditing} className="bg-white" placeholder="30 Tage netto" />
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Steuer Section */}
-                    {activeSection === 'steuer' && (
-                      <div className="space-y-6">
-                        {/* UST Einstufung */}
-                        <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
-                          <h3 className="text-sm font-semibold text-amber-800 mb-3 flex items-center gap-2">
-                            <AlertTriangle className="h-4 w-4" />
-                            Steuerliche Einstufung
-                          </h3>
-                          <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                              <div className="flex items-center gap-2">
-                                <Switch 
-                                  checked={watchFields.firma_ohne_ustid} 
-                                  onCheckedChange={(c) => setValue('firma_ohne_ustid', c)} 
-                                  disabled={!isEditing || !watchFields.ist_firma || watchFields.land !== 'Deutschland'} 
-                                />
-                                <Label className="text-sm text-gray-700">Firma ohne UST-ID</Label>
-                              </div>
-                            </div>
-                            <div className="space-y-2">
-                              <div className="flex items-center gap-2">
-                                <Switch 
-                                  checked={watchFields.privat_mit_ustid} 
-                                  onCheckedChange={(c) => setValue('privat_mit_ustid', c)} 
-                                  disabled={!isEditing || watchFields.ist_firma || watchFields.land !== 'Deutschland'} 
-                                />
-                                <Label className="text-sm text-gray-700">Privat mit UST-ID</Label>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Basis UST-ID */}
-                        <div>
-                          <h3 className="text-sm font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                            <FileText className="h-4 w-4 text-emerald-500" />
-                            Basis UST-ID
-                          </h3>
-                          <div className="grid grid-cols-3 gap-4">
-                            <div className="space-y-1.5">
-                              <Label className="text-sm text-gray-600">UST-LKZ</Label>
-                              <Input {...register('umsatzsteuer_lkz')} disabled={!isEditing} className="bg-white" placeholder="DE" maxLength={3} />
-                            </div>
-                            <div className="col-span-2 space-y-1.5">
-                              <Label className="text-sm text-gray-600">UST-ID</Label>
-                              <Input {...register('umsatzsteuer_id')} disabled={!isEditing} className="bg-white" placeholder="123456789" />
-                            </div>
-                            <div className="col-span-3 space-y-1.5">
-                              <Label className="text-sm text-gray-600">Steuernummer</Label>
-                              <Input {...register('steuernummer')} disabled={!isEditing} className="bg-white" />
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Weitere UST-IDs (dynamisch) */}
-                        <div>
-                          <div className="flex items-center justify-between mb-4">
-                            <h3 className="text-sm font-semibold text-gray-900">Weitere UST-IDs</h3>
-                            {isEditing && (
-                              <Button type="button" size="sm" variant="outline" onClick={addUstId}>
-                                <Plus className="h-4 w-4 mr-1" />Hinzufügen
-                              </Button>
-                            )}
-                          </div>
-                          
-                          <div className="space-y-3">
-                            {weitereUstIds.length === 0 ? (
-                              <p className="text-sm text-gray-500 text-center py-4 bg-gray-50 rounded-lg">
-                                Keine weiteren UST-IDs vorhanden
-                              </p>
-                            ) : (
-                              weitereUstIds.map((ust) => (
-                                <div key={ust.id} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                                  <div className="flex-1 grid grid-cols-3 gap-3">
-                                    <Select 
-                                      value={ust.land} 
-                                      onValueChange={(v) => updateUstId(ust.id, 'land', v)}
-                                      disabled={!isEditing}
+                                
+                                {isEditing && (
+                                  <div className="flex gap-1">
+                                    <Button 
+                                      type="button" 
+                                      variant="ghost" 
+                                      size="icon"
+                                      onClick={() => { setEditingAp(ap); setShowApDialog(true); }}
                                     >
-                                      <SelectTrigger className="bg-white">
-                                        <SelectValue placeholder="Land wählen" />
-                                      </SelectTrigger>
-                                      <SelectContent>
-                                        {EU_LAENDER.map(l => (
-                                          <SelectItem key={l.land} value={l.land}>{l.land}</SelectItem>
-                                        ))}
-                                      </SelectContent>
-                                    </Select>
-                                    <Input 
-                                      value={ust.lkz}
-                                      onChange={(e) => updateUstId(ust.id, 'lkz', e.target.value)}
-                                      disabled={!isEditing}
-                                      className="bg-white"
-                                      placeholder="LKZ"
-                                      maxLength={4}
-                                    />
-                                    <Input 
-                                      value={ust.ustid}
-                                      onChange={(e) => updateUstId(ust.id, 'ustid', e.target.value)}
-                                      disabled={!isEditing}
-                                      className="bg-white"
-                                      placeholder="UST-ID Nummer"
-                                    />
-                                  </div>
-                                  {isEditing && (
+                                      <Pencil className="h-4 w-4" />
+                                    </Button>
                                     <Button 
                                       type="button" 
                                       variant="ghost" 
                                       size="icon"
                                       className="text-red-500 hover:text-red-700"
-                                      onClick={() => removeUstId(ust.id)}
+                                      onClick={() => deleteAnsprechpartner(ap.id)}
                                     >
                                       <Trash2 className="h-4 w-4" />
                                     </Button>
-                                  )}
+                                  </div>
+                                )}
+                              </div>
+                            ))
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Finanzen Section */}
+                  {activeSection === 'finanzen' && (
+                    <div className="space-y-6">
+                      <div>
+                        <h3 className="text-sm font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                          <Banknote className="h-4 w-4 text-emerald-500" />
+                          Nummern & Codes
+                        </h3>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-1.5">
+                            <Label className="text-sm text-gray-600">Kreditor-Nr</Label>
+                            <Input {...register('kreditor_nr')} disabled={!isEditing} className="bg-white" />
+                          </div>
+                          <div className="space-y-1.5">
+                            <Label className="text-sm text-gray-600">Debitor-Nr</Label>
+                            <Input {...register('debitor_nr')} disabled={!isEditing} className="bg-white" />
+                          </div>
+                          <div className="space-y-1.5">
+                            <Label className="text-sm text-gray-600">Alt. Lief.-Nr</Label>
+                            <Input {...register('lief_nr')} disabled={!isEditing} className="bg-white" />
+                          </div>
+                          <div className="space-y-1.5">
+                            <Label className="text-sm text-gray-600">Alt. Abn.-Nr</Label>
+                            <Input {...register('abn_nr')} disabled={!isEditing} className="bg-white" />
+                          </div>
+                        </div>
+                      </div>
+
+                      <div>
+                        <h3 className="text-sm font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                          <CreditCard className="h-4 w-4 text-emerald-500" />
+                          Zahlungsbedingungen
+                        </h3>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-1.5">
+                            <Label className="text-sm text-gray-600">Währung</Label>
+                            <Select value={watchFields.waehrung || "EUR"} onValueChange={(v) => setValue('waehrung', v)} disabled={!isEditing}>
+                              <SelectTrigger className="bg-white"><SelectValue /></SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="EUR">EUR</SelectItem>
+                                <SelectItem value="CHF">CHF</SelectItem>
+                                <SelectItem value="USD">USD</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="space-y-1.5">
+                            <Label className="text-sm text-gray-600">Handelsregister</Label>
+                            <Input {...register('handelsregister')} disabled={!isEditing} className="bg-white" />
+                          </div>
+                          <div className="space-y-1.5">
+                            <Label className="text-sm text-gray-600">Zahlungsbedingung (EK)</Label>
+                            <Input {...register('zahlungsbedingung_ek')} disabled={!isEditing} className="bg-white" placeholder="30 Tage netto" />
+                          </div>
+                          <div className="space-y-1.5">
+                            <Label className="text-sm text-gray-600">Zahlungsbedingung (VK)</Label>
+                            <Input {...register('zahlungsbedingung_vk')} disabled={!isEditing} className="bg-white" placeholder="30 Tage netto" />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Steuer Section */}
+                  {activeSection === 'steuer' && (
+                    <div className="space-y-6">
+                      <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                        <h3 className="text-sm font-semibold text-amber-800 mb-3 flex items-center gap-2">
+                          <AlertTriangle className="h-4 w-4" />
+                          Steuerliche Einstufung
+                        </h3>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <div className="flex items-center gap-2">
+                              <Switch 
+                                checked={watchFields.firma_ohne_ustid} 
+                                onCheckedChange={(c) => setValue('firma_ohne_ustid', c)} 
+                                disabled={!isEditing || !watchFields.ist_firma || watchFields.land !== 'Deutschland'} 
+                              />
+                              <Label className="text-sm text-gray-700">Firma ohne UST-ID</Label>
+                            </div>
+                          </div>
+                          <div className="space-y-2">
+                            <div className="flex items-center gap-2">
+                              <Switch 
+                                checked={watchFields.privat_mit_ustid} 
+                                onCheckedChange={(c) => setValue('privat_mit_ustid', c)} 
+                                disabled={!isEditing || watchFields.ist_firma || watchFields.land !== 'Deutschland'} 
+                              />
+                              <Label className="text-sm text-gray-700">Privat mit UST-ID</Label>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div>
+                        <h3 className="text-sm font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                          <FileText className="h-4 w-4 text-emerald-500" />
+                          Basis UST-ID
+                        </h3>
+                        <div className="grid grid-cols-3 gap-4">
+                          <div className="space-y-1.5">
+                            <Label className="text-sm text-gray-600">UST-LKZ</Label>
+                            <Input {...register('umsatzsteuer_lkz')} disabled={!isEditing} className="bg-white" placeholder="DE" maxLength={3} />
+                          </div>
+                          <div className="col-span-2 space-y-1.5">
+                            <Label className="text-sm text-gray-600">UST-ID</Label>
+                            <Input {...register('umsatzsteuer_id')} disabled={!isEditing} className="bg-white" placeholder="123456789" />
+                          </div>
+                          <div className="col-span-3 space-y-1.5">
+                            <Label className="text-sm text-gray-600">Steuernummer</Label>
+                            <Input {...register('steuernummer')} disabled={!isEditing} className="bg-white" />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Weitere UST-IDs (dynamisch) */}
+                      <div>
+                        <div className="flex items-center justify-between mb-4">
+                          <h3 className="text-sm font-semibold text-gray-900">Weitere UST-IDs</h3>
+                          {isEditing && (
+                            <Button type="button" size="sm" variant="outline" onClick={addUstId}>
+                              <Plus className="h-4 w-4 mr-1" />Hinzufügen
+                            </Button>
+                          )}
+                        </div>
+                        
+                        <div className="space-y-3">
+                          {weitereUstIds.length === 0 ? (
+                            <p className="text-sm text-gray-500 text-center py-4 bg-gray-50 rounded-lg">
+                              Keine weiteren UST-IDs vorhanden
+                            </p>
+                          ) : (
+                            weitereUstIds.map((ust) => (
+                              <div key={ust.id} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                                <div className="flex-1 grid grid-cols-3 gap-3">
+                                  <Select 
+                                    value={ust.land} 
+                                    onValueChange={(v) => updateUstId(ust.id, 'land', v)}
+                                    disabled={!isEditing}
+                                  >
+                                    <SelectTrigger className="bg-white">
+                                      <SelectValue placeholder="Land wählen" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      {EU_LAENDER.map(l => (
+                                        <SelectItem key={l.land} value={l.land}>{l.land}</SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
+                                  <Input 
+                                    value={ust.lkz}
+                                    onChange={(e) => updateUstId(ust.id, 'lkz', e.target.value)}
+                                    disabled={!isEditing}
+                                    className="bg-white"
+                                    placeholder="LKZ"
+                                    maxLength={4}
+                                  />
+                                  <Input 
+                                    value={ust.ustid}
+                                    onChange={(e) => updateUstId(ust.id, 'ustid', e.target.value)}
+                                    disabled={!isEditing}
+                                    className="bg-white"
+                                    placeholder="UST-ID Nummer"
+                                  />
                                 </div>
-                              ))
-                            )}
+                                {isEditing && (
+                                  <Button 
+                                    type="button" 
+                                    variant="ghost" 
+                                    size="icon"
+                                    className="text-red-500 hover:text-red-700"
+                                    onClick={() => removeUstId(ust.id)}
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                )}
+                              </div>
+                            ))
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Sperren Section */}
+                  {activeSection === 'sperren' && (
+                    <div className="space-y-6">
+                      <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+                        <h3 className="text-sm font-semibold text-red-800 mb-4 flex items-center gap-2">
+                          <Shield className="h-4 w-4" />
+                          Sperren & Einschränkungen
+                        </h3>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="flex items-center gap-3 p-2 rounded hover:bg-red-100/50">
+                            <Switch checked={watchFields.rechnungen_sperren} onCheckedChange={(c) => setValue('rechnungen_sperren', c)} disabled={!isEditing} />
+                            <Label className="text-sm text-gray-700">Rechnungen sperren</Label>
+                          </div>
+                          <div className="flex items-center gap-3 p-2 rounded hover:bg-red-100/50">
+                            <Switch checked={watchFields.gutschriften_sperren} onCheckedChange={(c) => setValue('gutschriften_sperren', c)} disabled={!isEditing} />
+                            <Label className="text-sm text-gray-700">Gutschriften sperren</Label>
+                          </div>
+                          <div className="flex items-center gap-3 p-2 rounded hover:bg-red-100/50">
+                            <Switch checked={watchFields.wareneingang_sperren} onCheckedChange={(c) => setValue('wareneingang_sperren', c)} disabled={!isEditing} />
+                            <Label className="text-sm text-gray-700">Wareneingang sperren</Label>
+                          </div>
+                          <div className="flex items-center gap-3 p-2 rounded hover:bg-red-100/50">
+                            <Switch checked={watchFields.warenausgang_sperren} onCheckedChange={(c) => setValue('warenausgang_sperren', c)} disabled={!isEditing} />
+                            <Label className="text-sm text-gray-700">Warenausgang sperren</Label>
+                          </div>
+                          <div className="col-span-2 flex items-center gap-3 p-2 rounded hover:bg-red-100/50">
+                            <Switch checked={watchFields.wird_nicht_gemahnt} onCheckedChange={(c) => setValue('wird_nicht_gemahnt', c)} disabled={!isEditing} />
+                            <Label className="text-sm text-gray-700">Wird nicht gemahnt</Label>
                           </div>
                         </div>
                       </div>
-                    )}
 
-                    {/* Sperren Section */}
-                    {activeSection === 'sperren' && (
-                      <div className="space-y-6">
-                        <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-                          <h3 className="text-sm font-semibold text-red-800 mb-4 flex items-center gap-2">
-                            <Shield className="h-4 w-4" />
-                            Sperren & Einschränkungen
-                          </h3>
-                          <div className="grid grid-cols-2 gap-4">
-                            <div className="flex items-center gap-3 p-2 rounded hover:bg-red-100/50">
-                              <Switch checked={watchFields.rechnungen_sperren} onCheckedChange={(c) => setValue('rechnungen_sperren', c)} disabled={!isEditing} />
-                              <Label className="text-sm text-gray-700">Rechnungen sperren</Label>
-                            </div>
-                            <div className="flex items-center gap-3 p-2 rounded hover:bg-red-100/50">
-                              <Switch checked={watchFields.gutschriften_sperren} onCheckedChange={(c) => setValue('gutschriften_sperren', c)} disabled={!isEditing} />
-                              <Label className="text-sm text-gray-700">Gutschriften sperren</Label>
-                            </div>
-                            <div className="flex items-center gap-3 p-2 rounded hover:bg-red-100/50">
-                              <Switch checked={watchFields.wareneingang_sperren} onCheckedChange={(c) => setValue('wareneingang_sperren', c)} disabled={!isEditing} />
-                              <Label className="text-sm text-gray-700">Wareneingang sperren</Label>
-                            </div>
-                            <div className="flex items-center gap-3 p-2 rounded hover:bg-red-100/50">
-                              <Switch checked={watchFields.warenausgang_sperren} onCheckedChange={(c) => setValue('warenausgang_sperren', c)} disabled={!isEditing} />
-                              <Label className="text-sm text-gray-700">Warenausgang sperren</Label>
-                            </div>
-                            <div className="col-span-2 flex items-center gap-3 p-2 rounded hover:bg-red-100/50">
-                              <Switch checked={watchFields.wird_nicht_gemahnt} onCheckedChange={(c) => setValue('wird_nicht_gemahnt', c)} disabled={!isEditing} />
-                              <Label className="text-sm text-gray-700">Wird nicht gemahnt</Label>
-                            </div>
+                      <div>
+                        <h3 className="text-sm font-semibold text-gray-900 mb-4">Status</h3>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                            <Switch checked={watchFields.aktiv} onCheckedChange={(c) => setValue('aktiv', c)} disabled={!isEditing} />
+                            <Label className="text-sm text-gray-700">Adresse aktiv</Label>
                           </div>
-                        </div>
-
-                        <div>
-                          <h3 className="text-sm font-semibold text-gray-900 mb-4">Status</h3>
-                          <div className="grid grid-cols-2 gap-4">
-                            <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                              <Switch checked={watchFields.aktiv} onCheckedChange={(c) => setValue('aktiv', c)} disabled={!isEditing} />
-                              <Label className="text-sm text-gray-700">Adresse aktiv</Label>
-                            </div>
-                            <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                              <Switch checked={watchFields.barkunde} onCheckedChange={(c) => setValue('barkunde', c)} disabled={!isEditing} />
-                              <Label className="text-sm text-gray-700">Barkunde</Label>
-                            </div>
+                          <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                            <Switch checked={watchFields.barkunde} onCheckedChange={(c) => setValue('barkunde', c)} disabled={!isEditing} />
+                            <Label className="text-sm text-gray-700">Barkunde</Label>
                           </div>
                         </div>
                       </div>
-                    )}
+                    </div>
+                  )}
 
-                    {/* Bemerkungen Section */}
-                    {activeSection === 'bemerkungen' && (
-                      <div className="space-y-6">
-                        <div>
-                          <h3 className="text-sm font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                            <MessageSquare className="h-4 w-4 text-emerald-500" />
-                            Allgemeine Bemerkungen
-                          </h3>
-                          <Textarea 
-                            {...register('bemerkungen')} 
-                            disabled={!isEditing} 
-                            className="bg-white min-h-[120px]" 
-                            placeholder="Allgemeine Notizen zur Adresse..."
-                          />
-                        </div>
-
-                        <div>
-                          <h3 className="text-sm font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                            <Clock className="h-4 w-4 text-emerald-500" />
-                            Fahrplan / Logistik
-                          </h3>
-                          <Textarea 
-                            {...register('bemerkung_fahrplan')} 
-                            disabled={!isEditing} 
-                            className="bg-white min-h-[100px]" 
-                            placeholder="Hinweise für Transport und Logistik..."
-                          />
-                        </div>
+                  {/* Bemerkungen Section */}
+                  {activeSection === 'bemerkungen' && (
+                    <div className="space-y-6">
+                      <div>
+                        <h3 className="text-sm font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                          <MessageSquare className="h-4 w-4 text-emerald-500" />
+                          Allgemeine Bemerkungen
+                        </h3>
+                        <Textarea 
+                          {...register('bemerkungen')} 
+                          disabled={!isEditing} 
+                          className="bg-white min-h-[120px]" 
+                          placeholder="Allgemeine Notizen zur Adresse..."
+                        />
                       </div>
-                    )}
-                  </form>
+
+                      <div>
+                        <h3 className="text-sm font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                          <Clock className="h-4 w-4 text-emerald-500" />
+                          Fahrplan / Logistik
+                        </h3>
+                        <Textarea 
+                          {...register('bemerkung_fahrplan')} 
+                          disabled={!isEditing} 
+                          className="bg-white min-h-[100px]" 
+                          placeholder="Hinweise für Transport und Logistik..."
+                        />
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </motion.div>
@@ -1143,7 +1179,7 @@ export function AdressenPage() {
   );
 }
 
-// ========================== ANSPRECHPARTNER DIALOG ==========================
+// ========================== ANSPRECHPARTNER DIALOG MIT OCR ==========================
 interface ApDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -1157,6 +1193,7 @@ function AnsprechpartnerDialog({ open, onOpenChange, ansprechpartner, adresseId,
   const [profilbild, setProfilbild] = useState<string | null>(null);
   const [visitenkarte, setVisitenkarte] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [isOcrLoading, setIsOcrLoading] = useState(false);
 
   useEffect(() => {
     if (ansprechpartner) {
@@ -1180,12 +1217,14 @@ function AnsprechpartnerDialog({ open, onOpenChange, ansprechpartner, adresseId,
         setProfilbild(reader.result as string);
       } else {
         setVisitenkarte(reader.result as string);
+        // OCR für Visitenkarte aufrufen
+        runOcr(file);
       }
     };
     reader.readAsDataURL(file);
   };
 
-  const handleDrop = (e: React.DragEvent, type: 'visitenkarte') => {
+  const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
     
@@ -1194,8 +1233,44 @@ function AnsprechpartnerDialog({ open, onOpenChange, ansprechpartner, adresseId,
       const reader = new FileReader();
       reader.onloadend = () => {
         setVisitenkarte(reader.result as string);
+        runOcr(file);
       };
       reader.readAsDataURL(file);
+    }
+  };
+
+  // OCR Funktion
+  const runOcr = async (file: File) => {
+    setIsOcrLoading(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      
+      const response = await api.post('/ocr/visitenkarte', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      
+      if (response.data.success && response.data.data) {
+        const ocr = response.data.data;
+        setFormData(prev => ({
+          ...prev,
+          vorname: ocr.vorname || prev.vorname,
+          nachname: ocr.nachname || prev.nachname,
+          funktion: ocr.funktion || prev.funktion,
+          telefon: ocr.telefon || prev.telefon,
+          mobil: ocr.mobil || prev.mobil,
+          email: ocr.email || prev.email,
+          strasse: ocr.strasse || prev.strasse,
+          plz: ocr.plz || prev.plz,
+          ort: ocr.ort || prev.ort,
+        }));
+        toast.success('Visitenkarte wurde erkannt');
+      }
+    } catch (error) {
+      console.error('OCR Error:', error);
+      toast.error('Visitenkarte konnte nicht analysiert werden');
+    } finally {
+      setIsOcrLoading(false);
     }
   };
 
@@ -1347,9 +1422,17 @@ function AnsprechpartnerDialog({ open, onOpenChange, ansprechpartner, adresseId,
             </div>
           </div>
 
-          {/* Visitenkarte Upload mit Drag & Drop */}
+          {/* Visitenkarte Upload mit Drag & Drop + OCR */}
           <div>
-            <h4 className="text-sm font-semibold text-gray-900 mb-3">Visitenkarte</h4>
+            <div className="flex items-center justify-between mb-3">
+              <h4 className="text-sm font-semibold text-gray-900">Visitenkarte</h4>
+              {isOcrLoading && (
+                <div className="flex items-center gap-2 text-sm text-emerald-600">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Wird analysiert...
+                </div>
+              )}
+            </div>
             <div
               className={cn(
                 "border-2 border-dashed rounded-lg p-6 text-center transition-colors",
@@ -1358,7 +1441,7 @@ function AnsprechpartnerDialog({ open, onOpenChange, ansprechpartner, adresseId,
               )}
               onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
               onDragLeave={() => setIsDragging(false)}
-              onDrop={(e) => handleDrop(e, 'visitenkarte')}
+              onDrop={handleDrop}
             >
               {visitenkarte ? (
                 <div className="relative">
@@ -1379,11 +1462,15 @@ function AnsprechpartnerDialog({ open, onOpenChange, ansprechpartner, adresseId,
                 </div>
               ) : (
                 <label className="cursor-pointer">
-                  <Upload className="h-10 w-10 text-gray-400 mx-auto mb-2" />
-                  <p className="text-sm text-gray-600">
-                    Visitenkarte hierher ziehen oder <span className="text-emerald-600 font-medium">klicken</span>
-                  </p>
-                  <p className="text-xs text-gray-400 mt-1">PNG, JPG bis 5MB</p>
+                  <div className="flex flex-col items-center">
+                    <div className="h-12 w-12 rounded-full bg-emerald-100 flex items-center justify-center mb-3">
+                      <Scan className="h-6 w-6 text-emerald-600" />
+                    </div>
+                    <p className="text-sm text-gray-600">
+                      Visitenkarte hierher ziehen oder <span className="text-emerald-600 font-medium">klicken</span>
+                    </p>
+                    <p className="text-xs text-gray-400 mt-1">Die Kontaktdaten werden automatisch erkannt (OCR)</p>
+                  </div>
                   <input type="file" accept="image/*" className="hidden" onChange={(e) => handleFileChange(e, 'visitenkarte')} />
                 </label>
               )}
