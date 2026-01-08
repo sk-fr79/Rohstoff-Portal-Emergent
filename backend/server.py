@@ -786,6 +786,47 @@ def validate_adresse_geschaeftslogik(
 # ADRESSEN ENDPOINTS
 # ============================================================
 
+@app.post("/api/adressen/validieren")
+async def validiere_adresse(data: AdresseCreate, user = Depends(get_current_user)):
+    """
+    Validiert eine Adresse nach Geschäftslogik (aus Java: __FS_Adress_Check)
+    Gibt Fehler und Warnungen zurück ohne zu speichern
+    """
+    result = validate_adresse_geschaeftslogik(
+        ist_firma=data.ist_firma,
+        ist_privat=not data.ist_firma,
+        land=data.land,
+        umsatzsteuer_lkz=data.umsatzsteuer_lkz,
+        umsatzsteuer_id=data.umsatzsteuer_id,
+        steuernummer=data.steuernummer,
+        ausweis_nummer=data.ausweis_nummer,
+        ausweis_ablauf=data.ausweis_ablauf,
+        firma_ohne_ustid=data.firma_ohne_ustid,
+        privat_mit_ustid=data.privat_mit_ustid,
+    )
+    
+    return {
+        "success": True,
+        "validierung": result.model_dump()
+    }
+
+@app.get("/api/laender")
+async def get_laender(user = Depends(get_current_user)):
+    """Gibt die Liste der konfigurierten Länder mit UST-Präfixen zurück"""
+    laender_liste = []
+    for name, info in EU_LAENDER.items():
+        laender_liste.append({
+            "name": name,
+            "ust_praefix": info["ust_praefix"],
+            "ist_eu": info["ist_eu"],
+            "ist_homeland": info["ist_homeland"]
+        })
+    
+    return {
+        "success": True,
+        "data": sorted(laender_liste, key=lambda x: x["name"])
+    }
+
 async def generate_kdnr(mandant_id: str, adresstyp: int) -> str:
     """Automatische KDNR-Generierung (Business-Logic aus Java)"""
     mandant = await db.mandanten.find_one({"_id": mandant_id})
