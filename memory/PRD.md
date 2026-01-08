@@ -15,15 +15,23 @@ Die gesamte Geschäftslogik der bestehenden Anwendung soll 1:1 übernommen werde
 
 ## Implementiert (Stand: 08.01.2026)
 
-### ✅ UI-Redesign: Enterprise Data Grid
-- **Tabellarische Ansicht** für alle Module (Adressen, Artikel, Kontrakte)
-- Sortierbare Spalten
-- Spalten ein-/ausblendbar
-- Suchfeld mit Clear-Button
-- Pagination mit 10/20/50/100 Zeilen pro Seite
-- Zebra-Striping + Hover-Effekte
-- Inline-Aktionen (Details, Bearbeiten, Löschen)
-- Status-Badges mit Farben
+### ✅ Artikelstamm - Vollständige Feldstruktur aus Java-System
+- **Tab 1 - Artikel-Angaben:**
+  - Status-Flags: Aktiv, Gefahrgut, Leergut, Elektro/Elektronik, Produkt, Dienstleistung, End of Waste, EoW (Lager)
+  - Artikelgruppe, Artikelgruppe (FiBu)
+  - ANR1 (Artikelnummer), EAK-Code (ID-Artikel)
+  - Artikelbez. 1 + 2 (intern)
+  - Einheit, Faktor, Preiseinheit, Nachkommastellen
+  - AVV-Code Bar-Anlieferer, AVV-Code Ausgang mvg
+- **Tab 2 - Nummern-Codes:**
+  - Basel-Code + Basel-Notiz
+  - OECD-Code + OECD-Notiz
+  - Zolltarif-Nummer + Zolltarif-Text
+  - Anhang 7 (IIIA) Nummer/Text
+  - Anhang 7 (IIIB) Nummer/Text
+  - Österreichische AVV
+- **Tab 3 - Bemerkungen:**
+  - Bemerkung (intern) - großes Textfeld für Sortenanforderungen
 
 ### ✅ Backend (FastAPI)
 - **Authentifizierung:** JWT-basierte Auth mit Login, Logout, /auth/me
