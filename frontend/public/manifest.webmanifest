@@ -1,0 +1,23 @@
+{
+  "name": "Rohstoff Portal",
+  "short_name": "Rohstoff",
+  "description": "Enterprise ERP für Rohstoffhandel",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f9fafb",
+  "theme_color": "#dc2626",
+  "icons": [
+    {
+      "src": "/logo192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/logo512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
