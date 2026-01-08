@@ -341,10 +341,10 @@ class AdresseUpdate(BaseModel):
     umsatzsteuer_lkz: Optional[str] = Field(None, max_length=3)
     umsatzsteuer_id: Optional[str] = Field(None, max_length=20)
     steuernummer: Optional[str] = Field(None, max_length=20)
-    ust_at: Optional[str] = Field(None, max_length=20)
-    ust_nl: Optional[str] = Field(None, max_length=20)
-    ust_ch: Optional[str] = Field(None, max_length=20)
+    weitere_ustids: Optional[List[Dict[str, str]]] = None
     handelsregister: Optional[str] = Field(None, max_length=50)
+    firmenlogo: Optional[str] = None
+    ansprechpartner: Optional[List[Dict[str, Any]]] = None
     waehrung: Optional[str] = Field(None, max_length=3)
     zahlungsbedingung_ek: Optional[str] = Field(None, max_length=100)
     zahlungsbedingung_vk: Optional[str] = Field(None, max_length=100)
