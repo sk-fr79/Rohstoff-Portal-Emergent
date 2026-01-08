@@ -343,6 +343,9 @@ class AdresseUpdate(BaseModel):
     ausweis_nummer: Optional[str] = Field(None, max_length=30)
     ausweis_ablauf: Optional[str] = Field(None, max_length=10)
     geburtsdatum: Optional[str] = Field(None, max_length=10)
+    # Sonderschalter
+    firma_ohne_ustid: Optional[bool] = None
+    privat_mit_ustid: Optional[bool] = None
     bemerkungen: Optional[str] = Field(None, max_length=700)
     bemerkung_fahrplan: Optional[str] = Field(None, max_length=300)
     lieferinfo_tpa: Optional[str] = Field(None, max_length=300)
