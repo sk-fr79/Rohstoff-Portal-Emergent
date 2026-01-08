@@ -15,6 +15,34 @@ Die gesamte Geschäftslogik der bestehenden Anwendung soll 1:1 übernommen werde
 
 ## Implementiert (Stand: 09.01.2026)
 
+### ✅ Geschäftslogik - Adress-Validierung (NEU - 09.01.2026)
+Portiert aus Java-Code: `rohstoff.Echo2BusinessLogic.FIRMENSTAMM.__FS_Adress_Check`
+
+**Validierungsregeln:**
+- FIRMA im Inland ohne UST-ID: Sonderschalter "Firma ohne UST-ID" + Steuernummer erforderlich
+- FIRMA im EU-Ausland: UST-ID MUSS vorhanden sein
+- FIRMA im Nicht-EU-Ausland: UST-Länderkürzel muss mit Land übereinstimmen
+- PRIVAT im Inland: Ausweis ODER Steuernummer erforderlich
+- PRIVAT im Ausland: Ausweisnummer erforderlich
+- PRIVAT im Ausland: Keine UST-ID erlaubt
+- UST-ID muss vollständig sein (LKZ + Nummer)
+- UST-Länderkürzel muss mit Land übereinstimmen
+- Sonderschalter nur im Inland sinnvoll
+- Beide Sonderschalter nicht gleichzeitig aktiv
+
+**Neue Endpunkte:**
+- `POST /api/adressen/validieren` - Validiert Adresse ohne zu speichern
+- `GET /api/laender` - Liste der 30 konfigurierten Länder mit UST-Präfixen
+
+**Neue Felder:**
+- `firma_ohne_ustid` - Sonderschalter für Firmen ohne UST-ID im Inland
+- `privat_mit_ustid` - Sonderschalter für Privatpersonen mit UST-ID im Inland
+
+**Frontend:**
+- Neue Sektion "Steuerliche Einstufung (Geschäftslogik)" im Finanz/Handel-Tab
+- FIRMA/PRIVAT Toggle mit kontextabhängiger Beschreibung
+- Sonderschalter werden automatisch aktiviert/deaktiviert basierend auf Land und Typ
+
 ### ✅ Adressen-Stammdaten - Vollständige Feldstruktur aus Java-System
 - **Tab 1 - Adresse:**
   - Status: Aktiv, Wareneingang, Warenausgang, Firma, Barkunde, Scheckdruck
