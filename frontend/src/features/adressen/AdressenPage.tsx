@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { ColumnDef } from '@tanstack/react-table';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -8,10 +8,11 @@ import { z } from 'zod';
 import { toast } from 'sonner';
 import { 
   Plus, MoreHorizontal, Pencil, Trash2, Eye, Building2, User, MapPin, 
-  Save, Phone, Mail, Globe, CreditCard, FileText, Users, X, ChevronRight,
-  Banknote, Shield, Clock, MessageSquare, AlertTriangle
+  Save, Phone, Mail, Globe, CreditCard, FileText, Users, X, Upload,
+  Banknote, Shield, Clock, MessageSquare, AlertTriangle, UserCircle,
+  Image as ImageIcon, Camera
 } from 'lucide-react';
-import { adressenApi } from '@/services/api/client';
+import { adressenApi, api } from '@/services/api/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -68,9 +69,6 @@ const adresseSchema = z.object({
   umsatzsteuer_lkz: z.string().max(3).optional(),
   umsatzsteuer_id: z.string().max(20).optional(),
   steuernummer: z.string().max(20).optional(),
-  ust_at: z.string().max(20).optional(),
-  ust_nl: z.string().max(20).optional(),
-  ust_ch: z.string().max(20).optional(),
   handelsregister: z.string().max(50).optional(),
   waehrung: z.string().max(3).optional(),
   zahlungsbedingung_ek: z.string().max(100).optional(),
@@ -92,9 +90,35 @@ const adresseSchema = z.object({
 
 type AdresseForm = z.infer<typeof adresseSchema>;
 
+interface UstId {
+  id: string;
+  land: string;
+  lkz: string;
+  ustid: string;
+}
+
+interface Ansprechpartner {
+  id: string;
+  vorname: string;
+  nachname: string;
+  funktion?: string;
+  sprache?: string;
+  strasse?: string;
+  plz?: string;
+  ort?: string;
+  telefon?: string;
+  mobil?: string;
+  email?: string;
+  profilbild?: string;
+  visitenkarte?: string;
+}
+
 interface Adresse extends AdresseForm {
   id: string;
   kdnr: string;
+  firmenlogo?: string;
+  weitere_ustids?: UstId[];
+  ansprechpartner?: Ansprechpartner[];
   erstellt_am?: string;
   letzte_aenderung?: string;
 }
@@ -109,6 +133,26 @@ const detailSections = [
   { id: 'bemerkungen', label: 'Bemerkungen', icon: MessageSquare },
 ];
 
+// EU-Länder für UST-ID Dropdown
+const EU_LAENDER = [
+  { land: 'Deutschland', lkz: 'DE' },
+  { land: 'Österreich', lkz: 'AT' },
+  { land: 'Niederlande', lkz: 'NL' },
+  { land: 'Schweiz', lkz: 'CHE' },
+  { land: 'Belgien', lkz: 'BE' },
+  { land: 'Frankreich', lkz: 'FR' },
+  { land: 'Italien', lkz: 'IT' },
+  { land: 'Spanien', lkz: 'ES' },
+  { land: 'Polen', lkz: 'PL' },
+  { land: 'Tschechien', lkz: 'CZ' },
+  { land: 'Dänemark', lkz: 'DK' },
+  { land: 'Schweden', lkz: 'SE' },
+  { land: 'Ungarn', lkz: 'HU' },
+  { land: 'Rumänien', lkz: 'RO' },
+  { land: 'Slowakei', lkz: 'SK' },
+  { land: 'Großbritannien', lkz: 'GB' },
+];
+
 // ========================== COMPONENT ==========================
 export function AdressenPage() {
   const queryClient = useQueryClient();
@@ -116,6 +160,12 @@ export function AdressenPage() {
   const [selectedAdresse, setSelectedAdresse] = useState<Adresse | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [activeSection, setActiveSection] = useState('stamm');
+  
+  // States für neue Features
+  const [weitereUstIds, setWeitereUstIds] = useState<UstId[]>([]);
+  const [ansprechpartnerList, setAnsprechpartnerList] = useState<Ansprechpartner[]>([]);
+  const [showApDialog, setShowApDialog] = useState(false);
+  const [editingAp, setEditingAp] = useState<Ansprechpartner | null>(null);
 
   const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm<AdresseForm>({
     resolver: zodResolver(adresseSchema),
@@ -149,7 +199,7 @@ export function AdressenPage() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: AdresseForm }) => adressenApi.update(id, data),
+    mutationFn: ({ id, data }: { id: string; data: any }) => adressenApi.update(id, data),
     onSuccess: (response) => {
       queryClient.invalidateQueries({ queryKey: ['adressen'] });
       setSelectedAdresse(response.data.data);
@@ -184,14 +234,20 @@ export function AdressenPage() {
           setValue(key as keyof AdresseForm, value as any);
         }
       });
+      setWeitereUstIds(selectedAdresse.weitere_ustids || []);
+      setAnsprechpartnerList(selectedAdresse.ansprechpartner || []);
     }
   }, [selectedAdresse, setValue]);
 
   const onSubmit = (data: AdresseForm) => {
+    const fullData = {
+      ...data,
+      weitere_ustids: weitereUstIds,
+    };
     if (isEditing && selectedAdresse) {
-      updateMutation.mutate({ id: selectedAdresse.id, data });
+      updateMutation.mutate({ id: selectedAdresse.id, data: fullData });
     } else {
-      createMutation.mutate(data);
+      createMutation.mutate(fullData as any);
     }
   };
 
@@ -199,6 +255,83 @@ export function AdressenPage() {
     setSelectedAdresse(adresse);
     setIsEditing(false);
     setActiveSection('stamm');
+  };
+
+  // Logo Upload Handler
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !selectedAdresse) return;
+    
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    try {
+      const response = await api.post(`/upload/logo/${selectedAdresse.id}`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      if (response.data.success) {
+        setSelectedAdresse({ ...selectedAdresse, firmenlogo: response.data.data.firmenlogo });
+        queryClient.invalidateQueries({ queryKey: ['adressen'] });
+        toast.success('Logo hochgeladen');
+      }
+    } catch (error) {
+      toast.error('Fehler beim Hochladen');
+    }
+  };
+
+  // UST-ID Handlers
+  const addUstId = () => {
+    setWeitereUstIds([...weitereUstIds, { id: crypto.randomUUID(), land: '', lkz: '', ustid: '' }]);
+  };
+
+  const updateUstId = (id: string, field: keyof UstId, value: string) => {
+    setWeitereUstIds(weitereUstIds.map(u => {
+      if (u.id === id) {
+        if (field === 'land') {
+          const selected = EU_LAENDER.find(l => l.land === value);
+          return { ...u, land: value, lkz: selected?.lkz || '' };
+        }
+        return { ...u, [field]: value };
+      }
+      return u;
+    }));
+  };
+
+  const removeUstId = (id: string) => {
+    setWeitereUstIds(weitereUstIds.filter(u => u.id !== id));
+  };
+
+  // Ansprechpartner Handlers
+  const saveAnsprechpartner = async (ap: Ansprechpartner) => {
+    if (!selectedAdresse) return;
+    
+    try {
+      if (editingAp?.id) {
+        await api.put(`/adressen/${selectedAdresse.id}/ansprechpartner/${ap.id}`, ap);
+        setAnsprechpartnerList(ansprechpartnerList.map(a => a.id === ap.id ? ap : a));
+      } else {
+        const response = await api.post(`/adressen/${selectedAdresse.id}/ansprechpartner`, ap);
+        setAnsprechpartnerList([...ansprechpartnerList, response.data.data]);
+      }
+      setShowApDialog(false);
+      setEditingAp(null);
+      queryClient.invalidateQueries({ queryKey: ['adressen'] });
+      toast.success('Ansprechpartner gespeichert');
+    } catch (error) {
+      toast.error('Fehler beim Speichern');
+    }
+  };
+
+  const deleteAnsprechpartner = async (apId: string) => {
+    if (!selectedAdresse) return;
+    
+    try {
+      await api.delete(`/adressen/${selectedAdresse.id}/ansprechpartner/${apId}`);
+      setAnsprechpartnerList(ansprechpartnerList.filter(a => a.id !== apId));
+      toast.success('Ansprechpartner gelöscht');
+    } catch (error) {
+      toast.error('Fehler beim Löschen');
+    }
   };
 
   // Table Columns
@@ -299,7 +432,7 @@ export function AdressenPage() {
           </div>
         </div>
 
-        {/* Detail Panel - Slide-in from right */}
+        {/* Detail Panel */}
         <AnimatePresence>
           {selectedAdresse && (
             <motion.div
@@ -312,11 +445,31 @@ export function AdressenPage() {
               {/* Detail Header */}
               <div className="bg-gray-50 border-b border-gray-200 px-4 py-3 flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className={cn(
-                    "h-10 w-10 rounded-lg flex items-center justify-center",
-                    watchFields.ist_firma ? "bg-blue-100" : "bg-purple-100"
-                  )}>
-                    {watchFields.ist_firma ? <Building2 className="h-5 w-5 text-blue-600" /> : <User className="h-5 w-5 text-purple-600" />}
+                  {/* Firmenlogo / Avatar */}
+                  <div className="relative group">
+                    {selectedAdresse.firmenlogo ? (
+                      <img 
+                        src={selectedAdresse.firmenlogo} 
+                        alt="Logo" 
+                        className="h-12 w-12 rounded-lg object-cover border border-gray-200"
+                      />
+                    ) : (
+                      <div className={cn(
+                        "h-12 w-12 rounded-lg flex items-center justify-center",
+                        watchFields.ist_firma ? "bg-blue-100" : "bg-purple-100"
+                      )}>
+                        {watchFields.ist_firma ? 
+                          <Building2 className="h-6 w-6 text-blue-600" /> : 
+                          <User className="h-6 w-6 text-purple-600" />
+                        }
+                      </div>
+                    )}
+                    {isEditing && watchFields.ist_firma && (
+                      <label className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-lg opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity">
+                        <Camera className="h-5 w-5 text-white" />
+                        <input type="file" accept="image/*" className="hidden" onChange={handleLogoUpload} />
+                      </label>
+                    )}
                   </div>
                   <div>
                     <h2 className="font-semibold text-gray-900">{selectedAdresse.name1}</h2>
@@ -366,6 +519,39 @@ export function AdressenPage() {
                     {/* Stammdaten Section */}
                     {activeSection === 'stamm' && (
                       <div className="space-y-6">
+                        {/* Firmenlogo Upload */}
+                        {watchFields.ist_firma && (
+                          <div className="p-4 bg-gray-50 rounded-lg">
+                            <h3 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                              <ImageIcon className="h-4 w-4 text-emerald-500" />
+                              Firmenlogo
+                            </h3>
+                            <div className="flex items-center gap-4">
+                              {selectedAdresse?.firmenlogo ? (
+                                <img 
+                                  src={selectedAdresse.firmenlogo} 
+                                  alt="Logo" 
+                                  className="h-20 w-20 rounded-lg object-cover border border-gray-200"
+                                />
+                              ) : (
+                                <div className="h-20 w-20 rounded-lg bg-gray-200 flex items-center justify-center">
+                                  <Building2 className="h-10 w-10 text-gray-400" />
+                                </div>
+                              )}
+                              {isEditing && (
+                                <div className="flex-1">
+                                  <label className="flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-emerald-400 transition-colors">
+                                    <Upload className="h-5 w-5 text-gray-400" />
+                                    <span className="text-sm text-gray-600">Logo hochladen</span>
+                                    <input type="file" accept="image/*" className="hidden" onChange={handleLogoUpload} />
+                                  </label>
+                                  <p className="text-xs text-gray-500 mt-2">PNG, JPG bis 5MB</p>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        )}
+
                         <div>
                           <h3 className="text-sm font-semibold text-gray-900 mb-4 flex items-center gap-2">
                             <Building2 className="h-4 w-4 text-emerald-500" />
@@ -456,14 +642,9 @@ export function AdressenPage() {
                               <Select value={watchFields.land || "Deutschland"} onValueChange={(v) => setValue('land', v)} disabled={!isEditing}>
                                 <SelectTrigger className="bg-white"><SelectValue /></SelectTrigger>
                                 <SelectContent>
-                                  <SelectItem value="Deutschland">Deutschland</SelectItem>
-                                  <SelectItem value="Österreich">Österreich</SelectItem>
-                                  <SelectItem value="Schweiz">Schweiz</SelectItem>
-                                  <SelectItem value="Niederlande">Niederlande</SelectItem>
-                                  <SelectItem value="Belgien">Belgien</SelectItem>
-                                  <SelectItem value="Frankreich">Frankreich</SelectItem>
-                                  <SelectItem value="Polen">Polen</SelectItem>
-                                  <SelectItem value="Tschechien">Tschechien</SelectItem>
+                                  {EU_LAENDER.map(l => (
+                                    <SelectItem key={l.land} value={l.land}>{l.land}</SelectItem>
+                                  ))}
                                 </SelectContent>
                               </Select>
                             </div>
@@ -526,25 +707,82 @@ export function AdressenPage() {
                           </div>
                         </div>
 
-                        {/* Postfach */}
+                        {/* Ansprechpartner */}
                         <div>
-                          <h3 className="text-sm font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                            <Mail className="h-4 w-4 text-emerald-500" />
-                            Postfach
-                          </h3>
-                          <div className="grid grid-cols-2 gap-4">
-                            <div className="col-span-2 flex items-center gap-2 mb-2">
-                              <Switch checked={watchFields.postfach_aktiv} onCheckedChange={(c) => setValue('postfach_aktiv', c)} disabled={!isEditing} />
-                              <Label className="text-sm text-gray-600">Postfach verwenden</Label>
-                            </div>
-                            <div className="space-y-1.5">
-                              <Label className="text-sm text-gray-600">PLZ Postfach</Label>
-                              <Input {...register('plz_postfach')} disabled={!isEditing || !watchFields.postfach_aktiv} className="bg-white" />
-                            </div>
-                            <div className="space-y-1.5">
-                              <Label className="text-sm text-gray-600">Postfach</Label>
-                              <Input {...register('postfach')} disabled={!isEditing || !watchFields.postfach_aktiv} className="bg-white" />
-                            </div>
+                          <div className="flex items-center justify-between mb-4">
+                            <h3 className="text-sm font-semibold text-gray-900 flex items-center gap-2">
+                              <Users className="h-4 w-4 text-emerald-500" />
+                              Ansprechpartner
+                            </h3>
+                            {isEditing && (
+                              <Button 
+                                type="button" 
+                                size="sm" 
+                                variant="outline"
+                                onClick={() => { setEditingAp(null); setShowApDialog(true); }}
+                              >
+                                <Plus className="h-4 w-4 mr-1" />Hinzufügen
+                              </Button>
+                            )}
+                          </div>
+                          
+                          <div className="space-y-3">
+                            {ansprechpartnerList.length === 0 ? (
+                              <p className="text-sm text-gray-500 text-center py-4 bg-gray-50 rounded-lg">
+                                Keine Ansprechpartner vorhanden
+                              </p>
+                            ) : (
+                              ansprechpartnerList.map((ap) => (
+                                <div 
+                                  key={ap.id} 
+                                  className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                                >
+                                  {/* Profilbild */}
+                                  {ap.profilbild ? (
+                                    <img 
+                                      src={ap.profilbild} 
+                                      alt={`${ap.vorname} ${ap.nachname}`}
+                                      className="h-12 w-12 rounded-full object-cover border-2 border-white shadow"
+                                    />
+                                  ) : (
+                                    <div className="h-12 w-12 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center shadow">
+                                      <UserCircle className="h-7 w-7 text-white" />
+                                    </div>
+                                  )}
+                                  
+                                  <div className="flex-1 min-w-0">
+                                    <p className="font-medium text-gray-900">{ap.vorname} {ap.nachname}</p>
+                                    {ap.funktion && <p className="text-sm text-gray-500">{ap.funktion}</p>}
+                                    <div className="flex gap-4 mt-1 text-xs text-gray-500">
+                                      {ap.telefon && <span className="flex items-center gap-1"><Phone className="h-3 w-3" />{ap.telefon}</span>}
+                                      {ap.email && <span className="flex items-center gap-1"><Mail className="h-3 w-3" />{ap.email}</span>}
+                                    </div>
+                                  </div>
+                                  
+                                  {isEditing && (
+                                    <div className="flex gap-1">
+                                      <Button 
+                                        type="button" 
+                                        variant="ghost" 
+                                        size="icon"
+                                        onClick={() => { setEditingAp(ap); setShowApDialog(true); }}
+                                      >
+                                        <Pencil className="h-4 w-4" />
+                                      </Button>
+                                      <Button 
+                                        type="button" 
+                                        variant="ghost" 
+                                        size="icon"
+                                        className="text-red-500 hover:text-red-700"
+                                        onClick={() => deleteAnsprechpartner(ap.id)}
+                                      >
+                                        <Trash2 className="h-4 w-4" />
+                                      </Button>
+                                    </div>
+                                  )}
+                                </div>
+                              ))
+                            )}
                           </div>
                         </div>
                       </div>
@@ -607,30 +845,6 @@ export function AdressenPage() {
                               <Label className="text-sm text-gray-600">Zahlungsbedingung (VK)</Label>
                               <Input {...register('zahlungsbedingung_vk')} disabled={!isEditing} className="bg-white" placeholder="30 Tage netto" />
                             </div>
-                            <div className="space-y-1.5">
-                              <Label className="text-sm text-gray-600">Lieferbedingung (EK)</Label>
-                              <Select value={watchFields.lieferbedingung_ek || ""} onValueChange={(v) => setValue('lieferbedingung_ek', v)} disabled={!isEditing}>
-                                <SelectTrigger className="bg-white"><SelectValue placeholder="Incoterms wählen" /></SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="EXW">EXW</SelectItem>
-                                  <SelectItem value="FCA">FCA</SelectItem>
-                                  <SelectItem value="DAP">DAP</SelectItem>
-                                  <SelectItem value="DDP">DDP</SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </div>
-                            <div className="space-y-1.5">
-                              <Label className="text-sm text-gray-600">Lieferbedingung (VK)</Label>
-                              <Select value={watchFields.lieferbedingung_vk || ""} onValueChange={(v) => setValue('lieferbedingung_vk', v)} disabled={!isEditing}>
-                                <SelectTrigger className="bg-white"><SelectValue placeholder="Incoterms wählen" /></SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="EXW">EXW</SelectItem>
-                                  <SelectItem value="FCA">FCA</SelectItem>
-                                  <SelectItem value="DAP">DAP</SelectItem>
-                                  <SelectItem value="DDP">DDP</SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </div>
                           </div>
                         </div>
                       </div>
@@ -655,7 +869,6 @@ export function AdressenPage() {
                                 />
                                 <Label className="text-sm text-gray-700">Firma ohne UST-ID</Label>
                               </div>
-                              <p className="text-xs text-gray-500">Nur für Firmen im Inland</p>
                             </div>
                             <div className="space-y-2">
                               <div className="flex items-center gap-2">
@@ -666,15 +879,15 @@ export function AdressenPage() {
                                 />
                                 <Label className="text-sm text-gray-700">Privat mit UST-ID</Label>
                               </div>
-                              <p className="text-xs text-gray-500">Nur für Privatpersonen im Inland</p>
                             </div>
                           </div>
                         </div>
 
+                        {/* Basis UST-ID */}
                         <div>
                           <h3 className="text-sm font-semibold text-gray-900 mb-4 flex items-center gap-2">
                             <FileText className="h-4 w-4 text-emerald-500" />
-                            Umsatzsteuer-IDs
+                            Basis UST-ID
                           </h3>
                           <div className="grid grid-cols-3 gap-4">
                             <div className="space-y-1.5">
@@ -682,7 +895,7 @@ export function AdressenPage() {
                               <Input {...register('umsatzsteuer_lkz')} disabled={!isEditing} className="bg-white" placeholder="DE" maxLength={3} />
                             </div>
                             <div className="col-span-2 space-y-1.5">
-                              <Label className="text-sm text-gray-600">UST-ID (Basis)</Label>
+                              <Label className="text-sm text-gray-600">UST-ID</Label>
                               <Input {...register('umsatzsteuer_id')} disabled={!isEditing} className="bg-white" placeholder="123456789" />
                             </div>
                             <div className="col-span-3 space-y-1.5">
@@ -692,47 +905,72 @@ export function AdressenPage() {
                           </div>
                         </div>
 
+                        {/* Weitere UST-IDs (dynamisch) */}
                         <div>
-                          <h3 className="text-sm font-semibold text-gray-900 mb-4">Weitere UST-IDs</h3>
-                          <div className="grid grid-cols-3 gap-4">
-                            <div className="space-y-1.5">
-                              <Label className="text-sm text-gray-600">UST-ID AT</Label>
-                              <Input {...register('ust_at')} disabled={!isEditing} className="bg-white" placeholder="ATU..." />
-                            </div>
-                            <div className="space-y-1.5">
-                              <Label className="text-sm text-gray-600">UST-ID NL</Label>
-                              <Input {...register('ust_nl')} disabled={!isEditing} className="bg-white" placeholder="NL..." />
-                            </div>
-                            <div className="space-y-1.5">
-                              <Label className="text-sm text-gray-600">UST-ID CH</Label>
-                              <Input {...register('ust_ch')} disabled={!isEditing} className="bg-white" placeholder="CHE..." />
-                            </div>
+                          <div className="flex items-center justify-between mb-4">
+                            <h3 className="text-sm font-semibold text-gray-900">Weitere UST-IDs</h3>
+                            {isEditing && (
+                              <Button type="button" size="sm" variant="outline" onClick={addUstId}>
+                                <Plus className="h-4 w-4 mr-1" />Hinzufügen
+                              </Button>
+                            )}
+                          </div>
+                          
+                          <div className="space-y-3">
+                            {weitereUstIds.length === 0 ? (
+                              <p className="text-sm text-gray-500 text-center py-4 bg-gray-50 rounded-lg">
+                                Keine weiteren UST-IDs vorhanden
+                              </p>
+                            ) : (
+                              weitereUstIds.map((ust) => (
+                                <div key={ust.id} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                                  <div className="flex-1 grid grid-cols-3 gap-3">
+                                    <Select 
+                                      value={ust.land} 
+                                      onValueChange={(v) => updateUstId(ust.id, 'land', v)}
+                                      disabled={!isEditing}
+                                    >
+                                      <SelectTrigger className="bg-white">
+                                        <SelectValue placeholder="Land wählen" />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        {EU_LAENDER.map(l => (
+                                          <SelectItem key={l.land} value={l.land}>{l.land}</SelectItem>
+                                        ))}
+                                      </SelectContent>
+                                    </Select>
+                                    <Input 
+                                      value={ust.lkz}
+                                      onChange={(e) => updateUstId(ust.id, 'lkz', e.target.value)}
+                                      disabled={!isEditing}
+                                      className="bg-white"
+                                      placeholder="LKZ"
+                                      maxLength={4}
+                                    />
+                                    <Input 
+                                      value={ust.ustid}
+                                      onChange={(e) => updateUstId(ust.id, 'ustid', e.target.value)}
+                                      disabled={!isEditing}
+                                      className="bg-white"
+                                      placeholder="UST-ID Nummer"
+                                    />
+                                  </div>
+                                  {isEditing && (
+                                    <Button 
+                                      type="button" 
+                                      variant="ghost" 
+                                      size="icon"
+                                      className="text-red-500 hover:text-red-700"
+                                      onClick={() => removeUstId(ust.id)}
+                                    >
+                                      <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                  )}
+                                </div>
+                              ))
+                            )}
                           </div>
                         </div>
-
-                        {/* Ausweis bei Privatpersonen */}
-                        {!watchFields.ist_firma && (
-                          <div>
-                            <h3 className="text-sm font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                              <User className="h-4 w-4 text-emerald-500" />
-                              Identifikation (Privatperson)
-                            </h3>
-                            <div className="grid grid-cols-3 gap-4">
-                              <div className="space-y-1.5">
-                                <Label className="text-sm text-gray-600">Ausweisnummer</Label>
-                                <Input {...register('ausweis_nummer')} disabled={!isEditing} className="bg-white" />
-                              </div>
-                              <div className="space-y-1.5">
-                                <Label className="text-sm text-gray-600">Ausweis gültig bis</Label>
-                                <Input {...register('ausweis_ablauf')} disabled={!isEditing} className="bg-white" placeholder="TT.MM.JJJJ" />
-                              </div>
-                              <div className="space-y-1.5">
-                                <Label className="text-sm text-gray-600">Geburtsdatum</Label>
-                                <Input {...register('geburtsdatum')} disabled={!isEditing} className="bg-white" placeholder="TT.MM.JJJJ" />
-                              </div>
-                            </div>
-                          </div>
-                        )}
                       </div>
                     )}
 
@@ -779,14 +1017,6 @@ export function AdressenPage() {
                               <Switch checked={watchFields.barkunde} onCheckedChange={(c) => setValue('barkunde', c)} disabled={!isEditing} />
                               <Label className="text-sm text-gray-700">Barkunde</Label>
                             </div>
-                            <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                              <Switch checked={watchFields.wareneingang} onCheckedChange={(c) => setValue('wareneingang', c)} disabled={!isEditing} />
-                              <Label className="text-sm text-gray-700">Wareneingang erlaubt</Label>
-                            </div>
-                            <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                              <Switch checked={watchFields.warenausgang} onCheckedChange={(c) => setValue('warenausgang', c)} disabled={!isEditing} />
-                              <Label className="text-sm text-gray-700">Warenausgang erlaubt</Label>
-                            </div>
                           </div>
                         </div>
                       </div>
@@ -818,16 +1048,6 @@ export function AdressenPage() {
                             disabled={!isEditing} 
                             className="bg-white min-h-[100px]" 
                             placeholder="Hinweise für Transport und Logistik..."
-                          />
-                        </div>
-
-                        <div>
-                          <h3 className="text-sm font-semibold text-gray-900 mb-4">Lieferinfo TPA</h3>
-                          <Textarea 
-                            {...register('lieferinfo_tpa')} 
-                            disabled={!isEditing} 
-                            className="bg-white min-h-[100px]" 
-                            placeholder="Spezielle Lieferinformationen..."
                           />
                         </div>
                       </div>
@@ -910,6 +1130,279 @@ export function AdressenPage() {
           </form>
         </DialogContent>
       </Dialog>
+
+      {/* Ansprechpartner Dialog */}
+      <AnsprechpartnerDialog
+        open={showApDialog}
+        onOpenChange={setShowApDialog}
+        ansprechpartner={editingAp}
+        adresseId={selectedAdresse?.id || ''}
+        onSave={saveAnsprechpartner}
+      />
     </div>
+  );
+}
+
+// ========================== ANSPRECHPARTNER DIALOG ==========================
+interface ApDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  ansprechpartner: Ansprechpartner | null;
+  adresseId: string;
+  onSave: (ap: Ansprechpartner) => void;
+}
+
+function AnsprechpartnerDialog({ open, onOpenChange, ansprechpartner, adresseId, onSave }: ApDialogProps) {
+  const [formData, setFormData] = useState<Partial<Ansprechpartner>>({});
+  const [profilbild, setProfilbild] = useState<string | null>(null);
+  const [visitenkarte, setVisitenkarte] = useState<string | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+
+  useEffect(() => {
+    if (ansprechpartner) {
+      setFormData(ansprechpartner);
+      setProfilbild(ansprechpartner.profilbild || null);
+      setVisitenkarte(ansprechpartner.visitenkarte || null);
+    } else {
+      setFormData({});
+      setProfilbild(null);
+      setVisitenkarte(null);
+    }
+  }, [ansprechpartner, open]);
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>, type: 'profilbild' | 'visitenkarte') => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      if (type === 'profilbild') {
+        setProfilbild(reader.result as string);
+      } else {
+        setVisitenkarte(reader.result as string);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleDrop = (e: React.DragEvent, type: 'visitenkarte') => {
+    e.preventDefault();
+    setIsDragging(false);
+    
+    const file = e.dataTransfer.files[0];
+    if (file && file.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setVisitenkarte(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleSave = () => {
+    const ap: Ansprechpartner = {
+      id: ansprechpartner?.id || crypto.randomUUID(),
+      vorname: formData.vorname || '',
+      nachname: formData.nachname || '',
+      funktion: formData.funktion,
+      sprache: formData.sprache,
+      strasse: formData.strasse,
+      plz: formData.plz,
+      ort: formData.ort,
+      telefon: formData.telefon,
+      mobil: formData.mobil,
+      email: formData.email,
+      profilbild: profilbild || undefined,
+      visitenkarte: visitenkarte || undefined,
+    };
+    onSave(ap);
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-auto">
+        <DialogHeader>
+          <DialogTitle>{ansprechpartner ? 'Ansprechpartner bearbeiten' : 'Neuer Ansprechpartner'}</DialogTitle>
+        </DialogHeader>
+        
+        <div className="space-y-6">
+          {/* Profilbild */}
+          <div className="flex items-start gap-6">
+            <div className="relative group">
+              {profilbild ? (
+                <img 
+                  src={profilbild} 
+                  alt="Profilbild" 
+                  className="h-24 w-24 rounded-full object-cover border-4 border-white shadow-lg"
+                />
+              ) : (
+                <div className="h-24 w-24 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center shadow-lg">
+                  <UserCircle className="h-14 w-14 text-white" />
+                </div>
+              )}
+              <label className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity">
+                <Camera className="h-6 w-6 text-white" />
+                <input type="file" accept="image/*" className="hidden" onChange={(e) => handleFileChange(e, 'profilbild')} />
+              </label>
+            </div>
+            <div className="flex-1 space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <Label>Vorname *</Label>
+                  <Input 
+                    value={formData.vorname || ''}
+                    onChange={(e) => setFormData({ ...formData, vorname: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label>Nachname *</Label>
+                  <Input 
+                    value={formData.nachname || ''}
+                    onChange={(e) => setFormData({ ...formData, nachname: e.target.value })}
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <Label>Funktion</Label>
+                  <Input 
+                    value={formData.funktion || ''}
+                    onChange={(e) => setFormData({ ...formData, funktion: e.target.value })}
+                    placeholder="z.B. Geschäftsführer, Einkauf"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label>Sprache</Label>
+                  <Select value={formData.sprache || ""} onValueChange={(v) => setFormData({ ...formData, sprache: v })}>
+                    <SelectTrigger><SelectValue placeholder="Wählen..." /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Deutsch">Deutsch</SelectItem>
+                      <SelectItem value="Englisch">Englisch</SelectItem>
+                      <SelectItem value="Französisch">Französisch</SelectItem>
+                      <SelectItem value="Niederländisch">Niederländisch</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Adresse */}
+          <div>
+            <h4 className="text-sm font-semibold text-gray-900 mb-3">Adresse</h4>
+            <div className="grid grid-cols-3 gap-4">
+              <div className="col-span-3 space-y-1.5">
+                <Label>Straße</Label>
+                <Input 
+                  value={formData.strasse || ''}
+                  onChange={(e) => setFormData({ ...formData, strasse: e.target.value })}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label>PLZ</Label>
+                <Input 
+                  value={formData.plz || ''}
+                  onChange={(e) => setFormData({ ...formData, plz: e.target.value })}
+                />
+              </div>
+              <div className="col-span-2 space-y-1.5">
+                <Label>Ort</Label>
+                <Input 
+                  value={formData.ort || ''}
+                  onChange={(e) => setFormData({ ...formData, ort: e.target.value })}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Kontaktdaten */}
+          <div>
+            <h4 className="text-sm font-semibold text-gray-900 mb-3">Kontaktdaten</h4>
+            <div className="grid grid-cols-3 gap-4">
+              <div className="space-y-1.5">
+                <Label>Telefon</Label>
+                <Input 
+                  value={formData.telefon || ''}
+                  onChange={(e) => setFormData({ ...formData, telefon: e.target.value })}
+                  placeholder="+49 123 456789"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Mobil</Label>
+                <Input 
+                  value={formData.mobil || ''}
+                  onChange={(e) => setFormData({ ...formData, mobil: e.target.value })}
+                  placeholder="+49 171 1234567"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label>E-Mail</Label>
+                <Input 
+                  type="email"
+                  value={formData.email || ''}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  placeholder="name@firma.de"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Visitenkarte Upload mit Drag & Drop */}
+          <div>
+            <h4 className="text-sm font-semibold text-gray-900 mb-3">Visitenkarte</h4>
+            <div
+              className={cn(
+                "border-2 border-dashed rounded-lg p-6 text-center transition-colors",
+                isDragging ? "border-emerald-500 bg-emerald-50" : "border-gray-300 hover:border-gray-400",
+                visitenkarte && "border-solid border-gray-200"
+              )}
+              onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+              onDragLeave={() => setIsDragging(false)}
+              onDrop={(e) => handleDrop(e, 'visitenkarte')}
+            >
+              {visitenkarte ? (
+                <div className="relative">
+                  <img 
+                    src={visitenkarte} 
+                    alt="Visitenkarte" 
+                    className="max-h-40 mx-auto rounded-lg shadow"
+                  />
+                  <Button 
+                    type="button" 
+                    variant="ghost" 
+                    size="icon"
+                    className="absolute top-2 right-2 bg-white/80 hover:bg-white"
+                    onClick={() => setVisitenkarte(null)}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              ) : (
+                <label className="cursor-pointer">
+                  <Upload className="h-10 w-10 text-gray-400 mx-auto mb-2" />
+                  <p className="text-sm text-gray-600">
+                    Visitenkarte hierher ziehen oder <span className="text-emerald-600 font-medium">klicken</span>
+                  </p>
+                  <p className="text-xs text-gray-400 mt-1">PNG, JPG bis 5MB</p>
+                  <input type="file" accept="image/*" className="hidden" onChange={(e) => handleFileChange(e, 'visitenkarte')} />
+                </label>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <DialogFooter>
+          <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Abbrechen</Button>
+          <Button 
+            type="button" 
+            onClick={handleSave}
+            disabled={!formData.vorname || !formData.nachname}
+            className="bg-emerald-500 hover:bg-emerald-600"
+          >
+            Speichern
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
