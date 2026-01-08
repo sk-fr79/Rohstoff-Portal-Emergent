@@ -108,16 +108,25 @@ export function MainLayout() {
       {/* Logo */}
       <div className={cn(
         "flex h-16 items-center border-b border-white/10",
-        collapsed ? "justify-center px-2" : "justify-between px-4"
+        collapsed ? "justify-center px-3" : "justify-between px-4"
       )}>
         <div className={cn("flex items-center", collapsed ? "justify-center" : "gap-3")}>
-          <img 
-            src="/mv_logo.png" 
-            alt="MV Logo" 
-            className={cn(
-              "object-contain transition-all duration-200",
-              collapsed ? "h-8 w-8" : "h-9 w-auto"
-            )}
+          {collapsed ? (
+            // Collapsed: Show only "MV" text as logo
+            <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-red-500 to-red-700 flex items-center justify-center">
+              <span className="text-white font-bold text-sm">MV</span>
+            </div>
+          ) : (
+            // Expanded: Show full logo
+            <>
+              <img 
+                src="/mv_logo.png" 
+                alt="MV Logo" 
+                className="h-9 w-auto object-contain"
+              />
+              <span className="font-bold text-lg text-white whitespace-nowrap">Rohstoff Portal</span>
+            </>
+          )}
           />
           {!collapsed && (
             <span className="font-bold text-lg text-white whitespace-nowrap">Rohstoff Portal</span>
