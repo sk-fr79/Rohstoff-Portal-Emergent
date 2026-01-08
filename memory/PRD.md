@@ -139,9 +139,11 @@ Passwort: Admin123!
 ### Adressen
 - `GET /api/adressen` - Liste mit Suche/Pagination
 - `GET /api/adressen/{id}` - Einzelne Adresse
-- `POST /api/adressen` - Neue Adresse
-- `PUT /api/adressen/{id}` - Aktualisieren
+- `POST /api/adressen` - Neue Adresse (mit Validierung, skip_validation=true zum Umgehen)
+- `PUT /api/adressen/{id}` - Aktualisieren (mit Validierung)
 - `DELETE /api/adressen/{id}` - Soft-Delete
+- `POST /api/adressen/validieren` - Validiert Adresse nach Geschäftslogik
+- `GET /api/laender` - Liste der konfigurierten Länder mit UST-Präfixen
 
 ### Artikel
 - `GET /api/artikel` - Liste mit Suche/Pagination
