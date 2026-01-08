@@ -101,10 +101,12 @@ export function MainLayout() {
             {/* Logo */}
             <div className="flex h-16 items-center justify-between px-4 border-b border-white/10">
               <div className="flex items-center gap-3">
-                <div className="h-9 w-9 rounded-lg bg-emerald-500 flex items-center justify-center">
-                  <Building2 className="h-5 w-5 text-white" />
-                </div>
-                <span className="font-bold text-lg text-white">Rohstoff ERP</span>
+                <img 
+                  src="/mv_logo.png" 
+                  alt="MV Logo" 
+                  className="h-9 w-auto object-contain"
+                />
+                <span className="font-bold text-lg text-white">Rohstoff Portal</span>
               </div>
               <Button
                 variant="ghost"
