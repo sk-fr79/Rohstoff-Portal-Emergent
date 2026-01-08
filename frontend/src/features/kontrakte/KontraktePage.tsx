@@ -178,6 +178,7 @@ export function KontraktePage() {
 
       <DataTable columns={columns} data={data?.data || []} isLoading={isLoading} searchPlaceholder="Suchen nach Buchungsnummer, Name..."
         onSearchChange={(s) => { setSearchTerm(s); setPage(1); }}
+        onRowDoubleClick={handleRowDoubleClick}
         pagination={data?.pagination ? { page: data.pagination.page, limit: data.pagination.limit, total: data.pagination.total, totalPages: data.pagination.total_pages } : undefined}
         onPageChange={setPage} onLimitChange={(l) => { setLimit(l); setPage(1); }} />
 
