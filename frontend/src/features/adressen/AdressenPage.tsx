@@ -1349,6 +1349,128 @@ export function AdressenPage() {
   );
 }
 
+// ========================== UST-ID PROTOKOLL DIALOG ==========================
+interface UstIdProtokollDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  protokoll: UstIdProtokoll[];
+  loading: boolean;
+  onRefresh: () => void;
+}
+
+function UstIdProtokollDialog({ open, onOpenChange, protokoll, loading, onRefresh }: UstIdProtokollDialogProps) {
+  const formatDate = (dateStr: string) => {
+    return new Date(dateStr).toLocaleString('de-DE', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-2xl max-h-[80vh]">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <History className="h-5 w-5 text-emerald-500" />
+            UST-ID Validierungsprotokoll
+          </DialogTitle>
+          <DialogDescription>
+            Alle durchgeführten UST-ID Prüfungen über die EU VIES Schnittstelle
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="flex justify-end mb-2">
+          <Button variant="ghost" size="sm" onClick={onRefresh} disabled={loading}>
+            <RefreshCw className={cn("h-4 w-4 mr-1", loading && "animate-spin")} />
+            Aktualisieren
+          </Button>
+        </div>
+
+        <ScrollArea className="h-[400px] pr-4">
+          {loading ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="h-8 w-8 animate-spin text-emerald-500" />
+            </div>
+          ) : protokoll.length === 0 ? (
+            <div className="text-center py-8 text-gray-500">
+              <History className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+              <p>Noch keine Validierungen durchgeführt</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {protokoll.map((p) => (
+                <div 
+                  key={p.id} 
+                  className={cn(
+                    "border rounded-lg p-4 transition-colors",
+                    p.gueltig ? "bg-green-50 border-green-200" : 
+                    p.fehler_code ? "bg-yellow-50 border-yellow-200" : "bg-red-50 border-red-200"
+                  )}
+                >
+                  <div className="flex items-start justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      {p.gueltig ? (
+                        <CheckCircle className="h-5 w-5 text-green-600" />
+                      ) : p.fehler_code ? (
+                        <AlertTriangle className="h-5 w-5 text-yellow-600" />
+                      ) : (
+                        <XCircle className="h-5 w-5 text-red-600" />
+                      )}
+                      <span className="font-mono font-semibold">
+                        {p.laenderkennzeichen}{p.ustid}
+                      </span>
+                      <Badge variant={p.gueltig ? "default" : p.fehler_code ? "secondary" : "destructive"}>
+                        {p.gueltig ? "Gültig" : p.fehler_code ? "Fehler" : "Ungültig"}
+                      </Badge>
+                    </div>
+                    <span className="text-xs text-gray-500">
+                      {formatDate(p.abfrage_datum)}
+                    </span>
+                  </div>
+
+                  {p.firmenname && (
+                    <div className="text-sm text-gray-700 mt-2">
+                      <strong>Firma:</strong> {p.firmenname}
+                    </div>
+                  )}
+                  
+                  {p.adresse && (
+                    <div className="text-sm text-gray-600">
+                      <strong>Adresse:</strong> {p.adresse}
+                    </div>
+                  )}
+
+                  {p.fehler_code && (
+                    <div className="text-sm text-yellow-700 mt-1">
+                      <strong>Fehler:</strong> {p.fehler_code}
+                    </div>
+                  )}
+
+                  <div className="text-xs text-gray-400 mt-2 flex items-center gap-4">
+                    <span>Geprüft von: {p.abgefragt_von || 'System'}</span>
+                    {p.request_identifier && (
+                      <span>ID: {p.request_identifier}</span>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </ScrollArea>
+
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            Schließen
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 // ========================== ANSPRECHPARTNER DIALOG MIT OCR ==========================
 interface ApDialogProps {
   open: boolean;
