@@ -206,8 +206,10 @@ export function DataTable<TData, TValue>({
                     className={cn(
                       "border-b border-border transition-colors",
                       "hover:bg-muted/50",
+                      onRowDoubleClick && "cursor-pointer",
                       index % 2 === 0 ? "bg-transparent" : "bg-muted/20"
                     )}
+                    onDoubleClick={() => onRowDoubleClick?.(row.original)}
                   >
                     {row.getVisibleCells().map((cell) => (
                       <td key={cell.id} className="h-14 px-4 align-middle text-sm">
