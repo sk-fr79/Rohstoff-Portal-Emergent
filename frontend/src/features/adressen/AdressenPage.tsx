@@ -1027,8 +1027,26 @@ export function AdressenPage() {
                         <h3 className="text-sm font-semibold text-gray-900 mb-4 flex items-center gap-2">
                           <FileText className="h-4 w-4 text-emerald-500" />
                           Basis UST-ID
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button 
+                                  type="button" 
+                                  variant="ghost" 
+                                  size="icon" 
+                                  className="h-6 w-6 ml-auto"
+                                  onClick={openUstIdProtokoll}
+                                >
+                                  <History className="h-4 w-4 text-gray-500" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>Validierungsprotokoll anzeigen</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
                         </h3>
-                        <div className="grid grid-cols-3 gap-4">
+                        <div className="grid grid-cols-4 gap-4">
                           <div className="space-y-1.5">
                             <Label className="text-sm text-gray-600">UST-LKZ</Label>
                             <Input {...register('umsatzsteuer_lkz')} disabled={!isEditing} className="bg-white" placeholder="DE" maxLength={3} />
@@ -1037,7 +1055,35 @@ export function AdressenPage() {
                             <Label className="text-sm text-gray-600">UST-ID</Label>
                             <Input {...register('umsatzsteuer_id')} disabled={!isEditing} className="bg-white" placeholder="123456789" />
                           </div>
-                          <div className="col-span-3 space-y-1.5">
+                          <div className="space-y-1.5">
+                            <Label className="text-sm text-gray-600">&nbsp;</Label>
+                            <div className="flex gap-1">
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button 
+                                      type="button" 
+                                      variant="outline" 
+                                      size="sm"
+                                      className="flex-1"
+                                      onClick={() => validateUstId(watchFields.umsatzsteuer_lkz || '', watchFields.umsatzsteuer_id || '')}
+                                      disabled={validatingUstId || !watchFields.umsatzsteuer_lkz || !watchFields.umsatzsteuer_id}
+                                    >
+                                      {validatingUstId ? (
+                                        <Loader2 className="h-4 w-4 animate-spin" />
+                                      ) : (
+                                        <Search className="h-4 w-4" />
+                                      )}
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <p>UST-ID bei EU VIES prüfen</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                            </div>
+                          </div>
+                          <div className="col-span-4 space-y-1.5">
                             <Label className="text-sm text-gray-600">Steuernummer</Label>
                             <Input {...register('steuernummer')} disabled={!isEditing} className="bg-white" />
                           </div>
@@ -1061,9 +1107,9 @@ export function AdressenPage() {
                               Keine weiteren UST-IDs vorhanden
                             </p>
                           ) : (
-                            weitereUstIds.map((ust) => (
+                            weitereUstIds.map((ust, index) => (
                               <div key={ust.id} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                                <div className="flex-1 grid grid-cols-3 gap-3">
+                                <div className="flex-1 grid grid-cols-4 gap-3">
                                   <Select 
                                     value={ust.land} 
                                     onValueChange={(v) => updateUstId(ust.id, 'land', v)}
@@ -1093,6 +1139,28 @@ export function AdressenPage() {
                                     className="bg-white"
                                     placeholder="UST-ID Nummer"
                                   />
+                                  <TooltipProvider>
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <Button 
+                                          type="button" 
+                                          variant="outline" 
+                                          size="sm"
+                                          onClick={() => validateUstId(ust.lkz, ust.ustid, index)}
+                                          disabled={validatingUstIdIndex === index || !ust.lkz || !ust.ustid}
+                                        >
+                                          {validatingUstIdIndex === index ? (
+                                            <Loader2 className="h-4 w-4 animate-spin" />
+                                          ) : (
+                                            <Search className="h-4 w-4" />
+                                          )}
+                                        </Button>
+                                      </TooltipTrigger>
+                                      <TooltipContent>
+                                        <p>UST-ID bei EU VIES prüfen</p>
+                                      </TooltipContent>
+                                    </Tooltip>
+                                  </TooltipProvider>
                                 </div>
                                 {isEditing && (
                                   <Button 
