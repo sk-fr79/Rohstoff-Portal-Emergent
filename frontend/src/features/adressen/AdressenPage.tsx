@@ -259,9 +259,19 @@ export function AdressenPage() {
     }
   };
 
-  // Manual save handler for the button
+  // Manual save handler for the button - includes error logging
   const handleSave = () => {
-    handleSubmit(onSubmit)();
+    handleSubmit(
+      onSubmit,
+      (validationErrors) => {
+        console.error('Validation errors:', validationErrors);
+        Object.values(validationErrors).forEach((err: any) => {
+          if (err?.message) {
+            toast.error(err.message);
+          }
+        });
+      }
+    )();
   };
 
   const handleRowDoubleClick = (adresse: Adresse) => {
