@@ -221,6 +221,37 @@ export function KontraktePage() {
           </form>
         </DialogContent>
       </Dialog>
+
+      {/* Detail Dialog */}
+      <Dialog open={!!selectedKontrakt} onOpenChange={handleCloseDetail}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              {selectedKontrakt?.ist_einkauf ? <ArrowDownCircle className="h-5 w-5 text-green-500" /> : <ArrowUpCircle className="h-5 w-5 text-blue-500" />}
+              {selectedKontrakt?.buchungsnummer}
+              {isEditMode && <span className="text-sm font-normal text-muted-foreground ml-2">(Bearbeitungsmodus)</span>}
+            </DialogTitle>
+            <DialogDescription>{selectedKontrakt?.ist_einkauf ? 'Einkaufskontrakt' : 'Verkaufskontrakt'}</DialogDescription>
+          </DialogHeader>
+          {selectedKontrakt && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div><p className="text-muted-foreground">Partner</p><p className="font-medium">{selectedKontrakt.name1}</p></div>
+                <div><p className="text-muted-foreground">KDNR</p><p className="font-medium font-mono">{selectedKontrakt.kdnr || '-'}</p></div>
+                <div><p className="text-muted-foreground">Ort</p><p className="font-medium">{selectedKontrakt.plz} {selectedKontrakt.ort}</p></div>
+                <div><p className="text-muted-foreground">Positionen</p><p className="font-medium">{selectedKontrakt.positionen?.length || 0}</p></div>
+                <div><p className="text-muted-foreground">Gültig von</p><p className="font-medium">{formatDate(selectedKontrakt.gueltig_von)}</p></div>
+                <div><p className="text-muted-foreground">Gültig bis</p><p className="font-medium">{formatDate(selectedKontrakt.gueltig_bis)}</p></div>
+                <div><p className="text-muted-foreground">Status</p><p className="font-medium">{selectedKontrakt.abgeschlossen ? 'Abgeschlossen' : 'Offen'}</p></div>
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={handleCloseDetail}>Schließen</Button>
+                <Button onClick={() => setIsEditMode(true)}><Pencil className="h-4 w-4 mr-2" />Bearbeiten</Button>
+              </DialogFooter>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </motion.div>
   );
 }
