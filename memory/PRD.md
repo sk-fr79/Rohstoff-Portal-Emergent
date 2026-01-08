@@ -266,3 +266,19 @@ Passwort: Admin123!
 
 - `/app/rohstoff-portal-modern/docs/MODUL_ANALYSE.md` - Analyse der Java-Anwendung
 - `/app/rohstoff-portal-modern/backend/prisma/schema.prisma` - Referenz für Datenbankmodell
+
+---
+
+**Earlier issues found/mentioned but not fixed**
+-   Keine.
+
+## CHANGELOG (2026-01-08)
+### Bugfixes:
+1. **Speicher-Button funktioniert nicht (BEHOBEN)**
+   - **Ursache:** Das Zod-Schema für die Adressvalidierung verwendete `.optional()`, was nur `undefined` erlaubte, nicht aber `null`. Datenbankdaten enthielten jedoch `null`-Werte.
+   - **Lösung:** Schema auf `.nullish()` umgestellt, das sowohl `null` als auch `undefined` akzeptiert.
+   - **Zusätzlich:** Verbesserte Fehlerbehandlung mit Toast-Meldungen bei Validierungsfehlern hinzugefügt.
+
+2. **OCR-Funktion wirft Fehler (BEHOBEN)**
+   - **Ursache:** Die `emergentintegrations`-Bibliothek API hatte sich geändert. Der Code verwendete `image_contents` als Parameter, aber der korrekte Parameter ist `file_contents`.
+   - **Lösung:** Parameter von `image_contents` auf `file_contents` geändert.
