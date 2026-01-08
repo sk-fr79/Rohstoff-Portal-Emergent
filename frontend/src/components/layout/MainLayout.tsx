@@ -80,6 +80,7 @@ export function MainLayout() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [expandedGroups, setExpandedGroups] = useState<string[]>(['Stammdaten', 'Bewegungsdaten', 'Waage']);
+  const [savedExpandedGroups, setSavedExpandedGroups] = useState<string[]>([]);
   const { user, logout } = useAuthStore();
   const navigate = useNavigate();
 
@@ -88,9 +89,24 @@ export function MainLayout() {
     navigate('/login');
   };
 
+  // Beim Ein-/Ausklappen der Sidebar die Gruppen-Zustände speichern/wiederherstellen
+  const toggleSidebar = () => {
+    if (sidebarCollapsed) {
+      // Ausklappen: Gruppen wiederherstellen
+      setSidebarCollapsed(false);
+      setExpandedGroups(savedExpandedGroups);
+    } else {
+      // Einklappen: Gruppen speichern und alle schließen
+      setSavedExpandedGroups(expandedGroups);
+      setExpandedGroups([]);
+      setSidebarCollapsed(true);
+    }
+  };
+
   const toggleGroup = (label: string) => {
     if (sidebarCollapsed) {
-      // Wenn eingeklappt, zuerst ausklappen
+      // Wenn eingeklappt, zuerst ausklappen und nur diese Gruppe öffnen
+      setSavedExpandedGroups(expandedGroups);
       setSidebarCollapsed(false);
       setExpandedGroups([label]);
     } else {
