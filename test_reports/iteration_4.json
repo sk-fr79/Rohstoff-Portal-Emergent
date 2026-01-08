@@ -1,0 +1,104 @@
+{
+  "summary": "Wiegekarten (Weighing Cards) module testing completed successfully. All 19 backend API tests passed (100%). Frontend UI verified: Table view with double-click to detail panel, sidebar navigation, weight display (Brutto/Tara/Netto), 'Neue Wiegekarte' dialog with form validation.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/tests/test_wiegekarten.py",
+    "/app/test_reports/pytest/pytest_wiegekarten_results.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "Wiegekarten-Nr. auto-generation works correctly: WK-{Jahr}-{lfd_nr:05d}",
+    "Weight calculation logic correct: Wareneingang (Wägung1=Brutto, Wägung2=Tara), Warenausgang (Wägung1=Tara, Wägung2=Brutto)",
+    "Storno prevents further edits and weighings - business logic enforced",
+    "Delete only allowed for cards without weighings - correct constraint",
+    "Waage/lesen endpoint returns MOCKED demo data (random 5000-35000 kg) - production would use Systec IT 4000 socket connection"
+  ],
+  "updated_files": [
+    "/app/tests/test_wiegekarten.py",
+    "/app/frontend/package.json (added @radix-ui/react-scroll-area dependency)"
+  ],
+  "success_rate": {
+    "backend": "100%",
+    "frontend": "100%"
+  },
+  "test_credentials": {
+    "username": "admin",
+    "password": "Admin123!"
+  },
+  "seed_data_creation": "Test wiegekarten created with TEST- prefix in kennzeichen for testing, cleaned up after tests",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Wiegekarten module fully functional. Backend endpoints all working. Frontend has table view with double-click to detail panel (slide-in from right), sidebar navigation (Stammdaten, Fahrzeug, Artikel/Material, Wägung, Mengen/Stück, Bemerkungen), weight display (Brutto/Tara/Netto). 'Neue Wiegekarte' dialog creates new cards. Waage/lesen is MOCKED with demo data.",
+  "features_tested": {
+    "backend_endpoints": {
+      "GET /api/wiegekarten": {
+        "status": "WORKING",
+        "tests_passed": 2,
+        "notes": "List with nur_offene filter"
+      },
+      "GET /api/wiegekarten/{id}": {
+        "status": "WORKING",
+        "tests_passed": 2,
+        "notes": "Get single card, 404 for non-existent"
+      },
+      "POST /api/wiegekarten": {
+        "status": "WORKING",
+        "tests_passed": 3,
+        "notes": "Create Wareneingang/Warenausgang, validation error for missing kennzeichen"
+      },
+      "PUT /api/wiegekarten/{id}": {
+        "status": "WORKING",
+        "tests_passed": 1,
+        "notes": "Update fields"
+      },
+      "POST /api/wiegekarten/{id}/waegung/{nr}": {
+        "status": "WORKING",
+        "tests_passed": 3,
+        "notes": "Wägung 1, Wägung 2, manual weighing, netto calculation"
+      },
+      "POST /api/wiegekarten/{id}/storno": {
+        "status": "WORKING",
+        "tests_passed": 3,
+        "notes": "Storno, prevents edit, prevents weighing"
+      },
+      "DELETE /api/wiegekarten/{id}": {
+        "status": "WORKING",
+        "tests_passed": 2,
+        "notes": "Delete without weighings, fails with weighings"
+      },
+      "POST /api/waage/lesen": {
+        "status": "WORKING (MOCKED)",
+        "tests_passed": 1,
+        "notes": "Demo mode returns random weight 5000-35000 kg"
+      },
+      "GET /api/waage/status": {
+        "status": "WORKING",
+        "tests_passed": 1,
+        "notes": "Returns demo_modus=true, verbunden=true"
+      }
+    },
+    "frontend_ui": {
+      "wiegekarten_page": "WORKING - Table with columns Nr., Status, Richtung, Kennzeichen, Adresse, Netto, Datum",
+      "nur_offene_toggle": "WORKING - Filters open cards only",
+      "double_click_detail": "WORKING - Opens slide-in detail panel from right",
+      "detail_panel_header": "WORKING - Shows WK-Nr, status badge, direction",
+      "weight_display": "WORKING - Shows Brutto/Tara/Netto in kg",
+      "sidebar_navigation": "WORKING - 6 sections: Stammdaten, Fahrzeug, Artikel/Material, Wägung, Mengen/Stück, Bemerkungen",
+      "neue_wiegekarte_dialog": "WORKING - Form with Typ, Richtung, Kennzeichen, Anhänger, Adresse, Artikel/Sorte",
+      "form_validation": "WORKING - Kennzeichen required",
+      "success_toast": "WORKING - Shows 'Wiegekarte WK-xxxx erstellt'"
+    }
+  },
+  "mocked_apis": {
+    "POST /api/waage/lesen": "Demo mode - returns random weight between 5000-35000 kg. In production would use Systec IT 4000 socket connection"
+  },
+  "dependency_fix_applied": "@radix-ui/react-scroll-area was missing, installed via yarn add"
+}
