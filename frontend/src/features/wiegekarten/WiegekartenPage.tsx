@@ -893,117 +893,12 @@ export function WiegekartenPage() {
                     </div>
                   )}
 
-                  {isEditing && (
-                    <div className="mt-6 pt-4 border-t">
-                      <Button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-700">
-                        <Save className="h-4 w-4 mr-2" />
-                        Speichern
-                      </Button>
-                    </div>
-                  )}
                 </form>
               </ScrollArea>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
-
-      {/* Create Dialog */}
-      <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Scale className="h-5 w-5 text-emerald-500" />
-              Neue Wiegekarte
-            </DialogTitle>
-            <DialogDescription>
-              Erfassen Sie eine neue Wiegekarte für die Fahrzeugwaage.
-            </DialogDescription>
-          </DialogHeader>
-
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <Label>Typ *</Label>
-                <Select 
-                  value={watchFields.typ_wiegekarte} 
-                  onValueChange={(v) => setValue('typ_wiegekarte', v)}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="W">Wiegeschein</SelectItem>
-                    <SelectItem value="E">Eingangsschein</SelectItem>
-                    <SelectItem value="H">Hofschein</SelectItem>
-                    <SelectItem value="F">Fremdverwiegung</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-1.5">
-                <Label>Richtung</Label>
-                <div className="flex items-center gap-3 h-10 px-3 border rounded-md bg-gray-50">
-                  <Switch
-                    checked={watchFields.ist_lieferant}
-                    onCheckedChange={(v) => setValue('ist_lieferant', v)}
-                  />
-                  <span className={cn(
-                    "text-sm font-medium",
-                    watchFields.ist_lieferant ? "text-green-600" : "text-blue-600"
-                  )}>
-                    {watchFields.ist_lieferant ? 'Wareneingang' : 'Warenausgang'}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <Label>LKW-Kennzeichen *</Label>
-                <Input 
-                  {...register('kennzeichen')} 
-                  className="font-mono uppercase"
-                  placeholder="XX-XX 1234"
-                />
-                {errors.kennzeichen && (
-                  <p className="text-xs text-red-500">{errors.kennzeichen.message}</p>
-                )}
-              </div>
-              <div className="space-y-1.5">
-                <Label>Anhänger</Label>
-                <Input 
-                  {...register('trailer')} 
-                  className="font-mono uppercase"
-                  placeholder="XX-XX 5678"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-1.5">
-              <Label>Adresse Lieferant/Abnehmer</Label>
-              <Textarea {...register('adresse_lieferant')} rows={2} />
-            </div>
-
-            <div className="space-y-1.5">
-              <Label>Artikel/Sorte</Label>
-              <Input {...register('artikel_bezeichnung')} />
-            </div>
-
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => {
-                setShowCreateDialog(false);
-                reset();
-              }}>
-                Abbrechen
-              </Button>
-              <Button type="submit" className="bg-emerald-600 hover:bg-emerald-700">
-                <Plus className="h-4 w-4 mr-2" />
-                Erstellen
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
