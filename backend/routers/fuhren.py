@@ -178,17 +178,28 @@ async def update_fuhre(fuhre_id: str, data: FuhreUpdate, skip_validation: bool =
 
 @router.delete("/fuhren/{fuhre_id}")
 async def delete_fuhre(fuhre_id: str, user = Depends(get_current_user)):
-    """Fuhre löschen (Soft-Delete)"""
+    """Fuhre löschen (Hard Delete)"""
     db = get_db()
-    result = await db.fuhren.update_one(
-        {"_id": fuhre_id, "mandant_id": user["mandant_id"]},
-        {"$set": {"deleted": True}}
-    )
     
-    if result.modified_count == 0:
+    # Prüfen ob Fuhre existiert
+    fuhre = await db.fuhren.find_one({
+        "_id": fuhre_id, 
+        "mandant_id": user["mandant_id"]
+    })
+    
+    if not fuhre:
         raise HTTPException(status_code=404, detail="Fuhre nicht gefunden")
     
-    return {"success": True}
+    # Fuhre endgültig löschen
+    result = await db.fuhren.delete_one({
+        "_id": fuhre_id, 
+        "mandant_id": user["mandant_id"]
+    })
+    
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Fuhre konnte nicht gelöscht werden")
+    
+    return {"success": True, "message": "Fuhre gelöscht"}
 
 
 @router.post("/fuhren/{fuhre_id}/storno")
