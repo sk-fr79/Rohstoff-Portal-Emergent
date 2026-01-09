@@ -82,7 +82,10 @@ export default function App() {
           <Route path="unterschrift" element={<UnterschriftPage />} />
           {/* Admin-Einstellungen */}
           <Route path="system" element={<SystemeinstellungenPage />} />
-          <Route path="benutzer" element={<SystemeinstellungenPage />} />
+          <Route path="benutzer" element={<BenutzerPage />} />
+          <Route path="rollen" element={<RollenPage />} />
+          <Route path="abteilungen" element={<AbteilungenPage />} />
+          <Route path="berechtigungen" element={<BerechtigungenPage />} />
           <Route path="mandanten" element={<SystemeinstellungenPage />} />
           <Route path="sicherheit" element={<SystemeinstellungenPage />} />
           <Route path="datenbank" element={<SystemeinstellungenPage />} />
