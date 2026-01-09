@@ -11,7 +11,7 @@ import uuid
 import hashlib
 
 from services.database import get_db
-from utils.auth import get_current_user
+from utils.auth import get_current_user, hash_password
 
 router = APIRouter(prefix="/api/admin", tags=["Administration"])
 
