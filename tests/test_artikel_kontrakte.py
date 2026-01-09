@@ -10,8 +10,8 @@ import os
 import uuid
 from datetime import datetime, timedelta
 
-# Use the public preview URL for testing
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://resource-portal.preview.emergentagent.com')
+# Use localhost for backend testing (internal service)
+BASE_URL = "http://localhost:8001"
 
 # Test credentials
 TEST_USERNAME = "admin"
