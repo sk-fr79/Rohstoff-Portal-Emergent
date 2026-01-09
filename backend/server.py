@@ -1413,37 +1413,89 @@ async def get_kontrakte(
 @app.post("/api/kontrakte")
 async def create_kontrakt(data: KontraktCreate, user = Depends(get_current_user)):
     """Neuen Kontrakt erstellen"""
-    # Adresse laden für Snapshot
-    adresse = await db.adressen.find_one({
-        "_id": data.adresse_id,
-        "mandant_id": user["mandant_id"]
-    })
+    # Bestimme ist_einkauf aus vorgang_typ
+    ist_einkauf = data.vorgang_typ == "EK" if data.vorgang_typ else (data.ist_einkauf if data.ist_einkauf is not None else True)
     
-    if not adresse:
-        raise HTTPException(status_code=404, detail="Adresse nicht gefunden")
+    # Optional: Adresse laden für Snapshot (falls adresse_id oder id_adresse übergeben)
+    adresse_id = data.id_adresse or data.adresse_id
+    adresse = None
+    if adresse_id:
+        adresse = await db.adressen.find_one({
+            "_id": adresse_id,
+            "mandant_id": user["mandant_id"]
+        })
     
-    buchungsnummer = await generate_buchungsnummer(user["mandant_id"], data.ist_einkauf)
+    # Buchungsnummer generieren wenn nicht übergeben
+    buchungsnummer = data.buchungsnummer
+    if not buchungsnummer:
+        buchungsnummer = await generate_buchungsnummer(user["mandant_id"], ist_einkauf)
+    
+    # Kontrakt-Nummer generieren (fortlaufend)
+    last_kontrakt = await db.kontrakte.find_one(
+        {"mandant_id": user["mandant_id"]},
+        sort=[("kontraktnr", -1)]
+    )
+    kontraktnr = "K-00001"
+    if last_kontrakt and last_kontrakt.get("kontraktnr"):
+        try:
+            nr = int(last_kontrakt["kontraktnr"].split("-")[1]) + 1
+            kontraktnr = f"K-{nr:05d}"
+        except:
+            pass
     
     kontrakt = {
         "_id": str(uuid.uuid4()),
         "mandant_id": user["mandant_id"],
+        "kontraktnr": kontraktnr,
         "buchungsnummer": buchungsnummer,
-        "adresse_id": data.adresse_id,
-        # Adress-Snapshot
-        "kdnr": adresse.get("kdnr"),
-        "name1": adresse.get("name1"),
-        "name2": adresse.get("name2"),
-        "strasse": adresse.get("strasse"),
-        "plz": adresse.get("plz"),
-        "ort": adresse.get("ort"),
-        # Daten
-        "ist_einkauf": data.ist_einkauf,
+        "vorgang_typ": data.vorgang_typ or ("EK" if ist_einkauf else "VK"),
+        
+        # Adress-Daten (entweder aus Adresse oder direkt übergeben)
+        "id_adresse": adresse_id,
+        "name1": data.name1 or (adresse.get("name1") if adresse else None),
+        "name2": data.name2 or (adresse.get("name2") if adresse else None),
+        "strasse": data.strasse or (adresse.get("strasse") if adresse else None),
+        "hausnummer": data.hausnummer or (adresse.get("hausnummer") if adresse else None),
+        "plz": data.plz or (adresse.get("plz") if adresse else None),
+        "ort": data.ort or (adresse.get("ort") if adresse else None),
+        "land": data.land or (adresse.get("land") if adresse else None),
+        
+        # Kontaktdaten
+        "telefon": data.telefon,
+        "telefax": data.telefax,
+        "email": data.email,
+        
+        # Bearbeiter
+        "name_bearbeiter_intern": data.name_bearbeiter_intern,
+        "tel_bearbeiter_intern": data.tel_bearbeiter_intern,
+        "fax_bearbeiter_intern": data.fax_bearbeiter_intern,
+        
+        # Termine
+        "erstellungsdatum": data.erstellungsdatum or datetime.utcnow().strftime("%Y-%m-%d"),
         "gueltig_von": data.gueltig_von,
         "gueltig_bis": data.gueltig_bis,
-        "bemerkungen_intern": data.bemerkungen_intern,
-        "abgeschlossen": False,
+        
+        # Währung & Konditionen
+        "id_waehrung_fremd": data.id_waehrung_fremd,
+        "waehrung_kurz": data.waehrung_kurz or "EUR",
+        "zahlungsbedingung": data.zahlungsbedingung,
+        "lieferbedingung": data.lieferbedingung,
+        
+        # Status
+        "status": data.status or "OFFEN",
+        "aktiv": data.aktiv,
         "deleted": False,
+        "abgeschlossen": False,
+        
+        # Bemerkungen
+        "bemerkung_extern": data.bemerkung_extern,
+        "bemerkung_intern": data.bemerkung_intern,
+        
+        # Legacy
+        "ist_einkauf": ist_einkauf,
         "positionen": [],
+        
+        # Meta
         "erstellt_von": user.get("kuerzel"),
         "erstellt_am": datetime.utcnow(),
         "letzte_aenderung": datetime.utcnow(),
