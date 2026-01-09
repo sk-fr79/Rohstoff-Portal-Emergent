@@ -144,7 +144,7 @@ def berechne_effektives_enddatum(kopf_gueltig_bis: Optional[str], position_guelt
         kopf_date = datetime.fromisoformat(kopf_gueltig_bis).date()
         pos_date = datetime.fromisoformat(position_gueltig_bis).date()
         return kopf_gueltig_bis if kopf_date <= pos_date else position_gueltig_bis
-    except:
+    except (ValueError, TypeError):
         return kopf_gueltig_bis
 
 
@@ -180,7 +180,7 @@ def ist_position_gueltig(kopf: dict, position: dict, stichtag: date = None) -> b
             bis_date = datetime.fromisoformat(effektives_ende).date()
             if bis_date < stichtag:
                 return False
-        except:
+        except (ValueError, TypeError):
             pass
     
     return True
@@ -243,7 +243,7 @@ async def get_kreditlimits_for_adresse(adresse_id: str, db, stichtag: date = Non
             try:
                 bis_date = datetime.fromisoformat(gueltig_bis).date()
                 ist_gueltig = bis_date >= stichtag
-            except:
+            except (ValueError, TypeError):
                 pass
         
         if kredit_limit > 0:
