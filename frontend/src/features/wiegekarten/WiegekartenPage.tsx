@@ -150,8 +150,17 @@ export function WiegekartenPage() {
     onSuccess: (response) => {
       queryClient.invalidateQueries({ queryKey: ['wiegekarten'] });
       toast.success(`Wiegekarte ${response.data.data.wiegekarten_nr} erstellt`);
-      setShowCreateDialog(false);
-      reset();
+      // Nach erfolgreicher Erstellung: Sidebar bleibt offen mit neuem Datensatz
+      if (response.data?.data) {
+        setSelectedWiegekarte(response.data.data);
+        Object.entries(response.data.data).forEach(([key, value]) => {
+          if (key in wiegekarteSchema.shape) {
+            setValue(key as keyof WiegekarteForm, value as any);
+          }
+        });
+      }
+      setIsNewRecord(false);
+      setIsEditing(false);
     },
     onError: (error: any) => {
       toast.error(error.response?.data?.detail || 'Fehler beim Erstellen');
@@ -353,9 +362,63 @@ export function WiegekartenPage() {
     }
   };
 
+  // Neue Wiegekarte anlegen - öffnet Sidebar mit leerem Datensatz
+  const handleNewWiegekarte = () => {
+    const emptyWiegekarte: Wiegekarte = {
+      id: 'NEU',
+      wiegekarten_nr: '(wird automatisch vergeben)',
+      lfd_nr: 0,
+      typ_wiegekarte: 'W',
+      zustand: 'NEU',
+      ist_lieferant: true,
+      kennzeichen: '',
+      storno: false,
+      erstellt_am: new Date().toISOString(),
+    };
+    setSelectedWiegekarte(emptyWiegekarte);
+    reset({
+      typ_wiegekarte: 'W',
+      ist_lieferant: true,
+      kennzeichen: '',
+      strahlung_geprueft: false,
+      fremdcontainer: false,
+      sorte_hand: false,
+    });
+    setIsNewRecord(true);
+    setIsEditing(true);
+    setActiveSection('stamm');
+  };
+
+  // Sidebar schließen
+  const handleClose = () => {
+    setSelectedWiegekarte(null);
+    setIsEditing(false);
+    setIsNewRecord(false);
+    reset();
+  };
+
+  // Abbrechen
+  const handleCancel = () => {
+    if (isNewRecord) {
+      setSelectedWiegekarte(null);
+      setIsNewRecord(false);
+      reset();
+    } else {
+      setIsEditing(false);
+      if (selectedWiegekarte) {
+        Object.entries(selectedWiegekarte).forEach(([key, value]) => {
+          if (key in wiegekarteSchema.shape) {
+            setValue(key as keyof WiegekarteForm, value as any);
+          }
+        });
+      }
+    }
+  };
+
   // Detailansicht öffnen
   const openDetail = (wk: Wiegekarte) => {
     setSelectedWiegekarte(wk);
+    setIsNewRecord(false);
     setIsEditing(false);
     setActiveSection('stamm');
     // Form mit Daten füllen
@@ -390,7 +453,7 @@ export function WiegekartenPage() {
                 Nur offene
               </Label>
             </div>
-            <Button onClick={() => setShowCreateDialog(true)} className="bg-emerald-600 hover:bg-emerald-700">
+            <Button onClick={handleNewWiegekarte} className="bg-emerald-600 hover:bg-emerald-700" data-testid="new-wiegekarte-btn">
               <Plus className="h-4 w-4 mr-2" />
               Neue Wiegekarte
             </Button>
