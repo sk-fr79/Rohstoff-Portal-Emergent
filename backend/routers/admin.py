@@ -350,10 +350,6 @@ async def delete_abteilung(abt_id: str, user = Depends(require_admin)):
 # BENUTZER ENDPOINTS
 # ============================================================
 
-def hash_password(password: str) -> str:
-    """Einfaches Password-Hashing (in Produktion bcrypt verwenden)"""
-    return hashlib.sha256(password.encode()).hexdigest()
-
 
 @router.get("/benutzer")
 async def list_benutzer(
