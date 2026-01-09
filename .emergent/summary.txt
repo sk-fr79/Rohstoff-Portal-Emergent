@@ -2,143 +2,145 @@
 Der Benutzer möchte eine veraltete Java/Echo2-Anwendung namens Rohstoff Portal modernisieren. Das Ziel ist eine neue Architektur mit einem FastAPI/Python-Backend, einer PostgreSQL-Datenbank (aktuell MongoDB) und einem modernen React PWA-Frontend. Die gesamte Geschäftslogik der bestehenden Anwendung muss 1:1 übernommen werden.
 
 **Zusätzliche Anforderungen aus dieser Sitzung:**
-1.  **Fehlerbehebung:** Behebung eines Fehlers, bei dem der Speicher-Button für Adressen nicht funktionierte, sowie eines OCR-API-Fehlers.
-2.  **UST-ID Validierung:** Integration der offiziellen EU VIES REST API zur Validierung von Umsatzsteuer-Identifikationsnummern, einschließlich Protokollierung der Prüfergebnisse.
-3.  **Logo-Integration:** Integration eines neuen Firmenlogos (MV) als globales App-Logo und Favicon mit transparentem Hintergrund.
-4.  **Wiegekarten-Modul:** Implementierung eines vollständigen Moduls zur Verwaltung von Wiegekarten, basierend auf der Analyse des Java-Codes und eines Screenshots der Altanwendung.
-5.  **UI-Verbesserung (Sidebar):** Implementierung einer einklappbaren Hauptnavigation-Sidebar, die im eingeklappten Zustand nur Icons anzeigt.
-6.  **UI-Konsistenz:** Neugestaltung der Artikel- und Kontrakte-Seiten im Stil der Adressen-Seite, einschließlich eines Sidebar-Menüs für die Detailansicht.
+1.  **UI-Konsistenz:** Neugestaltung der Artikel- und Kontrakte-Seiten im Stil der Adressen-Seite.
+2.  **Neue Module:** Implementierung der Module Fuhren (Transport) und Rechnungen (Rechnungen/Gutschriften), einschließlich der Logik zur automatischen Rechnungserstellung aus einer Fuhre.
+3.  **Geschäftslogik:** Portierung der komplexen Validierungsregeln aus dem Java-Code für die Module Artikel, Kontrakte und Fuhren in das FastAPI-Backend.
+4.  **UX-Refactoring:** Der Benutzer hat zuletzt gefordert, das Erstellen neuer Datensätze zu vereinheitlichen. Anstatt eines Pop-up-Dialogs soll der Neu-Button in allen Modulen die seitliche Detailansicht (Sidebar) öffnen, um einen neuen Eintrag zu erstellen, genau wie bei der Bearbeitung eines bestehenden Eintrags.
 
 **User's preferred language**: German
 
 **what currently exists?**
--   Ein monolithisches FastAPI-Backend in  (>2000 Zeilen), das Endpunkte für Authentifizierung, Adressen, OCR, **UST-ID-Validierung** und das neue **Wiegekarten-Modul** bereitstellt. Es verwendet eine MongoDB-Datenbank.
--   Ein React-Frontend mit einem konsistenten Enterprise-Design und einer **einklappbaren Haupt-Sidebar**.
--   Die Module Adressen und Wiegekarten sind vollständig modernisiert und verwenden ein Layout mit einer Datentabelle und einer Detailansicht mit eigener Sidebar-Navigation.
--   Das neue Firmenlogo (MV) ist global in der App (Login, Sidebar, Favicon) integriert.
--   Die Frontend-Dateien für die Module Artikel () und Kontrakte () wurden mit der neuen Sidebar-Layout-Struktur **überschrieben**, aber die Implementierung ist noch nicht abgeschlossen oder getestet.
+-   Ein monolithisches FastAPI-Backend in  (jetzt >3400 Zeilen), das Endpunkte für Authentifizierung, Adressen, Artikel, Kontrakte, Wiegekarten, Fuhren und Rechnungen bereitstellt. Es verwendet eine MongoDB-Datenbank.
+-   Das Backend enthält umfangreiche Validierungslogik für Artikel, Fuhren und Kontrakte, die aus dem alten Java-Code portiert wurde.
+-   Ein React-Frontend mit einem konsistenten Enterprise-Design und einer einklappbaren Haupt-Sidebar.
+-   Die Module Adressen, Wiegekarten, Artikel, Kontrakte, Fuhren und Rechnungen sind implementiert und folgen einem einheitlichen Layout (Datentabelle links, Detail-Sidebar rechts).
+-   Die Umstellung des Neu-Buttons auf die Detail-Sidebar-Ansicht wurde für die Module Fuhren und Rechnungen begonnen (Dateien wurden überschrieben), ist aber noch nicht fertig oder getestet.
 
 **Last working item**:
--   **Last item agent was working:** Neugestaltung der Artikel- und Kontrakte-Seiten, um die UI-Konsistenz mit den Adressen- und Wiegekarten-Seiten herzustellen. Dies beinhaltet die Analyse der Datenfelder aus dem alten Java-Code und die Implementierung eines neuen Frontend-Layouts mit einer Detail-Sidebar.
+-   **Last item agent was working:** Refactoring des Neu-Buttons in allen Modulen. Anstatt eines Pop-up-Dialogs soll die Detail-Sidebar zum Erstellen eines neuen Datensatzes geöffnet werden, um ein konsistentes Benutzererlebnis für das Erstellen und Bearbeiten zu gewährleisten.
 -   **Status:** IN PROGRESS
 -   **Agent Testing Done:** N
--   **Which testing method agent to use?** both. Zuerst muss das Backend (Models, Endpunkte in ) für Artikel und Kontrakte mit den neuen Feldern aktualisiert werden. Danach kann der Backend-Testing-Agent die API testen. Anschließend sollte der Frontend-Testing-Agent die neuen UI-Layouts für beide Seiten verifizieren und auf Regressionen prüfen.
+-   **Which testing method agent to use?** Frontend testing agent. Dies ist eine reine UI/UX-Änderung. Der Agent muss für alle Module (, , , , , ) überprüfen, ob der Neu-Button die Sidebar korrekt öffnet, die Erstellung funktioniert und die Bearbeitung bestehender Datensätze nicht beeinträchtigt wird.
 -   **User Testing Done:** N
 
 **All Pending/In progress Issue list**:
--   **Issue 1: Fertigstellung des Redesigns der Artikel- und Kontrakte-Seiten (P0)**
-    -   **Attempted fixes:** Die Frontend-Dateien  und  wurden mit einer neuen Vorlage überschrieben, die das gewünschte Sidebar-Layout implementiert.
+-   **Issue 1: Fertigstellung des Neuer Eintrag-Sidebar-Flows (P0)**
+    -   **Attempted fixes:** Die Dateien  und  wurden mit neuem Code überschrieben, um die neue Logik zu implementieren.
     -   **Next debug checklist:**
-        1.  **Backend:** Die Pydantic-Models für  und  in  müssen um die aus dem Java-Code analysierten Felder erweitert werden.
-        2.  **Backend:** Die CRUD-Endpunkte (insbesondere  und ) für  und  müssen aktualisiert werden, um die neuen Felder zu verarbeiten.
-        3.  **Frontend:** Die Logik zum Fetchen, Anzeigen und Speichern der Daten in  und  muss vollständig implementiert und mit den (aktualisierten) Backend-Endpunkten verbunden werden.
-        4.  **Testing:** Services neu starten und die Funktionalität beider Seiten end-to-end testen.
+        1.  Die Implementierung in  und  testen und debuggen. Sicherstellen, dass der Neu-Button die Sidebar öffnet und ein neuer Datensatz gespeichert werden kann.
+        2.  Das gleiche Muster auf die verbleibenden Module anwenden: , ,  und .
+        3.  Sicherstellen, dass die Speicherlogik korrekt zwischen  (neu) und  (aktualisieren) unterscheidet.
+        4.  Die Erstellungs- und Bearbeitungsfunktionen in allen Modulen gründlich testen.
     -   **Why fix this issue and what will be achieved with the fix?** Um eine einheitliche und moderne Benutzererfahrung in der gesamten Anwendung zu gewährleisten, wie vom Benutzer gewünscht.
     -   **Status:** IN PROGRESS
     -   **Is recurring issue?** N
-    -   **Should Test frontend/backend/both after fix?** both
+    -   **Should Test frontend/backend/both after fix?** frontend
     -   **Blocked on other issue:** None
 
 **In progress Task List**:
--   **Task 1: Fertigstellung des Redesigns der Artikel- und Kontrakte-Seiten (P0)**
-    -   **Where to resume:** Beginnen Sie mit der Aktualisierung der Backend-Models und -Endpunkte in  für die Module Artikel und Kontrakte, basierend auf der bereits durchgeführten Java-Code-Analyse.
-    -   **What will be achieved with this?** Die Anwendung wird ein konsistentes UI/UX über alle Kernmodule hinweg haben.
+-   **Task 1: Fertigstellung des Neuer Eintrag-Sidebar-Flows (P0)**
+    -   **Where to resume:** Beginnen Sie mit dem Testen und Fertigstellen der Funktionalität in  und . Danach wenden Sie das Muster auf die anderen Module an.
+    -   **What will be achieved with this?** Eine konsistente UI/UX für die Datenerstellung und -bearbeitung in der gesamten Anwendung.
     -   **Status:** IN PROGRESS
-    -   **Should Test frontend/backend/both after fix?** both
+    -   **Should Test frontend/backend/both after fix?** frontend
     -   **Blocked on something:** None
 
 **Upcoming and Future Tasks**
 -   **Upcoming Tasks:**
-    1.  **Backend-Refactoring (P0):** Die monolithische  (jetzt >2000 Zeilen) dringend in eine modulare Struktur aufteilen (z.B. , , ), um die Wartbarkeit zu verbessern.
-    2.  **Implementierung des Fuhren-Moduls (P1):** Erstellung des Backends und Frontends für das Transportmodul.
-    3.  **Implementierung des Rechnungen-Moduls (P1):** Erstellung des Backends und Frontends für das Rechnungsmodul.
-    4.  **Verwaltung von Bankverbindungen (P2):** Hinzufügen einer Funktion zur Verwaltung von Bankdaten im Adressenstamm.
+    1.  **Backend-Refactoring (P0 - KRITISCH):** Die monolithische  (>3400 Zeilen) muss dringend in eine modulare Struktur aufgeteilt werden (z. B. , , , ), um die Wartbarkeit zu gewährleisten. Dies sollte direkt nach der aktuellen UI-Aufgabe angegangen werden.
+    2.  **PDF-Export (P1):** Implementierung der PDF-Erstellung für Rechnungen und Lieferscheine (aus Fuhren).
+    3.  **Sammelrechnungen (P2):** Funktion implementieren, mit der mehrere Fuhren zu einer einzigen Sammelrechnung zusammengefasst werden können.
+    4.  **UI für Validierungsergebnisse (P2):** Anzeige von Validierungsfehlern und -warnungen im Frontend (z.B. rote Hinweise bei Fehlern, gelbe Toasts bei Warnungen).
 
 -   **Future Tasks:**
-    1.  **Datenimport aus Altsystem:** Erstellung eines Skripts zum Importieren von Bestandsdaten.
-    2.  **PWA-Funktionen:** Implementierung von Service Worker und Offline-Fähigkeiten.
-    3.  **PDF-Export:** Generierung von PDFs für Kontrakte, Rechnungen usw.
-    4.  **Umfassendes Testing:** Einrichtung von Unit- (Pytest) und E2E-Tests (Playwright).
-    5.  **Dokumentation fertigstellen.**
+    1.  **Datenimport aus Altsystem.**
+    2.  **PWA-Funktionen (Service Worker, Offline-Fähigkeit).**
+    3.  **Umfassendes Testing (Unit- und E2E-Tests).**
+    4.  **Dokumentation fertigstellen.**
 
 **Completed work in this session**
--   **Bugfix:** Kritische Fehler im Frontend behoben, die das Speichern von Adressen und die OCR-Funktion verhinderten. Der Zod-Schema-Validierungsfehler () wurde durch Hinzufügen von  gelöst. Der OCR-Fehler wurde durch Korrektur des API-Parameters von  auf  behoben.
--   **Feature: UST-ID VIES Validierung:** Ein Backend-Endpunkt zur Validierung von UST-IDs über die EU-VIES-API und zur Protokollierung der Anfragen in MongoDB wurde implementiert. Im Frontend wurden UI-Elemente (Buttons, Dialog) zur Auslösung der Prüfung und Anzeige des Protokolls hinzugefügt.
--   **Feature: Wiegekarten-Modul:** Ein komplettes neues Modul zur Verwaltung von Wiegekarten wurde basierend auf der Analyse des Java-Codes erstellt, einschließlich Backend-CRUD-Endpunkten und einer komplexen Frontend-Seite mit Detail-Sidebar-Layout.
--   **UI: Logo-Integration:** Das neue MV-Firmenlogo wurde verarbeitet (Hintergrund entfernt) und als globales App-Logo auf der Login-Seite, in der Sidebar und als Favicon integriert. Das Problem mit dem verzerrten Favicon wurde behoben.
--   **UI: Einklappbare Sidebar:** Die Hauptnavigation wurde so umgestaltet, dass sie einklappbar ist. Nach mehreren Iterationen basierend auf Benutzerfeedback zeigt sie im eingeklappten Zustand korrekt ausgerichtete Icons an.
+-   **Feature: UI-Redesign für Artikel & Kontrakte:** Die Seiten für Artikel und Kontrakte wurden erfolgreich auf das neue Layout mit Datentabelle und Detail-Sidebar umgestellt, einschließlich der notwendigen Backend-Anpassungen. Getestet mit dem Testing Agent (24/24 bestanden).
+-   **Feature: Fuhren-Modul (Transport):** Ein komplettes neues Modul zur Verwaltung von Fuhren wurde implementiert (Backend & Frontend).
+-   **Feature: Rechnungen-Modul:** Ein komplettes neues Modul zur Verwaltung von Rechnungen und Gutschriften wurde implementiert, einschließlich der automatischen Erstellung aus einer Fuhre.
+-   **Feature: Geschäftslogik-Validierung:** Komplexe Validierungsregeln für Artikel, Kontrakte und Fuhren wurden aus dem Java-Code analysiert und im FastAPI-Backend implementiert und integriert. Getestet mit dem Testing Agent (30/30 bestanden).
+-   **Bugfixes:** Kritische Bugs, die vom Testing Agent gefunden wurden (ein -Wert-Problem bei der Gutschriftenerstellung und eine nicht aufgerufene Kontrakt-Validierung), wurden behoben.
 
 **Earlier issues found/mentioned but not fixed**
+-   Keine.
+
+**Known issue recurrence from previous fork**
 -   Keine.
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
--   **Backend:** FastAPI, Pydantic, MongoDB (),  (für externe VIES-API-Aufrufe).
--   **Frontend:** React, TypeScript, Vite, TailwindCSS, shadcn/ui, Zustand, , Zod, , .
--   **UI-Pattern:** Ein wiederkehrendes Muster für Detailansichten wurde etabliert, das eine linke Sidebar zur Navigation innerhalb eines Datensatzes verwendet (siehe Adressen, Wiegekarten).
+-   **Backend:** FastAPI, Pydantic, MongoDB (), komplexe Geschäftslogik in Python-Klassen.
+-   **Frontend:** React, TypeScript, Vite, TailwindCSS, shadcn/ui, Zustand, , Zod.
+-   **UI-Pattern:** Einheitliches Layout mit Datentabelle und Detail-Sidebar für alle Module.
 
 **key DB schema**
--   **wiegekarten:** Neue Collection zur Speicherung aller Wiegescheindaten.
--   **ustid_protokoll:** Neue Collection zur Protokollierung jeder durchgeführten UST-ID-Validierungsanfrage, verknüpft mit einer Adresse.
+-   **fuhren:** Neue Collection zur Speicherung von Transportdaten.
+-   **rechnungen:** Neue Collection zur Speicherung von Rechnungen und Gutschriften.
 
 **changes in tech stack**
 -   Keine.
 
 **All files of reference**
--   : Stark erweitert um Endpunkte für VIES-Validierung und das Wiegekarten-Modul.
--   : Neu erstellte Seite für das Wiegekarten-Modul.
--   : Stark überarbeitet, um die einklappbare Sidebar zu implementieren.
--   : Mit einer neuen Vorlage überschrieben.
--   : Mit einer neuen Vorlage überschrieben.
--   : Geändert, um den Zod-Validierungsfehler zu beheben und die UST-ID-Validierungs-UI hinzuzufügen.
--   : Enthält jetzt die neuen Logo- und Favicon-Dateien.
--   : Aktualisiert, um das neue Favicon zu referenzieren.
+-   : Massiv erweitert mit neuen Modellen, Endpunkten und Validierungslogik für Fuhren, Rechnungen, Artikel und Kontrakte.
+-   : Neu erstellt und dann überschrieben, um das Neu-Button-Refactoring zu beginnen.
+-   : Neu erstellt und dann überschrieben, um das Neu-Button-Refactoring zu beginnen.
+-   : Aktualisiert mit API-Funktionen für die neuen Module.
+-   : Aktualisiert mit Routen für  und .
+-   : Neu erstellt, um einen Importfehler zu beheben.
 
 **Areas that need refactoring**:
--   **Backend (CRITICAL):**  ist jetzt extrem groß und schwer zu warten. Ein Refactoring in eine modulare Struktur (z.B. mit FastAPI Routern pro Feature) ist dringend erforderlich.
--   **Frontend:** Die neuen Seiten  und  sollten von Anfang an in kleinere, wiederverwendbare Unterkomponenten aufgeteilt werden, um nicht so groß wie  zu werden.
+-   **Backend (KRITISCH - P0):**  ist mit >3400 Zeilen extrem unhandlich und muss dringend in eine modulare Struktur mit FastAPI Routern aufgeteilt werden.
+-   **Frontend:** Das Refactoring des Neu-Button-Workflows muss für alle Module abgeschlossen werden, um die vom Benutzer gewünschte Konsistenz zu erreichen.
 
 **key api endpoints**
 -   
 -   
 -   
 -   
+-   
+-   
+-   
 
 **Critical Info for New Agent**
--   Die aktuelle Aufgabe (Redesign von Artikel/Kontrakte) ist nur zur Hälfte erledigt. Sie müssen im Backend beginnen, indem Sie die Models und Endpunkte in  aktualisieren. Erst danach können Sie das Frontend fertigstellen und testen.
--   Das Refactoring der  ist die wichtigste technische Schuld und sollte unmittelbar nach Abschluss der aktuellen UI-Aufgabe als P0-Priorität vorgeschlagen werden.
--   Das Projekt hat einen etablierten UI-Stil für neue Module (Tabelle + Detailansicht mit Sidebar). Halten Sie sich bei zukünftigen Features an dieses Muster.
+-   Die unmittelbare Aufgabe ist die Fertigstellung des Frontend-Refactorings: Sorgen Sie dafür, dass der Neu-Button in **allen** Modulen die Detail-Sidebar öffnet. Beginnen Sie mit dem Testen der bereits geänderten  und  und wenden Sie das funktionierende Muster dann auf die anderen Module an.
+-   Die **wichtigste technische Schuld** ist die monolithische . Schlagen Sie das Refactoring als nächste P0-Aufgabe vor, sobald die UI-Aufgabe abgeschlossen ist.
+-   Die nächsten vom Benutzer gewünschten Features sind PDF-Export und Sammelrechnungen.
 
 **documents and test reports created in this job**
--   : Testbericht für die UST-ID VIES Validierung.
--   : Testbericht für das Wiegekarten-Modul.
--   : Wurde mehrfach aktualisiert, um die Implementierung neuer Features zu dokumentieren.
+-   
+-   
+-   
+-    (wurde mehrfach aktualisiert)
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **User (Msg 364):** Feedback zur Sidebar: Beim Einklappen sollen alle Untermenüs ebenfalls eingeklappt werden.
-2.  **User (Msg 383):** Weiteres Feedback zur Sidebar: Der Einklappen-Button soll weg und die Icons für Berichte, Rechnungen und Dashboard sollen einheitlich formatiert sein.
-3.  **User (Msg 402):** Neue Anforderung: Die Seiten Artikel und Kontrakte sollen im Stil der Adressen-Seite neu gestaltet werden (mit Sidebar-Menü). Die Datenfelder sollen aus dem Java-Code übernommen werden.
-4.  **Agent (Msg 403-431):** Analysiert den Java-Code und überschreibt die Frontend-Dateien  und  mit einer neuen Layout-Vorlage. Die Sitzung endet hier.
+1.  **User (latest):** Fordert ein neues UX-Muster: Der Neu-Button soll immer die Detail-Sidebar öffnen, anstatt eines Popups.
+2.  **User:** Bestätigt, dass als Nächstes die Validierungslogik aus dem Java-Code portiert werden soll.
+3.  **User:** Genehmigt den Vorschlag für Sammelrechnungen und priorisiert die Aufgaben: 1. Validierungslogik, 2. PDF-Export.
+4.  **User:** Liefert Details zur Implementierung der Fuhren/Rechnungen-Module (Verknüpfung zu Wiegekarten, automatische Rechnungserstellung).
 
 **Project Health Check:**
--   **Broken:** Die Seiten Artikel und Kontrakte sind derzeit nicht funktionsfähig, da sie gerade umgebaut werden.
+-   **Broken:** Der Prozess zum Erstellen neuer Datensätze ist inkonsistent und teilweise defekt. Die Seiten Fuhren und Rechnungen verwenden einen neuen, ungetesteten Ansatz, während die anderen Seiten noch das alte Pop-up-Verhalten haben.
 -   **Mocked:** Keine.
 
 **3rd Party Integrations**
--   **emergentintegrations:** Wird für die OCR-Funktionalität verwendet. Nutzt den .
--   **EU VIES VAT Validation API:** Externe REST-API, die direkt über  aufgerufen wird.
+-   **emergentintegrations:** Wird für die OCR-Funktionalität verwendet (nutzt ).
+-   **EU VIES VAT Validation API:** Externe REST-API zur Validierung von Umsatzsteuer-IDs.
 
 **Testing status**
--   **Testing agent used after significant changes:** YES (zweimal in dieser Sitzung für VIES-Validierung und das Wiegekarten-Modul).
+-   **Testing agent used after significant changes:** YES (dreimal für die Implementierung der Module und der Validierungslogik).
 -   **Troubleshoot agent used after agent stuck in loop:** NO
--   **Test files created:** [, ]
--   **Known regressions:** Keine.
+-   **Test files created:** [, , ]
+-   **Known regressions:** Keine. Der Testing Agent hat geholfen, kritische Fehler vor der Fertigstellung zu finden und zu beheben.
 
 **Credentials to test flow:**
 -   **Benutzername:** 
 -   **Passwort:** 
 
 **What agent forgot to execute**
--   Der Agent hat die Aufgabe, die Artikel- und Kontrakte-Seiten neu zu gestalten, begonnen, aber noch nicht abgeschlossen. Insbesondere fehlen die notwendigen Backend-Anpassungen (Models und Endpunkte in ), um die neuen Frontend-Layouts mit Daten zu versorgen und Änderungen zu speichern.</analysis>
+-   Der Agent hat das Refactoring des Neu-Button-Workflows begonnen, indem er zwei Dateien überschrieben hat, aber er hat die Implementierung nicht abgeschlossen, nicht getestet und nicht auf die anderen Module angewendet. Die Aufgabe ist unvollständig.</analysis>

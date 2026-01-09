@@ -8,7 +8,7 @@ import requests
 import os
 import uuid
 
-BASE_URL = "https://resource-portal-3.preview.emergentagent.com"
+BASE_URL = "https://resmanager-app.preview.emergentagent.com"
 
 # Test credentials
 TEST_USERNAME = "admin"
