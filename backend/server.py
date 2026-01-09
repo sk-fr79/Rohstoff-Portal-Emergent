@@ -568,6 +568,171 @@ class KontraktUpdate(BaseModel):
     bemerkung_extern: Optional[str] = Field(None, max_length=2000)
     bemerkung_intern: Optional[str] = Field(None, max_length=2000)
 
+
+# ============================================================
+# FUHREN MODELS (Transporte)
+# ============================================================
+
+class FuhreCreate(BaseModel):
+    """Model für neue Fuhre - basiert auf Java JT_VPOS_TPA_FUHRE"""
+    # Adressen
+    id_adresse_start: str  # Lieferant
+    id_adresse_ziel: str   # Abnehmer
+    id_adresse_lager_start: Optional[str] = None
+    id_adresse_lager_ziel: Optional[str] = None
+    id_adresse_spedition: Optional[str] = None
+    
+    # Artikel/Sorte
+    id_artikel: str
+    artbez1_ek: Optional[str] = Field(None, max_length=80)
+    artbez1_vk: Optional[str] = Field(None, max_length=80)
+    
+    # Datum
+    datum_abholung: str  # Format: YYYY-MM-DD
+    datum_anlieferung: str
+    
+    # Transport
+    transportmittel: str = Field("LKW", max_length=20)
+    transportkennzeichen: Optional[str] = Field(None, max_length=20)
+    fahrer_name: Optional[str] = Field(None, max_length=100)
+    
+    # Mengen
+    menge_vorgabe: Optional[float] = None  # Planmenge
+    menge_aufladen: Optional[float] = None  # Lademenge
+    menge_abladen: Optional[float] = None   # Ablademenge
+    einheit: str = Field("kg", max_length=10)
+    
+    # Preise (EK = Einkauf, VK = Verkauf)
+    einzelpreis_ek: Optional[float] = None
+    einzelpreis_vk: Optional[float] = None
+    steuersatz_ek: Optional[float] = Field(19.0)
+    steuersatz_vk: Optional[float] = Field(19.0)
+    
+    # Wiegekarten-Verknüpfung
+    id_wiegekarte_start: Optional[str] = None
+    id_wiegekarte_ziel: Optional[str] = None
+    
+    # Kontrakt-Verknüpfung
+    id_kontrakt: Optional[str] = None
+    
+    # Status
+    status: str = Field("OFFEN", max_length=20)  # OFFEN, IN_TRANSPORT, GELIEFERT, ABGERECHNET, STORNIERT
+    
+    # Bemerkungen
+    bemerkung: Optional[str] = Field(None, max_length=2000)
+
+
+class FuhreUpdate(BaseModel):
+    """Model für Fuhre-Updates"""
+    id_adresse_start: Optional[str] = None
+    id_adresse_ziel: Optional[str] = None
+    id_adresse_lager_start: Optional[str] = None
+    id_adresse_lager_ziel: Optional[str] = None
+    id_adresse_spedition: Optional[str] = None
+    id_artikel: Optional[str] = None
+    artbez1_ek: Optional[str] = Field(None, max_length=80)
+    artbez1_vk: Optional[str] = Field(None, max_length=80)
+    datum_abholung: Optional[str] = None
+    datum_anlieferung: Optional[str] = None
+    transportmittel: Optional[str] = Field(None, max_length=20)
+    transportkennzeichen: Optional[str] = Field(None, max_length=20)
+    fahrer_name: Optional[str] = Field(None, max_length=100)
+    menge_vorgabe: Optional[float] = None
+    menge_aufladen: Optional[float] = None
+    menge_abladen: Optional[float] = None
+    einheit: Optional[str] = Field(None, max_length=10)
+    einzelpreis_ek: Optional[float] = None
+    einzelpreis_vk: Optional[float] = None
+    steuersatz_ek: Optional[float] = None
+    steuersatz_vk: Optional[float] = None
+    id_wiegekarte_start: Optional[str] = None
+    id_wiegekarte_ziel: Optional[str] = None
+    id_kontrakt: Optional[str] = None
+    status: Optional[str] = Field(None, max_length=20)
+    bemerkung: Optional[str] = Field(None, max_length=2000)
+
+
+# ============================================================
+# RECHNUNGEN MODELS
+# ============================================================
+
+class RechnungCreate(BaseModel):
+    """Model für neue Rechnung/Gutschrift - basiert auf Java JT_VKOPF_RG"""
+    vorgang_typ: str = Field("RECHNUNG", max_length=20)  # RECHNUNG oder GUTSCHRIFT
+    
+    # Adresse
+    id_adresse: str
+    name1: str = Field(..., max_length=40)
+    name2: Optional[str] = Field(None, max_length=40)
+    strasse: Optional[str] = Field(None, max_length=45)
+    hausnummer: Optional[str] = Field(None, max_length=10)
+    plz: Optional[str] = Field(None, max_length=10)
+    ort: Optional[str] = Field(None, max_length=30)
+    land: Optional[str] = Field(None, max_length=30)
+    
+    # Kontakt
+    email: Optional[str] = Field(None, max_length=100)
+    
+    # UST-ID
+    ustid: Optional[str] = Field(None, max_length=20)
+    ustid_mandant: Optional[str] = Field(None, max_length=20)
+    
+    # Datum
+    erstellungsdatum: Optional[str] = None
+    leistungsdatum: Optional[str] = None
+    faelligkeitsdatum: Optional[str] = None
+    
+    # Währung & Konditionen
+    waehrung: str = Field("EUR", max_length=5)
+    zahlungsbedingung: Optional[str] = Field(None, max_length=200)
+    
+    # Bearbeiter
+    bearbeiter_name: Optional[str] = Field(None, max_length=80)
+    
+    # Status
+    status: str = Field("ENTWURF", max_length=20)  # ENTWURF, OFFEN, BEZAHLT, STORNIERT, MAHNUNG
+    
+    # Bemerkungen
+    bemerkung_extern: Optional[str] = Field(None, max_length=2000)
+    bemerkung_intern: Optional[str] = Field(None, max_length=2000)
+
+
+class RechnungUpdate(BaseModel):
+    """Model für Rechnung-Updates"""
+    vorgang_typ: Optional[str] = Field(None, max_length=20)
+    id_adresse: Optional[str] = None
+    name1: Optional[str] = Field(None, max_length=40)
+    name2: Optional[str] = Field(None, max_length=40)
+    strasse: Optional[str] = Field(None, max_length=45)
+    hausnummer: Optional[str] = Field(None, max_length=10)
+    plz: Optional[str] = Field(None, max_length=10)
+    ort: Optional[str] = Field(None, max_length=30)
+    land: Optional[str] = Field(None, max_length=30)
+    email: Optional[str] = Field(None, max_length=100)
+    ustid: Optional[str] = Field(None, max_length=20)
+    erstellungsdatum: Optional[str] = None
+    leistungsdatum: Optional[str] = None
+    faelligkeitsdatum: Optional[str] = None
+    waehrung: Optional[str] = Field(None, max_length=5)
+    zahlungsbedingung: Optional[str] = Field(None, max_length=200)
+    bearbeiter_name: Optional[str] = Field(None, max_length=80)
+    status: Optional[str] = Field(None, max_length=20)
+    bemerkung_extern: Optional[str] = Field(None, max_length=2000)
+    bemerkung_intern: Optional[str] = Field(None, max_length=2000)
+
+
+class RechnungPositionCreate(BaseModel):
+    """Model für Rechnungs-Position"""
+    id_artikel: Optional[str] = None
+    artbez: str = Field(..., max_length=80)
+    beschreibung: Optional[str] = Field(None, max_length=500)
+    menge: float
+    einheit: str = Field("Stk", max_length=10)
+    einzelpreis: float
+    steuersatz: float = Field(19.0)
+    # Verknüpfung zur Fuhre
+    id_fuhre: Optional[str] = None
+
 # ============================================================
 # HEALTH CHECK
 # ============================================================
