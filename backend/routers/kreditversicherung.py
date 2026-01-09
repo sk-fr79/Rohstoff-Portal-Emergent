@@ -698,7 +698,7 @@ async def pruefe_kreditlimit(
             "adresse_id": adresse_id,
             "name": adresse.get("name1", "") if adresse else "",
             "ort": adresse.get("ort", "") if adresse else "",
-            "limits": [l.model_dump() for l in limits]
+            "limits": [lim.model_dump() for lim in limits]
         }
         betroffene_adressen.append(adresse_info)
         
