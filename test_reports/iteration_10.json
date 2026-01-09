@@ -1,0 +1,100 @@
+{
+  "summary": "Backend-only testing of Echo2 Steuer-Validierungslogik for Adressen. All 10 requested validation scenarios tested and passed (20 test cases total). The validation logic from Java __FS_Adress_Check.java has been correctly ported.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/tests/test_steuer_validierung_echo2.py",
+    "/app/test_reports/pytest/pytest_steuer_validierung_results.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "Validation logic correctly implements all 8+ business rules from Echo2 Java code",
+    "Firma/Privat classification works correctly with ist_firma flag",
+    "UST-ID requirements properly enforced: Inland needs UST-ID or Sonderschalter+Steuernummer, EU needs UST-ID",
+    "Privatperson validation: Inland needs Ausweis OR Steuernummer, Ausland needs Ausweis",
+    "Sonderschalter logic: firma_ohne_ustid and privat_mit_ustid cannot be active simultaneously",
+    "UST-Länderkürzel consistency check works - mismatched LKZ/Land correctly rejected",
+    "Partial UST-ID (only LKZ or only ID) correctly rejected",
+    "Default values for wareneingang_sperren and warenausgang_sperren correctly set to True"
+  ],
+  "updated_files": [
+    "/app/tests/test_steuer_validierung_echo2.py",
+    "/app/tests/test_adresse_validierung.py"
+  ],
+  "success_rate": {
+    "backend": "100% (37/37 tests passed)",
+    "frontend": "N/A (backend only testing)"
+  },
+  "test_credentials": {
+    "username": "admin (field: benutzername)",
+    "password": "Admin123! (field: passwort)"
+  },
+  "seed_data_creation": "Test addresses created with TEST_ prefix during validation tests",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Echo2 Steuer-Validierungslogik fully tested. All validation scenarios from __FS_Adress_Check.java working correctly. Test file: /app/tests/test_steuer_validierung_echo2.py covers all 10 requested scenarios.",
+  "features_tested": {
+    "test_1_firma_inland_ohne_ustid": {
+      "scenario": "Firma im Inland ohne UST-ID",
+      "expected": "Fehler zurückgeben",
+      "result": "PASS - Error message about 'Firma ohne UST-ID' or 'Steuernummer' requirement"
+    },
+    "test_2_firma_inland_sonderschalter": {
+      "scenario": "Firma im Inland mit Sonderschalter + Steuernummer",
+      "expected": "OK sein",
+      "result": "PASS - Validation passes with firma_ohne_ustid=True + Steuernummer"
+    },
+    "test_3_firma_eu_ohne_ustid": {
+      "scenario": "Firma im EU-Ausland ohne UST-ID",
+      "expected": "Fehler zurückgeben",
+      "result": "PASS - Error message about EU UST-ID requirement"
+    },
+    "test_4_firma_eu_mit_ustid": {
+      "scenario": "Firma im EU-Ausland mit korrekter UST-ID",
+      "expected": "OK sein",
+      "result": "PASS - Validation passes with correct AT prefix for Austria"
+    },
+    "test_5_ust_lkz_mismatch": {
+      "scenario": "UST-Länderkürzel passt nicht zum Land",
+      "expected": "Fehler zurückgeben",
+      "result": "PASS - Error message about mismatched LKZ (e.g., AT prefix for Germany)"
+    },
+    "test_6_privat_inland_ohne_ausweis": {
+      "scenario": "Privatperson im Inland ohne Ausweis/Steuernummer",
+      "expected": "Fehler zurückgeben",
+      "result": "PASS - Error message about Ausweisnummer or Steuernummer requirement"
+    },
+    "test_7_privat_ausland_ohne_ausweis": {
+      "scenario": "Privatperson im Ausland ohne Ausweis",
+      "expected": "Fehler zurückgeben",
+      "result": "PASS - Error message about Ausweisnummer requirement"
+    },
+    "test_8_teilweise_ustid": {
+      "scenario": "Teilweise UST-ID (nur LKZ oder nur ID)",
+      "expected": "Fehler zurückgeben",
+      "result": "PASS - Error message about partially filled UST-ID"
+    },
+    "test_9_adresse_erstellen_validierung": {
+      "scenario": "Neue Adresse erstellen validiert automatisch",
+      "expected": "Zeigt Fehler bei ungültigen Daten",
+      "result": "PASS - Returns 400 with validation errors for invalid data"
+    },
+    "test_10_default_sperren": {
+      "scenario": "Default-Werte für Sperren",
+      "expected": "wareneingang_sperren und warenausgang_sperren sind True",
+      "result": "PASS - Both default to True as per Echo2 logic"
+    }
+  },
+  "additional_tests": {
+    "beide_sonderschalter_gleichzeitig": "PASS - Error when both firma_ohne_ustid and privat_mit_ustid are active",
+    "firma_mit_ustid_und_sonderschalter": "PASS - Error when Firma has UST-ID but also firma_ohne_ustid=True",
+    "privat_mit_firma_sonderschalter": "PASS - Error when PRIVAT has firma_ohne_ustid=True"
+  }
+}
