@@ -11,7 +11,7 @@ import {
   Save, Phone, Mail, Globe, CreditCard, FileText, Users, X, Upload,
   Banknote, Shield, Clock, MessageSquare, AlertTriangle, UserCircle,
   Image as ImageIcon, Camera, Scan, Loader2, EyeOff, CheckCircle, XCircle,
-  History, Search, RefreshCw
+  History, Search, RefreshCw, Briefcase, ClipboardList
 } from 'lucide-react';
 import { adressenApi, api } from '@/services/api/client';
 import { Button } from '@/components/ui/button';
@@ -27,6 +27,44 @@ import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+
+// Länderflaggen Mapping
+const COUNTRY_FLAGS: Record<string, string> = {
+  'Deutschland': '🇩🇪',
+  'Österreich': '🇦🇹',
+  'Schweiz': '🇨🇭',
+  'Niederlande': '🇳🇱',
+  'Belgien': '🇧🇪',
+  'Frankreich': '🇫🇷',
+  'Italien': '🇮🇹',
+  'Spanien': '🇪🇸',
+  'Polen': '🇵🇱',
+  'Tschechien': '🇨🇿',
+  'Dänemark': '🇩🇰',
+  'Schweden': '🇸🇪',
+  'Finnland': '🇫🇮',
+  'Griechenland': '🇬🇷',
+  'Portugal': '🇵🇹',
+  'Irland': '🇮🇪',
+  'Luxemburg': '🇱🇺',
+  'Ungarn': '🇭🇺',
+  'Rumänien': '🇷🇴',
+  'Bulgarien': '🇧🇬',
+  'Kroatien': '🇭🇷',
+  'Slowakei': '🇸🇰',
+  'Slowenien': '🇸🇮',
+  'Estland': '🇪🇪',
+  'Lettland': '🇱🇻',
+  'Litauen': '🇱🇹',
+  'Malta': '🇲🇹',
+  'Zypern': '🇨🇾',
+  'Großbritannien': '🇬🇧',
+  'Norwegen': '🇳🇴',
+};
+
+const getCountryFlag = (country: string): string => {
+  return COUNTRY_FLAGS[country] || '🏳️';
+};
 
 // ========================== SCHEMA ==========================
 const adresseSchema = z.object({
