@@ -306,7 +306,7 @@ class TestPrivatValidierung:
         
         validierung = data["validierung"]
         assert validierung["ist_gueltig"] == True, f"Should be valid - PRIVAT abroad with ID. Errors: {validierung.get('fehler', [])}"
-        assert validierung["steuer_status"] == "PRIVAT_EU"
+        assert validierung["steuer_status"] == "PRIVAT_AUSLAND"
         print(f"✓ PRIVAT Ausland mit Ausweis correctly validated as OK")
     
     def test_privat_inland_ohne_ausweis_oder_steuernummer_fehler(self, auth_headers):
