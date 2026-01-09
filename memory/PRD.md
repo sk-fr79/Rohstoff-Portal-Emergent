@@ -397,10 +397,12 @@ Passwort: Admin123!
 - [x] Fuhren-Modul implementieren ✅ ERLEDIGT (09.01.2026)
 - [x] Rechnungen-Modul implementieren ✅ ERLEDIGT (09.01.2026)
 - [x] Geschäftslogik-Validierung portieren (Artikel, Kontrakte, Fuhren) ✅ ERLEDIGT (09.01.2026)
+- [x] UX-Refactoring: "Neu"-Button → Sidebar in allen Modulen ✅ ERLEDIGT (09.01.2026)
 - [ ] Backend-Refactoring: `server.py` in Module aufteilen (routers, models, services) - DRINGEND (>3600 Zeilen!)
 
 ### P1 - Hohe Priorität
 - [ ] PDF-Export für Rechnungen und Lieferscheine
+- [ ] Sammelrechnungen (mehrere Fuhren → eine Rechnung)
 - [ ] Validierungs-Feedback im Frontend anzeigen (Fehler/Warnungen)
 
 ### P2 - Mittlere Priorität
