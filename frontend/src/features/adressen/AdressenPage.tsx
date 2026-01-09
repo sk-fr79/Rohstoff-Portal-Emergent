@@ -802,7 +802,7 @@ export function AdressenPage() {
                           <div className="flex items-center gap-4">
                             <div className={cn(
                               "h-12 w-12 rounded-xl flex items-center justify-center transition-all duration-300",
-                              {watchFields.ist_firma ? "bg-blue-100" : "bg-purple-100"
+                              watchFields.ist_firma ? "bg-blue-100" : "bg-purple-100"
                             )}>
                               {watchFields.ist_firma ? (
                                 <Building2 className="h-6 w-6 text-blue-600" />
