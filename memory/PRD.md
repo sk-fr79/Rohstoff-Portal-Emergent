@@ -15,6 +15,43 @@ Die gesamte Geschäftslogik der bestehenden Anwendung soll 1:1 übernommen werde
 
 ## Implementiert (Stand: 09.01.2026)
 
+### ✅ Fuhren-Modul (Transporte) - NEU - 09.01.2026
+Komplettes Transportmodul mit Verknüpfung zu Wiegekarten:
+- **Tabellen-Ansicht:** DataTable mit Spalten Nr., Abholdatum, Lieferant, Abnehmer, Artikel, Menge, Kennzeichen, Status
+- **Detailansicht:** Slide-In Panel (600px) von rechts mit Sidebar-Navigation
+  - Sektionen: Stammdaten, Lieferant, Abnehmer, Artikel & Mengen, Transport, Wiegekarten, Bemerkungen
+- **Bearbeitungsmodus:** Toggle Bearbeiten/Speichern Button
+- **Filter:** Status-Dropdown (OFFEN, IN_TRANSPORT, GELIEFERT, ABGERECHNET, STORNIERT)
+- **Create-Dialog:** Formular mit Lieferant, Abnehmer, Artikel, Datum, Planmenge, Transportmittel
+- **Verknüpfungen:** Wiegekarten (Start/Ziel), Kontrakte
+- **Backend-Endpunkte:**
+  - GET /api/fuhren - Liste mit Suche, Pagination, Status-Filter
+  - GET /api/fuhren/{id} - Einzelne Fuhre
+  - POST /api/fuhren - Neue Fuhre (Fuhren-Nr. automatisch)
+  - PUT /api/fuhren/{id} - Fuhre aktualisieren (Preise automatisch berechnet)
+  - DELETE /api/fuhren/{id} - Soft-Delete
+  - POST /api/fuhren/{id}/storno - Fuhre stornieren
+- **32 Tests bestanden (100%)**
+
+### ✅ Rechnungen-Modul (Fakturierung) - NEU - 09.01.2026
+Komplettes Rechnungsmodul mit automatischer Erstellung aus Fuhren:
+- **Tabellen-Ansicht:** DataTable mit Spalten Nr., Typ, Adressat, Datum, Netto, Brutto, Status
+- **Detailansicht:** Slide-In Panel (600px) von rechts mit Sidebar-Navigation
+  - Sektionen: Kopfdaten, Adressat, Termine, Positionen, Zahlungen, Bemerkungen
+- **Bearbeitungsmodus:** Toggle Bearbeiten/Speichern Button
+- **Filter:** Typ-Dropdown (RECHNUNG/GUTSCHRIFT) und Status-Dropdown
+- **Summen-Bereich:** Netto + MwSt = Brutto (automatisch berechnet)
+- **Positionen:** Tabelle mit Artikel, Menge, Einzelpreis, Gesamt
+- **Automatische Erstellung:** Rechnung/Gutschrift aus Fuhre generieren
+- **Backend-Endpunkte:**
+  - GET /api/rechnungen - Liste mit Suche, Pagination, Typ-/Status-Filter
+  - GET /api/rechnungen/{id} - Einzelne Rechnung mit Positionen und Summen
+  - POST /api/rechnungen - Neue Rechnung/Gutschrift (RG-/GS-Nr. automatisch)
+  - PUT /api/rechnungen/{id} - Rechnung aktualisieren
+  - DELETE /api/rechnungen/{id} - Soft-Delete
+  - POST /api/rechnungen/{id}/positionen - Position hinzufügen (Summen automatisch)
+  - POST /api/rechnungen/aus-fuhre/{fuhre_id}?vorgang_typ=RECHNUNG|GUTSCHRIFT - Automatische Erstellung
+
 ### ✅ Artikel-Modul - Redesign mit Sidebar-Layout (NEU - 09.01.2026)
 Komplette Neugestaltung der Artikel-Seite im Stil der Adressen-Seite:
 - **Tabellen-Ansicht:** DataTable mit Spalten ANR, Bezeichnung, Einheit, Gruppe, Gefahrgut, Status
