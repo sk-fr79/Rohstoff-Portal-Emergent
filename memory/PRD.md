@@ -15,7 +15,24 @@ Die gesamte Geschäftslogik der bestehenden Anwendung soll 1:1 übernommen werde
 
 ## Implementiert (Stand: 09.01.2026)
 
-### ✅ Geschäftslogik-Validierung (NEU - 09.01.2026)
+### ✅ UX-Refactoring: "Neu"-Button → Sidebar (NEU - 09.01.2026)
+Einheitliches Benutzererlebnis für das Erstellen und Bearbeiten von Datensätzen:
+- **Alle 6 Module** verwenden jetzt das gleiche Pattern: Der "Neu"-Button öffnet die Detail-Sidebar (nicht mehr ein Popup-Dialog)
+- **Module:**
+  - Artikel: `handleNewArtikel()`, data-testid="new-artikel-btn"
+  - Kontrakte: `handleNewKontrakt()`, data-testid="new-kontrakt-btn"
+  - Wiegekarten: `handleNewWiegekarte()`, data-testid="new-wiegekarte-btn"
+  - Adressen: `handleNewAdresse()`, data-testid="new-adresse-btn"
+  - Fuhren: `handleNewFuhre()`, data-testid="new-fuhre-btn"
+  - Rechnungen: `handleNewRechnung()`, data-testid="new-rechnung-btn"
+- **Verhalten:**
+  - "Neu"-Button öffnet Sidebar mit `isNewRecord=true`
+  - "Abbrechen"-Button schließt Sidebar bei neuem Eintrag
+  - "Speichern" unterscheidet automatisch zwischen POST (neu) und PUT (update)
+  - Doppelklick auf bestehenden Eintrag öffnet Sidebar zur Bearbeitung
+- **Test-Ergebnis:** 6/6 Module bestanden (100%)
+
+### ✅ Geschäftslogik-Validierung (09.01.2026)
 Portierung der Validierungslogik aus dem Java/Echo2-Code:
 
 **ArtikelValidator:**
