@@ -687,31 +687,40 @@ export function AdressenPage() {
                     )}
                   </div>
                   <div>
-                    <h2 className="font-semibold text-gray-900">{selectedAdresse.name1}</h2>
-                    <p className="text-sm text-gray-500">{selectedAdresse.kdnr}</p>
+                    <h2 className="font-semibold text-gray-900">
+                      {isNewRecord ? 'Neue Adresse' : selectedAdresse.name1}
+                    </h2>
+                    <p className="text-sm text-gray-500">
+                      {isNewRecord ? '(wird automatisch vergeben)' : selectedAdresse.kdnr}
+                    </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  {!isEditing ? (
+                  {isEditing ? (
+                    <>
+                      <Button variant="outline" size="sm" onClick={handleCancel}>
+                        Abbrechen
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        onClick={handleSave}
+                        disabled={createMutation.isPending || updateMutation.isPending}
+                        className="bg-emerald-500 hover:bg-emerald-600"
+                      >
+                        {(createMutation.isPending || updateMutation.isPending) ? (
+                          <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                        ) : (
+                          <Save className="h-4 w-4 mr-1" />
+                        )}
+                        Speichern
+                      </Button>
+                    </>
+                  ) : (
                     <Button variant="outline" size="sm" onClick={() => setIsEditing(true)}>
                       <Pencil className="h-4 w-4 mr-1" />Bearbeiten
                     </Button>
-                  ) : (
-                    <Button 
-                      size="sm" 
-                      onClick={handleSave}
-                      disabled={updateMutation.isPending}
-                      className="bg-emerald-500 hover:bg-emerald-600"
-                    >
-                      {updateMutation.isPending ? (
-                        <Loader2 className="h-4 w-4 mr-1 animate-spin" />
-                      ) : (
-                        <Save className="h-4 w-4 mr-1" />
-                      )}
-                      Speichern
-                    </Button>
                   )}
-                  <Button variant="ghost" size="icon" onClick={() => { setSelectedAdresse(null); setIsEditing(false); }}>
+                  <Button variant="ghost" size="icon" onClick={handleClose}>
                     <X className="h-4 w-4" />
                   </Button>
                 </div>
