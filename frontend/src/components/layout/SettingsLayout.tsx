@@ -37,10 +37,11 @@ const userSettingsItems = [
 ];
 
 const adminSettingsItems = [
-  { path: '/einstellungen/system', label: 'Systemeinstellungen', icon: Cog },
   { path: '/einstellungen/benutzer', label: 'Benutzerverwaltung', icon: Users },
-  { path: '/einstellungen/mandanten', label: 'Mandanten', icon: Building2 },
-  { path: '/einstellungen/sicherheit', label: 'Sicherheit', icon: Shield },
+  { path: '/einstellungen/rollen', label: 'Benutzerrollen', icon: Shield },
+  { path: '/einstellungen/abteilungen', label: 'Abteilungen', icon: Building2 },
+  { path: '/einstellungen/berechtigungen', label: 'Zugriffssteuerung', icon: Shield },
+  { path: '/einstellungen/system', label: 'Systemeinstellungen', icon: Cog },
   { path: '/einstellungen/datenbank', label: 'Datenbank', icon: Database },
 ];
 
