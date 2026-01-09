@@ -1012,12 +1012,18 @@ async def add_lieferadresse(
         "erstellt_am": datetime.utcnow(),
     }
     
-    # Wenn Standard, andere auf nicht-Standard setzen
+    # Wenn Standard, andere auf nicht-Standard setzen (nur wenn Array existiert)
     if data.ist_standard:
-        await db.adressen.update_one(
+        # Check if lieferadressen array exists and has items
+        adresse = await db.adressen.find_one(
             {"_id": adresse_id, "mandant_id": user["mandant_id"]},
-            {"$set": {"lieferadressen.$[].ist_standard": False}}
+            {"lieferadressen": 1}
         )
+        if adresse and adresse.get("lieferadressen"):
+            await db.adressen.update_one(
+                {"_id": adresse_id, "mandant_id": user["mandant_id"]},
+                {"$set": {"lieferadressen.$[].ist_standard": False}}
+            )
     
     await db.adressen.update_one(
         {"_id": adresse_id, "mandant_id": user["mandant_id"]},
