@@ -752,14 +752,61 @@ export function AdressenPage() {
                   {/* Stammdaten Section */}
                   {activeSection === 'stamm' && (
                     <div className="space-y-6">
-                      {/* Firmenlogo Upload - verbessert */}
+                      {/* Typ-Auswahl mit visuellem Feedback */}
+                      <div className="relative">
+                        <div className={cn(
+                          "absolute inset-0 rounded-xl transition-all duration-300",
+                          watchFields.ist_firma 
+                            ? "bg-gradient-to-r from-blue-50 to-indigo-50" 
+                            : "bg-gradient-to-r from-purple-50 to-pink-50"
+                        )} />
+                        <div className="relative p-4 flex items-center justify-between">
+                          <div className="flex items-center gap-4">
+                            <div className={cn(
+                              "h-12 w-12 rounded-xl flex items-center justify-center transition-all duration-300",
+                              watchFields.ist_firma ? "bg-blue-100" : "bg-purple-100"
+                            )}>
+                              {watchFields.ist_firma ? (
+                                <Building2 className="h-6 w-6 text-blue-600" />
+                              ) : (
+                                <User className="h-6 w-6 text-purple-600" />
+                              )}
+                            </div>
+                            <div>
+                              <span className={cn(
+                                "font-semibold text-lg",
+                                watchFields.ist_firma ? "text-blue-700" : "text-purple-700"
+                              )}>
+                                {watchFields.ist_firma ? 'Geschäftskunde' : 'Privatperson'}
+                              </span>
+                              <p className="text-sm text-gray-500">
+                                {watchFields.ist_firma 
+                                  ? 'Firmenkonto mit UST-ID und Handelsregister' 
+                                  : 'Privatkonto mit persönlichen Daten'}
+                              </p>
+                            </div>
+                          </div>
+                          {isEditing && (
+                            <div className="flex items-center gap-3 bg-white/80 backdrop-blur-sm px-4 py-2 rounded-lg shadow-sm">
+                              <span className={cn("text-sm font-medium", !watchFields.ist_firma && "text-purple-600")}>Privat</span>
+                              <Switch 
+                                checked={watchFields.ist_firma} 
+                                onCheckedChange={(c) => setValue('ist_firma', c)} 
+                              />
+                              <span className={cn("text-sm font-medium", watchFields.ist_firma && "text-blue-600")}>Firma</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Firmenlogo Upload - nur für Firmen */}
                       {watchFields.ist_firma && isEditing && (
-                        <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
+                        <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg border border-gray-100">
                           {selectedAdresse?.firmenlogo ? (
                             <img 
                               src={selectedAdresse.firmenlogo} 
                               alt="Logo" 
-                              className="h-16 max-w-32 object-contain"
+                              className="h-16 max-w-32 object-contain rounded-lg"
                             />
                           ) : (
                             <div className="h-16 w-16 rounded-lg bg-white border-2 border-dashed border-gray-300 flex items-center justify-center">
@@ -774,98 +821,171 @@ export function AdressenPage() {
                         </div>
                       )}
 
-                      <div>
-                        <h3 className="text-sm font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                          <Building2 className="h-4 w-4 text-emerald-500" />
-                          Grundinformationen
+                      {/* Grundinformationen - Smart Layout */}
+                      <div className="bg-white rounded-xl border border-gray-100 p-5 space-y-5">
+                        <h3 className="text-sm font-semibold text-gray-900 flex items-center gap-2">
+                          {watchFields.ist_firma ? (
+                            <Building2 className="h-4 w-4 text-blue-500" />
+                          ) : (
+                            <User className="h-4 w-4 text-purple-500" />
+                          )}
+                          {watchFields.ist_firma ? 'Firmendaten' : 'Persönliche Daten'}
                         </h3>
-                        <div className="grid grid-cols-2 gap-4">
-                          <div className="col-span-2 flex items-center gap-4 p-3 bg-gray-50 rounded-lg">
-                            <Label className="text-sm font-medium text-gray-700">Typ:</Label>
-                            <div className="flex items-center gap-2">
-                              <Switch 
-                                checked={watchFields.ist_firma} 
-                                onCheckedChange={(c) => setValue('ist_firma', c)} 
-                                disabled={!isEditing} 
-                              />
-                              <span className={cn(
-                                "text-sm font-medium",
-                                watchFields.ist_firma ? "text-blue-600" : "text-purple-600"
-                              )}>
-                                {watchFields.ist_firma ? 'Firma' : 'Privatperson'}
-                              </span>
-                            </div>
-                          </div>
-                          <div className="space-y-1.5">
-                            <Label className="text-sm text-gray-600">Anrede</Label>
-                            <Select value={watchFields.anrede || ""} onValueChange={(v) => setValue('anrede', v)} disabled={!isEditing}>
-                              <SelectTrigger className="bg-white"><SelectValue placeholder="Wählen..." /></SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="Herr">Herr</SelectItem>
-                                <SelectItem value="Frau">Frau</SelectItem>
-                                <SelectItem value="Firma">Firma</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-                          <div className="space-y-1.5">
-                            <Label className="text-sm text-gray-600">Vorname</Label>
-                            <Input {...register('vorname')} disabled={!isEditing} className="bg-white" />
-                          </div>
+                        
+                        <div className="grid grid-cols-6 gap-4">
+                          {/* Anrede - immer sichtbar */}
                           <div className="col-span-2 space-y-1.5">
-                            <Label className="text-sm text-gray-600">Name / Firma *</Label>
-                            <Input {...register('name1')} disabled={!isEditing} className="bg-white" />
-                            {errors.name1 && <p className="text-xs text-red-500">{errors.name1.message}</p>}
-                          </div>
-                          <div className="space-y-1.5">
-                            <Label className="text-sm text-gray-600">Name 2</Label>
-                            <Input {...register('name2')} disabled={!isEditing} className="bg-white" />
-                          </div>
-                          <div className="space-y-1.5">
-                            <Label className="text-sm text-gray-600">Rechtsform</Label>
-                            <Select value={watchFields.rechtsform || ""} onValueChange={(v) => setValue('rechtsform', v)} disabled={!isEditing}>
-                              <SelectTrigger className="bg-white"><SelectValue placeholder="Wählen..." /></SelectTrigger>
+                            <Label className="text-sm text-gray-600">Anrede</Label>
+                            <Select 
+                              value={watchFields.anrede || ""} 
+                              onValueChange={(v) => setValue('anrede', v)} 
+                              disabled={!isEditing}
+                            >
+                              <SelectTrigger className="bg-white">
+                                <SelectValue placeholder="Wählen..." />
+                              </SelectTrigger>
                               <SelectContent>
-                                <SelectItem value="GmbH">GmbH</SelectItem>
-                                <SelectItem value="AG">AG</SelectItem>
-                                <SelectItem value="KG">KG</SelectItem>
-                                <SelectItem value="OHG">OHG</SelectItem>
-                                <SelectItem value="e.K.">e.K.</SelectItem>
-                                <SelectItem value="GbR">GbR</SelectItem>
+                                {watchFields.ist_firma ? (
+                                  <SelectItem value="Firma">Firma</SelectItem>
+                                ) : (
+                                  <>
+                                    <SelectItem value="Herr">Herr</SelectItem>
+                                    <SelectItem value="Frau">Frau</SelectItem>
+                                    <SelectItem value="Divers">Divers</SelectItem>
+                                  </>
+                                )}
                               </SelectContent>
                             </Select>
                           </div>
+
+                          {/* Firma - nur bei Geschäftskunden */}
+                          {watchFields.ist_firma && (
+                            <div className="col-span-4 space-y-1.5">
+                              <Label className="text-sm text-gray-600">Firmenname *</Label>
+                              <Input 
+                                {...register('name1')} 
+                                disabled={!isEditing} 
+                                className="bg-white font-medium"
+                                placeholder="z.B. Mustermann GmbH"
+                              />
+                              {errors.name1 && <p className="text-xs text-red-500">{errors.name1.message}</p>}
+                            </div>
+                          )}
+
+                          {/* Vorname & Nachname - nur bei Privatpersonen */}
+                          {!watchFields.ist_firma && (
+                            <>
+                              <div className="col-span-2 space-y-1.5">
+                                <Label className="text-sm text-gray-600">Vorname</Label>
+                                <Input 
+                                  {...register('vorname')} 
+                                  disabled={!isEditing} 
+                                  className="bg-white"
+                                  placeholder="Max"
+                                />
+                              </div>
+                              <div className="col-span-2 space-y-1.5">
+                                <Label className="text-sm text-gray-600">Nachname *</Label>
+                                <Input 
+                                  {...register('name1')} 
+                                  disabled={!isEditing} 
+                                  className="bg-white font-medium"
+                                  placeholder="Mustermann"
+                                />
+                                {errors.name1 && <p className="text-xs text-red-500">{errors.name1.message}</p>}
+                              </div>
+                            </>
+                          )}
+
+                          {/* Adresszusatz / Name 2 - immer sichtbar */}
+                          <div className={cn("space-y-1.5", watchFields.ist_firma ? "col-span-3" : "col-span-6")}>
+                            <Label className="text-sm text-gray-600">
+                              {watchFields.ist_firma ? 'Zusatz / Abteilung' : 'Adresszusatz'}
+                            </Label>
+                            <Input 
+                              {...register('name2')} 
+                              disabled={!isEditing} 
+                              className="bg-white"
+                              placeholder={watchFields.ist_firma ? "z.B. Einkaufsabteilung" : "z.B. c/o Familie Schmidt"}
+                            />
+                          </div>
+
+                          {/* Rechtsform - nur bei Firmen */}
+                          {watchFields.ist_firma && (
+                            <div className="col-span-3 space-y-1.5">
+                              <Label className="text-sm text-gray-600">Rechtsform</Label>
+                              <Select 
+                                value={watchFields.rechtsform || ""} 
+                                onValueChange={(v) => setValue('rechtsform', v)} 
+                                disabled={!isEditing}
+                              >
+                                <SelectTrigger className="bg-white">
+                                  <SelectValue placeholder="Wählen..." />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="GmbH">GmbH</SelectItem>
+                                  <SelectItem value="AG">AG</SelectItem>
+                                  <SelectItem value="KG">KG</SelectItem>
+                                  <SelectItem value="OHG">OHG</SelectItem>
+                                  <SelectItem value="GmbH & Co. KG">GmbH & Co. KG</SelectItem>
+                                  <SelectItem value="UG">UG (haftungsbeschränkt)</SelectItem>
+                                  <SelectItem value="e.K.">e.K.</SelectItem>
+                                  <SelectItem value="GbR">GbR</SelectItem>
+                                  <SelectItem value="Einzelunternehmen">Einzelunternehmen</SelectItem>
+                                  <SelectItem value="e.V.">e.V.</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          )}
                         </div>
                       </div>
 
-                      <div>
-                        <h3 className="text-sm font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                      {/* Adresse mit Flagge */}
+                      <div className="bg-white rounded-xl border border-gray-100 p-5 space-y-4">
+                        <h3 className="text-sm font-semibold text-gray-900 flex items-center gap-2">
                           <MapPin className="h-4 w-4 text-emerald-500" />
                           Adresse
                         </h3>
-                        <div className="grid grid-cols-3 gap-4">
-                          <div className="col-span-2 space-y-1.5">
+                        <div className="grid grid-cols-6 gap-4">
+                          <div className="col-span-4 space-y-1.5">
                             <Label className="text-sm text-gray-600">Straße</Label>
-                            <Input {...register('strasse')} disabled={!isEditing} className="bg-white" />
-                          </div>
-                          <div className="space-y-1.5">
-                            <Label className="text-sm text-gray-600">Hausnr.</Label>
-                            <Input {...register('hausnummer')} disabled={!isEditing} className="bg-white" />
-                          </div>
-                          <div className="space-y-1.5">
-                            <Label className="text-sm text-gray-600">PLZ</Label>
-                            <Input {...register('plz')} disabled={!isEditing} className="bg-white" />
+                            <Input {...register('strasse')} disabled={!isEditing} className="bg-white" placeholder="Musterstraße" />
                           </div>
                           <div className="col-span-2 space-y-1.5">
-                            <Label className="text-sm text-gray-600">Ort</Label>
-                            <Input {...register('ort')} disabled={!isEditing} className="bg-white" />
+                            <Label className="text-sm text-gray-600">Hausnr.</Label>
+                            <Input {...register('hausnummer')} disabled={!isEditing} className="bg-white" placeholder="123" />
                           </div>
-                          <div className="col-span-3 space-y-1.5">
+                          <div className="col-span-2 space-y-1.5">
+                            <Label className="text-sm text-gray-600">PLZ</Label>
+                            <Input {...register('plz')} disabled={!isEditing} className="bg-white" placeholder="12345" />
+                          </div>
+                          <div className="col-span-4 space-y-1.5">
+                            <Label className="text-sm text-gray-600">Ort</Label>
+                            <Input {...register('ort')} disabled={!isEditing} className="bg-white" placeholder="Musterstadt" />
+                          </div>
+                          <div className="col-span-6 space-y-1.5">
                             <Label className="text-sm text-gray-600">Land</Label>
-                            <Select value={watchFields.land || "Deutschland"} onValueChange={(v) => setValue('land', v)} disabled={!isEditing}>
-                              <SelectTrigger className="bg-white"><SelectValue /></SelectTrigger>
+                            <Select 
+                              value={watchFields.land || "Deutschland"} 
+                              onValueChange={(v) => setValue('land', v)} 
+                              disabled={!isEditing}
+                            >
+                              <SelectTrigger className="bg-white">
+                                <div className="flex items-center gap-2">
+                                  {watchFields.land && (
+                                    <span className="text-lg">{getCountryFlag(watchFields.land)}</span>
+                                  )}
+                                  <SelectValue />
+                                </div>
+                              </SelectTrigger>
                               <SelectContent>
                                 {EU_LAENDER.map(l => (
-                                  <SelectItem key={l.land} value={l.land}>{l.land}</SelectItem>
+                                  <SelectItem key={l.land} value={l.land}>
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-lg">{getCountryFlag(l.land)}</span>
+                                      <span>{l.land}</span>
+                                    </div>
+                                  </SelectItem>
                                 ))}
                               </SelectContent>
                             </Select>
@@ -873,19 +993,36 @@ export function AdressenPage() {
                         </div>
                       </div>
 
-                      <div>
-                        <h3 className="text-sm font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                      {/* Zuständigkeit */}
+                      <div className="bg-white rounded-xl border border-gray-100 p-5 space-y-4">
+                        <h3 className="text-sm font-semibold text-gray-900 flex items-center gap-2">
                           <Users className="h-4 w-4 text-emerald-500" />
-                          Betreuer
+                          Zuständigkeit
                         </h3>
                         <div className="grid grid-cols-2 gap-4">
                           <div className="space-y-1.5">
-                            <Label className="text-sm text-gray-600">Betreuer 1</Label>
-                            <Input {...register('betreuer')} disabled={!isEditing} className="bg-white" />
+                            <Label className="text-sm text-gray-600 flex items-center gap-1.5">
+                              <Briefcase className="h-3.5 w-3.5" />
+                              Händler
+                            </Label>
+                            <Input 
+                              {...register('betreuer')} 
+                              disabled={!isEditing} 
+                              className="bg-white"
+                              placeholder="Verantwortlicher Händler"
+                            />
                           </div>
                           <div className="space-y-1.5">
-                            <Label className="text-sm text-gray-600">Betreuer 2</Label>
-                            <Input {...register('betreuer2')} disabled={!isEditing} className="bg-white" />
+                            <Label className="text-sm text-gray-600 flex items-center gap-1.5">
+                              <ClipboardList className="h-3.5 w-3.5" />
+                              Sachbearbeiter
+                            </Label>
+                            <Input 
+                              {...register('betreuer2')} 
+                              disabled={!isEditing} 
+                              className="bg-white"
+                              placeholder="Zuständiger Sachbearbeiter"
+                            />
                           </div>
                         </div>
                       </div>
