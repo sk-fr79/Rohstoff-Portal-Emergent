@@ -243,6 +243,7 @@ const detailSections = [
   { id: 'sperren', label: 'Sperren', icon: Shield },
   { id: 'bankverbindungen', label: 'Bankverbindungen', icon: Banknote },
   { id: 'lieferadressen', label: 'Lieferadressen', icon: MapPin },
+  { id: 'kreditversicherung', label: 'Kreditversicherung', icon: Shield },
   { id: 'bemerkungen', label: 'Bemerkungen', icon: MessageSquare },
 ];
 
