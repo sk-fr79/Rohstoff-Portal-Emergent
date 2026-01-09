@@ -311,6 +311,7 @@ export function AdressenPage() {
     onSuccess: (response) => {
       queryClient.invalidateQueries({ queryKey: ['adressen'] });
       toast.success('Adresse erfolgreich erstellt');
+      setLastValidation(null);
       // Nach erfolgreicher Erstellung: Sidebar bleibt offen mit neuem Datensatz
       if (response.data?.data) {
         setSelectedAdresse(response.data.data);
@@ -325,7 +326,10 @@ export function AdressenPage() {
     },
     onError: (error: any) => {
       const detail = error.response?.data?.detail;
-      if (detail?.fehler) {
+      if (detail?.validierung) {
+        setLastValidation(detail.validierung);
+        toast.error('Validierungsfehler - bitte korrigieren Sie die markierten Felder');
+      } else if (detail?.fehler) {
         detail.fehler.forEach((f: string) => toast.error(f));
       } else {
         toast.error('Fehler beim Erstellen der Adresse');
@@ -337,6 +341,7 @@ export function AdressenPage() {
     mutationFn: ({ id, data }: { id: string; data: any }) => adressenApi.update(id, data),
     onSuccess: (response) => {
       queryClient.invalidateQueries({ queryKey: ['adressen'] });
+      setLastValidation(null);
       if (response.data?.data) {
         setSelectedAdresse(response.data.data);
       }
@@ -346,7 +351,10 @@ export function AdressenPage() {
     onError: (error: any) => {
       console.error('Update error:', error);
       const detail = error.response?.data?.detail;
-      if (detail?.fehler) {
+      if (detail?.validierung) {
+        setLastValidation(detail.validierung);
+        toast.error('Validierungsfehler - bitte korrigieren Sie die markierten Felder');
+      } else if (detail?.fehler) {
         detail.fehler.forEach((f: string) => toast.error(f));
       } else if (typeof detail === 'string') {
         toast.error(detail);
