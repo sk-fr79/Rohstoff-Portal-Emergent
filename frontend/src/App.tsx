@@ -17,7 +17,11 @@ import {
   PasswortPage, 
   SignaturPage, 
   UnterschriftPage,
-  SystemeinstellungenPage 
+  SystemeinstellungenPage,
+  BenutzerPage,
+  RollenPage,
+  AbteilungenPage,
+  BerechtigungenPage
 } from '@/features/einstellungen';
 
 // Protected Route Wrapper
