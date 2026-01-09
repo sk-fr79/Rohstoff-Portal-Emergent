@@ -484,11 +484,13 @@ Passwort: Admin123!
 - [x] Adressformular-Redesign mit Firma/Privat-Toggle, SVG-Flaggen, Händler/Sachbearbeiter ✅ ERLEDIGT (09.01.2026)
 - [x] Echo2 Steuer-Validierungslogik (__FS_Adress_Check.java) implementiert ✅ ERLEDIGT (09.01.2026)
 - [x] Default-Werte für Sperren korrigiert (wareneingang/warenausgang = True) ✅ ERLEDIGT (09.01.2026)
+- [x] Bankverbindungen-Modul (KONTEN aus Echo2) ✅ ERLEDIGT (09.01.2026)
+- [x] Lieferadressen-Modul (LIEFERADRESSEN aus Echo2) ✅ ERLEDIGT (09.01.2026)
+- [x] Frontend-Anzeige von Validierungsfehlern ✅ ERLEDIGT (09.01.2026)
 
 ### P1 - Hohe Priorität
 - [ ] PDF-Export für Rechnungen und Lieferscheine
 - [ ] Sammelrechnungen (mehrere Fuhren → eine Rechnung)
-- [ ] Validierungs-Feedback im Frontend anzeigen (Fehler/Warnungen)
 
 ### P2 - Mittlere Priorität
 - [ ] Positionen im Kontrakt bearbeiten (UI zum Hinzufügen/Löschen)
