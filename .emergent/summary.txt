@@ -1,70 +1,72 @@
 <analysis>**original_problem_statement:**
-Der Benutzer möchte eine veraltete Java/Echo2-Anwendung namens Rohstoff Portal modernisieren. Das Ziel ist eine neue Architektur mit einem FastAPI/Python-Backend, einer PostgreSQL-Datenbank und einem modernen React PWA-Frontend. Die gesamte Geschäftslogik der bestehenden Anwendung muss 1:1 übernommen werden.
+Der Benutzer möchte eine veraltete Java/Echo2-Anwendung namens Rohstoff Portal modernisieren. Das Ziel ist eine neue Architektur mit einem FastAPI/Python-Backend, einer PostgreSQL-Datenbank (aktuell MongoDB) und einem modernen React PWA-Frontend. Die gesamte Geschäftslogik der bestehenden Anwendung muss 1:1 übernommen werden.
 
-**PRODUCT REQUIREMENTS:**
-1.  **Code-Analyse:** Analyse des bestehenden Java-Repositorys, um Module, Geschäftslogik und Entitäten zu verstehen.
-2.  **Datenbank-Migration:** Migration einer Oracle-Datenbank nach PostgreSQL unter Verwendung einer bereitgestellten HTML-Relationsdatei als Referenz.
-3.  **Backend-Architektur:** Aufbau eines Python/FastAPI-Backends mit einer modularen Struktur.
-4.  **Frontend-Modernisierung:** Entwicklung eines modernen Enterprise-React-Frontends (ähnlich SAP Fiori/Salesforce), das als Progressive Web App (PWA) mit Offline-Fähigkeiten, Dark Mode und responsivem Design konzipiert ist.
-5.  **Sicherheitsanforderungen:** Implementierung von Standards wie NIS2.0 & DSGVO, einschließlich JWT-Authentifizierung und Passwort-Hashing.
-6.  **Code-Qualität:** Einhaltung von Clean-Code-Prinzipien, umfassende Tests (Unit, Integration, E2E) und Dokumentation auf Deutsch.
+**Zusätzliche Anforderungen aus dieser Sitzung:**
+1.  **Fehlerbehebung:** Behebung eines Fehlers, bei dem der Speicher-Button für Adressen nicht funktionierte, sowie eines OCR-API-Fehlers.
+2.  **UST-ID Validierung:** Integration der offiziellen EU VIES REST API zur Validierung von Umsatzsteuer-Identifikationsnummern, einschließlich Protokollierung der Prüfergebnisse.
+3.  **Logo-Integration:** Integration eines neuen Firmenlogos (MV) als globales App-Logo und Favicon mit transparentem Hintergrund.
+4.  **Wiegekarten-Modul:** Implementierung eines vollständigen Moduls zur Verwaltung von Wiegekarten, basierend auf der Analyse des Java-Codes und eines Screenshots der Altanwendung.
+5.  **UI-Verbesserung (Sidebar):** Implementierung einer einklappbaren Hauptnavigation-Sidebar, die im eingeklappten Zustand nur Icons anzeigt.
+6.  **UI-Konsistenz:** Neugestaltung der Artikel- und Kontrakte-Seiten im Stil der Adressen-Seite, einschließlich eines Sidebar-Menüs für die Detailansicht.
 
 **User's preferred language**: German
 
 **what currently exists?**
--   Ein FastAPI-Backend in einer monolithischen -Datei, das eine MongoDB-Datenbank verwendet. Es bietet Endpunkte für Authentifizierung, Dashboard-Statistiken, CRUD-Operationen (Adressen, Artikel, Kontrakte) sowie komplexe Geschäftslogik-Validierung für Adressen.
--   Das Backend unterstützt nun Datei-Uploads (für Logos, Profilbilder) und eine OCR-Integration zur Texterkennung auf Visitenkarten. Die hochgeladenen Dateien werden unter  gespeichert und über einen statischen Endpunkt bereitgestellt.
--   Ein React-Frontend mit einem neuen, hellen Enterprise-Design. Das Redesign wurde auf der Login-Seite, dem Dashboard und der Adressen-Seite umgesetzt. Die Module Artikel und Kontrakte verwenden noch das alte Design.
--   Die Adressen-Seite wurde komplett überarbeitet und enthält eine Detailansicht mit einer linken Sidebar-Navigation.
--   Folgende Features wurden im Adressen-Modul implementiert:
-    -   Verwaltung von Ansprechpartnern inkl. Profilbild- und Visitenkarten-Upload (mit Drag & Drop).
-    -   OCR-Funktion zur automatischen Extraktion von Kontaktdaten aus Visitenkarten.
-    -   Dynamisches Hinzufügen/Entfernen mehrerer Umsatzsteuer-Identifikationsnummern (UST-IDs).
-    -   Upload eines Firmenlogos.
-    -   Ein Filter in der Tabellenansicht, um inaktive Adressen standardmäßig auszublenden.
+-   Ein monolithisches FastAPI-Backend in  (>2000 Zeilen), das Endpunkte für Authentifizierung, Adressen, OCR, **UST-ID-Validierung** und das neue **Wiegekarten-Modul** bereitstellt. Es verwendet eine MongoDB-Datenbank.
+-   Ein React-Frontend mit einem konsistenten Enterprise-Design und einer **einklappbaren Haupt-Sidebar**.
+-   Die Module Adressen und Wiegekarten sind vollständig modernisiert und verwenden ein Layout mit einer Datentabelle und einer Detailansicht mit eigener Sidebar-Navigation.
+-   Das neue Firmenlogo (MV) ist global in der App (Login, Sidebar, Favicon) integriert.
+-   Die Frontend-Dateien für die Module Artikel () und Kontrakte () wurden mit der neuen Sidebar-Layout-Struktur **überschrieben**, aber die Implementierung ist noch nicht abgeschlossen oder getestet.
 
 **Last working item**:
--   **Last item agent was working:** Implementierung eines Bündels von vier Benutzeranforderungen:
-    1.  Verbesserung der Anzeige des Firmenlogos (transparent, ohne Titel).
-    2.  Behebung eines kritischen Fehlers, bei dem der Speicher-Button für Adressänderungen nicht funktionierte.
-    3.  Implementierung einer OCR-Funktion für Visitenkarten.
-    4.  Hinzufügen eines Filters, um inaktive Adressen auszublenden.
--   **Status:** USER VERIFICATION PENDING
--   **Agent Testing Done:** Y (Der Agent hat die Änderungen durch Screenshots und manuelle Überprüfung der Speicherfunktion verifiziert).
--   **Which testing method agent to use?** manual testing by user. Der Benutzer sollte die vier implementierten Punkte überprüfen: das neue Logo-Layout, die Speicherfunktion, die OCR-Upload-Möglichkeit und den Filter für inaktive Adressen.
+-   **Last item agent was working:** Neugestaltung der Artikel- und Kontrakte-Seiten, um die UI-Konsistenz mit den Adressen- und Wiegekarten-Seiten herzustellen. Dies beinhaltet die Analyse der Datenfelder aus dem alten Java-Code und die Implementierung eines neuen Frontend-Layouts mit einer Detail-Sidebar.
+-   **Status:** IN PROGRESS
+-   **Agent Testing Done:** N
+-   **Which testing method agent to use?** both. Zuerst muss das Backend (Models, Endpunkte in ) für Artikel und Kontrakte mit den neuen Feldern aktualisiert werden. Danach kann der Backend-Testing-Agent die API testen. Anschließend sollte der Frontend-Testing-Agent die neuen UI-Layouts für beide Seiten verifizieren und auf Regressionen prüfen.
 -   **User Testing Done:** N
 
 **All Pending/In progress Issue list**:
--   Keine. Das letzte kritische Problem (nicht funktionierender Speicher-Button) wurde behoben.
+-   **Issue 1: Fertigstellung des Redesigns der Artikel- und Kontrakte-Seiten (P0)**
+    -   **Attempted fixes:** Die Frontend-Dateien  und  wurden mit einer neuen Vorlage überschrieben, die das gewünschte Sidebar-Layout implementiert.
+    -   **Next debug checklist:**
+        1.  **Backend:** Die Pydantic-Models für  und  in  müssen um die aus dem Java-Code analysierten Felder erweitert werden.
+        2.  **Backend:** Die CRUD-Endpunkte (insbesondere  und ) für  und  müssen aktualisiert werden, um die neuen Felder zu verarbeiten.
+        3.  **Frontend:** Die Logik zum Fetchen, Anzeigen und Speichern der Daten in  und  muss vollständig implementiert und mit den (aktualisierten) Backend-Endpunkten verbunden werden.
+        4.  **Testing:** Services neu starten und die Funktionalität beider Seiten end-to-end testen.
+    -   **Why fix this issue and what will be achieved with the fix?** Um eine einheitliche und moderne Benutzererfahrung in der gesamten Anwendung zu gewährleisten, wie vom Benutzer gewünscht.
+    -   **Status:** IN PROGRESS
+    -   **Is recurring issue?** N
+    -   **Should Test frontend/backend/both after fix?** both
+    -   **Blocked on other issue:** None
 
 **In progress Task List**:
--   Keine.
+-   **Task 1: Fertigstellung des Redesigns der Artikel- und Kontrakte-Seiten (P0)**
+    -   **Where to resume:** Beginnen Sie mit der Aktualisierung der Backend-Models und -Endpunkte in  für die Module Artikel und Kontrakte, basierend auf der bereits durchgeführten Java-Code-Analyse.
+    -   **What will be achieved with this?** Die Anwendung wird ein konsistentes UI/UX über alle Kernmodule hinweg haben.
+    -   **Status:** IN PROGRESS
+    -   **Should Test frontend/backend/both after fix?** both
+    -   **Blocked on something:** None
 
 **Upcoming and Future Tasks**
 -   **Upcoming Tasks:**
-    1.  **UI-Konsistenz herstellen (P0):** Das neue, helle Enterprise-Design auf die Seiten Artikel und Kontrakte anwenden, um ein einheitliches Erscheinungsbild in der gesamten Anwendung zu gewährleisten.
-    2.  **Backend-Refactoring (P1):** Die monolithische  (jetzt >1500 Zeilen) dringend in eine modulare Struktur aufteilen (z.B. , , ), um die Wartbarkeit zu verbessern.
-    3.  **Implementierung des Fuhren-Moduls (P2):** Erstellung des Backends und Frontends für das Transportmodul.
-    4.  **Implementierung des Rechnungen-Moduls (P2):** Erstellung des Backends und Frontends für das Rechnungsmodul.
-    5.  **Verwaltung von Bankverbindungen (P2):** Hinzufügen einer Funktion zur Verwaltung von Bankdaten im Adressenstamm.
+    1.  **Backend-Refactoring (P0):** Die monolithische  (jetzt >2000 Zeilen) dringend in eine modulare Struktur aufteilen (z.B. , , ), um die Wartbarkeit zu verbessern.
+    2.  **Implementierung des Fuhren-Moduls (P1):** Erstellung des Backends und Frontends für das Transportmodul.
+    3.  **Implementierung des Rechnungen-Moduls (P1):** Erstellung des Backends und Frontends für das Rechnungsmodul.
+    4.  **Verwaltung von Bankverbindungen (P2):** Hinzufügen einer Funktion zur Verwaltung von Bankdaten im Adressenstamm.
 
 -   **Future Tasks:**
     1.  **Datenimport aus Altsystem:** Erstellung eines Skripts zum Importieren von Bestandsdaten.
     2.  **PWA-Funktionen:** Implementierung von Service Worker und Offline-Fähigkeiten.
     3.  **PDF-Export:** Generierung von PDFs für Kontrakte, Rechnungen usw.
-    4.  **Umfassendes Testing:** Einrichtung von Unit- (Pytest), Integrations- und E2E-Tests (Playwright).
+    4.  **Umfassendes Testing:** Einrichtung von Unit- (Pytest) und E2E-Tests (Playwright).
     5.  **Dokumentation fertigstellen.**
 
 **Completed work in this session**
--   **UI/UX-Neugestaltung:** Die gesamte Anwendung wurde von einem dunklen auf ein helles, professionelles Enterprise-Design umgestellt. Die Adressen-Detailansicht wurde mit einer Sidebar-Navigation neu strukturiert.
--   **Behebung des Java-Analyse-Blockers:** Das Problem mit der Dateikodierung () wurde durch die Verwendung von  zur Konvertierung von  nach  gelöst, was die Analyse der Geschäftslogik ermöglichte.
--   **Integration der Geschäftslogik:** Komplexe Validierungsregeln für Adressen aus dem alten Java-Code wurden im FastAPI-Backend implementiert und mit dem Testing-Agenten verifiziert.
--   **Feature: Ansprechpartner-Verwaltung:** Vollständige CRUD-Funktionalität für Kontaktpersonen innerhalb einer Adresse, einschließlich Bild-Upload.
--   **Feature: OCR für Visitenkarten:** Integration eines OCR-Dienstes () zur automatischen Extraktion von Kontaktdaten.
--   **Feature: Flexible UST-IDs:** Benutzer können nun dynamisch mehrere UST-IDs zu einer Adresse hinzufügen.
--   **Feature: Firmenlogo-Upload:** Implementierung des Logo-Uploads in den Adress-Stammdaten.
--   **Feature: Filter für Inaktive:** Ein Filter zum Ein-/Ausblenden inaktiver Adressen wurde hinzugefügt.
--   **Bugfix:** Ein kritischer Fehler, der das Speichern von Adressänderungen verhinderte, wurde behoben.
+-   **Bugfix:** Kritische Fehler im Frontend behoben, die das Speichern von Adressen und die OCR-Funktion verhinderten. Der Zod-Schema-Validierungsfehler () wurde durch Hinzufügen von  gelöst. Der OCR-Fehler wurde durch Korrektur des API-Parameters von  auf  behoben.
+-   **Feature: UST-ID VIES Validierung:** Ein Backend-Endpunkt zur Validierung von UST-IDs über die EU-VIES-API und zur Protokollierung der Anfragen in MongoDB wurde implementiert. Im Frontend wurden UI-Elemente (Buttons, Dialog) zur Auslösung der Prüfung und Anzeige des Protokolls hinzugefügt.
+-   **Feature: Wiegekarten-Modul:** Ein komplettes neues Modul zur Verwaltung von Wiegekarten wurde basierend auf der Analyse des Java-Codes erstellt, einschließlich Backend-CRUD-Endpunkten und einer komplexen Frontend-Seite mit Detail-Sidebar-Layout.
+-   **UI: Logo-Integration:** Das neue MV-Firmenlogo wurde verarbeitet (Hintergrund entfernt) und als globales App-Logo auf der Login-Seite, in der Sidebar und als Favicon integriert. Das Problem mit dem verzerrten Favicon wurde behoben.
+-   **UI: Einklappbare Sidebar:** Die Hauptnavigation wurde so umgestaltet, dass sie einklappbar ist. Nach mehreren Iterationen basierend auf Benutzerfeedback zeigt sie im eingeklappten Zustand korrekt ausgerichtete Icons an.
 
 **Earlier issues found/mentioned but not fixed**
 -   Keine.
@@ -73,74 +75,65 @@ Der Benutzer möchte eine veraltete Java/Echo2-Anwendung namens Rohstoff Portal 
 
 
 **Key Technical Concepts**
--   **Backend:** Python, FastAPI, Pydantic, **MongoDB** (via ),  (für OCR),  (für Datei-Uploads), .
+-   **Backend:** FastAPI, Pydantic, MongoDB (),  (für externe VIES-API-Aufrufe).
 -   **Frontend:** React, TypeScript, Vite, TailwindCSS, shadcn/ui, Zustand, , Zod, , .
--   **Datenbank:** **MongoDB**.
+-   **UI-Pattern:** Ein wiederkehrendes Muster für Detailansichten wurde etabliert, das eine linke Sidebar zur Navigation innerhalb eines Datensatzes verwendet (siehe Adressen, Wiegekarten).
 
 **key DB schema**
--   **adressen:** Diese Collection wurde erheblich erweitert. Sie enthält jetzt:
-    -   
-    -    (eingebettetes Array)
-    -    (eingebettetes Array)
--   **Ansprechpartner (Sub-Dokument):** Enthält Felder wie , , , , .
+-   **wiegekarten:** Neue Collection zur Speicherung aller Wiegescheindaten.
+-   **ustid_protokoll:** Neue Collection zur Protokollierung jeder durchgeführten UST-ID-Validierungsanfrage, verknüpft mit einer Adresse.
 
 **changes in tech stack**
--   **Integration:** Die Bibliothek  wurde für die OCR-Funktionalität hinzugefügt.
--   **Backend-Bibliotheken:**  und  wurden für die Implementierung von Datei-Uploads hinzugefügt.
+-   Keine.
 
 **All files of reference**
--   : Enthält jetzt die gesamte Backend-Logik, einschließlich Validierung, Datei-Uploads und OCR-Endpunkt.
--   : Komplett neu geschriebene Komponente mit Sidebar-Layout, Dialogen für Ansprechpartner und allen neuen Frontend-Funktionen.
--   : Definiert das neue, helle Anwendungs-Layout.
--   : Aktualisiert, um dem neuen Design zu entsprechen.
--   : Aktualisiert, um dem neuen Design zu entsprechen.
--   , : Angepasst für das neue Farbschema.
+-   : Stark erweitert um Endpunkte für VIES-Validierung und das Wiegekarten-Modul.
+-   : Neu erstellte Seite für das Wiegekarten-Modul.
+-   : Stark überarbeitet, um die einklappbare Sidebar zu implementieren.
+-   : Mit einer neuen Vorlage überschrieben.
+-   : Mit einer neuen Vorlage überschrieben.
+-   : Geändert, um den Zod-Validierungsfehler zu beheben und die UST-ID-Validierungs-UI hinzuzufügen.
+-   : Enthält jetzt die neuen Logo- und Favicon-Dateien.
+-   : Aktualisiert, um das neue Favicon zu referenzieren.
 
 **Areas that need refactoring**:
--   **Backend:**  ist dringend refactoring-bedürftig. Mit über 1500 Zeilen, die Routing, Models, Services und Dateiverarbeitung mischen, ist die Wartbarkeit stark gefährdet.
--   **Frontend:**  ist sehr groß geworden. Es sollte in kleinere, wiederverwendbare Komponenten aufgeteilt werden (z.B. , , ).
+-   **Backend (CRITICAL):**  ist jetzt extrem groß und schwer zu warten. Ein Refactoring in eine modulare Struktur (z.B. mit FastAPI Routern pro Feature) ist dringend erforderlich.
+-   **Frontend:** Die neuen Seiten  und  sollten von Anfang an in kleinere, wiederverwendbare Unterkomponenten aufgeteilt werden, um nicht so groß wie  zu werden.
 
 **key api endpoints**
 -   
 -   
 -   
 -   
--   
--   
--   Die Endpunkte  und  wurden aktualisiert, um die neuen Sub-Dokumente (Ansprechpartner, UST-IDs) zu verarbeiten.
 
 **Critical Info for New Agent**
--   **Fokus auf UI-Konsistenz:** Der Benutzer hat ein neues Design für die Adressen-Seite genehmigt. Der nächste logische Schritt ist, dieses Design auf die anderen Hauptmodule (Artikel, Kontrakte) zu übertragen, um ein einheitliches Benutzererlebnis zu schaffen. Dies sollte als Nächstes vorgeschlagen werden.
--   **Backend-Refactoring ist dringend:** Die  ist zu einem schwer wartbaren Monolithen geworden. Planen Sie das Refactoring als hochpriore Aufgabe nach der UI-Vereinheitlichung ein.
--   **Datenbank-Divergenz:** Das Projekt verwendet **MongoDB**, obwohl ursprünglich **PostgreSQL** geplant war. Diese strategische Abweichung wurde noch nicht mit dem Benutzer besprochen. Angesichts des erheblichen Fortschritts ist es ratsam, bei MongoDB zu bleiben, es sei denn, der Benutzer äußert einen expliziten Änderungswunsch.
+-   Die aktuelle Aufgabe (Redesign von Artikel/Kontrakte) ist nur zur Hälfte erledigt. Sie müssen im Backend beginnen, indem Sie die Models und Endpunkte in  aktualisieren. Erst danach können Sie das Frontend fertigstellen und testen.
+-   Das Refactoring der  ist die wichtigste technische Schuld und sollte unmittelbar nach Abschluss der aktuellen UI-Aufgabe als P0-Priorität vorgeschlagen werden.
+-   Das Projekt hat einen etablierten UI-Stil für neue Module (Tabelle + Detailansicht mit Sidebar). Halten Sie sich bei zukünftigen Features an dieses Muster.
 
 **documents and test reports created in this job**
--   : Testbericht der Backend-Validierungslogik.
--   : Mehrfach aktualisiert, um den Projektfortschritt widerzuspiegeln.
+-   : Testbericht für die UST-ID VIES Validierung.
+-   : Testbericht für das Wiegekarten-Modul.
+-   : Wurde mehrfach aktualisiert, um die Implementierung neuer Features zu dokumentieren.
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **User request (Part 1):** Fordert die Implementierung von Ansprechpartnern in Adressen, inkl. Detailfeldern und Bild-/Visitenkarten-Upload.
-2.  **User request (Part 2):** Fordert die Möglichkeit, mehrere UST-IDs dynamisch hinzuzufügen, nicht nur statische.
-3.  **User request (Part 3):** Fordert eine Upload-Möglichkeit für ein Firmenlogo im Adressenstamm.
-4.  **Agent confirmation:** Der Agent bestätigt den Erhalt der drei Anforderungen und beginnt mit der Implementierung.
-5.  **Agent action:** Der Agent implementiert die drei Features (Ansprechpartner, UST-IDs, Logo) im Backend und Frontend.
-6.  **Agent finishes:** Der Agent schließt die Implementierung ab und schlägt als Nächstes eine OCR-Funktion für Visitenkarten vor.
-7.  **User feedback/request (Part 1):** Meldet, dass das Firmenlogo-Layout verbessert werden muss (transparent, ohne Titel).
-8.  **User feedback/request (Part 2):** Meldet einen kritischen Fehler: Der Speichern-Button funktioniert nicht.
-9.  **User feedback/request (Part 3):** Stimmt dem Vorschlag zur Implementierung der OCR-Funktion zu.
-10. **User feedback/request (Part 4):** Fordert eine neue Funktion: Inaktive Adressen sollen standardmäßig ausgeblendet werden.
+1.  **User (Msg 364):** Feedback zur Sidebar: Beim Einklappen sollen alle Untermenüs ebenfalls eingeklappt werden.
+2.  **User (Msg 383):** Weiteres Feedback zur Sidebar: Der Einklappen-Button soll weg und die Icons für Berichte, Rechnungen und Dashboard sollen einheitlich formatiert sein.
+3.  **User (Msg 402):** Neue Anforderung: Die Seiten Artikel und Kontrakte sollen im Stil der Adressen-Seite neu gestaltet werden (mit Sidebar-Menü). Die Datenfelder sollen aus dem Java-Code übernommen werden.
+4.  **Agent (Msg 403-431):** Analysiert den Java-Code und überschreibt die Frontend-Dateien  und  mit einer neuen Layout-Vorlage. Die Sitzung endet hier.
 
 **Project Health Check:**
--   **Broken:** Keine.
+-   **Broken:** Die Seiten Artikel und Kontrakte sind derzeit nicht funktionsfähig, da sie gerade umgebaut werden.
 -   **Mocked:** Keine.
 
 **3rd Party Integrations**
--   **emergentintegrations:** Wird für die OCR-Funktionalität zur Extraktion von Text aus Visitenkarten verwendet. Nutzt den .
+-   **emergentintegrations:** Wird für die OCR-Funktionalität verwendet. Nutzt den .
+-   **EU VIES VAT Validation API:** Externe REST-API, die direkt über  aufgerufen wird.
 
 **Testing status**
--   **Testing agent used after significant changes:** YES (für die Backend-Validierungslogik).
+-   **Testing agent used after significant changes:** YES (zweimal in dieser Sitzung für VIES-Validierung und das Wiegekarten-Modul).
 -   **Troubleshoot agent used after agent stuck in loop:** NO
--   **Test files created:** []
+-   **Test files created:** [, ]
 -   **Known regressions:** Keine.
 
 **Credentials to test flow:**
@@ -148,4 +141,4 @@ Der Benutzer möchte eine veraltete Java/Echo2-Anwendung namens Rohstoff Portal 
 -   **Passwort:** 
 
 **What agent forgot to execute**
--   Nichts. Der Agent hat die letzten Benutzeranfragen umfassend bearbeitet und korrekt den nächsten logischen Schritt (UI-Konsistenz) als Vorschlag formuliert. Die strategische Frage (MongoDB vs. PostgreSQL) bleibt als offener Diskussionspunkt für die Zukunft bestehen.</analysis>
+-   Der Agent hat die Aufgabe, die Artikel- und Kontrakte-Seiten neu zu gestalten, begonnen, aber noch nicht abgeschlossen. Insbesondere fehlen die notwendigen Backend-Anpassungen (Models und Endpunkte in ), um die neuen Frontend-Layouts mit Daten zu versorgen und Änderungen zu speichern.</analysis>
