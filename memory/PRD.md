@@ -417,6 +417,18 @@ Passwort: Admin123!
 - `POST /api/adressen/validieren` - Validiert Adresse nach Geschäftslogik
 - `GET /api/laender` - Liste der konfigurierten Länder mit UST-Präfixen
 
+### Bankverbindungen (NEU - 09.01.2026)
+- `GET /api/adressen/{id}/bankverbindungen` - Bankverbindungen einer Adresse abrufen
+- `POST /api/adressen/{id}/bankverbindungen` - Neue Bankverbindung hinzufügen
+- `PUT /api/adressen/{id}/bankverbindungen/{bank_id}` - Bankverbindung aktualisieren
+- `DELETE /api/adressen/{id}/bankverbindungen/{bank_id}` - Bankverbindung löschen
+
+### Lieferadressen (NEU - 09.01.2026)
+- `GET /api/adressen/{id}/lieferadressen` - Lieferadressen einer Adresse abrufen
+- `POST /api/adressen/{id}/lieferadressen` - Neue Lieferadresse hinzufügen
+- `PUT /api/adressen/{id}/lieferadressen/{liefer_id}` - Lieferadresse aktualisieren
+- `DELETE /api/adressen/{id}/lieferadressen/{liefer_id}` - Lieferadresse löschen
+
 ### Artikel (NEU erweitert - 09.01.2026)
 - `GET /api/artikel` - Liste mit Suche/Pagination
 - `GET /api/artikel/{id}` - Einzelner Artikel ✅
