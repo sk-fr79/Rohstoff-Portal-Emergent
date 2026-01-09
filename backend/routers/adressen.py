@@ -740,17 +740,40 @@ async def update_adresse(
 
 @router.delete("/adressen/{adresse_id}")
 async def delete_adresse(adresse_id: str, user = Depends(get_current_user)):
-    """Adresse löschen (Soft-Delete)"""
+    """Adresse löschen (Hard-Delete) - löscht auch verknüpfte Daten"""
     db = get_db()
-    result = await db.adressen.update_one(
-        {"_id": adresse_id, "mandant_id": user["mandant_id"]},
-        {"$set": {"aktiv": False, "geloescht_am": datetime.utcnow()}}
-    )
     
-    if result.modified_count == 0:
+    # Prüfen ob Adresse existiert
+    adresse = await db.adressen.find_one({
+        "_id": adresse_id, 
+        "mandant_id": user["mandant_id"]
+    })
+    
+    if not adresse:
         raise HTTPException(status_code=404, detail="Adresse nicht gefunden")
     
-    return {"success": True, "message": "Adresse deaktiviert"}
+    # 1. Adresse aus allen Kreditversicherungen entfernen
+    await db.kreditversicherungen.update_many(
+        {"mandant_id": user["mandant_id"]},
+        {"$pull": {"kunden_positionen": {"adresse_id": adresse_id}}}
+    )
+    
+    # 2. Alte Struktur auch bereinigen (versicherte_adressen)
+    await db.kreditversicherungen.update_many(
+        {"mandant_id": user["mandant_id"]},
+        {"$pull": {"versicherte_adressen": {"adresse_id": adresse_id}}}
+    )
+    
+    # 3. Adresse endgültig löschen (Hard Delete)
+    result = await db.adressen.delete_one({
+        "_id": adresse_id, 
+        "mandant_id": user["mandant_id"]
+    })
+    
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Adresse konnte nicht gelöscht werden")
+    
+    return {"success": True, "message": "Adresse und verknüpfte Daten gelöscht"}
 
 
 @router.post("/adressen/validieren")
