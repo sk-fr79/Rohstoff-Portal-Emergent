@@ -464,11 +464,56 @@ class ArtikelUpdate(BaseModel):
 
 # Kontrakt
 class KontraktCreate(BaseModel):
-    adresse_id: str
-    ist_einkauf: bool = True
-    gueltig_von: Optional[datetime] = None
-    gueltig_bis: Optional[datetime] = None
-    bemerkungen_intern: Optional[str] = Field(None, max_length=500)
+    """Model für Kontrakt-Erstellung - erweitert für neues Frontend"""
+    # Pflichtfelder
+    name1: str = Field(..., max_length=40)  # Vertragspartner
+    
+    # Typ
+    vorgang_typ: str = Field("EK", max_length=5)  # EK oder VK
+    buchungsnummer: Optional[str] = Field(None, max_length=30)
+    
+    # Legacy-Feld (optional für Rückwärtskompatibilität)
+    adresse_id: Optional[str] = None
+    ist_einkauf: Optional[bool] = None  # Wird aus vorgang_typ abgeleitet
+    
+    # Adress-Daten (Kopfdaten)
+    id_adresse: Optional[str] = None
+    name2: Optional[str] = Field(None, max_length=40)
+    strasse: Optional[str] = Field(None, max_length=45)
+    hausnummer: Optional[str] = Field(None, max_length=10)
+    plz: Optional[str] = Field(None, max_length=10)
+    ort: Optional[str] = Field(None, max_length=30)
+    land: Optional[str] = Field(None, max_length=30)
+    
+    # Kontaktdaten
+    telefon: Optional[str] = Field(None, max_length=30)
+    telefax: Optional[str] = Field(None, max_length=30)
+    email: Optional[str] = Field(None, max_length=100)
+    
+    # Bearbeiter
+    name_bearbeiter_intern: Optional[str] = Field(None, max_length=80)
+    tel_bearbeiter_intern: Optional[str] = Field(None, max_length=30)
+    fax_bearbeiter_intern: Optional[str] = Field(None, max_length=30)
+    
+    # Termine
+    erstellungsdatum: Optional[str] = None
+    gueltig_von: Optional[str] = None
+    gueltig_bis: Optional[str] = None
+    
+    # Währung & Konditionen
+    id_waehrung_fremd: Optional[str] = None
+    waehrung_kurz: Optional[str] = Field("EUR", max_length=5)
+    zahlungsbedingung: Optional[str] = Field(None, max_length=100)
+    lieferbedingung: Optional[str] = Field(None, max_length=50)
+    
+    # Status
+    status: Optional[str] = Field("OFFEN", max_length=20)
+    aktiv: bool = True
+    deleted: bool = False
+    
+    # Bemerkungen
+    bemerkung_extern: Optional[str] = Field(None, max_length=2000)
+    bemerkung_intern: Optional[str] = Field(None, max_length=2000)
 
 class KontraktPosCreate(BaseModel):
     artikel_id: Optional[str] = None
