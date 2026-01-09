@@ -897,12 +897,18 @@ async def add_bankverbindung(
         "erstellt_am": datetime.utcnow(),
     }
     
-    # Wenn Hauptkonto, andere auf nicht-Haupt setzen
+    # Wenn Hauptkonto, andere auf nicht-Haupt setzen (nur wenn Array existiert)
     if data.ist_hauptkonto:
-        await db.adressen.update_one(
+        # Check if bankverbindungen array exists and has items
+        adresse = await db.adressen.find_one(
             {"_id": adresse_id, "mandant_id": user["mandant_id"]},
-            {"$set": {"bankverbindungen.$[].ist_hauptkonto": False}}
+            {"bankverbindungen": 1}
         )
+        if adresse and adresse.get("bankverbindungen"):
+            await db.adressen.update_one(
+                {"_id": adresse_id, "mandant_id": user["mandant_id"]},
+                {"$set": {"bankverbindungen.$[].ist_hauptkonto": False}}
+            )
     
     await db.adressen.update_one(
         {"_id": adresse_id, "mandant_id": user["mandant_id"]},
