@@ -1,0 +1,89 @@
+{
+  "summary": "Artikel & Kontrakte Module Testing - All 24 backend API tests passed (100%). Frontend UI verified: Both modules have new sidebar-detail layout matching Adressen page. CRUD operations, sidebar navigation, edit mode, and create dialogs all working correctly.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {
+        "screen": "Kontrakte create dialog",
+        "issues": ["Date picker uses browser's default date input (mm/dd/yyyy format) instead of shadcn calendar component - minor UX inconsistency"]
+      }
+    ]
+  },
+  "test_report_links": [
+    "/app/tests/test_artikel_kontrakte.py",
+    "/app/test_reports/pytest/pytest_artikel_kontrakte_results.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "Artikel sidebar has 6 sections: Stammdaten, Einheiten, Klassifizierung, AVV-Codes, Zoll & Export, Bemerkungen - all working",
+    "Kontrakte sidebar has 6 sections: Kopfdaten, Vertragspartner, Termine, Konditionen, Positionen, Bemerkungen - all working",
+    "Both modules use slide-in detail panel from right side (600px width) - consistent with Adressen page",
+    "Edit mode toggle (Bearbeiten/Speichern) works correctly in both modules",
+    "Create dialogs have proper form validation and success toast notifications",
+    "Soft-delete implemented for both Artikel and Kontrakte (sets aktiv=false or deleted=true)",
+    "Kontrakte type filter uses 'ALL' value for 'Alle Typen' option (Radix UI Select requirement)"
+  ],
+  "updated_files": [
+    "/app/tests/test_artikel_kontrakte.py"
+  ],
+  "success_rate": {
+    "backend": "100%",
+    "frontend": "100%"
+  },
+  "test_credentials": {
+    "username": "admin",
+    "password": "Admin123!"
+  },
+  "seed_data_creation": "Test data created with TEST_ prefix for Artikel and Kontrakte during backend tests",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Artikel and Kontrakte modules fully functional with new sidebar-detail layout. Backend endpoints: GET/POST/PUT/DELETE for /api/artikel and /api/kontrakte. Frontend: Table view with double-click to detail panel, sidebar navigation between sections, edit mode, create dialogs. Both modules match the Adressen page design pattern.",
+  "features_tested": {
+    "artikel_module": {
+      "backend_endpoints": {
+        "GET /api/artikel": "WORKING - List with pagination and search",
+        "GET /api/artikel/{id}": "WORKING - Get single article",
+        "POST /api/artikel": "WORKING - Create with all fields",
+        "PUT /api/artikel/{id}": "WORKING - Update article",
+        "DELETE /api/artikel/{id}": "WORKING - Soft-delete (sets aktiv=false)"
+      },
+      "frontend_ui": {
+        "artikel_list": "WORKING - Table with ANR, Bezeichnung, Einheit, Gruppe, Gefahrgut, Status columns",
+        "detail_sidebar": "WORKING - Slide-in panel with 6 sections",
+        "sidebar_sections": ["Stammdaten", "Einheiten", "Klassifizierung", "AVV-Codes", "Zoll & Export", "Bemerkungen"],
+        "edit_mode": "WORKING - Toggle between view/edit with Bearbeiten/Speichern button",
+        "create_dialog": "WORKING - Form with ANR, Artikelbezeichnung, Mengeneinheit, Artikelgruppe, Aktiv/Gefahrgut toggles",
+        "success_toast": "WORKING - 'Artikel erfolgreich erstellt'"
+      }
+    },
+    "kontrakte_module": {
+      "backend_endpoints": {
+        "GET /api/kontrakte": "WORKING - List with pagination, search, and type filter",
+        "GET /api/kontrakte/{id}": "WORKING - Get single contract",
+        "POST /api/kontrakte": "WORKING - Create with new schema (vorgang_typ)",
+        "PUT /api/kontrakte/{id}": "WORKING - Update contract",
+        "DELETE /api/kontrakte/{id}": "WORKING - Soft-delete (sets deleted=true)",
+        "POST /api/kontrakte/{id}/positionen": "WORKING - Add position to contract"
+      },
+      "frontend_ui": {
+        "kontrakte_list": "WORKING - Table with Nr., Typ, Vertragspartner, Gültig bis, Status, Positionen columns",
+        "type_filter": "WORKING - Dropdown with Alle Typen/Einkauf/Verkauf options",
+        "detail_sidebar": "WORKING - Slide-in panel with 6 sections",
+        "sidebar_sections": ["Kopfdaten", "Vertragspartner", "Termine", "Konditionen", "Positionen", "Bemerkungen"],
+        "edit_mode": "WORKING - Toggle between view/edit with Bearbeiten/Speichern button",
+        "create_dialog": "WORKING - Form with Kontrakttyp, Buchungsnummer, Vertragspartner, PLZ, Ort, Gültig von/bis",
+        "success_toast": "WORKING - 'Kontrakt erfolgreich erstellt'",
+        "status_badges": "WORKING - Color-coded: OFFEN (blue), AKTIV (green), TEILERFUELLT (yellow), ERFUELLT (emerald), STORNO (red)"
+      }
+    }
+  },
+  "notes": {
+    "kontrakte_type_display": "Typ column shows 'Verkauf' for all entries because older contracts have 'ist_einkauf' field instead of 'vorgang_typ' - this is expected behavior as mentioned in misc_info",
+    "date_picker": "Create dialog uses browser's native date input instead of shadcn calendar - minor UX inconsistency but functional"
+  }
+}
