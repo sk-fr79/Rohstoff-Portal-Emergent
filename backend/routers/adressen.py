@@ -684,8 +684,14 @@ async def delete_ansprechpartner(
 
 class UstIdValidationRequest(BaseModel):
     ustid: str
-    lkz: str
+    lkz: Optional[str] = None
+    laenderkennzeichen: Optional[str] = None  # Alternative Feldname für Frontend-Kompatibilität
     adresse_id: Optional[str] = None
+    
+    @property
+    def country_code(self) -> str:
+        """Gibt das Länderkennzeichen zurück (lkz oder laenderkennzeichen)"""
+        return self.lkz or self.laenderkennzeichen or ""
 
 
 @router.post("/ustid/validate")
@@ -696,14 +702,18 @@ async def validate_ustid(
     """UST-ID via EU VIES validieren"""
     db = get_db()
     
-    full_ustid = f"{request.lkz}{request.ustid}"
+    lkz = request.country_code
+    if not lkz:
+        raise HTTPException(status_code=400, detail="Länderkennzeichen (lkz) erforderlich")
+    
+    full_ustid = f"{lkz}{request.ustid}"
     
     try:
         async with httpx.AsyncClient() as client:
             response = await client.post(
                 "https://ec.europa.eu/taxation_customs/vies/rest-api/check-vat-number",
                 json={
-                    "countryCode": request.lkz,
+                    "countryCode": lkz,
                     "vatNumber": request.ustid
                 },
                 timeout=10.0
