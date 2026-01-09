@@ -1,77 +1,9 @@
-<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="16" failures="0" skipped="0" tests="16" time="0.277" timestamp="2026-01-09T14:52:41.986310+00:00" hostname="agent-env-ab7d9e52-8678-4964-8456-a7f4fe28eded"><testcase classname="tests.test_bankverbindungen_lieferadressen.TestBankverbindungenLieferadressen" name="test_get_bankverbindungen_empty" time="0.057"><error message="failed on setup with &quot;AssertionError: Login failed: {&quot;error&quot;:&quot;Route not found&quot;}&#10;  &#10;assert 404 == 200&#10; +  where 404 = &lt;Response [404]&gt;.status_code&quot;">tests/test_bankverbindungen_lieferadressen.py:31: in auth_token
-    assert response.status_code == 200, f"Login failed: {response.text}"
-E   AssertionError: Login failed: {"error":"Route not found"}
-E     
-E   assert 404 == 200
-E    +  where 404 = &lt;Response [404]&gt;.status_code</error></testcase><testcase classname="tests.test_bankverbindungen_lieferadressen.TestBankverbindungenLieferadressen" name="test_post_bankverbindung" time="0.000"><error message="failed on setup with &quot;AssertionError: Login failed: {&quot;error&quot;:&quot;Route not found&quot;}&#10;  &#10;assert 404 == 200&#10; +  where 404 = &lt;Response [404]&gt;.status_code&quot;">tests/test_bankverbindungen_lieferadressen.py:31: in auth_token
-    assert response.status_code == 200, f"Login failed: {response.text}"
-E   AssertionError: Login failed: {"error":"Route not found"}
-E     
-E   assert 404 == 200
-E    +  where 404 = &lt;Response [404]&gt;.status_code</error></testcase><testcase classname="tests.test_bankverbindungen_lieferadressen.TestBankverbindungenLieferadressen" name="test_get_bankverbindungen_after_add" time="0.000"><error message="failed on setup with &quot;AssertionError: Login failed: {&quot;error&quot;:&quot;Route not found&quot;}&#10;  &#10;assert 404 == 200&#10; +  where 404 = &lt;Response [404]&gt;.status_code&quot;">tests/test_bankverbindungen_lieferadressen.py:31: in auth_token
-    assert response.status_code == 200, f"Login failed: {response.text}"
-E   AssertionError: Login failed: {"error":"Route not found"}
-E     
-E   assert 404 == 200
-E    +  where 404 = &lt;Response [404]&gt;.status_code</error></testcase><testcase classname="tests.test_bankverbindungen_lieferadressen.TestBankverbindungenLieferadressen" name="test_put_bankverbindung" time="0.000"><error message="failed on setup with &quot;AssertionError: Login failed: {&quot;error&quot;:&quot;Route not found&quot;}&#10;  &#10;assert 404 == 200&#10; +  where 404 = &lt;Response [404]&gt;.status_code&quot;">tests/test_bankverbindungen_lieferadressen.py:31: in auth_token
-    assert response.status_code == 200, f"Login failed: {response.text}"
-E   AssertionError: Login failed: {"error":"Route not found"}
-E     
-E   assert 404 == 200
-E    +  where 404 = &lt;Response [404]&gt;.status_code</error></testcase><testcase classname="tests.test_bankverbindungen_lieferadressen.TestBankverbindungenLieferadressen" name="test_delete_bankverbindung" time="0.000"><error message="failed on setup with &quot;AssertionError: Login failed: {&quot;error&quot;:&quot;Route not found&quot;}&#10;  &#10;assert 404 == 200&#10; +  where 404 = &lt;Response [404]&gt;.status_code&quot;">tests/test_bankverbindungen_lieferadressen.py:31: in auth_token
-    assert response.status_code == 200, f"Login failed: {response.text}"
-E   AssertionError: Login failed: {"error":"Route not found"}
-E     
-E   assert 404 == 200
-E    +  where 404 = &lt;Response [404]&gt;.status_code</error></testcase><testcase classname="tests.test_bankverbindungen_lieferadressen.TestBankverbindungenLieferadressen" name="test_bankverbindung_hauptkonto_logic" time="0.000"><error message="failed on setup with &quot;AssertionError: Login failed: {&quot;error&quot;:&quot;Route not found&quot;}&#10;  &#10;assert 404 == 200&#10; +  where 404 = &lt;Response [404]&gt;.status_code&quot;">tests/test_bankverbindungen_lieferadressen.py:31: in auth_token
-    assert response.status_code == 200, f"Login failed: {response.text}"
-E   AssertionError: Login failed: {"error":"Route not found"}
-E     
-E   assert 404 == 200
-E    +  where 404 = &lt;Response [404]&gt;.status_code</error></testcase><testcase classname="tests.test_bankverbindungen_lieferadressen.TestBankverbindungenLieferadressen" name="test_get_lieferadressen_empty" time="0.000"><error message="failed on setup with &quot;AssertionError: Login failed: {&quot;error&quot;:&quot;Route not found&quot;}&#10;  &#10;assert 404 == 200&#10; +  where 404 = &lt;Response [404]&gt;.status_code&quot;">tests/test_bankverbindungen_lieferadressen.py:31: in auth_token
-    assert response.status_code == 200, f"Login failed: {response.text}"
-E   AssertionError: Login failed: {"error":"Route not found"}
-E     
-E   assert 404 == 200
-E    +  where 404 = &lt;Response [404]&gt;.status_code</error></testcase><testcase classname="tests.test_bankverbindungen_lieferadressen.TestBankverbindungenLieferadressen" name="test_post_lieferadresse" time="0.000"><error message="failed on setup with &quot;AssertionError: Login failed: {&quot;error&quot;:&quot;Route not found&quot;}&#10;  &#10;assert 404 == 200&#10; +  where 404 = &lt;Response [404]&gt;.status_code&quot;">tests/test_bankverbindungen_lieferadressen.py:31: in auth_token
-    assert response.status_code == 200, f"Login failed: {response.text}"
-E   AssertionError: Login failed: {"error":"Route not found"}
-E     
-E   assert 404 == 200
-E    +  where 404 = &lt;Response [404]&gt;.status_code</error></testcase><testcase classname="tests.test_bankverbindungen_lieferadressen.TestBankverbindungenLieferadressen" name="test_get_lieferadressen_after_add" time="0.000"><error message="failed on setup with &quot;AssertionError: Login failed: {&quot;error&quot;:&quot;Route not found&quot;}&#10;  &#10;assert 404 == 200&#10; +  where 404 = &lt;Response [404]&gt;.status_code&quot;">tests/test_bankverbindungen_lieferadressen.py:31: in auth_token
-    assert response.status_code == 200, f"Login failed: {response.text}"
-E   AssertionError: Login failed: {"error":"Route not found"}
-E     
-E   assert 404 == 200
-E    +  where 404 = &lt;Response [404]&gt;.status_code</error></testcase><testcase classname="tests.test_bankverbindungen_lieferadressen.TestBankverbindungenLieferadressen" name="test_put_lieferadresse" time="0.000"><error message="failed on setup with &quot;AssertionError: Login failed: {&quot;error&quot;:&quot;Route not found&quot;}&#10;  &#10;assert 404 == 200&#10; +  where 404 = &lt;Response [404]&gt;.status_code&quot;">tests/test_bankverbindungen_lieferadressen.py:31: in auth_token
-    assert response.status_code == 200, f"Login failed: {response.text}"
-E   AssertionError: Login failed: {"error":"Route not found"}
-E     
-E   assert 404 == 200
-E    +  where 404 = &lt;Response [404]&gt;.status_code</error></testcase><testcase classname="tests.test_bankverbindungen_lieferadressen.TestBankverbindungenLieferadressen" name="test_delete_lieferadresse" time="0.000"><error message="failed on setup with &quot;AssertionError: Login failed: {&quot;error&quot;:&quot;Route not found&quot;}&#10;  &#10;assert 404 == 200&#10; +  where 404 = &lt;Response [404]&gt;.status_code&quot;">tests/test_bankverbindungen_lieferadressen.py:31: in auth_token
-    assert response.status_code == 200, f"Login failed: {response.text}"
-E   AssertionError: Login failed: {"error":"Route not found"}
-E     
-E   assert 404 == 200
-E    +  where 404 = &lt;Response [404]&gt;.status_code</error></testcase><testcase classname="tests.test_bankverbindungen_lieferadressen.TestBankverbindungenLieferadressen" name="test_lieferadresse_standard_logic" time="0.000"><error message="failed on setup with &quot;AssertionError: Login failed: {&quot;error&quot;:&quot;Route not found&quot;}&#10;  &#10;assert 404 == 200&#10; +  where 404 = &lt;Response [404]&gt;.status_code&quot;">tests/test_bankverbindungen_lieferadressen.py:31: in auth_token
-    assert response.status_code == 200, f"Login failed: {response.text}"
-E   AssertionError: Login failed: {"error":"Route not found"}
-E     
-E   assert 404 == 200
-E    +  where 404 = &lt;Response [404]&gt;.status_code</error></testcase><testcase classname="tests.test_bankverbindungen_lieferadressen.TestBankverbindungenLieferadressen" name="test_validation_error_firma_ohne_ustid" time="0.000"><error message="failed on setup with &quot;AssertionError: Login failed: {&quot;error&quot;:&quot;Route not found&quot;}&#10;  &#10;assert 404 == 200&#10; +  where 404 = &lt;Response [404]&gt;.status_code&quot;">tests/test_bankverbindungen_lieferadressen.py:31: in auth_token
-    assert response.status_code == 200, f"Login failed: {response.text}"
-E   AssertionError: Login failed: {"error":"Route not found"}
-E     
-E   assert 404 == 200
-E    +  where 404 = &lt;Response [404]&gt;.status_code</error></testcase><testcase classname="tests.test_bankverbindungen_lieferadressen.TestBankverbindungenLieferadressen" name="test_validation_error_response_structure" time="0.000"><error message="failed on setup with &quot;AssertionError: Login failed: {&quot;error&quot;:&quot;Route not found&quot;}&#10;  &#10;assert 404 == 200&#10; +  where 404 = &lt;Response [404]&gt;.status_code&quot;">tests/test_bankverbindungen_lieferadressen.py:31: in auth_token
-    assert response.status_code == 200, f"Login failed: {response.text}"
-E   AssertionError: Login failed: {"error":"Route not found"}
-E     
-E   assert 404 == 200
-E    +  where 404 = &lt;Response [404]&gt;.status_code</error></testcase><testcase classname="tests.test_bankverbindungen_lieferadressen.TestBankverbindungenEdgeCases" name="test_bankverbindung_invalid_adresse" time="0.038"><error message="failed on setup with &quot;assert 404 == 200&#10; +  where 404 = &lt;Response [404]&gt;.status_code&quot;">tests/test_bankverbindungen_lieferadressen.py:526: in auth_token
-    assert response.status_code == 200
-E   assert 404 == 200
-E    +  where 404 = &lt;Response [404]&gt;.status_code</error></testcase><testcase classname="tests.test_bankverbindungen_lieferadressen.TestBankverbindungenEdgeCases" name="test_lieferadresse_invalid_adresse" time="0.000"><error message="failed on setup with &quot;assert 404 == 200&#10; +  where 404 = &lt;Response [404]&gt;.status_code&quot;">tests/test_bankverbindungen_lieferadressen.py:526: in auth_token
-    assert response.status_code == 200
-E   assert 404 == 200
-E    +  where 404 = &lt;Response [404]&gt;.status_code</error></testcase></testsuite></testsuites>
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="2" skipped="0" tests="16" time="1.104" timestamp="2026-01-09T14:53:03.113986+00:00" hostname="agent-env-ab7d9e52-8678-4964-8456-a7f4fe28eded"><testcase classname="tests.test_bankverbindungen_lieferadressen.TestBankverbindungenLieferadressen" name="test_get_bankverbindungen_empty" time="0.053" /><testcase classname="tests.test_bankverbindungen_lieferadressen.TestBankverbindungenLieferadressen" name="test_post_bankverbindung" time="0.012"><failure message="AssertionError: POST bankverbindung failed: Internal Server Error&#10;assert 500 in [200, 201]&#10; +  where 500 = &lt;Response [500]&gt;.status_code">tests/test_bankverbindungen_lieferadressen.py:110: in test_post_bankverbindung
+    assert response.status_code in [200, 201], f"POST bankverbindung failed: {response.text}"
+E   AssertionError: POST bankverbindung failed: Internal Server Error
+E   assert 500 in [200, 201]
+E    +  where 500 = &lt;Response [500]&gt;.status_code</failure></testcase><testcase classname="tests.test_bankverbindungen_lieferadressen.TestBankverbindungenLieferadressen" name="test_get_bankverbindungen_after_add" time="0.047" /><testcase classname="tests.test_bankverbindungen_lieferadressen.TestBankverbindungenLieferadressen" name="test_put_bankverbindung" time="0.088" /><testcase classname="tests.test_bankverbindungen_lieferadressen.TestBankverbindungenLieferadressen" name="test_delete_bankverbindung" time="0.087" /><testcase classname="tests.test_bankverbindungen_lieferadressen.TestBankverbindungenLieferadressen" name="test_bankverbindung_hauptkonto_logic" time="0.132" /><testcase classname="tests.test_bankverbindungen_lieferadressen.TestBankverbindungenLieferadressen" name="test_get_lieferadressen_empty" time="0.043" /><testcase classname="tests.test_bankverbindungen_lieferadressen.TestBankverbindungenLieferadressen" name="test_post_lieferadresse" time="0.005"><failure message="AssertionError: POST lieferadresse failed: Internal Server Error&#10;assert 500 in [200, 201]&#10; +  where 500 = &lt;Response [500]&gt;.status_code">tests/test_bankverbindungen_lieferadressen.py:291: in test_post_lieferadresse
+    assert response.status_code in [200, 201], f"POST lieferadresse failed: {response.text}"
+E   AssertionError: POST lieferadresse failed: Internal Server Error
+E   assert 500 in [200, 201]
+E    +  where 500 = &lt;Response [500]&gt;.status_code</failure></testcase><testcase classname="tests.test_bankverbindungen_lieferadressen.TestBankverbindungenLieferadressen" name="test_get_lieferadressen_after_add" time="0.046" /><testcase classname="tests.test_bankverbindungen_lieferadressen.TestBankverbindungenLieferadressen" name="test_put_lieferadresse" time="0.087" /><testcase classname="tests.test_bankverbindungen_lieferadressen.TestBankverbindungenLieferadressen" name="test_delete_lieferadresse" time="0.087" /><testcase classname="tests.test_bankverbindungen_lieferadressen.TestBankverbindungenLieferadressen" name="test_lieferadresse_standard_logic" time="0.132" /><testcase classname="tests.test_bankverbindungen_lieferadressen.TestBankverbindungenLieferadressen" name="test_validation_error_firma_ohne_ustid" time="0.043" /><testcase classname="tests.test_bankverbindungen_lieferadressen.TestBankverbindungenLieferadressen" name="test_validation_error_response_structure" time="0.087" /><testcase classname="tests.test_bankverbindungen_lieferadressen.TestBankverbindungenEdgeCases" name="test_bankverbindung_invalid_adresse" time="0.007" /><testcase classname="tests.test_bankverbindungen_lieferadressen.TestBankverbindungenEdgeCases" name="test_lieferadresse_invalid_adresse" time="0.043" /></testsuite></testsuites>
