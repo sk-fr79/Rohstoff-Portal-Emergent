@@ -16,7 +16,7 @@ import requests
 import os
 from datetime import datetime, timedelta
 
-BASE_URL = os.environ.get("base_url", "https://demobackend.emergentagent.com")
+BASE_URL = "http://localhost:8001"
 
 
 class TestSetup:
