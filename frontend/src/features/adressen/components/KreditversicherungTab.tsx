@@ -1,10 +1,8 @@
 import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { toast } from 'sonner';
+import { useQuery } from '@tanstack/react-query';
 import { 
-  Shield, Plus, Pencil, Trash2, Calendar, Euro, Building2, 
-  AlertTriangle, CheckCircle, Clock, Loader2, ChevronDown, ChevronUp,
-  ExternalLink, Users
+  Shield, Building2, AlertTriangle, CheckCircle, Clock, Loader2, 
+  ChevronDown, ChevronUp, ExternalLink, Euro, Calendar
 } from 'lucide-react';
 import { api } from '@/services/api/client';
 import { Button } from '@/components/ui/button';
@@ -19,14 +17,15 @@ import {
 
 interface KreditlimitInfo {
   betrag: number;
-  betrag_anfrage?: number;
-  gueltig_ab?: string;
-  gueltig_bis?: string;
   beschreibung?: string;
   kv_id?: string;
   versicherungsnummer?: string;
+  unterversicherungsnummer?: string;
+  gueltig_ab?: string;
+  gueltig_bis?: string;
   ist_intern: boolean;
   ist_aktiv: boolean;
+  fakturierungsfrist?: number;
 }
 
 interface KreditlimitsData {
@@ -103,9 +102,9 @@ export function KreditversicherungTab({ adresseId, isEditing }: Kreditversicheru
   const getStatusBadge = () => {
     if (!statusData) return null;
     
-    const { status, verfuegbar, aktuelle_forderungen, gesamtlimit } = statusData;
+    const { status } = statusData;
     
-    const config = {
+    const config: Record<string, { color: string; icon: typeof CheckCircle; label: string }> = {
       ok: { 
         color: 'bg-green-100 text-green-800 border-green-200', 
         icon: CheckCircle,
@@ -126,24 +125,25 @@ export function KreditversicherungTab({ adresseId, isEditing }: Kreditversicheru
         icon: Shield,
         label: 'Kein Limit' 
       },
-    }[status] || { color: 'bg-gray-100', icon: Shield, label: status };
+    };
 
-    const Icon = config.icon;
+    const cfg = config[status] || config.kein_limit;
+    const Icon = cfg.icon;
 
     return (
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
-            <Badge className={cn("gap-1 cursor-help", config.color)}>
+            <Badge className={cn("gap-1 cursor-help", cfg.color)}>
               <Icon className="w-3 h-3" />
-              {config.label}
+              {cfg.label}
             </Badge>
           </TooltipTrigger>
           <TooltipContent className="max-w-xs">
             <div className="text-sm space-y-1">
-              <p><strong>Gesamtlimit:</strong> {formatCurrency(gesamtlimit)}</p>
-              <p><strong>Forderungen:</strong> {formatCurrency(aktuelle_forderungen)}</p>
-              <p><strong>Verfügbar:</strong> {formatCurrency(verfuegbar)}</p>
+              <p><strong>Gesamtlimit:</strong> {formatCurrency(statusData.gesamtlimit)}</p>
+              <p><strong>Forderungen:</strong> {formatCurrency(statusData.aktuelle_forderungen)}</p>
+              <p><strong>Verfügbar:</strong> {formatCurrency(statusData.verfuegbar)}</p>
             </div>
           </TooltipContent>
         </Tooltip>
@@ -152,7 +152,7 @@ export function KreditversicherungTab({ adresseId, isEditing }: Kreditversicheru
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" data-testid="kreditversicherung-tab">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
@@ -160,17 +160,15 @@ export function KreditversicherungTab({ adresseId, isEditing }: Kreditversicheru
           <h3 className="font-medium text-gray-900">Kreditversicherung</h3>
           {getStatusBadge()}
         </div>
-        {isEditing && (
-          <Button 
-            size="sm" 
-            variant="outline"
-            onClick={() => window.open('/kreditversicherungen', '_blank')}
-            className="text-purple-600 border-purple-200 hover:bg-purple-50"
-          >
-            <ExternalLink className="w-4 h-4 mr-1" />
-            Verwalten
-          </Button>
-        )}
+        <Button 
+          size="sm" 
+          variant="outline"
+          onClick={() => window.open('/kreditversicherungen', '_blank')}
+          className="text-purple-600 border-purple-200 hover:bg-purple-50"
+        >
+          <ExternalLink className="w-4 h-4 mr-1" />
+          Verwalten
+        </Button>
       </div>
 
       {/* Status-Übersicht */}
@@ -211,15 +209,13 @@ export function KreditversicherungTab({ adresseId, isEditing }: Kreditversicheru
           <p className="text-sm text-gray-400 mt-1">
             Diese Adresse ist bei keiner Kreditversicherung hinterlegt
           </p>
-          {isEditing && (
-            <Button 
-              variant="link" 
-              onClick={() => window.open('/kreditversicherungen', '_blank')}
-              className="mt-2"
-            >
-              Kreditversicherung anlegen
-            </Button>
-          )}
+          <Button 
+            variant="link" 
+            onClick={() => window.open('/kreditversicherungen', '_blank')}
+            className="mt-2"
+          >
+            Zur Kreditversicherungs-Verwaltung
+          </Button>
         </div>
       ) : (
         <div className="space-y-3">
@@ -323,10 +319,16 @@ function KreditlimitCard({ limit, expanded, onToggle }: KreditlimitCardProps) {
               <span className="font-mono">{limit.versicherungsnummer}</span>
             </div>
           )}
-          {limit.betrag_anfrage && (
+          {limit.unterversicherungsnummer && (
             <div className="flex justify-between">
-              <span className="text-gray-500">Angefragter Betrag:</span>
-              <span>{formatCurrency(limit.betrag_anfrage)}</span>
+              <span className="text-gray-500">Unterversicherungsnr.:</span>
+              <span className="font-mono">{limit.unterversicherungsnummer}</span>
+            </div>
+          )}
+          {limit.fakturierungsfrist && (
+            <div className="flex justify-between">
+              <span className="text-gray-500">Fakturierungsfrist:</span>
+              <span>{limit.fakturierungsfrist} Tage</span>
             </div>
           )}
           <div className="flex justify-between">
@@ -345,11 +347,11 @@ function KreditlimitCard({ limit, expanded, onToggle }: KreditlimitCardProps) {
                 className="w-full"
                 onClick={(e) => {
                   e.stopPropagation();
-                  window.open(`/kreditversicherungen/${limit.kv_id}`, '_blank');
+                  window.open('/kreditversicherungen', '_blank');
                 }}
               >
                 <ExternalLink className="w-3 h-3 mr-1" />
-                Details anzeigen
+                Zur Verwaltung
               </Button>
             </div>
           )}
