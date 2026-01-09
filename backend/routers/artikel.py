@@ -208,17 +208,28 @@ async def update_artikel(
 
 @router.delete("/artikel/{artikel_id}")
 async def delete_artikel(artikel_id: str, user = Depends(get_current_user)):
-    """Artikel deaktivieren (Soft-Delete)"""
+    """Artikel löschen (Hard Delete)"""
     db = get_db()
-    result = await db.artikel.update_one(
-        {"_id": artikel_id, "mandant_id": user["mandant_id"]},
-        {"$set": {"aktiv": False}}
-    )
     
-    if result.modified_count == 0:
+    # Prüfen ob Artikel existiert
+    artikel = await db.artikel.find_one({
+        "_id": artikel_id, 
+        "mandant_id": user["mandant_id"]
+    })
+    
+    if not artikel:
         raise HTTPException(status_code=404, detail="Artikel nicht gefunden")
     
-    return {"success": True}
+    # Artikel endgültig löschen
+    result = await db.artikel.delete_one({
+        "_id": artikel_id, 
+        "mandant_id": user["mandant_id"]
+    })
+    
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Artikel konnte nicht gelöscht werden")
+    
+    return {"success": True, "message": "Artikel gelöscht"}
 
 
 @router.post("/artikel/validieren")
