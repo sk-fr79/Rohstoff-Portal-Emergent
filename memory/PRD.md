@@ -572,6 +572,20 @@ Passwort: Admin123!
 **Earlier issues found/mentioned but not fixed**
 -   Keine.
 
+## CHANGELOG (2026-01-09)
+### Neue Features:
+1. **Kreditversicherungs-Modul KOMPLETT NEUGESTALTET**
+   - **Struktur**: 1 Hauptvertrag (Kopf) mit Gesamtlimit → n Kundenpositionen (Unterverträge)
+   - **Hauptvertrag**: Versicherungsnummer, Versicherer, Gesamtlimit, Vertragsbeginn/-ende
+   - **Kundenposition**: Kreditlimit, Unterversicherungsnummer, Fakturierungsfrist, Gültigkeitsdatum
+   - **Geschäftslogik**: Auslastung = Summe Kundenlimits / Gesamtlimit × 100%
+   - **Gültigkeitsregel**: Enddatum Hauptvertrag sticht IMMER das Enddatum der Unterverträge
+   - **Frontend**: Smarte Grid-Tabelle mit Suchfunktion, Auslastungsbalken, Detail-Panel
+   - **Tests**: 14/14 Backend-Tests bestanden (100%), Frontend vollständig getestet
+
+### Neue Komponenten:
+- `/app/frontend/src/components/ui/progress.tsx` - Progress-Balken für Auslastungsanzeige
+
 ## CHANGELOG (2026-01-08)
 ### Bugfixes:
 1. **Speicher-Button funktioniert nicht (BEHOBEN)**
