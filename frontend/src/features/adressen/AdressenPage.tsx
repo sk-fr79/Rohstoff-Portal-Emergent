@@ -621,7 +621,7 @@ export function AdressenPage() {
                 className="data-[state=checked]:bg-emerald-500"
               />
             </div>
-            <Button onClick={() => { reset(); setShowCreateDialog(true); }} className="bg-emerald-500 hover:bg-emerald-600">
+            <Button onClick={handleNewAdresse} className="bg-emerald-500 hover:bg-emerald-600" data-testid="new-adresse-btn">
               <Plus className="h-4 w-4 mr-2" />Neue Adresse
             </Button>
           </div>
