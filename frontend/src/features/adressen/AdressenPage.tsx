@@ -1061,7 +1061,7 @@ export function AdressenPage() {
                               <SelectTrigger className="bg-white">
                                 <div className="flex items-center gap-2">
                                   {watchFields.land && (
-                                    <span className="text-lg">{getCountryFlag(watchFields.land)}</span>
+                                    <CountryFlag country={watchFields.land} className="w-6 h-4" />
                                   )}
                                   <SelectValue />
                                 </div>
@@ -1070,7 +1070,7 @@ export function AdressenPage() {
                                 {EU_LAENDER.map(l => (
                                   <SelectItem key={l.land} value={l.land}>
                                     <div className="flex items-center gap-2">
-                                      <span className="text-lg">{getCountryFlag(l.land)}</span>
+                                      <CountryFlag country={l.land} className="w-6 h-4" />
                                       <span>{l.land}</span>
                                     </div>
                                   </SelectItem>
