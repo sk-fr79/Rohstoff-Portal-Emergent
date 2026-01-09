@@ -1741,7 +1741,7 @@ async def get_artikel(
     }
 
 @app.post("/api/artikel")
-async def create_artikel(data: ArtikelCreate, user = Depends(get_current_user)):
+async def create_artikel(data: ArtikelCreate, skip_validation: bool = False, user = Depends(get_current_user)):
     """Neuen Artikel erstellen"""
     artikel = {
         "_id": str(uuid.uuid4()),
@@ -1752,10 +1752,24 @@ async def create_artikel(data: ArtikelCreate, user = Depends(get_current_user)):
         "letzte_aenderung": datetime.utcnow(),
     }
     
+    # Validierung durchführen (wenn nicht übersprungen)
+    validation_result = None
+    if not skip_validation:
+        validation_result = await ArtikelValidator.validate(artikel, db)
+        if not validation_result.is_valid:
+            return {
+                "success": False,
+                "error": "Validierungsfehler",
+                **validation_result.to_dict()
+            }
+    
     await db.artikel.insert_one(artikel)
     artikel["id"] = artikel.pop("_id")
     
-    return {"success": True, "data": artikel}
+    response = {"success": True, "data": artikel}
+    if validation_result and validation_result.warnings:
+        response["warnings"] = validation_result.warnings
+    return response
 
 @app.get("/api/artikel/{artikel_id}")
 async def get_artikel_by_id(artikel_id: str, user = Depends(get_current_user)):
