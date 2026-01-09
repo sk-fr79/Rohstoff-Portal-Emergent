@@ -1789,6 +1789,7 @@ async def get_artikel_by_id(artikel_id: str, user = Depends(get_current_user)):
 async def update_artikel(
     artikel_id: str, 
     data: ArtikelUpdate, 
+    skip_validation: bool = False,
     user = Depends(get_current_user)
 ):
     """Artikel aktualisieren"""
@@ -1801,6 +1802,20 @@ async def update_artikel(
         raise HTTPException(status_code=404, detail="Artikel nicht gefunden")
     
     update_data = {k: v for k, v in data.model_dump().items() if v is not None}
+    
+    # Validierung durchführen (wenn nicht übersprungen)
+    validation_result = None
+    if not skip_validation:
+        # Merge existing data with update data for validation
+        merged = {**existing, **update_data}
+        validation_result = await ArtikelValidator.validate(merged, db)
+        if not validation_result.is_valid:
+            return {
+                "success": False,
+                "error": "Validierungsfehler",
+                **validation_result.to_dict()
+            }
+    
     update_data["geaendert_von"] = user.get("kuerzel")
     update_data["letzte_aenderung"] = datetime.utcnow()
     
@@ -1809,7 +1824,10 @@ async def update_artikel(
     artikel = await db.artikel.find_one({"_id": artikel_id})
     artikel["id"] = artikel.pop("_id")
     
-    return {"success": True, "data": artikel}
+    response = {"success": True, "data": artikel}
+    if validation_result and validation_result.warnings:
+        response["warnings"] = validation_result.warnings
+    return response
 
 @app.delete("/api/artikel/{artikel_id}")
 async def delete_artikel(artikel_id: str, user = Depends(get_current_user)):
