@@ -407,35 +407,50 @@ export function ArtikelPage() {
               <div className="flex items-center gap-3">
                 <div className={cn(
                   "h-10 w-10 rounded-lg flex items-center justify-center",
-                  selectedArtikel.gefahrgut ? "bg-red-100" : "bg-emerald-100"
+                  watchFields.gefahrgut ? "bg-red-100" : "bg-emerald-100"
                 )}>
-                  {selectedArtikel.gefahrgut ? (
+                  {watchFields.gefahrgut ? (
                     <AlertTriangle className="h-5 w-5 text-red-600" />
                   ) : (
                     <Package className="h-5 w-5 text-emerald-600" />
                   )}
                 </div>
                 <div>
-                  <h2 className="font-bold text-lg">{selectedArtikel.artbez1}</h2>
+                  <h2 className="font-bold text-lg">
+                    {isNewRecord ? 'Neuer Artikel' : selectedArtikel.artbez1}
+                  </h2>
                   <div className="flex items-center gap-2">
-                    <span className="text-sm text-gray-500">{selectedArtikel.anr1 || 'Ohne ANR'}</span>
-                    <Badge className={selectedArtikel.aktiv ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}>
-                      {selectedArtikel.aktiv ? 'Aktiv' : 'Inaktiv'}
+                    <span className="text-sm text-gray-500">
+                      {isNewRecord ? '(wird automatisch vergeben)' : selectedArtikel.anr1 || 'Ohne ANR'}
+                    </span>
+                    <Badge className={watchFields.aktiv ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}>
+                      {watchFields.aktiv ? 'Aktiv' : 'Inaktiv'}
                     </Badge>
                   </div>
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <Button
-                  variant={isEditing ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => isEditing ? handleSave() : setIsEditing(true)}
-                  className={isEditing ? "bg-emerald-600 hover:bg-emerald-700" : ""}
-                >
-                  {isEditing ? <Save className="h-4 w-4 mr-1" /> : <Pencil className="h-4 w-4 mr-1" />}
-                  {isEditing ? 'Speichern' : 'Bearbeiten'}
-                </Button>
-                <Button variant="ghost" size="icon" onClick={() => setSelectedArtikel(null)}>
+                {isEditing ? (
+                  <>
+                    <Button variant="outline" size="sm" onClick={handleCancel}>
+                      Abbrechen
+                    </Button>
+                    <Button
+                      size="sm"
+                      onClick={handleSave}
+                      className="bg-emerald-600 hover:bg-emerald-700"
+                    >
+                      <Save className="h-4 w-4 mr-1" />
+                      Speichern
+                    </Button>
+                  </>
+                ) : (
+                  <Button variant="outline" size="sm" onClick={() => setIsEditing(true)}>
+                    <Pencil className="h-4 w-4 mr-1" />
+                    Bearbeiten
+                  </Button>
+                )}
+                <Button variant="ghost" size="icon" onClick={handleClose}>
                   <X className="h-5 w-5" />
                 </Button>
               </div>
