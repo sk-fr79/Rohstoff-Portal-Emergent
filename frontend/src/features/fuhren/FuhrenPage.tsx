@@ -5,13 +5,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import { 
-  Search, Plus, X, Truck, MapPin, Package, Calendar, 
-  User, FileText, Scale, ChevronRight, Save, Edit2
+  Search, Plus, X, Truck, MapPin, Package, 
+  FileText, Scale, ChevronRight, Save, Edit2, Loader2
 } from 'lucide-react';
 
 interface Fuhre {
@@ -220,51 +219,6 @@ export default function FuhrenPage() {
       toast.error('Fehler beim Laden der Fuhre');
     }
   };
-      }
-      await fuhrenApi.create(newFuhre);
-      toast.success('Fuhre erstellt');
-      setShowCreateDialog(false);
-      setNewFuhre({
-        id_adresse_start: '',
-        id_adresse_ziel: '',
-        id_artikel: '',
-        datum_abholung: new Date().toISOString().split('T')[0],
-        datum_anlieferung: new Date().toISOString().split('T')[0],
-        transportmittel: 'LKW',
-        menge_vorgabe: 0,
-        einheit: 'kg',
-      });
-      loadFuhren();
-    } catch (error) {
-      toast.error('Fehler beim Erstellen');
-    }
-  };
-
-  const handleSave = async () => {
-    if (!selectedFuhre) return;
-    try {
-      await fuhrenApi.update(selectedFuhre.id, editData);
-      toast.success('Änderungen gespeichert');
-      setIsEditing(false);
-      loadFuhren();
-      // Reload selected
-      const res = await fuhrenApi.getById(selectedFuhre.id);
-      setSelectedFuhre(res.data.data);
-    } catch (error) {
-      toast.error('Fehler beim Speichern');
-    }
-  };
-
-  const handleRowDoubleClick = async (fuhre: Fuhre) => {
-    try {
-      const res = await fuhrenApi.getById(fuhre.id);
-      setSelectedFuhre(res.data.data);
-      setEditData(res.data.data);
-      setActiveSection('stammdaten');
-    } catch (error) {
-      toast.error('Fehler beim Laden der Fuhre');
-    }
-  };
 
   const formatDate = (dateStr?: string) => {
     if (!dateStr) return '-';
@@ -306,7 +260,7 @@ export default function FuhrenPage() {
               ))}
             </SelectContent>
           </Select>
-          <Button onClick={() => setShowCreateDialog(true)} className="bg-emerald-600 hover:bg-emerald-700" data-testid="new-fuhre-btn">
+          <Button onClick={handleNewFuhre} className="bg-emerald-600 hover:bg-emerald-700" data-testid="new-fuhre-btn">
             <Plus className="h-4 w-4 mr-2" />
             Neue Fuhre
           </Button>
@@ -366,7 +320,9 @@ export default function FuhrenPage() {
           {/* Header */}
           <div className="flex items-center justify-between p-4 border-b bg-slate-50">
             <div>
-              <h2 className="text-lg font-semibold">{selectedFuhre.fuhren_nr}</h2>
+              <h2 className="text-lg font-semibold">
+                {isNewRecord ? 'Neue Fuhre' : selectedFuhre.fuhren_nr}
+              </h2>
               <Badge className={STATUS_CONFIG[selectedFuhre.status]?.color}>
                 {STATUS_CONFIG[selectedFuhre.status]?.label}
               </Badge>
@@ -374,13 +330,22 @@ export default function FuhrenPage() {
             <div className="flex items-center gap-2">
               {isEditing ? (
                 <>
-                  <Button variant="outline" size="sm" onClick={() => { setIsEditing(false); setEditData(selectedFuhre); }}>Abbrechen</Button>
-                  <Button size="sm" onClick={handleSave} className="bg-emerald-600"><Save className="h-4 w-4 mr-1" />Speichern</Button>
+                  <Button variant="outline" size="sm" onClick={handleCancel} disabled={saving}>
+                    Abbrechen
+                  </Button>
+                  <Button size="sm" onClick={handleSave} className="bg-emerald-600" disabled={saving}>
+                    {saving ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Save className="h-4 w-4 mr-1" />}
+                    Speichern
+                  </Button>
                 </>
               ) : (
-                <Button variant="outline" size="sm" onClick={() => setIsEditing(true)}><Edit2 className="h-4 w-4 mr-1" />Bearbeiten</Button>
+                <Button variant="outline" size="sm" onClick={() => setIsEditing(true)}>
+                  <Edit2 className="h-4 w-4 mr-1" />Bearbeiten
+                </Button>
               )}
-              <Button variant="ghost" size="icon" onClick={() => setSelectedFuhre(null)}><X className="h-5 w-5" /></Button>
+              <Button variant="ghost" size="icon" onClick={handleClose}>
+                <X className="h-5 w-5" />
+              </Button>
             </div>
           </div>
           
@@ -413,12 +378,12 @@ export default function FuhrenPage() {
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <Label>Fuhren-Nr.</Label>
-                      <Input value={selectedFuhre.fuhren_nr} disabled />
+                      <Input value={isNewRecord ? '(wird automatisch vergeben)' : selectedFuhre.fuhren_nr} disabled />
                     </div>
                     <div>
                       <Label>Status</Label>
                       <Select 
-                        disabled={!isEditing} 
+                        disabled={!isEditing || isNewRecord} 
                         value={editData.status || selectedFuhre.status}
                         onValueChange={(v) => setEditData({...editData, status: v})}
                       >
@@ -431,7 +396,7 @@ export default function FuhrenPage() {
                       </Select>
                     </div>
                     <div>
-                      <Label>Abholdatum</Label>
+                      <Label>Abholdatum *</Label>
                       <Input 
                         type="date" 
                         disabled={!isEditing}
@@ -440,7 +405,7 @@ export default function FuhrenPage() {
                       />
                     </div>
                     <div>
-                      <Label>Lieferdatum</Label>
+                      <Label>Lieferdatum *</Label>
                       <Input 
                         type="date" 
                         disabled={!isEditing}
@@ -454,9 +419,9 @@ export default function FuhrenPage() {
               
               {activeSection === 'lieferant' && (
                 <div className="space-y-4">
-                  <h3 className="font-medium text-slate-800 mb-4">Lieferant (Start)</h3>
+                  <h3 className="font-medium text-slate-800 mb-4">Lieferant (Start) *</h3>
                   <div>
-                    <Label>Lieferant</Label>
+                    <Label>Lieferant auswählen</Label>
                     <Select 
                       disabled={!isEditing}
                       value={editData.id_adresse_start as string || selectedFuhre.id_adresse_start as string || ''}
@@ -470,17 +435,19 @@ export default function FuhrenPage() {
                       </SelectContent>
                     </Select>
                   </div>
-                  <div className="p-4 bg-slate-50 rounded-lg">
-                    <p className="font-medium">{selectedFuhre.name_lieferant || '-'}</p>
-                  </div>
+                  {selectedFuhre.name_lieferant && !isNewRecord && (
+                    <div className="p-4 bg-slate-50 rounded-lg">
+                      <p className="font-medium">{selectedFuhre.name_lieferant}</p>
+                    </div>
+                  )}
                 </div>
               )}
               
               {activeSection === 'abnehmer' && (
                 <div className="space-y-4">
-                  <h3 className="font-medium text-slate-800 mb-4">Abnehmer (Ziel)</h3>
+                  <h3 className="font-medium text-slate-800 mb-4">Abnehmer (Ziel) *</h3>
                   <div>
-                    <Label>Abnehmer</Label>
+                    <Label>Abnehmer auswählen</Label>
                     <Select 
                       disabled={!isEditing}
                       value={editData.id_adresse_ziel as string || selectedFuhre.id_adresse_ziel as string || ''}
@@ -494,9 +461,11 @@ export default function FuhrenPage() {
                       </SelectContent>
                     </Select>
                   </div>
-                  <div className="p-4 bg-slate-50 rounded-lg">
-                    <p className="font-medium">{selectedFuhre.name_abnehmer || '-'}</p>
-                  </div>
+                  {selectedFuhre.name_abnehmer && !isNewRecord && (
+                    <div className="p-4 bg-slate-50 rounded-lg">
+                      <p className="font-medium">{selectedFuhre.name_abnehmer}</p>
+                    </div>
+                  )}
                 </div>
               )}
               
@@ -504,7 +473,7 @@ export default function FuhrenPage() {
                 <div className="space-y-4">
                   <h3 className="font-medium text-slate-800 mb-4">Artikel & Mengen</h3>
                   <div>
-                    <Label>Artikel/Sorte</Label>
+                    <Label>Artikel/Sorte *</Label>
                     <Select 
                       disabled={!isEditing}
                       value={editData.id_artikel as string || selectedFuhre.id_artikel as string || ''}
@@ -525,7 +494,7 @@ export default function FuhrenPage() {
                         type="number" 
                         disabled={!isEditing}
                         value={editData.menge_vorgabe ?? selectedFuhre.menge_vorgabe ?? ''}
-                        onChange={(e) => setEditData({...editData, menge_vorgabe: parseFloat(e.target.value)})}
+                        onChange={(e) => setEditData({...editData, menge_vorgabe: parseFloat(e.target.value) || undefined})}
                       />
                     </div>
                     <div>
@@ -542,7 +511,7 @@ export default function FuhrenPage() {
                         type="number" 
                         disabled={!isEditing}
                         value={editData.menge_aufladen ?? selectedFuhre.menge_aufladen ?? ''}
-                        onChange={(e) => setEditData({...editData, menge_aufladen: parseFloat(e.target.value)})}
+                        onChange={(e) => setEditData({...editData, menge_aufladen: parseFloat(e.target.value) || undefined})}
                       />
                     </div>
                     <div>
@@ -551,7 +520,7 @@ export default function FuhrenPage() {
                         type="number" 
                         disabled={!isEditing}
                         value={editData.menge_abladen ?? selectedFuhre.menge_abladen ?? ''}
-                        onChange={(e) => setEditData({...editData, menge_abladen: parseFloat(e.target.value)})}
+                        onChange={(e) => setEditData({...editData, menge_abladen: parseFloat(e.target.value) || undefined})}
                       />
                     </div>
                   </div>
@@ -655,82 +624,6 @@ export default function FuhrenPage() {
           </div>
         </div>
       )}
-
-      {/* Create Dialog */}
-      <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle>Neue Fuhre erstellen</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <Label>Lieferant *</Label>
-              <Select value={newFuhre.id_adresse_start} onValueChange={(v) => setNewFuhre({...newFuhre, id_adresse_start: v})}>
-                <SelectTrigger><SelectValue placeholder="Lieferant auswählen" /></SelectTrigger>
-                <SelectContent>
-                  {adressen.map((a) => (
-                    <SelectItem key={a.id} value={a.id}>{a.name1} {a.ort ? `(${a.ort})` : ''}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label>Abnehmer *</Label>
-              <Select value={newFuhre.id_adresse_ziel} onValueChange={(v) => setNewFuhre({...newFuhre, id_adresse_ziel: v})}>
-                <SelectTrigger><SelectValue placeholder="Abnehmer auswählen" /></SelectTrigger>
-                <SelectContent>
-                  {adressen.map((a) => (
-                    <SelectItem key={a.id} value={a.id}>{a.name1} {a.ort ? `(${a.ort})` : ''}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label>Artikel *</Label>
-              <Select value={newFuhre.id_artikel} onValueChange={(v) => setNewFuhre({...newFuhre, id_artikel: v})}>
-                <SelectTrigger><SelectValue placeholder="Artikel auswählen" /></SelectTrigger>
-                <SelectContent>
-                  {artikel.map((a) => (
-                    <SelectItem key={a.id} value={a.id}>{a.artbez1}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label>Abholdatum</Label>
-                <Input type="date" value={newFuhre.datum_abholung} onChange={(e) => setNewFuhre({...newFuhre, datum_abholung: e.target.value})} />
-              </div>
-              <div>
-                <Label>Lieferdatum</Label>
-                <Input type="date" value={newFuhre.datum_anlieferung} onChange={(e) => setNewFuhre({...newFuhre, datum_anlieferung: e.target.value})} />
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label>Planmenge</Label>
-                <Input type="number" value={newFuhre.menge_vorgabe} onChange={(e) => setNewFuhre({...newFuhre, menge_vorgabe: parseFloat(e.target.value)})} />
-              </div>
-              <div>
-                <Label>Transportmittel</Label>
-                <Select value={newFuhre.transportmittel} onValueChange={(v) => setNewFuhre({...newFuhre, transportmittel: v})}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="LKW">LKW</SelectItem>
-                    <SelectItem value="PKW">PKW</SelectItem>
-                    <SelectItem value="BAHN">Bahn</SelectItem>
-                    <SelectItem value="SCHIFF">Schiff</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowCreateDialog(false)}>Abbrechen</Button>
-            <Button onClick={handleCreate} className="bg-emerald-600 hover:bg-emerald-700">Erstellen</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
