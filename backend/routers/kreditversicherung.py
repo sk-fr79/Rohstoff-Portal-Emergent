@@ -166,7 +166,7 @@ def ist_position_gueltig(kopf: dict, position: dict, stichtag: date = None) -> b
             von_date = datetime.fromisoformat(kopf["gueltig_von"]).date()
             if von_date > stichtag:
                 return False
-        except:
+        except (ValueError, TypeError):
             pass
     
     # Effektives Enddatum prüfen (Kopf sticht)
