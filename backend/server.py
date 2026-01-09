@@ -2934,6 +2934,493 @@ async def get_wiegekarten_statistik(user = Depends(get_current_user)):
     }
 
 
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8001)
+# ============================================================
+# FUHREN ENDPOINTS (Transporte)
+# ============================================================
+
+@app.get("/api/fuhren")
+async def get_fuhren(
+    suche: Optional[str] = None,
+    status: Optional[str] = None,
+    datum_von: Optional[str] = None,
+    datum_bis: Optional[str] = None,
+    limit: int = 100,
+    skip: int = 0,
+    user = Depends(get_current_user)
+):
+    """Alle Fuhren abrufen"""
+    query = {"mandant_id": user["mandant_id"], "deleted": {"$ne": True}}
+    
+    if suche:
+        query["$or"] = [
+            {"fuhren_nr": {"$regex": suche, "$options": "i"}},
+            {"name_lieferant": {"$regex": suche, "$options": "i"}},
+            {"name_abnehmer": {"$regex": suche, "$options": "i"}},
+            {"artbez1_ek": {"$regex": suche, "$options": "i"}},
+            {"transportkennzeichen": {"$regex": suche, "$options": "i"}},
+        ]
+    
+    if status:
+        query["status"] = status
+    
+    if datum_von:
+        query["datum_abholung"] = {"$gte": datum_von}
+    if datum_bis:
+        if "datum_abholung" in query:
+            query["datum_abholung"]["$lte"] = datum_bis
+        else:
+            query["datum_abholung"] = {"$lte": datum_bis}
+    
+    total = await db.fuhren.count_documents(query)
+    fuhren = await db.fuhren.find(query).sort("_id", -1).skip(skip).limit(limit).to_list(limit)
+    
+    for f in fuhren:
+        f["id"] = f.pop("_id")
+    
+    return {
+        "success": True,
+        "data": fuhren,
+        "total": total,
+        "limit": limit,
+        "skip": skip
+    }
+
+
+@app.post("/api/fuhren")
+async def create_fuhre(data: FuhreCreate, user = Depends(get_current_user)):
+    """Neue Fuhre erstellen"""
+    # Fuhren-Nummer generieren
+    last_fuhre = await db.fuhren.find_one(
+        {"mandant_id": user["mandant_id"]},
+        sort=[("fuhren_nr", -1)]
+    )
+    fuhren_nr = "F-00001"
+    if last_fuhre and last_fuhre.get("fuhren_nr"):
+        try:
+            nr = int(last_fuhre["fuhren_nr"].split("-")[1]) + 1
+            fuhren_nr = f"F-{nr:05d}"
+        except:
+            pass
+    
+    # Lieferant und Abnehmer laden
+    lieferant = await db.adressen.find_one({"_id": data.id_adresse_start})
+    abnehmer = await db.adressen.find_one({"_id": data.id_adresse_ziel})
+    
+    # Artikel laden
+    artikel = await db.artikel.find_one({"_id": data.id_artikel})
+    
+    fuhre = {
+        "_id": str(uuid.uuid4()),
+        "mandant_id": user["mandant_id"],
+        "fuhren_nr": fuhren_nr,
+        **data.model_dump(),
+        # Snapshots der Adressen
+        "name_lieferant": lieferant.get("name1") if lieferant else None,
+        "name_abnehmer": abnehmer.get("name1") if abnehmer else None,
+        "artbez1_ek": data.artbez1_ek or (artikel.get("artbez1") if artikel else None),
+        # Berechnete Felder
+        "gesamtpreis_ek": (data.menge_aufladen or 0) * (data.einzelpreis_ek or 0),
+        "gesamtpreis_vk": (data.menge_abladen or 0) * (data.einzelpreis_vk or 0),
+        # Status
+        "abgeschlossen": False,
+        "deleted": False,
+        "ist_storniert": False,
+        # Meta
+        "erstellt_von": user.get("kuerzel"),
+        "erstellt_am": datetime.utcnow(),
+        "letzte_aenderung": datetime.utcnow(),
+    }
+    
+    await db.fuhren.insert_one(fuhre)
+    fuhre["id"] = fuhre.pop("_id")
+    
+    return {"success": True, "data": fuhre}
+
+
+@app.get("/api/fuhren/{fuhre_id}")
+async def get_fuhre_by_id(fuhre_id: str, user = Depends(get_current_user)):
+    """Einzelne Fuhre nach ID abrufen"""
+    fuhre = await db.fuhren.find_one({
+        "_id": fuhre_id,
+        "mandant_id": user["mandant_id"]
+    })
+    
+    if not fuhre:
+        raise HTTPException(status_code=404, detail="Fuhre nicht gefunden")
+    
+    fuhre["id"] = fuhre.pop("_id")
+    return {"success": True, "data": fuhre}
+
+
+@app.put("/api/fuhren/{fuhre_id}")
+async def update_fuhre(fuhre_id: str, data: FuhreUpdate, user = Depends(get_current_user)):
+    """Fuhre aktualisieren"""
+    existing = await db.fuhren.find_one({
+        "_id": fuhre_id,
+        "mandant_id": user["mandant_id"]
+    })
+    
+    if not existing:
+        raise HTTPException(status_code=404, detail="Fuhre nicht gefunden")
+    
+    update_data = {k: v for k, v in data.model_dump().items() if v is not None}
+    
+    # Preise neu berechnen wenn Mengen oder Einzelpreise geändert wurden
+    menge_aufladen = update_data.get("menge_aufladen", existing.get("menge_aufladen", 0))
+    menge_abladen = update_data.get("menge_abladen", existing.get("menge_abladen", 0))
+    einzelpreis_ek = update_data.get("einzelpreis_ek", existing.get("einzelpreis_ek", 0))
+    einzelpreis_vk = update_data.get("einzelpreis_vk", existing.get("einzelpreis_vk", 0))
+    
+    update_data["gesamtpreis_ek"] = (menge_aufladen or 0) * (einzelpreis_ek or 0)
+    update_data["gesamtpreis_vk"] = (menge_abladen or 0) * (einzelpreis_vk or 0)
+    update_data["geaendert_von"] = user.get("kuerzel")
+    update_data["letzte_aenderung"] = datetime.utcnow()
+    
+    await db.fuhren.update_one({"_id": fuhre_id}, {"$set": update_data})
+    
+    fuhre = await db.fuhren.find_one({"_id": fuhre_id})
+    fuhre["id"] = fuhre.pop("_id")
+    
+    return {"success": True, "data": fuhre}
+
+
+@app.delete("/api/fuhren/{fuhre_id}")
+async def delete_fuhre(fuhre_id: str, user = Depends(get_current_user)):
+    """Fuhre löschen (Soft-Delete)"""
+    existing = await db.fuhren.find_one({
+        "_id": fuhre_id,
+        "mandant_id": user["mandant_id"]
+    })
+    
+    if not existing:
+        raise HTTPException(status_code=404, detail="Fuhre nicht gefunden")
+    
+    await db.fuhren.update_one(
+        {"_id": fuhre_id},
+        {"$set": {"deleted": True, "letzte_aenderung": datetime.utcnow()}}
+    )
+    
+    return {"success": True, "message": "Fuhre gelöscht"}
+
+
+@app.post("/api/fuhren/{fuhre_id}/storno")
+async def storno_fuhre(fuhre_id: str, grund: str = "", user = Depends(get_current_user)):
+    """Fuhre stornieren"""
+    existing = await db.fuhren.find_one({
+        "_id": fuhre_id,
+        "mandant_id": user["mandant_id"]
+    })
+    
+    if not existing:
+        raise HTTPException(status_code=404, detail="Fuhre nicht gefunden")
+    
+    await db.fuhren.update_one(
+        {"_id": fuhre_id},
+        {"$set": {
+            "ist_storniert": True,
+            "status": "STORNIERT",
+            "storno_grund": grund,
+            "storno_von": user.get("kuerzel"),
+            "storno_am": datetime.utcnow(),
+            "letzte_aenderung": datetime.utcnow()
+        }}
+    )
+    
+    return {"success": True, "message": "Fuhre storniert"}
+
+
+# ============================================================
+# RECHNUNGEN ENDPOINTS
+# ============================================================
+
+@app.get("/api/rechnungen")
+async def get_rechnungen(
+    suche: Optional[str] = None,
+    vorgang_typ: Optional[str] = None,
+    status: Optional[str] = None,
+    limit: int = 100,
+    skip: int = 0,
+    user = Depends(get_current_user)
+):
+    """Alle Rechnungen/Gutschriften abrufen"""
+    query = {"mandant_id": user["mandant_id"], "deleted": {"$ne": True}}
+    
+    if suche:
+        query["$or"] = [
+            {"rechnungs_nr": {"$regex": suche, "$options": "i"}},
+            {"name1": {"$regex": suche, "$options": "i"}},
+            {"buchungsnummer": {"$regex": suche, "$options": "i"}},
+        ]
+    
+    if vorgang_typ:
+        query["vorgang_typ"] = vorgang_typ
+    
+    if status:
+        query["status"] = status
+    
+    total = await db.rechnungen.count_documents(query)
+    rechnungen = await db.rechnungen.find(query).sort("_id", -1).skip(skip).limit(limit).to_list(limit)
+    
+    for r in rechnungen:
+        r["id"] = r.pop("_id")
+    
+    return {
+        "success": True,
+        "data": rechnungen,
+        "total": total,
+        "limit": limit,
+        "skip": skip
+    }
+
+
+@app.post("/api/rechnungen")
+async def create_rechnung(data: RechnungCreate, user = Depends(get_current_user)):
+    """Neue Rechnung/Gutschrift erstellen"""
+    # Rechnungs-Nummer generieren
+    prefix = "RG" if data.vorgang_typ == "RECHNUNG" else "GS"
+    last_rechnung = await db.rechnungen.find_one(
+        {"mandant_id": user["mandant_id"], "vorgang_typ": data.vorgang_typ},
+        sort=[("rechnungs_nr", -1)]
+    )
+    rechnungs_nr = f"{prefix}-00001"
+    if last_rechnung and last_rechnung.get("rechnungs_nr"):
+        try:
+            nr = int(last_rechnung["rechnungs_nr"].split("-")[1]) + 1
+            rechnungs_nr = f"{prefix}-{nr:05d}"
+        except:
+            pass
+    
+    # Buchungsnummer generieren
+    buchungsnummer = await generate_buchungsnummer(user["mandant_id"], data.vorgang_typ == "GUTSCHRIFT")
+    
+    rechnung = {
+        "_id": str(uuid.uuid4()),
+        "mandant_id": user["mandant_id"],
+        "rechnungs_nr": rechnungs_nr,
+        "buchungsnummer": buchungsnummer,
+        **data.model_dump(),
+        "erstellungsdatum": data.erstellungsdatum or datetime.utcnow().strftime("%Y-%m-%d"),
+        "positionen": [],
+        "summe_netto": 0.0,
+        "summe_steuer": 0.0,
+        "summe_brutto": 0.0,
+        "druckzaehler": 0,
+        "deleted": False,
+        "erstellt_von": user.get("kuerzel"),
+        "erstellt_am": datetime.utcnow(),
+        "letzte_aenderung": datetime.utcnow(),
+    }
+    
+    await db.rechnungen.insert_one(rechnung)
+    rechnung["id"] = rechnung.pop("_id")
+    
+    return {"success": True, "data": rechnung}
+
+
+@app.get("/api/rechnungen/{rechnung_id}")
+async def get_rechnung_by_id(rechnung_id: str, user = Depends(get_current_user)):
+    """Einzelne Rechnung nach ID abrufen"""
+    rechnung = await db.rechnungen.find_one({
+        "_id": rechnung_id,
+        "mandant_id": user["mandant_id"]
+    })
+    
+    if not rechnung:
+        raise HTTPException(status_code=404, detail="Rechnung nicht gefunden")
+    
+    rechnung["id"] = rechnung.pop("_id")
+    return {"success": True, "data": rechnung}
+
+
+@app.put("/api/rechnungen/{rechnung_id}")
+async def update_rechnung(rechnung_id: str, data: RechnungUpdate, user = Depends(get_current_user)):
+    """Rechnung aktualisieren"""
+    existing = await db.rechnungen.find_one({
+        "_id": rechnung_id,
+        "mandant_id": user["mandant_id"]
+    })
+    
+    if not existing:
+        raise HTTPException(status_code=404, detail="Rechnung nicht gefunden")
+    
+    update_data = {k: v for k, v in data.model_dump().items() if v is not None}
+    update_data["geaendert_von"] = user.get("kuerzel")
+    update_data["letzte_aenderung"] = datetime.utcnow()
+    
+    await db.rechnungen.update_one({"_id": rechnung_id}, {"$set": update_data})
+    
+    rechnung = await db.rechnungen.find_one({"_id": rechnung_id})
+    rechnung["id"] = rechnung.pop("_id")
+    
+    return {"success": True, "data": rechnung}
+
+
+@app.delete("/api/rechnungen/{rechnung_id}")
+async def delete_rechnung(rechnung_id: str, user = Depends(get_current_user)):
+    """Rechnung löschen (Soft-Delete)"""
+    existing = await db.rechnungen.find_one({
+        "_id": rechnung_id,
+        "mandant_id": user["mandant_id"]
+    })
+    
+    if not existing:
+        raise HTTPException(status_code=404, detail="Rechnung nicht gefunden")
+    
+    await db.rechnungen.update_one(
+        {"_id": rechnung_id},
+        {"$set": {"deleted": True, "letzte_aenderung": datetime.utcnow()}}
+    )
+    
+    return {"success": True, "message": "Rechnung gelöscht"}
+
+
+@app.post("/api/rechnungen/{rechnung_id}/positionen")
+async def add_rechnung_position(
+    rechnung_id: str, 
+    data: RechnungPositionCreate, 
+    user = Depends(get_current_user)
+):
+    """Position zur Rechnung hinzufügen"""
+    rechnung = await db.rechnungen.find_one({
+        "_id": rechnung_id,
+        "mandant_id": user["mandant_id"]
+    })
+    
+    if not rechnung:
+        raise HTTPException(status_code=404, detail="Rechnung nicht gefunden")
+    
+    # Position erstellen
+    position = {
+        "id": str(uuid.uuid4()),
+        **data.model_dump(),
+        "gesamtpreis": round(data.menge * data.einzelpreis, 2),
+        "steuerbetrag": round(data.menge * data.einzelpreis * data.steuersatz / 100, 2),
+    }
+    
+    # Zur Rechnung hinzufügen
+    positionen = rechnung.get("positionen", [])
+    positionen.append(position)
+    
+    # Summen neu berechnen
+    summe_netto = sum(p.get("gesamtpreis", 0) for p in positionen)
+    summe_steuer = sum(p.get("steuerbetrag", 0) for p in positionen)
+    summe_brutto = summe_netto + summe_steuer
+    
+    await db.rechnungen.update_one(
+        {"_id": rechnung_id},
+        {"$set": {
+            "positionen": positionen,
+            "summe_netto": round(summe_netto, 2),
+            "summe_steuer": round(summe_steuer, 2),
+            "summe_brutto": round(summe_brutto, 2),
+            "letzte_aenderung": datetime.utcnow()
+        }}
+    )
+    
+    return {"success": True, "data": position}
+
+
+@app.post("/api/rechnungen/aus-fuhre/{fuhre_id}")
+async def create_rechnung_aus_fuhre(
+    fuhre_id: str,
+    vorgang_typ: str = "RECHNUNG",
+    user = Depends(get_current_user)
+):
+    """Rechnung/Gutschrift automatisch aus Fuhre erstellen"""
+    fuhre = await db.fuhren.find_one({
+        "_id": fuhre_id,
+        "mandant_id": user["mandant_id"]
+    })
+    
+    if not fuhre:
+        raise HTTPException(status_code=404, detail="Fuhre nicht gefunden")
+    
+    # Bestimme ob Rechnung (an Abnehmer) oder Gutschrift (an Lieferant)
+    if vorgang_typ == "RECHNUNG":
+        adresse_id = fuhre.get("id_adresse_ziel")
+        menge = fuhre.get("menge_abladen", 0)
+        einzelpreis = fuhre.get("einzelpreis_vk", 0)
+        steuersatz = fuhre.get("steuersatz_vk", 19.0)
+    else:
+        adresse_id = fuhre.get("id_adresse_start")
+        menge = fuhre.get("menge_aufladen", 0)
+        einzelpreis = fuhre.get("einzelpreis_ek", 0)
+        steuersatz = fuhre.get("steuersatz_ek", 19.0)
+    
+    # Adresse laden
+    adresse = await db.adressen.find_one({"_id": adresse_id})
+    if not adresse:
+        raise HTTPException(status_code=404, detail="Adresse nicht gefunden")
+    
+    # Rechnung erstellen
+    prefix = "RG" if vorgang_typ == "RECHNUNG" else "GS"
+    last_rechnung = await db.rechnungen.find_one(
+        {"mandant_id": user["mandant_id"], "vorgang_typ": vorgang_typ},
+        sort=[("rechnungs_nr", -1)]
+    )
+    rechnungs_nr = f"{prefix}-00001"
+    if last_rechnung and last_rechnung.get("rechnungs_nr"):
+        try:
+            nr = int(last_rechnung["rechnungs_nr"].split("-")[1]) + 1
+            rechnungs_nr = f"{prefix}-{nr:05d}"
+        except:
+            pass
+    
+    gesamtpreis = round(menge * einzelpreis, 2)
+    steuerbetrag = round(gesamtpreis * steuersatz / 100, 2)
+    
+    rechnung = {
+        "_id": str(uuid.uuid4()),
+        "mandant_id": user["mandant_id"],
+        "rechnungs_nr": rechnungs_nr,
+        "buchungsnummer": await generate_buchungsnummer(user["mandant_id"], vorgang_typ == "GUTSCHRIFT"),
+        "vorgang_typ": vorgang_typ,
+        "id_adresse": adresse_id,
+        "name1": adresse.get("name1"),
+        "name2": adresse.get("name2"),
+        "strasse": adresse.get("strasse"),
+        "hausnummer": adresse.get("hausnummer"),
+        "plz": adresse.get("plz"),
+        "ort": adresse.get("ort"),
+        "land": adresse.get("land"),
+        "erstellungsdatum": datetime.utcnow().strftime("%Y-%m-%d"),
+        "leistungsdatum": fuhre.get("datum_anlieferung"),
+        "waehrung": "EUR",
+        "status": "ENTWURF",
+        "positionen": [{
+            "id": str(uuid.uuid4()),
+            "id_fuhre": fuhre_id,
+            "artbez": fuhre.get("artbez1_ek") or "Lieferung",
+            "beschreibung": f"Fuhre {fuhre.get('fuhren_nr')}",
+            "menge": menge,
+            "einheit": fuhre.get("einheit", "kg"),
+            "einzelpreis": einzelpreis,
+            "steuersatz": steuersatz,
+            "gesamtpreis": gesamtpreis,
+            "steuerbetrag": steuerbetrag,
+        }],
+        "summe_netto": gesamtpreis,
+        "summe_steuer": steuerbetrag,
+        "summe_brutto": round(gesamtpreis + steuerbetrag, 2),
+        "druckzaehler": 0,
+        "deleted": False,
+        "erstellt_von": user.get("kuerzel"),
+        "erstellt_am": datetime.utcnow(),
+        "letzte_aenderung": datetime.utcnow(),
+    }
+    
+    await db.rechnungen.insert_one(rechnung)
+    
+    # Fuhre als abgerechnet markieren
+    await db.fuhren.update_one(
+        {"_id": fuhre_id},
+        {"$set": {
+            "status": "ABGERECHNET",
+            "id_rechnung": rechnung["_id"] if vorgang_typ == "RECHNUNG" else None,
+            "id_gutschrift": rechnung["_id"] if vorgang_typ == "GUTSCHRIFT" else None,
+            "letzte_aenderung": datetime.utcnow()
+        }}
+    )
+    
+    rechnung["id"] = rechnung.pop("_id")
+    return {"success": True, "data": rechnung}
