@@ -10,6 +10,7 @@ import { KontraktePage } from '@/features/kontrakte/KontraktePage';
 import { WiegekartenPage } from '@/features/wiegekarten/WiegekartenPage';
 import FuhrenPage from '@/features/fuhren/FuhrenPage';
 import RechnungenPage from '@/features/rechnungen/RechnungenPage';
+import KreditversicherungenPage from '@/features/kreditversicherungen/KreditversicherungenPage';
 
 // Protected Route Wrapper
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
