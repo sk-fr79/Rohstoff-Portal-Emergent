@@ -41,9 +41,9 @@ class TestKreditversicherungAPI:
         if login_response.status_code != 200:
             pytest.skip(f"Login failed: {login_response.status_code} - {login_response.text}")
         
-        token = login_response.json().get("token")
+        token = login_response.json().get("access_token") or login_response.json().get("token")
         if not token:
-            pytest.skip("No token received from login")
+            pytest.skip(f"No token received from login: {login_response.json()}")
         
         self.session.headers.update({"Authorization": f"Bearer {token}"})
         
