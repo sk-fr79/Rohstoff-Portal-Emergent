@@ -119,6 +119,7 @@ app.include_router(kontrakte.router)
 app.include_router(wiegekarten.router)
 app.include_router(fuhren.router)
 app.include_router(rechnungen.router)
+app.include_router(kreditversicherung.router)
 
 
 @app.get("/api/health")
