@@ -788,13 +788,19 @@ export function AdressenPage() {
                 {/* Section Content */}
                 <div className="flex-1 overflow-auto p-6">
                   {/* Stammdaten Section */}
-                  {activeSection === 'stamm' && (
+                  {activeSection === 'stamm' && (() => {
+                    // Helper: Firma-Status sicher ermitteln
+                    const istFirma = watchFields.ist_firma !== undefined 
+                      ? watchFields.ist_firma 
+                      : (selectedAdresse?.ist_firma ?? true);
+                    
+                    return (
                     <div className="space-y-6">
                       {/* Typ-Auswahl mit visuellem Feedback */}
                       <div className="relative">
                         <div className={cn(
                           "absolute inset-0 rounded-xl transition-all duration-300",
-                          watchFields.ist_firma 
+                          istFirma 
                             ? "bg-gradient-to-r from-blue-50 to-indigo-50" 
                             : "bg-gradient-to-r from-purple-50 to-pink-50"
                         )} />
@@ -802,9 +808,9 @@ export function AdressenPage() {
                           <div className="flex items-center gap-4">
                             <div className={cn(
                               "h-12 w-12 rounded-xl flex items-center justify-center transition-all duration-300",
-                              watchFields.ist_firma ? "bg-blue-100" : "bg-purple-100"
+                              istFirma ? "bg-blue-100" : "bg-purple-100"
                             )}>
-                              {watchFields.ist_firma ? (
+                              {istFirma ? (
                                 <Building2 className="h-6 w-6 text-blue-600" />
                               ) : (
                                 <User className="h-6 w-6 text-purple-600" />
