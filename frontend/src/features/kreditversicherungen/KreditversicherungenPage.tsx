@@ -4,9 +4,8 @@ import { ColumnDef } from '@tanstack/react-table';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { 
-  Plus, Pencil, Trash2, Shield, Building2, Users, Euro, Calendar,
-  X, Save, Loader2, Search, ChevronRight, CheckCircle, AlertTriangle,
-  ExternalLink, FileText
+  Plus, Pencil, Trash2, Shield, Users, Euro,
+  X, Save, Loader2, Search, ChevronRight, FileText
 } from 'lucide-react';
 import { api } from '@/services/api/client';
 import { Button } from '@/components/ui/button';
