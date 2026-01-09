@@ -174,17 +174,28 @@ async def update_rechnung(rechnung_id: str, data: RechnungUpdate, user = Depends
 
 @router.delete("/rechnungen/{rechnung_id}")
 async def delete_rechnung(rechnung_id: str, user = Depends(get_current_user)):
-    """Rechnung löschen (Soft-Delete)"""
+    """Rechnung löschen (Hard Delete)"""
     db = get_db()
-    result = await db.rechnungen.update_one(
-        {"_id": rechnung_id, "mandant_id": user["mandant_id"]},
-        {"$set": {"deleted": True}}
-    )
     
-    if result.modified_count == 0:
+    # Prüfen ob Rechnung existiert
+    rechnung = await db.rechnungen.find_one({
+        "_id": rechnung_id, 
+        "mandant_id": user["mandant_id"]
+    })
+    
+    if not rechnung:
         raise HTTPException(status_code=404, detail="Rechnung nicht gefunden")
     
-    return {"success": True}
+    # Rechnung endgültig löschen
+    result = await db.rechnungen.delete_one({
+        "_id": rechnung_id, 
+        "mandant_id": user["mandant_id"]
+    })
+    
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Rechnung konnte nicht gelöscht werden")
+    
+    return {"success": True, "message": "Rechnung gelöscht"}
 
 
 @router.post("/rechnungen/{rechnung_id}/positionen")
