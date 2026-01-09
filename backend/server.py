@@ -1236,6 +1236,65 @@ async def create_artikel(data: ArtikelCreate, user = Depends(get_current_user)):
     
     return {"success": True, "data": artikel}
 
+@app.get("/api/artikel/{artikel_id}")
+async def get_artikel_by_id(artikel_id: str, user = Depends(get_current_user)):
+    """Einzelnen Artikel nach ID abrufen"""
+    artikel = await db.artikel.find_one({
+        "_id": artikel_id,
+        "mandant_id": user["mandant_id"]
+    })
+    
+    if not artikel:
+        raise HTTPException(status_code=404, detail="Artikel nicht gefunden")
+    
+    artikel["id"] = artikel.pop("_id")
+    return {"success": True, "data": artikel}
+
+@app.put("/api/artikel/{artikel_id}")
+async def update_artikel(
+    artikel_id: str, 
+    data: ArtikelUpdate, 
+    user = Depends(get_current_user)
+):
+    """Artikel aktualisieren"""
+    existing = await db.artikel.find_one({
+        "_id": artikel_id,
+        "mandant_id": user["mandant_id"]
+    })
+    
+    if not existing:
+        raise HTTPException(status_code=404, detail="Artikel nicht gefunden")
+    
+    update_data = {k: v for k, v in data.model_dump().items() if v is not None}
+    update_data["geaendert_von"] = user.get("kuerzel")
+    update_data["letzte_aenderung"] = datetime.utcnow()
+    
+    await db.artikel.update_one({"_id": artikel_id}, {"$set": update_data})
+    
+    artikel = await db.artikel.find_one({"_id": artikel_id})
+    artikel["id"] = artikel.pop("_id")
+    
+    return {"success": True, "data": artikel}
+
+@app.delete("/api/artikel/{artikel_id}")
+async def delete_artikel(artikel_id: str, user = Depends(get_current_user)):
+    """Artikel löschen (Soft-Delete via aktiv=False)"""
+    existing = await db.artikel.find_one({
+        "_id": artikel_id,
+        "mandant_id": user["mandant_id"]
+    })
+    
+    if not existing:
+        raise HTTPException(status_code=404, detail="Artikel nicht gefunden")
+    
+    # Soft-Delete: aktiv auf False setzen
+    await db.artikel.update_one(
+        {"_id": artikel_id},
+        {"$set": {"aktiv": False, "letzte_aenderung": datetime.utcnow()}}
+    )
+    
+    return {"success": True, "message": "Artikel deaktiviert"}
+
 # ============================================================
 # KONTRAKTE ENDPOINTS
 # ============================================================
