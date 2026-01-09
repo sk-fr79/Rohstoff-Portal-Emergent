@@ -1577,6 +1577,14 @@ export function AdressenPage() {
                     />
                   )}
 
+                  {/* Kreditversicherung Section */}
+                  {activeSection === 'kreditversicherung' && selectedAdresse?.id && (
+                    <KreditversicherungTab 
+                      adresseId={selectedAdresse.id} 
+                      isEditing={isEditing} 
+                    />
+                  )}
+
                   {/* Bemerkungen Section */}
                   {activeSection === 'bemerkungen' && (
                     <div className="space-y-6">
