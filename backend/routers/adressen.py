@@ -15,6 +15,7 @@ import re
 import json
 
 from services.database import get_db
+from services.validation import AdresseValidator
 from utils.auth import get_current_user
 
 router = APIRouter(prefix="/api", tags=["Adressen"])
