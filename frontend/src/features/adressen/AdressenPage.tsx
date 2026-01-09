@@ -312,8 +312,70 @@ export function AdressenPage() {
     )();
   };
 
+  // Neue Adresse anlegen - öffnet Sidebar mit leerem Datensatz
+  const handleNewAdresse = () => {
+    const emptyAdresse: Adresse = {
+      id: 'NEU',
+      adressnr: '(wird automatisch vergeben)',
+      name1: '',
+      adresstyp: 1,
+      aktiv: true,
+      wareneingang: true,
+      warenausgang: true,
+      ist_firma: true,
+      land: 'Deutschland',
+      sprache: 'Deutsch',
+      waehrung: 'EUR',
+    };
+    setSelectedAdresse(emptyAdresse);
+    reset({
+      adresstyp: 1,
+      aktiv: true,
+      wareneingang: true,
+      warenausgang: true,
+      ist_firma: true,
+      land: 'Deutschland',
+      sprache: 'Deutsch',
+      waehrung: 'EUR',
+      firma_ohne_ustid: false,
+      privat_mit_ustid: false,
+    });
+    setWeitereUstIds([]);
+    setAnsprechpartnerList([]);
+    setIsNewRecord(true);
+    setIsEditing(true);
+    setActiveSection('stamm');
+  };
+
+  // Sidebar schließen
+  const handleClose = () => {
+    setSelectedAdresse(null);
+    setIsEditing(false);
+    setIsNewRecord(false);
+    reset();
+  };
+
+  // Abbrechen
+  const handleCancel = () => {
+    if (isNewRecord) {
+      setSelectedAdresse(null);
+      setIsNewRecord(false);
+      reset();
+    } else {
+      setIsEditing(false);
+      if (selectedAdresse) {
+        Object.entries(selectedAdresse).forEach(([key, value]) => {
+          if (key in adresseSchema.shape) {
+            setValue(key as keyof AdresseForm, value as any);
+          }
+        });
+      }
+    }
+  };
+
   const handleRowDoubleClick = (adresse: Adresse) => {
     setSelectedAdresse(adresse);
+    setIsNewRecord(false);
     setIsEditing(false);
     setActiveSection('stamm');
   };
