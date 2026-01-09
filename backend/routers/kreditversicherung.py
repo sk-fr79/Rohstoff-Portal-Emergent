@@ -803,3 +803,76 @@ async def pruefe_fuhre_kreditlimit(fuhre_id: str, user = Depends(get_current_use
     result = await pruefe_kreditlimit(request, user)
     
     return result
+
+
+# ============================================================
+# CLEANUP ENDPOINTS
+# ============================================================
+
+@router.delete("/cleanup/soft-deleted")
+async def cleanup_soft_deleted_records(user = Depends(get_current_user)):
+    """
+    Bereinigt alle Soft-Deleted Datensätze (Hard Delete).
+    Entfernt:
+    - Adressen mit aktiv=false
+    - Kreditversicherungen mit aktiv=false
+    - Kontrakte mit deleted=true
+    - Fuhren mit deleted=true
+    - Rechnungen mit deleted=true
+    """
+    db = get_db()
+    mandant_id = user["mandant_id"]
+    
+    results = {}
+    
+    # 1. Soft-gelöschte Adressen finden und löschen
+    adressen_to_delete = await db.adressen.find(
+        {"mandant_id": mandant_id, "aktiv": False}
+    ).to_list(1000)
+    
+    for addr in adressen_to_delete:
+        addr_id = addr["_id"]
+        # Aus Kreditversicherungen entfernen
+        await db.kreditversicherungen.update_many(
+            {"mandant_id": mandant_id},
+            {"$pull": {
+                "kunden_positionen": {"adresse_id": addr_id},
+                "versicherte_adressen": {"adresse_id": addr_id}
+            }}
+        )
+    
+    result_adressen = await db.adressen.delete_many(
+        {"mandant_id": mandant_id, "aktiv": False}
+    )
+    results["adressen_geloescht"] = result_adressen.deleted_count
+    
+    # 2. Soft-gelöschte Kreditversicherungen löschen
+    result_kv = await db.kreditversicherungen.delete_many(
+        {"mandant_id": mandant_id, "aktiv": False}
+    )
+    results["kreditversicherungen_geloescht"] = result_kv.deleted_count
+    
+    # 3. Soft-gelöschte Kontrakte löschen
+    result_kontrakte = await db.kontrakte.delete_many(
+        {"mandant_id": mandant_id, "deleted": True}
+    )
+    results["kontrakte_geloescht"] = result_kontrakte.deleted_count
+    
+    # 4. Soft-gelöschte Fuhren löschen
+    result_fuhren = await db.fuhren.delete_many(
+        {"mandant_id": mandant_id, "deleted": True}
+    )
+    results["fuhren_geloescht"] = result_fuhren.deleted_count
+    
+    # 5. Soft-gelöschte Rechnungen löschen
+    result_rechnungen = await db.rechnungen.delete_many(
+        {"mandant_id": mandant_id, "deleted": True}
+    )
+    results["rechnungen_geloescht"] = result_rechnungen.deleted_count
+    
+    return {
+        "success": True,
+        "message": "Soft-Deleted Datensätze bereinigt",
+        "details": results
+    }
+
