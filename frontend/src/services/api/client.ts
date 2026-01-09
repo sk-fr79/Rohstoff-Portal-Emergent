@@ -83,6 +83,7 @@ export const adressenApi = {
 };
 
 export const artikelApi = {
+  list: (params?: Record<string, unknown>) => api.get('/artikel', { params }),
   search: (params?: Record<string, unknown>) => api.get('/artikel', { params }),
   getById: (id: string) => api.get(`/artikel/${id}`),
   create: (data: unknown) => api.post('/artikel', data),
@@ -91,11 +92,12 @@ export const artikelApi = {
 };
 
 export const kontrakteApi = {
+  list: (params?: Record<string, unknown>) => api.get('/kontrakte', { params }),
   search: (params?: Record<string, unknown>) => api.get('/kontrakte', { params }),
   getById: (id: string) => api.get(`/kontrakte/${id}`),
   create: (data: unknown) => api.post('/kontrakte', data),
   update: (id: string, data: unknown) => api.put(`/kontrakte/${id}`, data),
-  delete: (id: string, grund: string) => api.delete(`/kontrakte/${id}`, { data: { grund } }),
+  delete: (id: string) => api.delete(`/kontrakte/${id}`),
   abschliessen: (id: string) => api.post(`/kontrakte/${id}/abschliessen`),
   addPosition: (id: string, data: unknown) => api.post(`/kontrakte/${id}/positionen`, data),
 };
