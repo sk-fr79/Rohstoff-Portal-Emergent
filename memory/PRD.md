@@ -333,18 +333,20 @@ Passwort: Admin123!
 ### Artikel (NEU erweitert - 09.01.2026)
 - `GET /api/artikel` - Liste mit Suche/Pagination
 - `GET /api/artikel/{id}` - Einzelner Artikel ✅
-- `POST /api/artikel` - Neuer Artikel
-- `PUT /api/artikel/{id}` - Artikel aktualisieren ✅
+- `POST /api/artikel` - Neuer Artikel (mit Validierung, skip_validation=true)
+- `PUT /api/artikel/{id}` - Artikel aktualisieren (mit Validierung) ✅
 - `DELETE /api/artikel/{id}` - Soft-Delete (aktiv=false) ✅
+- `POST /api/artikel/validieren` - Validiert Artikel nach Geschäftslogik ✅
 
 ### Kontrakte (NEU erweitert - 09.01.2026)
 - `GET /api/kontrakte` - Liste mit Filter
 - `GET /api/kontrakte/{id}` - Einzelner Kontrakt
-- `POST /api/kontrakte` - Neuer Kontrakt (erweitertes Schema mit vorgang_typ)
-- `PUT /api/kontrakte/{id}` - Kontrakt aktualisieren ✅
+- `POST /api/kontrakte` - Neuer Kontrakt (mit Validierung, skip_validation=true)
+- `PUT /api/kontrakte/{id}` - Kontrakt aktualisieren (mit Validierung) ✅
 - `DELETE /api/kontrakte/{id}` - Soft-Delete (deleted=true) ✅
 - `POST /api/kontrakte/{id}/positionen` - Position hinzufügen
 - `POST /api/kontrakte/{id}/abschliessen` - Kontrakt abschließen
+- `POST /api/kontrakte/validieren` - Validiert Kontrakt nach Geschäftslogik ✅
 
 ### Dashboard
 - `GET /api/dashboard/stats` - Statistiken
@@ -352,10 +354,11 @@ Passwort: Admin123!
 ### Fuhren (NEU - 09.01.2026)
 - `GET /api/fuhren` - Liste mit Suche/Pagination/Status-Filter
 - `GET /api/fuhren/{id}` - Einzelne Fuhre
-- `POST /api/fuhren` - Neue Fuhre
-- `PUT /api/fuhren/{id}` - Fuhre aktualisieren
+- `POST /api/fuhren` - Neue Fuhre (mit Validierung, skip_validation=true)
+- `PUT /api/fuhren/{id}` - Fuhre aktualisieren (mit Validierung + Status-Workflow)
 - `DELETE /api/fuhren/{id}` - Soft-Delete
 - `POST /api/fuhren/{id}/storno` - Fuhre stornieren
+- `POST /api/fuhren/validieren` - Validiert Fuhre nach Geschäftslogik ✅
 
 ### Rechnungen (NEU - 09.01.2026)
 - `GET /api/rechnungen` - Liste mit Suche/Pagination/Typ-/Status-Filter
@@ -376,7 +379,8 @@ Passwort: Admin123!
 - [x] Kontrakte-Modul mit Sidebar-Layout redesignen ✅ ERLEDIGT (09.01.2026)
 - [x] Fuhren-Modul implementieren ✅ ERLEDIGT (09.01.2026)
 - [x] Rechnungen-Modul implementieren ✅ ERLEDIGT (09.01.2026)
-- [ ] Backend-Refactoring: `server.py` in Module aufteilen (routers, models, services) - DRINGEND (>3400 Zeilen!)
+- [x] Geschäftslogik-Validierung portieren (Artikel, Kontrakte, Fuhren) ✅ ERLEDIGT (09.01.2026)
+- [ ] Backend-Refactoring: `server.py` in Module aufteilen (routers, models, services) - DRINGEND (>3600 Zeilen!)
 
 ### P1 - Hohe Priorität
 - [ ] Geschäftslogik für Artikel-Validierung aus Java-Code portieren
