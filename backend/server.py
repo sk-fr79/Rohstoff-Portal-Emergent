@@ -1423,6 +1423,51 @@ async def get_kontrakt(kontrakt_id: str, user = Depends(get_current_user)):
     kontrakt["id"] = kontrakt.pop("_id")
     return {"success": True, "data": kontrakt}
 
+@app.put("/api/kontrakte/{kontrakt_id}")
+async def update_kontrakt(
+    kontrakt_id: str, 
+    data: KontraktUpdate, 
+    user = Depends(get_current_user)
+):
+    """Kontrakt aktualisieren"""
+    existing = await db.kontrakte.find_one({
+        "_id": kontrakt_id,
+        "mandant_id": user["mandant_id"]
+    })
+    
+    if not existing:
+        raise HTTPException(status_code=404, detail="Kontrakt nicht gefunden")
+    
+    update_data = {k: v for k, v in data.model_dump().items() if v is not None}
+    update_data["geaendert_von"] = user.get("kuerzel")
+    update_data["letzte_aenderung"] = datetime.utcnow()
+    
+    await db.kontrakte.update_one({"_id": kontrakt_id}, {"$set": update_data})
+    
+    kontrakt = await db.kontrakte.find_one({"_id": kontrakt_id})
+    kontrakt["id"] = kontrakt.pop("_id")
+    
+    return {"success": True, "data": kontrakt}
+
+@app.delete("/api/kontrakte/{kontrakt_id}")
+async def delete_kontrakt(kontrakt_id: str, user = Depends(get_current_user)):
+    """Kontrakt löschen (Soft-Delete via deleted=True)"""
+    existing = await db.kontrakte.find_one({
+        "_id": kontrakt_id,
+        "mandant_id": user["mandant_id"]
+    })
+    
+    if not existing:
+        raise HTTPException(status_code=404, detail="Kontrakt nicht gefunden")
+    
+    # Soft-Delete: deleted auf True setzen
+    await db.kontrakte.update_one(
+        {"_id": kontrakt_id},
+        {"$set": {"deleted": True, "letzte_aenderung": datetime.utcnow()}}
+    )
+    
+    return {"success": True, "message": "Kontrakt gelöscht"}
+
 @app.post("/api/kontrakte/{kontrakt_id}/positionen")
 async def add_kontrakt_position(
     kontrakt_id: str,
