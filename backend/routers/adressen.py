@@ -767,6 +767,10 @@ async def validiere_adresse(data: AdresseCreate, user = Depends(get_current_user
         ausweis_ablauf=data.ausweis_ablauf,
         firma_ohne_ustid=data.firma_ohne_ustid,
         privat_mit_ustid=data.privat_mit_ustid,
+        name1=data.name1,
+        strasse=data.strasse,
+        plz=data.plz,
+        ort=data.ort,
     )
     return {"success": True, "validierung": validierung.model_dump()}
 
