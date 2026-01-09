@@ -1,0 +1,128 @@
+{
+  "summary": "Geschäftslogik-Validierung Testing - 30/30 backend tests passed (100%). All validation endpoints and logic working correctly. CRITICAL BUG FOUND: Kontrakt create/update endpoints do NOT call KontraktValidator and do NOT have skip_validation parameter.",
+  "backend_issues": {
+    "critical": [
+      {
+        "endpoint": "POST /api/kontrakte, PUT /api/kontrakte/{id}",
+        "issue": "KontraktValidator is NOT integrated into create/update endpoints. Validation logic exists but is never called. Invalid data (e.g., gueltig_bis before gueltig_von, empty name1) is accepted without validation.",
+        "priority": "CRITICAL",
+        "fix_suggestion": "Add skip_validation parameter and call KontraktValidator.validate() in create_kontrakt and update_kontrakt functions, similar to how it's done for Artikel and Fuhren endpoints"
+      }
+    ],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/tests/test_validation_logic.py",
+    "/app/test_reports/pytest/pytest_validierung_results.xml"
+  ],
+  "action_items": [
+    "CRITICAL FIX: Integrate KontraktValidator into POST /api/kontrakte endpoint (add skip_validation parameter and call KontraktValidator.validate())",
+    "CRITICAL FIX: Integrate KontraktValidator into PUT /api/kontrakte/{id} endpoint (add skip_validation parameter and call KontraktValidator.validate())"
+  ],
+  "critical_code_review_comments": [
+    "ArtikelValidator correctly integrated in POST/PUT /api/artikel with skip_validation parameter",
+    "FuhreValidator correctly integrated in POST/PUT /api/fuhren with skip_validation parameter and status transition validation",
+    "KontraktValidator EXISTS (line 832-901) but is NEVER CALLED in create_kontrakt (line 1922) or update_kontrakt (line 2032)",
+    "All three validation endpoints work correctly: POST /api/artikel/validieren, POST /api/kontrakte/validieren, POST /api/fuhren/validieren",
+    "Status workflow validation for Fuhren works correctly (OFFEN->IN_TRANSPORT->GELIEFERT->ABGERECHNET)",
+    "Mengenabweichungs-Warnung (>5% deviation) works correctly",
+    "AVV-Code-Pflicht für Rohstoffe works correctly"
+  ],
+  "updated_files": [
+    "/app/tests/test_validation_logic.py"
+  ],
+  "success_rate": {
+    "backend": "100% (30/30 tests passed)"
+  },
+  "test_credentials": {
+    "username": "admin",
+    "password": "Admin123!"
+  },
+  "seed_data_creation": "Test data created with TEST_ prefix during tests (addresses, articles with/without AVV codes, Fuhren for status workflow tests)",
+  "retest_needed": true,
+  "main_agent_can_self_test": false,
+  "context_for_next_testing_agent": "Validation logic testing completed. All validation endpoints and validators work correctly. CRITICAL: Kontrakt create/update endpoints need KontraktValidator integration. After fix, retest POST/PUT /api/kontrakte with invalid data to verify validation is enforced.",
+  "features_tested": {
+    "artikel_validierung": {
+      "POST /api/artikel/validieren": "WORKING - Returns valid/errors/warnings",
+      "typ_kombinationen": {
+        "gefahrgut_leergut": "WORKING - Returns error",
+        "gefahrgut_dienstleistung": "WORKING - Returns error",
+        "produkt_dienstleistung": "WORKING - Returns error"
+      },
+      "einheiten_divisor": {
+        "gleich_muss_1_sein": "WORKING - Returns error when divisor != 1",
+        "ungleich_darf_nicht_1_sein": "WORKING - Returns error when divisor == 1"
+      },
+      "avv_codes": {
+        "produkt_mit_avv": "WORKING - Returns error",
+        "rohstoff_ohne_zolltarifnummer": "WORKING - Returns warning"
+      },
+      "integration_in_crud": {
+        "POST /api/artikel": "WORKING - Validates by default, skip_validation=true works",
+        "PUT /api/artikel/{id}": "WORKING - Validates by default, skip_validation=true works"
+      }
+    },
+    "kontrakt_validierung": {
+      "POST /api/kontrakte/validieren": "WORKING - Returns valid/errors/warnings",
+      "pflichtfelder": {
+        "name1_leer": "WORKING - Returns error"
+      },
+      "gueltigkeitsdaten": {
+        "bis_vor_von": "WORKING - Returns error"
+      },
+      "integration_in_crud": {
+        "POST /api/kontrakte": "BUG - NO VALIDATION CALLED",
+        "PUT /api/kontrakte/{id}": "BUG - NO VALIDATION CALLED"
+      }
+    },
+    "fuhre_validierung": {
+      "POST /api/fuhren/validieren": "WORKING - Returns valid/errors/warnings",
+      "pflichtfelder": {
+        "adressen_artikel": "WORKING - Returns errors for missing fields"
+      },
+      "datumslogik": {
+        "anlieferung_vor_abholung": "WORKING - Returns error"
+      },
+      "mengenabweichung": {
+        "mehr_als_5_prozent": "WORKING - Returns warning"
+      },
+      "avv_code_pflicht": {
+        "rohstoff_ohne_avv": "WORKING - Returns error"
+      },
+      "status_workflow": {
+        "OFFEN_to_IN_TRANSPORT": "WORKING - Allowed",
+        "IN_TRANSPORT_to_GELIEFERT": "WORKING - Allowed",
+        "GELIEFERT_to_ABGERECHNET": "WORKING - Allowed",
+        "ABGERECHNET_to_OFFEN": "WORKING - Blocked (end status)"
+      },
+      "integration_in_crud": {
+        "POST /api/fuhren": "WORKING - Validates by default, skip_validation=true works",
+        "PUT /api/fuhren/{id}": "WORKING - Validates by default, skip_validation=true works"
+      }
+    },
+    "skip_validation_parameter": {
+      "artikel_create": "WORKING",
+      "artikel_update": "WORKING",
+      "fuhre_create": "WORKING",
+      "fuhre_update": "WORKING",
+      "kontrakt_create": "MISSING - Parameter not implemented",
+      "kontrakt_update": "MISSING - Parameter not implemented"
+    }
+  },
+  "known_bugs": {
+    "backend": [
+      {
+        "location": "/app/backend/server.py lines 1921-2015 (create_kontrakt) and 2031-2055 (update_kontrakt)",
+        "description": "KontraktValidator is defined but never called in create/update endpoints. Invalid data is accepted without validation.",
+        "root_cause": "Missing integration of KontraktValidator.validate() call and skip_validation parameter",
+        "fix": "Add skip_validation: bool = False parameter and call KontraktValidator.validate() similar to ArtikelValidator integration in create_artikel/update_artikel"
+      }
+    ]
+  }
+}
