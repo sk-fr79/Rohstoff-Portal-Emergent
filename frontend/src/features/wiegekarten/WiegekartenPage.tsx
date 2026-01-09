@@ -487,15 +487,17 @@ export function WiegekartenPage() {
               <div className="flex items-center gap-3">
                 <div className={cn(
                   "h-10 w-10 rounded-lg flex items-center justify-center",
-                  selectedWiegekarte.ist_lieferant ? "bg-green-100" : "bg-blue-100"
+                  watchFields.ist_lieferant ? "bg-green-100" : "bg-blue-100"
                 )}>
                   <Scale className={cn(
                     "h-5 w-5",
-                    selectedWiegekarte.ist_lieferant ? "text-green-600" : "text-blue-600"
+                    watchFields.ist_lieferant ? "text-green-600" : "text-blue-600"
                   )} />
                 </div>
                 <div>
-                  <h2 className="font-bold text-lg">{selectedWiegekarte.wiegekarten_nr}</h2>
+                  <h2 className="font-bold text-lg">
+                    {isNewRecord ? 'Neue Wiegekarte' : selectedWiegekarte.wiegekarten_nr}
+                  </h2>
                   <div className="flex items-center gap-2">
                     <Badge className={cn(
                       zustandColors[selectedWiegekarte.zustand]?.bg,
@@ -504,24 +506,35 @@ export function WiegekartenPage() {
                       {selectedWiegekarte.zustand}
                     </Badge>
                     <span className="text-sm text-gray-500">
-                      {selectedWiegekarte.ist_lieferant ? 'Wareneingang' : 'Warenausgang'}
+                      {watchFields.ist_lieferant ? 'Wareneingang' : 'Warenausgang'}
                     </span>
                   </div>
                 </div>
               </div>
               <div className="flex items-center gap-2">
                 {!selectedWiegekarte.storno && (
-                  <Button
-                    variant={isEditing ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setIsEditing(!isEditing)}
-                    className={isEditing ? "bg-emerald-600 hover:bg-emerald-700" : ""}
-                  >
-                    {isEditing ? <Save className="h-4 w-4 mr-1" /> : <Pencil className="h-4 w-4 mr-1" />}
-                    {isEditing ? 'Speichern' : 'Bearbeiten'}
-                  </Button>
+                  isEditing ? (
+                    <>
+                      <Button variant="outline" size="sm" onClick={handleCancel}>
+                        Abbrechen
+                      </Button>
+                      <Button
+                        size="sm"
+                        onClick={() => handleSubmit(onSubmit)()}
+                        className="bg-emerald-600 hover:bg-emerald-700"
+                      >
+                        <Save className="h-4 w-4 mr-1" />
+                        Speichern
+                      </Button>
+                    </>
+                  ) : (
+                    <Button variant="outline" size="sm" onClick={() => setIsEditing(true)}>
+                      <Pencil className="h-4 w-4 mr-1" />
+                      Bearbeiten
+                    </Button>
+                  )
                 )}
-                <Button variant="ghost" size="icon" onClick={() => setSelectedWiegekarte(null)}>
+                <Button variant="ghost" size="icon" onClick={handleClose}>
                   <X className="h-5 w-5" />
                 </Button>
               </div>
