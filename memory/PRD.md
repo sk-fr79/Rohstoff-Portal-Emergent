@@ -383,10 +383,8 @@ Passwort: Admin123!
 - [ ] Backend-Refactoring: `server.py` in Module aufteilen (routers, models, services) - DRINGEND (>3600 Zeilen!)
 
 ### P1 - Hohe Priorität
-- [ ] Geschäftslogik für Artikel-Validierung aus Java-Code portieren
-- [ ] Geschäftslogik für Kontrakt-Validierung aus Java-Code portieren
-- [ ] Geschäftslogik für Fuhren-Validierung aus Java-Code portieren
 - [ ] PDF-Export für Rechnungen und Lieferscheine
+- [ ] Validierungs-Feedback im Frontend anzeigen (Fehler/Warnungen)
 
 ### P2 - Mittlere Priorität
 - [ ] Positionen im Kontrakt bearbeiten (UI zum Hinzufügen/Löschen)
