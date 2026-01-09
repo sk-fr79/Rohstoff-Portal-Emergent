@@ -160,18 +160,18 @@ export function MainLayout() {
       <nav className={cn("flex-1 overflow-y-auto py-4", collapsed ? "px-2" : "px-3")}>
         <TooltipProvider delayDuration={0}>
           {navGroups.map((group, groupIndex) => (
-            <div key={groupIndex} className="mb-2">
+            <div key={groupIndex} className={collapsed ? "mb-1" : "mb-2"}>
               {group.label ? (
                 <>
                   {/* Group Header */}
                   {collapsed ? (
-                    // Collapsed: Show only icon with tooltip
+                    // Collapsed: Show only icon with tooltip - consistent sizing
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <button
                           onClick={() => toggleGroup(group.label!)}
                           className={cn(
-                            "w-full flex items-center justify-center p-2.5 rounded-lg transition-colors",
+                            "w-full h-10 flex items-center justify-center rounded-lg transition-colors",
                             "text-gray-400 hover:bg-white/10 hover:text-white",
                             expandedGroups.includes(group.label!) && "bg-white/5"
                           )}
