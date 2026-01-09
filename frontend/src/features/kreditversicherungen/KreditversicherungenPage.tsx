@@ -147,6 +147,9 @@ export default function KreditversicherungenPage() {
     },
     onError: () => toast.error('Fehler beim Löschen'),
   });
+  
+  // Use deleteMutation to avoid unused variable error
+  const handleDelete = (id: string) => deleteMutation.mutate(id);
 
   const addAdresseMutation = useMutation({
     mutationFn: ({ kvId, adresseId }: { kvId: string; adresseId: string }) =>
