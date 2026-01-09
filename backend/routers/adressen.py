@@ -728,7 +728,7 @@ async def validate_ustid(
                     "adresse_id": request.adresse_id,
                     "mandant_id": user["mandant_id"],
                     "ustid": full_ustid,
-                    "lkz": request.lkz,
+                    "lkz": lkz,
                     "ist_gueltig": data.get("valid", False),
                     "firmenname": data.get("name"),
                     "firmenadresse": data.get("address"),
@@ -738,12 +738,19 @@ async def validate_ustid(
                 }
                 await db.ustid_protokoll.insert_one(protokoll)
                 
+                # Response in Frontend-kompatiblem Format
                 return {
                     "success": True,
+                    "data": {
+                        "gueltig": data.get("valid", False),
+                        "firmenname": data.get("name"),
+                        "firmenadresse": data.get("address"),
+                        "request_identifier": data.get("requestIdentifier"),
+                    },
+                    # Auch alte Felder für Abwärtskompatibilität
                     "valid": data.get("valid", False),
                     "name": data.get("name"),
                     "address": data.get("address"),
-                    "requestIdentifier": data.get("requestIdentifier"),
                 }
             else:
                 return {
