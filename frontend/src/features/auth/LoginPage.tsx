@@ -39,8 +39,21 @@ export function LoginPage() {
       const response = await authApi.login(data.benutzername, data.passwort);
       
       if (response.data.success) {
+        // Map snake_case from backend to camelCase for frontend
+        const user = response.data.user;
+        const mappedUser = {
+          id: user.id,
+          mandantId: user.mandant_id,
+          benutzername: user.benutzername,
+          email: user.email,
+          vorname: user.vorname,
+          nachname: user.nachname,
+          kuerzel: user.kuerzel,
+          istAdmin: user.ist_admin,
+        };
+        
         setAuth(
-          response.data.user,
+          mappedUser,
           response.data.access_token,
           response.data.refresh_token || ''
         );
