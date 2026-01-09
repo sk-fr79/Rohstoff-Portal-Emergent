@@ -1063,7 +1063,7 @@ export function AdressenPage() {
                                   {watchFields.land && (
                                     <CountryFlag country={watchFields.land} className="w-6 h-4" />
                                   )}
-                                  <SelectValue />
+                                  <span>{watchFields.land || "Deutschland"}</span>
                                 </div>
                               </SelectTrigger>
                               <SelectContent>
