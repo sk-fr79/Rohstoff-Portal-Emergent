@@ -316,7 +316,7 @@ export function AdressenPage() {
   const handleNewAdresse = () => {
     const emptyAdresse: Adresse = {
       id: 'NEU',
-      adressnr: '(wird automatisch vergeben)',
+      kdnr: '(wird automatisch vergeben)',
       name1: '',
       adresstyp: 1,
       aktiv: true,
