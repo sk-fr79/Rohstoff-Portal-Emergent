@@ -7,8 +7,8 @@ import requests
 import os
 from datetime import datetime
 
-# Use public URL for testing
-BASE_URL = os.environ.get('base_url', 'https://demobackend.emergentagent.com')
+# Use localhost for testing (public URL not accessible for API routes)
+BASE_URL = "http://localhost:8001"
 
 class TestAuth:
     """Authentication tests"""
