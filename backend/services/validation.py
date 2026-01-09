@@ -283,3 +283,386 @@ class FuhreValidator:
             result.add_error(f"Statusübergang von '{old_status}' nach '{new_status}' ist nicht erlaubt!")
         
         return result
+
+
+
+class AdresseValidator:
+    """
+    Adress-Validierung basierend auf Java Echo2:
+    - __FS_Adress_Check.java (Steuer-Einstufungslogik)
+    - FS_MASK_SQLFieldMap_ADRESSE.java (Pflichtfelder)
+    - FS_VALID_PRIVAT_GESCHAEFTSKUNDEN.java
+    """
+    
+    # Heimatland des Mandanten (konfigurierbar)
+    HOMELAND = "Deutschland"
+    
+    # EU-Länder mit UST-Präfix (aus RECORD_LAND)
+    EU_LAENDER: Dict[str, str] = {
+        "Deutschland": "DE",
+        "Österreich": "AT",
+        "Schweiz": "CH",  # Nicht EU, aber hat UST-Präfix
+        "Niederlande": "NL",
+        "Belgien": "BE",
+        "Frankreich": "FR",
+        "Italien": "IT",
+        "Spanien": "ES",
+        "Polen": "PL",
+        "Tschechien": "CZ",
+        "Dänemark": "DK",
+        "Schweden": "SE",
+        "Finnland": "FI",
+        "Griechenland": "GR",
+        "Portugal": "PT",
+        "Irland": "IE",
+        "Luxemburg": "LU",
+        "Ungarn": "HU",
+        "Rumänien": "RO",
+        "Bulgarien": "BG",
+        "Kroatien": "HR",
+        "Slowakei": "SK",
+        "Slowenien": "SI",
+        "Estland": "EE",
+        "Lettland": "LV",
+        "Litauen": "LT",
+        "Malta": "MT",
+        "Zypern": "CY",
+    }
+    
+    # Nicht-EU-Länder (ohne UST-Pflicht)
+    NICHT_EU_LAENDER = ["Schweiz", "Norwegen", "Großbritannien", "USA", "China", "Russland"]
+    
+    @staticmethod
+    async def validate(adresse: dict, db_ref=None) -> ValidationResult:
+        """
+        Vollständige Validierung einer Adresse.
+        Kombiniert Pflichtfeld-Prüfung und Steuer-Einstufung.
+        """
+        result = ValidationResult()
+        
+        # 1. Pflichtfelder prüfen
+        pflichtfeld_result = AdresseValidator.validate_pflichtfelder(adresse)
+        result.errors.extend(pflichtfeld_result.errors)
+        result.warnings.extend(pflichtfeld_result.warnings)
+        
+        # 2. Steuer-Einstufung prüfen
+        steuer_result = AdresseValidator.validate_steuer_einstufung(adresse)
+        result.errors.extend(steuer_result.errors)
+        result.warnings.extend(steuer_result.warnings)
+        
+        # 3. Ausweis-Validierung
+        ausweis_result = AdresseValidator.validate_ausweis(adresse)
+        result.errors.extend(ausweis_result.errors)
+        result.warnings.extend(ausweis_result.warnings)
+        
+        return result
+    
+    @staticmethod
+    def validate_pflichtfelder(adresse: dict) -> ValidationResult:
+        """
+        Prüft Pflichtfelder aus FS_MASK_SQLFieldMap_ADRESSE.java:
+        - NAME1, STRASSE, PLZ, ORT, ID_LAND, ID_SPRACHE, AKTIV, ID_WAEHRUNG
+        """
+        result = ValidationResult()
+        
+        # Pflichtfelder
+        if not (adresse.get("name1") or "").strip():
+            result.add_error("Firmenname/Name1 ist ein Pflichtfeld!")
+        
+        if not (adresse.get("strasse") or "").strip():
+            result.add_error("Straße ist ein Pflichtfeld!")
+        
+        if not (adresse.get("plz") or "").strip():
+            result.add_error("PLZ ist ein Pflichtfeld!")
+        
+        if not (adresse.get("ort") or "").strip():
+            result.add_error("Ort ist ein Pflichtfeld!")
+        
+        if not (adresse.get("land") or "").strip():
+            result.add_error("Land ist ein Pflichtfeld!")
+        
+        # Sprache und Währung haben Defaults, daher nur Warnung
+        if not (adresse.get("sprache") or "").strip():
+            result.add_warning("Sprache sollte gesetzt werden (Default: Deutsch)")
+        
+        if not (adresse.get("waehrung") or "").strip():
+            result.add_warning("Währung sollte gesetzt werden (Default: EUR)")
+        
+        return result
+    
+    @staticmethod
+    def validate_steuer_einstufung(adresse: dict) -> ValidationResult:
+        """
+        Validiert die steuerliche Einstufung einer Adresse.
+        Portiert aus __FS_Adress_Check.java
+        
+        Kernlogik:
+        - FIRMA oder PRIVAT (nie beides/keines)
+        - Inland-PRIVAT braucht Ausweis ODER Steuernummer
+        - Ausland-PRIVAT braucht Ausweis
+        - Inland-FIRMA braucht UST-ID (oder Sonderschalter + Steuernummer)
+        - EU-Ausland-FIRMA braucht UST-ID
+        - UST-Länderkürzel muss zum Land passen
+        """
+        result = ValidationResult()
+        
+        # Flags auslesen
+        ist_firma = adresse.get("ist_firma", True)
+        ist_privat = not ist_firma
+        land = adresse.get("land", "")
+        
+        # Standort-Bestimmung
+        ist_inland = land == AdresseValidator.HOMELAND
+        ist_eu = land in AdresseValidator.EU_LAENDER
+        ist_nicht_eu = land in AdresseValidator.NICHT_EU_LAENDER or not ist_eu
+        
+        # UST-ID-Status
+        ust_lkz = (adresse.get("umsatzsteuer_lkz") or "").strip()
+        ust_id = (adresse.get("umsatzsteuer_id") or "").strip()
+        hat_ustid = bool(ust_lkz and ust_id)
+        hat_teilweise_ustid = bool(ust_lkz) != bool(ust_id)  # Nur eins von beiden
+        
+        # Weitere Felder
+        steuernummer = (adresse.get("steuernummer") or "").strip()
+        ausweis_nummer = (adresse.get("ausweis_nummer") or "").strip()
+        hat_ausweis = bool(ausweis_nummer)
+        hat_steuernr = bool(steuernummer)
+        
+        # Sonderschalter
+        firma_ohne_ustid = adresse.get("firma_ohne_ustid", False)
+        privat_mit_ustid = adresse.get("privat_mit_ustid", False)
+        
+        # Weitere UST-IDs (Array)
+        weitere_ustids = adresse.get("weitere_ustids") or []
+        hat_zusatz_ustid = len(weitere_ustids) > 0
+        
+        # =============================================
+        # REGEL 1: Teilweise UST-ID ist nicht erlaubt
+        # =============================================
+        if hat_teilweise_ustid:
+            result.add_error(
+                "Die Basis-UST-ID ist nur teilweise ausgefüllt. "
+                "Bitte komplettieren (Länderkürzel UND Nummer) oder komplett leeren!"
+            )
+        
+        # =============================================
+        # REGEL 2: UST-Länderkürzel muss zum Land passen
+        # =============================================
+        if hat_ustid and ist_eu:
+            expected_prefix = AdresseValidator.EU_LAENDER.get(land)
+            if expected_prefix and ust_lkz != expected_prefix:
+                result.add_error(
+                    f"Das UST-Länderkürzel '{ust_lkz}' stimmt nicht mit dem Land '{land}' überein "
+                    f"(erwartet: {expected_prefix})!"
+                )
+        
+        # =============================================
+        # REGEL 3: Ausnahmeschalter nur im Inland sinnvoll
+        # =============================================
+        if not ist_inland and (firma_ohne_ustid or privat_mit_ustid):
+            result.add_warning(
+                f"Die Ausnahmeschalter 'FIRMA ohne UST-ID' und 'PRIVAT mit UST-ID' "
+                f"sind nur bei Adressen in {AdresseValidator.HOMELAND} sinnvoll!"
+            )
+        
+        # =============================================
+        # REGEL 4: Beide Ausnahmeschalter gleichzeitig
+        # =============================================
+        if ist_inland and firma_ohne_ustid and privat_mit_ustid:
+            result.add_error(
+                "Die Ausnahmeschalter 'FIRMA ohne UST-ID' und 'PRIVAT mit UST-ID' "
+                "können nicht gleichzeitig aktiv sein!"
+            )
+        
+        # =============================================
+        # REGELN FÜR PRIVATPERSONEN
+        # =============================================
+        if ist_privat:
+            # PRIVAT mit UST-ID im Inland: nur mit Sonderschalter
+            if ist_inland and hat_ustid and not privat_mit_ustid:
+                result.add_error(
+                    "Die Einstufung einer Adresse mit Basis-UST-ID als PRIVAT "
+                    "ist nur mit dem Sonderschalter 'PRIVAT mit UST-ID' möglich!"
+                )
+            
+            # PRIVAT im Ausland darf keine UST-ID haben
+            if not ist_inland and hat_ustid:
+                result.add_error(
+                    "Bei als PRIVAT eingestuften Adressen im Ausland "
+                    "darf keine UST-ID erfasst sein!"
+                )
+            
+            # PRIVAT im Inland braucht Ausweis oder Steuernummer (außer PRIVAT_MIT_USTID)
+            if ist_inland and not hat_ausweis and not hat_steuernr:
+                if not (privat_mit_ustid and hat_ustid):
+                    result.add_error(
+                        "Bei als PRIVAT eingestuften Adressen im Inland "
+                        "MUSS die Ausweisnummer oder die Steuernummer vorliegen!"
+                    )
+            
+            # PRIVAT im Ausland braucht Ausweis
+            if not ist_inland and not hat_ausweis:
+                result.add_error(
+                    "Bei als PRIVAT eingestuften Adressen aus dem Ausland "
+                    "MUSS die Ausweisnummer vorliegen!"
+                )
+            
+            # PRIVAT darf nicht den FIRMA_OHNE_USTID-Schalter haben
+            if ist_inland and firma_ohne_ustid:
+                result.add_error(
+                    f"Bei als PRIVAT eingestuften Adressen in {AdresseValidator.HOMELAND} "
+                    "darf der Sonderschalter 'FIRMA ohne UST-ID' nicht gesetzt sein!"
+                )
+        
+        # =============================================
+        # REGELN FÜR FIRMEN
+        # =============================================
+        if ist_firma:
+            # FIRMA im Inland ohne UST-ID: nur mit Sonderschalter UND Steuernummer
+            if ist_inland and not hat_ustid:
+                if not firma_ohne_ustid or not hat_steuernr:
+                    result.add_error(
+                        "Die Einstufung einer Adresse ohne UST-ID als FIRMA "
+                        "ist nur mit dem Sonderschalter 'FIRMA ohne UST-ID' "
+                        "sowie der Angabe der Steuernummer möglich!"
+                    )
+            
+            # FIRMA im EU-Ausland braucht UST-ID
+            if not ist_inland and ist_eu and not hat_ustid:
+                result.add_error(
+                    "Eine Adresse mit Einstufung als FIRMA im EU-Ausland "
+                    "MUSS eine korrekte Basis-UST-ID haben!"
+                )
+            
+            # FIRMA mit UST-ID darf nicht den FIRMA_OHNE_USTID-Schalter haben
+            if ist_inland and hat_ustid and firma_ohne_ustid:
+                result.add_error(
+                    "Bei einer Adresse mit Einstufung als FIRMA, die eine UST-ID hat, "
+                    "darf der Schalter 'FIRMA ohne UST-ID' nicht gesetzt sein!"
+                )
+            
+            # FIRMA darf nicht den PRIVAT_MIT_USTID-Schalter haben
+            if ist_inland and privat_mit_ustid:
+                result.add_error(
+                    f"Bei als FIRMA eingestuften Adressen in {AdresseValidator.HOMELAND} "
+                    "darf der Sonderschalter 'PRIVAT mit UST-ID' nicht gesetzt sein!"
+                )
+            
+            # FIRMA im Nicht-EU-Ausland mit UST-ID: Länderkürzel muss stimmen
+            if not ist_inland and ist_nicht_eu and hat_ustid:
+                land_prefix = AdresseValidator.EU_LAENDER.get(land)
+                if land_prefix and ust_lkz != land_prefix:
+                    result.add_error(
+                        "Bei einer Adresse als FIRMA im Nicht-EU-Ausland mit einer UST-ID "
+                        "MUSS das UST-Länderkürzel mit dem Eintrag im Länderstamm übereinstimmen!"
+                    )
+        
+        return result
+    
+    @staticmethod
+    def validate_ausweis(adresse: dict) -> ValidationResult:
+        """
+        Validiert Ausweisdaten (Nummer und Ablaufdatum).
+        """
+        result = ValidationResult()
+        
+        ausweis_nummer = (adresse.get("ausweis_nummer") or "").strip()
+        ausweis_ablauf = (adresse.get("ausweis_ablauf") or "").strip()
+        
+        if ausweis_nummer and ausweis_ablauf:
+            try:
+                # Verschiedene Datumsformate unterstützen
+                ablauf_date = None
+                for fmt in ["%Y-%m-%d", "%d.%m.%Y", "%d/%m/%Y"]:
+                    try:
+                        ablauf_date = datetime.strptime(ausweis_ablauf, fmt).date()
+                        break
+                    except:
+                        continue
+                
+                if ablauf_date:
+                    heute = date.today()
+                    if ablauf_date < heute:
+                        result.add_warning(
+                            f"Das Ausweis-Ablaufdatum ({ausweis_ablauf}) ist abgelaufen! "
+                            "Bitte aktualisieren."
+                        )
+                    elif ablauf_date < heute.replace(month=heute.month + 3 if heute.month <= 9 else 1):
+                        result.add_warning(
+                            f"Das Ausweis-Ablaufdatum ({ausweis_ablauf}) läuft bald ab!"
+                        )
+            except Exception:
+                pass  # Datum-Parsing-Fehler ignorieren
+        
+        elif ausweis_nummer and not ausweis_ablauf:
+            result.add_warning(
+                "Ausweisnummer ist angegeben, aber das Ablaufdatum fehlt!"
+            )
+        
+        return result
+    
+    @staticmethod
+    def get_steuer_status(adresse: dict) -> Dict[str, Any]:
+        """
+        Ermittelt den steuerlichen Status einer Adresse.
+        Nützlich für UI-Anzeige und Berichtswesen.
+        
+        Returns:
+            Dict mit: typ, land_typ, ustid_status, warnungen
+        """
+        ist_firma = adresse.get("ist_firma", True)
+        land = adresse.get("land", "")
+        ist_inland = land == AdresseValidator.HOMELAND
+        ist_eu = land in AdresseValidator.EU_LAENDER
+        
+        ust_lkz = (adresse.get("umsatzsteuer_lkz") or "").strip()
+        ust_id = (adresse.get("umsatzsteuer_id") or "").strip()
+        hat_ustid = bool(ust_lkz and ust_id)
+        
+        firma_ohne_ustid = adresse.get("firma_ohne_ustid", False)
+        privat_mit_ustid = adresse.get("privat_mit_ustid", False)
+        
+        # Typ bestimmen
+        if ist_firma:
+            if ist_inland and firma_ohne_ustid:
+                typ = "Firma (Inland, ohne UST-ID - Sonderfall)"
+            elif ist_inland:
+                typ = "Firma (Inland)"
+            elif ist_eu:
+                typ = "Firma (EU-Ausland)"
+            else:
+                typ = "Firma (Drittland)"
+        else:
+            if ist_inland and privat_mit_ustid:
+                typ = "Privatperson (Inland, mit UST-ID - Sonderfall)"
+            elif ist_inland:
+                typ = "Privatperson (Inland)"
+            else:
+                typ = "Privatperson (Ausland)"
+        
+        # Land-Typ
+        if ist_inland:
+            land_typ = "Inland"
+        elif ist_eu:
+            land_typ = "EU-Ausland"
+        else:
+            land_typ = "Drittland"
+        
+        # UST-ID-Status
+        if hat_ustid:
+            ustid_status = f"Vorhanden ({ust_lkz}{ust_id})"
+        elif firma_ohne_ustid:
+            ustid_status = "Nicht vorhanden (Sonderfall)"
+        else:
+            ustid_status = "Nicht vorhanden"
+        
+        return {
+            "typ": typ,
+            "land_typ": land_typ,
+            "ustid_status": ustid_status,
+            "ist_firma": ist_firma,
+            "ist_inland": ist_inland,
+            "ist_eu": ist_eu,
+            "hat_ustid": hat_ustid,
+            "sonderschalter_aktiv": firma_ohne_ustid or privat_mit_ustid
+        }
