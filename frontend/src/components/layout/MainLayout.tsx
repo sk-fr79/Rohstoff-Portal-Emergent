@@ -42,6 +42,7 @@ const navGroups = [
     items: [
       { path: '/adressen', label: 'Adressen', icon: Users },
       { path: '/artikel', label: 'Artikel', icon: Package },
+      { path: '/kreditversicherungen', label: 'Kreditversicherung', icon: Shield },
     ]
   },
   {
