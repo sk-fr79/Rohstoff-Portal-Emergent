@@ -389,7 +389,7 @@ export default function KreditversicherungenPage() {
       id: 'gesamtlimit',
       header: 'Gesamtlimit',
       cell: ({ row }) => (
-        <span className="font-semibold">{formatCurrency(row.original.gesamtlimit)}</span>
+        <span className="font-semibold">{formatCurrency(row.original.gesamtlimit || 0)}</span>
       ),
     },
     {
