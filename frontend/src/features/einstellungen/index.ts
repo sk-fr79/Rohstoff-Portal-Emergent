@@ -3,3 +3,7 @@ export { PasswortPage } from './pages/PasswortPage';
 export { SignaturPage } from './pages/SignaturPage';
 export { UnterschriftPage } from './pages/UnterschriftPage';
 export { SystemeinstellungenPage } from './pages/SystemeinstellungenPage';
+export { BenutzerPage } from './pages/BenutzerPage';
+export { RollenPage } from './pages/RollenPage';
+export { AbteilungenPage } from './pages/AbteilungenPage';
+export { BerechtigungenPage } from './pages/BerechtigungenPage';
