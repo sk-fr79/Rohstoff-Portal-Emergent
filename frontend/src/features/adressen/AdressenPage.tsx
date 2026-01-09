@@ -235,6 +235,8 @@ const detailSections = [
   { id: 'finanzen', label: 'Finanzen', icon: CreditCard },
   { id: 'steuer', label: 'Steuer', icon: FileText },
   { id: 'sperren', label: 'Sperren', icon: Shield },
+  { id: 'bankverbindungen', label: 'Bankverbindungen', icon: Banknote },
+  { id: 'lieferadressen', label: 'Lieferadressen', icon: MapPin },
   { id: 'bemerkungen', label: 'Bemerkungen', icon: MessageSquare },
 ];
 
