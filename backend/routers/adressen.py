@@ -298,10 +298,48 @@ def validate_adresse_geschaeftslogik(
     ausweis_ablauf: Optional[str],
     firma_ohne_ustid: bool = False,
     privat_mit_ustid: bool = False,
+    name1: Optional[str] = None,
+    strasse: Optional[str] = None,
+    plz: Optional[str] = None,
+    ort: Optional[str] = None,
 ) -> AdresseValidierungsErgebnis:
-    """Geschäftslogik-Validierung für Adressen"""
+    """
+    Geschäftslogik-Validierung für Adressen
+    Portiert aus Echo2: __FS_Adress_Check.java
+    """
     fehler = []
     warnungen = []
+    
+    # =============================================
+    # PFLICHTFELDER (aus FS_MASK_SQLFieldMap_ADRESSE.java)
+    # =============================================
+    if name1 is not None and not (name1 or "").strip():
+        fehler.append(AdresseValidierungsFehler(
+            meldung="Firmenname/Name1 ist ein Pflichtfeld!",
+            schweregrad="fehler",
+            betroffene_felder=["name1"]
+        ))
+    
+    if strasse is not None and not (strasse or "").strip():
+        fehler.append(AdresseValidierungsFehler(
+            meldung="Straße ist ein Pflichtfeld!",
+            schweregrad="fehler",
+            betroffene_felder=["strasse"]
+        ))
+    
+    if plz is not None and not (plz or "").strip():
+        fehler.append(AdresseValidierungsFehler(
+            meldung="PLZ ist ein Pflichtfeld!",
+            schweregrad="fehler",
+            betroffene_felder=["plz"]
+        ))
+    
+    if ort is not None and not (ort or "").strip():
+        fehler.append(AdresseValidierungsFehler(
+            meldung="Ort ist ein Pflichtfeld!",
+            schweregrad="fehler",
+            betroffene_felder=["ort"]
+        ))
     
     land_info = EU_LAENDER.get(land, {"ust_praefix": None, "ist_eu": False, "ist_homeland": False})
     ist_homeland = land_info.get("ist_homeland", False)
@@ -310,15 +348,26 @@ def validate_adresse_geschaeftslogik(
     
     hat_ustid = bool(umsatzsteuer_lkz) or bool(umsatzsteuer_id)
     hat_komplette_ustid = bool(umsatzsteuer_lkz) and bool(umsatzsteuer_id)
+    hat_teilweise_ustid = bool(umsatzsteuer_lkz) != bool(umsatzsteuer_id)
     hat_steuernummer = bool(steuernummer)
     hat_ausweis = bool(ausweis_nummer)
     
-    # Grundvalidierung
+    # =============================================
+    # GRUNDVALIDIERUNG (aus __FS_Adress_Check.java)
+    # =============================================
     if (not ist_firma and not ist_privat) or (ist_firma and ist_privat):
         fehler.append(AdresseValidierungsFehler(
             meldung="Eine Adresse muss entweder als PRIVAT oder als FIRMA eingestuft werden!",
             schweregrad="fehler",
             betroffene_felder=["ist_firma"]
+        ))
+    
+    # NEU: Teilweise UST-ID prüfen
+    if hat_teilweise_ustid:
+        fehler.append(AdresseValidierungsFehler(
+            meldung="Die Basis-UST-ID ist nur teilweise ausgefüllt. Bitte komplettieren oder komplett leeren!",
+            schweregrad="fehler",
+            betroffene_felder=["umsatzsteuer_lkz", "umsatzsteuer_id"]
         ))
     
     if not land:
@@ -334,7 +383,33 @@ def validate_adresse_geschaeftslogik(
             steuer_status=None
         )
     
+    # NEU: UST-Länderkürzel muss zum Land passen
+    if hat_komplette_ustid and ust_praefix and umsatzsteuer_lkz != ust_praefix:
+        fehler.append(AdresseValidierungsFehler(
+            meldung=f"Das UST-Länderkürzel '{umsatzsteuer_lkz}' stimmt nicht mit dem Land '{land}' überein (erwartet: {ust_praefix})!",
+            schweregrad="fehler",
+            betroffene_felder=["umsatzsteuer_lkz", "land"]
+        ))
+    
+    # NEU: Ausnahmeschalter nur im Inland
+    if not ist_homeland and (firma_ohne_ustid or privat_mit_ustid):
+        warnungen.append(AdresseValidierungsFehler(
+            meldung="Die Ausnahmeschalter 'FIRMA ohne UST-ID' und 'PRIVAT mit UST-ID' sind nur bei Adressen in Deutschland sinnvoll!",
+            schweregrad="warnung",
+            betroffene_felder=["firma_ohne_ustid", "privat_mit_ustid"]
+        ))
+    
+    # NEU: Beide Ausnahmeschalter gleichzeitig
+    if ist_homeland and firma_ohne_ustid and privat_mit_ustid:
+        fehler.append(AdresseValidierungsFehler(
+            meldung="Die Ausnahmeschalter 'FIRMA ohne UST-ID' und 'PRIVAT mit UST-ID' können nicht gleichzeitig aktiv sein!",
+            schweregrad="fehler",
+            betroffene_felder=["firma_ohne_ustid", "privat_mit_ustid"]
+        ))
+    
+    # =============================================
     # FIRMA-Validierung
+    # =============================================
     if ist_firma:
         if ist_homeland:  # Inland
             if not hat_ustid and not firma_ohne_ustid:
@@ -349,6 +424,20 @@ def validate_adresse_geschaeftslogik(
                     schweregrad="fehler",
                     betroffene_felder=["steuernummer"]
                 ))
+            # NEU: FIRMA mit UST-ID darf nicht den Sonderschalter haben
+            if hat_komplette_ustid and firma_ohne_ustid:
+                fehler.append(AdresseValidierungsFehler(
+                    meldung="Bei einer Firma mit UST-ID darf der Schalter 'FIRMA ohne UST-ID' nicht gesetzt sein!",
+                    schweregrad="fehler",
+                    betroffene_felder=["firma_ohne_ustid"]
+                ))
+            # NEU: FIRMA darf nicht PRIVAT_MIT_USTID haben
+            if privat_mit_ustid:
+                fehler.append(AdresseValidierungsFehler(
+                    meldung="Bei als FIRMA eingestuften Adressen darf der Schalter 'PRIVAT mit UST-ID' nicht gesetzt sein!",
+                    schweregrad="fehler",
+                    betroffene_felder=["privat_mit_ustid"]
+                ))
         elif ist_eu:  # EU-Ausland
             if not hat_komplette_ustid:
                 fehler.append(AdresseValidierungsFehler(
@@ -357,21 +446,78 @@ def validate_adresse_geschaeftslogik(
                     betroffene_felder=["umsatzsteuer_lkz", "umsatzsteuer_id"]
                 ))
     
+    # =============================================
     # PRIVAT-Validierung
+    # =============================================
     if ist_privat:
-        if hat_ustid and not privat_mit_ustid:
+        # PRIVAT mit UST-ID im Inland nur mit Sonderschalter
+        if ist_homeland and hat_ustid and not privat_mit_ustid:
             fehler.append(AdresseValidierungsFehler(
-                meldung="Privatperson darf keine UST-ID haben! Falls doch, Sonderschalter setzen.",
+                meldung="Privatperson mit UST-ID im Inland: Bitte Sonderschalter 'PRIVAT mit UST-ID' setzen!",
                 schweregrad="fehler",
                 betroffene_felder=["umsatzsteuer_id", "privat_mit_ustid"]
             ))
+        
+        # NEU: PRIVAT im Ausland darf keine UST-ID haben
+        if not ist_homeland and hat_ustid:
+            fehler.append(AdresseValidierungsFehler(
+                meldung="Bei als PRIVAT eingestuften Adressen im Ausland darf keine UST-ID erfasst sein!",
+                schweregrad="fehler",
+                betroffene_felder=["umsatzsteuer_id"]
+            ))
+        
+        # NEU: PRIVAT im Inland braucht Ausweis ODER Steuernummer (außer PRIVAT_MIT_USTID)
+        if ist_homeland and not hat_ausweis and not hat_steuernummer:
+            if not (privat_mit_ustid and hat_ustid):
+                fehler.append(AdresseValidierungsFehler(
+                    meldung="Bei Privatpersonen im Inland muss Ausweisnummer oder Steuernummer vorliegen!",
+                    schweregrad="fehler",
+                    betroffene_felder=["ausweis_nummer", "steuernummer"]
+                ))
+        
+        # NEU: PRIVAT im Ausland braucht Ausweis (strenger als vorher)
         if not ist_homeland and not hat_ausweis:
-            warnungen.append(AdresseValidierungsFehler(
-                meldung="Für Privatpersonen im Ausland wird eine Ausweisnummer empfohlen.",
-                schweregrad="warnung",
+            fehler.append(AdresseValidierungsFehler(
+                meldung="Bei Privatpersonen im Ausland MUSS die Ausweisnummer vorliegen!",
+                schweregrad="fehler",
                 betroffene_felder=["ausweis_nummer"]
             ))
+        
+        # NEU: PRIVAT darf nicht FIRMA_OHNE_USTID haben
+        if ist_homeland and firma_ohne_ustid:
+            fehler.append(AdresseValidierungsFehler(
+                meldung="Bei als PRIVAT eingestuften Adressen darf der Schalter 'FIRMA ohne UST-ID' nicht gesetzt sein!",
+                schweregrad="fehler",
+                betroffene_felder=["firma_ohne_ustid"]
+            ))
     
+    # =============================================
+    # Ausweis-Ablaufdatum prüfen
+    # =============================================
+    if hat_ausweis and ausweis_ablauf:
+        try:
+            from datetime import datetime as dt
+            ablauf_date = None
+            for fmt in ["%Y-%m-%d", "%d.%m.%Y", "%d/%m/%Y"]:
+                try:
+                    ablauf_date = dt.strptime(ausweis_ablauf, fmt).date()
+                    break
+                except:
+                    continue
+            
+            if ablauf_date:
+                from datetime import date
+                heute = date.today()
+                if ablauf_date < heute:
+                    warnungen.append(AdresseValidierungsFehler(
+                        meldung=f"Das Ausweis-Ablaufdatum ({ausweis_ablauf}) ist abgelaufen!",
+                        schweregrad="warnung",
+                        betroffene_felder=["ausweis_ablauf"]
+                    ))
+        except:
+            pass
+    
+    # Steuer-Status ermitteln
     steuer_status = None
     if ist_firma:
         if ist_homeland:
