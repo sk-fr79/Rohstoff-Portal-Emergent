@@ -770,18 +770,44 @@ async def get_ustid_protokoll(
     adresse_id: str,
     user = Depends(get_current_user)
 ):
-    """UST-ID Validierungsprotokoll abrufen"""
+    """UST-ID Validierungsprotokoll für eine bestimmte Adresse abrufen"""
     db = get_db()
+    
+    # Nur Protokolle für diese spezifische Adresse abrufen
     cursor = db.ustid_protokoll.find({
         "adresse_id": adresse_id,
         "mandant_id": user["mandant_id"]
     }).sort("geprueft_am", -1)
     
     protokolle = await cursor.to_list(length=100)
-    for p in protokolle:
-        p["id"] = p.pop("_id")
     
-    return {"success": True, "data": protokolle}
+    # Feldnamen für Frontend-Kompatibilität transformieren
+    result = []
+    for p in protokolle:
+        # Datum formatieren (falls None, aktuelles Datum verwenden)
+        geprueft_am = p.get("geprueft_am")
+        if geprueft_am:
+            if hasattr(geprueft_am, 'isoformat'):
+                abfrage_datum = geprueft_am.isoformat()
+            else:
+                abfrage_datum = str(geprueft_am)
+        else:
+            abfrage_datum = datetime.utcnow().isoformat()
+        
+        result.append({
+            "id": str(p.get("_id", "")),
+            "adresse_id": p.get("adresse_id"),
+            "laenderkennzeichen": p.get("lkz", ""),
+            "ustid": p.get("ustid", "").replace(p.get("lkz", ""), "", 1),  # Nur Nummer ohne LKZ
+            "gueltig": p.get("ist_gueltig", False),
+            "firmenname": p.get("firmenname"),
+            "adresse": p.get("firmenadresse"),
+            "abfrage_datum": abfrage_datum,
+            "request_identifier": p.get("request_identifier"),
+            "abgefragt_von": p.get("geprueft_von"),
+        })
+    
+    return {"success": True, "data": result}
 
 
 # ============================================================
