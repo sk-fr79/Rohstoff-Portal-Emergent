@@ -427,6 +427,41 @@ class ArtikelCreate(BaseModel):
     # Bemerkungen
     bemerkung_intern: Optional[str] = Field(None, max_length=1000)
 
+class ArtikelUpdate(BaseModel):
+    """Model für Artikel-Updates"""
+    anr1: Optional[str] = Field(None, max_length=10)
+    artbez1: Optional[str] = Field(None, max_length=80)
+    artbez2: Optional[str] = Field(None, max_length=1000)
+    einheit: Optional[str] = Field(None, max_length=10)
+    einheit_preis: Optional[str] = Field(None, max_length=10)
+    mengendivisor: Optional[int] = Field(None, ge=1)
+    genauigkeit_mengen: Optional[int] = Field(None, ge=0, le=6)
+    artikelgruppe: Optional[str] = Field(None, max_length=100)
+    artikelgruppe_fibu: Optional[str] = Field(None, max_length=100)
+    aktiv: Optional[bool] = None
+    gefahrgut: Optional[bool] = None
+    ist_leergut: Optional[bool] = None
+    elektro_elektronik: Optional[bool] = None
+    ist_produkt: Optional[bool] = None
+    dienstleistung: Optional[bool] = None
+    end_of_waste: Optional[bool] = None
+    end_of_waste_lager: Optional[bool] = None
+    avv_code_eingang: Optional[str] = Field(None, max_length=50)
+    avv_code_ausgang: Optional[str] = Field(None, max_length=50)
+    eakcode: Optional[str] = Field(None, max_length=20)
+    zolltarifnr: Optional[str] = Field(None, max_length=50)
+    zolltarifnotiz: Optional[str] = Field(None, max_length=500)
+    basel_code: Optional[str] = Field(None, max_length=80)
+    basel_notiz: Optional[str] = Field(None, max_length=500)
+    oecd_code: Optional[str] = Field(None, max_length=50)
+    oecd_notiz: Optional[str] = Field(None, max_length=500)
+    anhang7_3a_code: Optional[str] = Field(None, max_length=20)
+    anhang7_3a_text: Optional[str] = Field(None, max_length=1000)
+    anhang7_3b_code: Optional[str] = Field(None, max_length=20)
+    anhang7_3b_text: Optional[str] = Field(None, max_length=1000)
+    oesterreichische_avv: Optional[str] = Field(None, max_length=50)
+    bemerkung_intern: Optional[str] = Field(None, max_length=1000)
+
 # Kontrakt
 class KontraktCreate(BaseModel):
     adresse_id: str
@@ -442,6 +477,51 @@ class KontraktPosCreate(BaseModel):
     einzelpreis: Optional[float] = None
     steuersatz: Optional[float] = Field(19.0)
     einheit: Optional[str] = Field("kg", max_length=10)
+
+class KontraktUpdate(BaseModel):
+    """Model für Kontrakt-Updates - basiert auf Frontend-Schema"""
+    vorgang_typ: Optional[str] = Field(None, max_length=5)
+    buchungsnummer: Optional[str] = Field(None, max_length=30)
+    
+    # Adress-Daten (Kopfdaten)
+    id_adresse: Optional[str] = None
+    name1: Optional[str] = Field(None, max_length=40)
+    name2: Optional[str] = Field(None, max_length=40)
+    strasse: Optional[str] = Field(None, max_length=45)
+    hausnummer: Optional[str] = Field(None, max_length=10)
+    plz: Optional[str] = Field(None, max_length=10)
+    ort: Optional[str] = Field(None, max_length=30)
+    land: Optional[str] = Field(None, max_length=30)
+    
+    # Kontaktdaten
+    telefon: Optional[str] = Field(None, max_length=30)
+    telefax: Optional[str] = Field(None, max_length=30)
+    email: Optional[str] = Field(None, max_length=100)
+    
+    # Bearbeiter
+    name_bearbeiter_intern: Optional[str] = Field(None, max_length=80)
+    tel_bearbeiter_intern: Optional[str] = Field(None, max_length=30)
+    fax_bearbeiter_intern: Optional[str] = Field(None, max_length=30)
+    
+    # Termine
+    erstellungsdatum: Optional[str] = None
+    gueltig_von: Optional[str] = None
+    gueltig_bis: Optional[str] = None
+    
+    # Währung & Konditionen
+    id_waehrung_fremd: Optional[str] = None
+    waehrung_kurz: Optional[str] = Field(None, max_length=5)
+    zahlungsbedingung: Optional[str] = Field(None, max_length=100)
+    lieferbedingung: Optional[str] = Field(None, max_length=50)
+    
+    # Status
+    status: Optional[str] = Field(None, max_length=20)
+    aktiv: Optional[bool] = None
+    deleted: Optional[bool] = None
+    
+    # Bemerkungen
+    bemerkung_extern: Optional[str] = Field(None, max_length=2000)
+    bemerkung_intern: Optional[str] = Field(None, max_length=2000)
 
 # ============================================================
 # HEALTH CHECK
