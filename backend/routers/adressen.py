@@ -1,6 +1,6 @@
 """
 Adressen Router - CRUD und Validierung für Adressen
-Enthält auch Ansprechpartner-Verwaltung und UST-ID-Prüfung
+Enthält auch Ansprechpartner-Verwaltung, UST-ID-Prüfung und OCR
 """
 
 from fastapi import APIRouter, HTTPException, Depends, status, UploadFile, File, Form
@@ -11,6 +11,8 @@ import uuid
 import base64
 import httpx
 import os
+import re
+import json
 
 from services.database import get_db
 from utils.auth import get_current_user
