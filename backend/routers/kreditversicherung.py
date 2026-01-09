@@ -393,22 +393,28 @@ async def update_kreditversicherung(
 
 @router.delete("/kreditversicherungen/{kv_id}")
 async def delete_kreditversicherung(kv_id: str, user = Depends(get_current_user)):
-    """Kreditversicherung deaktivieren (soft delete)"""
+    """Kreditversicherung löschen (Hard Delete)"""
     db = get_db()
     
-    result = await db.kreditversicherungen.update_one(
-        {"_id": kv_id, "mandant_id": user["mandant_id"]},
-        {"$set": {
-            "aktiv": False, 
-            "deleted_at": datetime.utcnow().isoformat(),
-            "updated_at": datetime.utcnow().isoformat()
-        }}
-    )
+    # Prüfen ob KV existiert
+    kv = await db.kreditversicherungen.find_one({
+        "_id": kv_id, 
+        "mandant_id": user["mandant_id"]
+    })
     
-    if result.matched_count == 0:
+    if not kv:
         raise HTTPException(status_code=404, detail="Kreditversicherung nicht gefunden")
     
-    return {"success": True}
+    # Kreditversicherung endgültig löschen (Hard Delete)
+    result = await db.kreditversicherungen.delete_one({
+        "_id": kv_id, 
+        "mandant_id": user["mandant_id"]
+    })
+    
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Kreditversicherung konnte nicht gelöscht werden")
+    
+    return {"success": True, "message": "Kreditversicherung gelöscht"}
 
 
 # ============================================================
