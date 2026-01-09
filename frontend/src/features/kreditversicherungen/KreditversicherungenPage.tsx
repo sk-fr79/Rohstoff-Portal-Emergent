@@ -358,7 +358,7 @@ export default function KreditversicherungenPage() {
           <DataTable
             columns={columns}
             data={kreditversicherungen || []}
-            onRowDoubleClick={(row) => handleSelectKV(row.original)}
+            onRowDoubleClick={(row) => handleSelectKV(row)}
             searchPlaceholder="Suchen..."
           />
         )}
