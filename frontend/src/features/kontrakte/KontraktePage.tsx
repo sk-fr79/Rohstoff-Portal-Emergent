@@ -124,9 +124,9 @@ const statusColors: Record<string, { bg: string; text: string }> = {
 // ========================== COMPONENT ==========================
 export function KontraktePage() {
   const queryClient = useQueryClient();
-  const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [selectedKontrakt, setSelectedKontrakt] = useState<Kontrakt | null>(null);
   const [isEditing, setIsEditing] = useState(false);
+  const [isNewRecord, setIsNewRecord] = useState(false);
   const [activeSection, setActiveSection] = useState('kopf');
   const [filterTyp, setFilterTyp] = useState<string>('');
 

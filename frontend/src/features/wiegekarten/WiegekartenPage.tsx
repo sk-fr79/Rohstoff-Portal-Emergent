@@ -113,9 +113,9 @@ const zustandColors: Record<string, { bg: string; text: string }> = {
 // ========================== COMPONENT ==========================
 export function WiegekartenPage() {
   const queryClient = useQueryClient();
-  const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [selectedWiegekarte, setSelectedWiegekarte] = useState<Wiegekarte | null>(null);
   const [isEditing, setIsEditing] = useState(false);
+  const [isNewRecord, setIsNewRecord] = useState(false);
   const [activeSection, setActiveSection] = useState('stamm');
   const [nurOffene, setNurOffene] = useState(false);
   

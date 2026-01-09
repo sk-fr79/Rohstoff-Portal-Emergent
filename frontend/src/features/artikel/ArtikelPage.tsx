@@ -82,9 +82,9 @@ const sidebarSections = [
 // ========================== COMPONENT ==========================
 export function ArtikelPage() {
   const queryClient = useQueryClient();
-  const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [selectedArtikel, setSelectedArtikel] = useState<Artikel | null>(null);
   const [isEditing, setIsEditing] = useState(false);
+  const [isNewRecord, setIsNewRecord] = useState(false);
   const [activeSection, setActiveSection] = useState('stamm');
   const [showInactive, setShowInactive] = useState(false);
 
