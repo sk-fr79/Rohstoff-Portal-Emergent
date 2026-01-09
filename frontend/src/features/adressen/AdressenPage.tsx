@@ -243,7 +243,7 @@ export function AdressenPage() {
   const watchFields = watch();
   
   // Helper: Firma-Status zuverlässig ermitteln (watchFields hat Vorrang vor selectedAdresse)
-  const istFirma = istFirma !== undefined ? istFirma : (selectedAdresse?.ist_firma ?? true);
+  const istFirma = watchFields.ist_firma !== undefined ? watchFields.ist_firma : (selectedAdresse?.ist_firma ?? true);
 
   // Queries & Mutations
   const { data: adressenData, isLoading } = useQuery({
