@@ -178,9 +178,9 @@ const EU_LAENDER = [
 // ========================== COMPONENT ==========================
 export function AdressenPage() {
   const queryClient = useQueryClient();
-  const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [selectedAdresse, setSelectedAdresse] = useState<Adresse | null>(null);
   const [isEditing, setIsEditing] = useState(false);
+  const [isNewRecord, setIsNewRecord] = useState(false);
   const [activeSection, setActiveSection] = useState('stamm');
   const [showInactive, setShowInactive] = useState(false); // Filter für inaktive Adressen
   
@@ -212,11 +212,20 @@ export function AdressenPage() {
 
   const createMutation = useMutation({
     mutationFn: (data: AdresseForm) => adressenApi.create(data),
-    onSuccess: () => {
+    onSuccess: (response) => {
       queryClient.invalidateQueries({ queryKey: ['adressen'] });
-      setShowCreateDialog(false);
-      reset();
       toast.success('Adresse erfolgreich erstellt');
+      // Nach erfolgreicher Erstellung: Sidebar bleibt offen mit neuem Datensatz
+      if (response.data?.data) {
+        setSelectedAdresse(response.data.data);
+        Object.entries(response.data.data).forEach(([key, value]) => {
+          if (key in adresseSchema.shape) {
+            setValue(key as keyof AdresseForm, value as any);
+          }
+        });
+      }
+      setIsNewRecord(false);
+      setIsEditing(false);
     },
     onError: (error: any) => {
       const detail = error.response?.data?.detail;
