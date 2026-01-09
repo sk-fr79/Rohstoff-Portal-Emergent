@@ -588,15 +588,15 @@ async def get_adresse_kreditlimits(adresse_id: str, user = Depends(get_current_u
     limits = await get_kreditlimits_for_adresse(adresse_id, db)
     
     # Gesamtlimit berechnen (Summe aller aktiven Limits)
-    aktive_limits = [l for l in limits if l.ist_aktiv]
-    gesamtlimit = sum([l.betrag for l in aktive_limits])
+    aktive_limits = [lim for lim in limits if lim.ist_aktiv]
+    gesamtlimit = sum([lim.betrag for lim in aktive_limits])
     
     return {
         "success": True,
         "data": {
             "adresse_id": adresse_id,
             "gesamtlimit": gesamtlimit,
-            "limits": [l.model_dump() for l in limits]
+            "limits": [lim.model_dump() for lim in limits]
         }
     }
 
