@@ -3330,7 +3330,7 @@ async def get_fuhren(
 
 
 @app.post("/api/fuhren")
-async def create_fuhre(data: FuhreCreate, user = Depends(get_current_user)):
+async def create_fuhre(data: FuhreCreate, skip_validation: bool = False, user = Depends(get_current_user)):
     """Neue Fuhre erstellen"""
     # Fuhren-Nummer generieren
     last_fuhre = await db.fuhren.find_one(
@@ -3374,10 +3374,24 @@ async def create_fuhre(data: FuhreCreate, user = Depends(get_current_user)):
         "letzte_aenderung": datetime.utcnow(),
     }
     
+    # Validierung durchführen (wenn nicht übersprungen)
+    validation_result = None
+    if not skip_validation:
+        validation_result = await FuhreValidator.validate(fuhre, db)
+        if not validation_result.is_valid:
+            return {
+                "success": False,
+                "error": "Validierungsfehler",
+                **validation_result.to_dict()
+            }
+    
     await db.fuhren.insert_one(fuhre)
     fuhre["id"] = fuhre.pop("_id")
     
-    return {"success": True, "data": fuhre}
+    response = {"success": True, "data": fuhre}
+    if validation_result and validation_result.warnings:
+        response["warnings"] = validation_result.warnings
+    return response
 
 
 @app.get("/api/fuhren/{fuhre_id}")
