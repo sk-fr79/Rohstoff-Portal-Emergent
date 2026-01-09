@@ -349,12 +349,12 @@ export function KontraktePage() {
             <p className="text-sm text-gray-500 mt-1">Einkaufs- und Verkaufskontrakte verwalten</p>
           </div>
           <div className="flex items-center gap-3">
-            <Select value={filterTyp} onValueChange={setFilterTyp}>
+            <Select value={filterTyp || "ALL"} onValueChange={(v) => setFilterTyp(v === "ALL" ? "" : v)}>
               <SelectTrigger className="w-[150px]">
                 <SelectValue placeholder="Alle Typen" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Alle Typen</SelectItem>
+                <SelectItem value="ALL">Alle Typen</SelectItem>
                 <SelectItem value="EK">Einkauf</SelectItem>
                 <SelectItem value="VK">Verkauf</SelectItem>
               </SelectContent>
