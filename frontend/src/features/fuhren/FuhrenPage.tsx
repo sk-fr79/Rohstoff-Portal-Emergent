@@ -57,25 +57,15 @@ export default function FuhrenPage() {
   const [filterStatus, setFilterStatus] = useState('');
   const [selectedFuhre, setSelectedFuhre] = useState<Fuhre | null>(null);
   const [isEditing, setIsEditing] = useState(false);
+  const [isNewRecord, setIsNewRecord] = useState(false);
   const [editData, setEditData] = useState<Partial<Fuhre>>({});
   const [activeSection, setActiveSection] = useState('stammdaten');
-  const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [saving, setSaving] = useState(false);
   
   // Lookup data
   const [adressen, setAdressen] = useState<Array<{id: string; name1: string; ort?: string}>>([]);
   const [artikel, setArtikel] = useState<Array<{id: string; artbez1: string}>>([]);
   const [wiegekarten, setWiegekarten] = useState<Array<{id: string; wiegekarten_nr: string}>>([]);
-  
-  const [newFuhre, setNewFuhre] = useState({
-    id_adresse_start: '',
-    id_adresse_ziel: '',
-    id_artikel: '',
-    datum_abholung: new Date().toISOString().split('T')[0],
-    datum_anlieferung: new Date().toISOString().split('T')[0],
-    transportmittel: 'LKW',
-    menge_vorgabe: 0,
-    einheit: 'kg',
-  });
 
   const loadFuhren = useCallback(async () => {
     try {
@@ -113,11 +103,123 @@ export default function FuhrenPage() {
     loadLookupData();
   }, [loadFuhren, loadLookupData]);
 
-  const handleCreate = async () => {
+  // Neue Fuhre anlegen - öffnet Sidebar mit leerem Datensatz
+  const handleNewFuhre = () => {
+    const today = new Date().toISOString().split('T')[0];
+    const emptyFuhre: Fuhre = {
+      id: 'NEU',
+      fuhren_nr: '(wird automatisch vergeben)',
+      datum_abholung: today,
+      datum_anlieferung: today,
+      status: 'OFFEN',
+      transportmittel: 'LKW',
+      einheit: 'kg',
+    };
+    setSelectedFuhre(emptyFuhre);
+    setEditData(emptyFuhre);
+    setIsNewRecord(true);
+    setIsEditing(true);
+    setActiveSection('stammdaten');
+  };
+
+  // Speichern (Create oder Update)
+  const handleSave = async () => {
+    if (!selectedFuhre) return;
+    
+    setSaving(true);
     try {
-      if (!newFuhre.id_adresse_start || !newFuhre.id_adresse_ziel || !newFuhre.id_artikel) {
-        toast.error('Bitte alle Pflichtfelder ausfüllen');
-        return;
+      if (isNewRecord) {
+        // Neue Fuhre erstellen
+        const createData = {
+          id_adresse_start: editData.id_adresse_start,
+          id_adresse_ziel: editData.id_adresse_ziel,
+          id_artikel: editData.id_artikel,
+          datum_abholung: editData.datum_abholung,
+          datum_anlieferung: editData.datum_anlieferung,
+          transportmittel: editData.transportmittel || 'LKW',
+          transportkennzeichen: editData.transportkennzeichen,
+          fahrer_name: editData.fahrer_name,
+          menge_vorgabe: editData.menge_vorgabe,
+          menge_aufladen: editData.menge_aufladen,
+          menge_abladen: editData.menge_abladen,
+          einheit: editData.einheit || 'kg',
+          einzelpreis_ek: editData.einzelpreis_ek,
+          einzelpreis_vk: editData.einzelpreis_vk,
+          id_wiegekarte_start: editData.id_wiegekarte_start,
+          id_wiegekarte_ziel: editData.id_wiegekarte_ziel,
+          id_kontrakt: editData.id_kontrakt,
+          bemerkung: editData.bemerkung,
+        };
+        
+        const response = await fuhrenApi.create(createData);
+        if (response.data.success) {
+          toast.success('Fuhre erstellt');
+          setSelectedFuhre(response.data.data);
+          setEditData(response.data.data);
+          setIsNewRecord(false);
+          setIsEditing(false);
+          loadFuhren();
+        } else {
+          toast.error(response.data.error || 'Fehler beim Erstellen');
+          if (response.data.errors) {
+            response.data.errors.forEach((err: string) => toast.error(err));
+          }
+        }
+      } else {
+        // Bestehende Fuhre aktualisieren
+        const response = await fuhrenApi.update(selectedFuhre.id, editData);
+        if (response.data.success) {
+          toast.success('Änderungen gespeichert');
+          setIsEditing(false);
+          loadFuhren();
+          const res = await fuhrenApi.getById(selectedFuhre.id);
+          setSelectedFuhre(res.data.data);
+          setEditData(res.data.data);
+        } else {
+          toast.error(response.data.error || 'Fehler beim Speichern');
+          if (response.data.errors) {
+            response.data.errors.forEach((err: string) => toast.error(err));
+          }
+        }
+      }
+    } catch (error) {
+      toast.error('Fehler beim Speichern');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // Abbrechen
+  const handleCancel = () => {
+    if (isNewRecord) {
+      setSelectedFuhre(null);
+      setIsNewRecord(false);
+    }
+    setIsEditing(false);
+    if (selectedFuhre && !isNewRecord) {
+      setEditData(selectedFuhre);
+    }
+  };
+
+  // Sidebar schließen
+  const handleClose = () => {
+    setSelectedFuhre(null);
+    setIsEditing(false);
+    setIsNewRecord(false);
+  };
+
+  const handleRowDoubleClick = async (fuhre: Fuhre) => {
+    try {
+      const res = await fuhrenApi.getById(fuhre.id);
+      setSelectedFuhre(res.data.data);
+      setEditData(res.data.data);
+      setIsNewRecord(false);
+      setIsEditing(false);
+      setActiveSection('stammdaten');
+    } catch (error) {
+      toast.error('Fehler beim Laden der Fuhre');
+    }
+  };
       }
       await fuhrenApi.create(newFuhre);
       toast.success('Fuhre erstellt');
