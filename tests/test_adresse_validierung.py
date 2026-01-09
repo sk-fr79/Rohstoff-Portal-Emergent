@@ -276,7 +276,7 @@ class TestPrivatValidierung:
         found_ausweis_error = any("Ausweisnummer" in text for text in fehler_texte)
         assert found_ausweis_error, f"Expected error about Ausweisnummer, got: {fehler_texte}"
         
-        assert validierung["steuer_status"] == "PRIVAT_EU"
+        assert validierung["steuer_status"] == "PRIVAT_AUSLAND"
         print(f"✓ PRIVAT Ausland ohne Ausweis correctly rejected with errors: {fehler_texte}")
     
     def test_privat_ausland_mit_ausweis_ok(self, auth_headers):
