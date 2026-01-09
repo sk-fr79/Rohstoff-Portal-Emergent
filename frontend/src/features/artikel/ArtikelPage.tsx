@@ -774,99 +774,12 @@ export function ArtikelPage() {
                     </div>
                   )}
 
-                  {isEditing && (
-                    <div className="mt-6 pt-4 border-t">
-                      <Button 
-                        type="button" 
-                        onClick={handleSave}
-                        className="w-full bg-emerald-600 hover:bg-emerald-700"
-                      >
-                        <Save className="h-4 w-4 mr-2" />
-                        Speichern
-                      </Button>
-                    </div>
-                  )}
                 </form>
               </ScrollArea>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
-
-      {/* Create Dialog */}
-      <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Package className="h-5 w-5 text-emerald-500" />
-              Neuer Artikel
-            </DialogTitle>
-            <DialogDescription>
-              Legen Sie einen neuen Artikel/Sorte im Artikelstamm an.
-            </DialogDescription>
-          </DialogHeader>
-
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            <div className="grid grid-cols-3 gap-4">
-              <div className="space-y-1.5">
-                <Label>ANR</Label>
-                <Input {...register('anr1')} className="font-mono" placeholder="A001" />
-              </div>
-              <div className="col-span-2 space-y-1.5">
-                <Label>Artikelbezeichnung *</Label>
-                <Input {...register('artbez1')} placeholder="Artikelname" />
-                {errors.artbez1 && <p className="text-xs text-red-500">{errors.artbez1.message}</p>}
-              </div>
-            </div>
-
-            <div className="space-y-1.5">
-              <Label>Artikelbezeichnung 2</Label>
-              <Textarea {...register('artbez2')} rows={2} placeholder="Erweiterte Beschreibung..." />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <Label>Mengeneinheit</Label>
-                <Select value={watchFields.einheit || 'kg'} onValueChange={(v) => setValue('einheit', v)}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="kg">kg</SelectItem>
-                    <SelectItem value="t">t</SelectItem>
-                    <SelectItem value="Stk">Stk</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-1.5">
-                <Label>Artikelgruppe</Label>
-                <Input {...register('artikelgruppe')} />
-              </div>
-            </div>
-
-            <div className="flex items-center gap-6">
-              <div className="flex items-center gap-2">
-                <Switch checked={watchFields.aktiv} onCheckedChange={(v) => setValue('aktiv', v)} />
-                <Label>Aktiv</Label>
-              </div>
-              <div className="flex items-center gap-2">
-                <Switch checked={watchFields.gefahrgut} onCheckedChange={(v) => setValue('gefahrgut', v)} />
-                <Label className="text-red-600">Gefahrgut</Label>
-              </div>
-            </div>
-
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => { setShowCreateDialog(false); reset(); }}>
-                Abbrechen
-              </Button>
-              <Button type="submit" className="bg-emerald-600 hover:bg-emerald-700">
-                <Plus className="h-4 w-4 mr-2" />
-                Erstellen
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
