@@ -28,6 +28,11 @@ import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
+// Neue Komponenten
+import { BankverbindungenTab } from './components/BankverbindungenTab';
+import { LieferadressenTab } from './components/LieferadressenTab';
+import { ValidationDisplay, SteuerStatusBadge } from './components/ValidationDisplay';
+
 // Import SVG Flags from country-flag-icons
 import DE from 'country-flag-icons/react/3x2/DE';
 import AT from 'country-flag-icons/react/3x2/AT';
