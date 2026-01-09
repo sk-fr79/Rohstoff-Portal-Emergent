@@ -493,12 +493,12 @@ Passwort: Admin123!
 - [ ] Sammelrechnungen (mehrere Fuhren → eine Rechnung)
 
 ### P2 - Mittlere Priorität
-- [ ] **Kreditversicherungs-Verwaltung** (Echo2: KREDITVERSICH) - Analyse abgeschlossen ✅
+- [x] **Kreditversicherungs-Verwaltung** (Echo2: KREDITVERSICH) ✅ ERLEDIGT (09.01.2026)
   - Collection `kreditversicherungen` mit Kopf, Positionen, verknüpften Adressen
-  - Endpunkte: CRUD + /api/adressen/{id}/kreditlimits
-  - Tab in AdressenPage + eigene Verwaltungsseite
-  - Prüfung bei Fuhren-Erstellung (Warnung bei Limit-Überschreitung)
-  - Siehe: `/app/memory/MIGRATION_ANALYSE_KREDITVERSICHERUNG.md`
+  - Endpunkte: CRUD + /api/adressen/{id}/kreditlimits + /api/adressen/{id}/kreditstatus
+  - Tab in AdressenPage + eigenständige Verwaltungsseite /kreditversicherungen
+  - Prüfung neuer Beträge gegen Limits (POST /api/kreditpruefung)
+  - Test: 14/14 Backend-Tests, 100% Frontend
 - [ ] Positionen im Kontrakt bearbeiten (UI zum Hinzufügen/Löschen)
 - [ ] Positionen in Rechnungen bearbeiten/löschen
 - [ ] Suchfeld in der globalen Navigation funktionsfähig machen
