@@ -504,6 +504,16 @@ Passwort: Admin123!
   - Smarte Grid-Tabelle mit Suchfunktion für Kundenpositionen
   - Prüfung neuer Beträge gegen Limits (POST /api/kreditpruefung)
   - Test: 14/14 Backend-Tests, 100% Frontend bestanden
+- [x] **Einstellungen-Bereich implementiert** ✅ ERLEDIGT (09.01.2026)
+  - **Zwei Hauptansichten**: ERP-Ansicht und Einstellungen-Ansicht
+  - **Eigene Sidebar** für Einstellungen
+  - **Benutzer-Einstellungen**: Profil, Kontaktdaten, Adresse, Passwort, Profilbild, E-Mail Signatur, Unterschrift
+  - **Admin-Einstellungen** (nur für Administratoren): Systemeinstellungen, Benutzerverwaltung, Mandanten, Sicherheit, Datenbank
+  - **Navigation**: "MV-Portal" Button oben rechts führt zurück zur ERP-Ansicht
+- [x] **Hard Delete implementiert** ✅ ERLEDIGT (09.01.2026)
+  - Alle DELETE-Endpunkte auf Hard Delete umgestellt
+  - Gelöschte Datensätze werden vollständig aus der DB entfernt
+  - Cleanup-Endpunkt für soft-deleted Altdaten: DELETE /api/cleanup/soft-deleted
 - [ ] Positionen im Kontrakt bearbeiten (UI zum Hinzufügen/Löschen)
 - [ ] Positionen in Rechnungen bearbeiten/löschen
 - [ ] Suchfeld in der globalen Navigation funktionsfähig machen
