@@ -74,6 +74,7 @@ export const authApi = {
 };
 
 export const adressenApi = {
+  list: (params?: Record<string, unknown>) => api.get('/adressen', { params }),
   getAll: (params?: Record<string, unknown>) => api.get('/adressen', { params }),
   search: (params?: Record<string, unknown>) => api.get('/adressen', { params }),
   getById: (id: string) => api.get(`/adressen/${id}`),
@@ -124,4 +125,14 @@ export const rechnungenApi = {
   addPosition: (id: string, data: unknown) => api.post(`/rechnungen/${id}/positionen`, data),
   createFromFuhre: (fuhreId: string, vorgangTyp: string) => 
     api.post(`/rechnungen/aus-fuhre/${fuhreId}`, null, { params: { vorgang_typ: vorgangTyp } }),
+};
+
+// Wiegekarten API
+export const wiegekartenApi = {
+  list: (params?: Record<string, unknown>) => api.get('/wiegekarten', { params }),
+  search: (params?: Record<string, unknown>) => api.get('/wiegekarten', { params }),
+  getById: (id: string) => api.get(`/wiegekarten/${id}`),
+  create: (data: unknown) => api.post('/wiegekarten', data),
+  update: (id: string, data: unknown) => api.put(`/wiegekarten/${id}`, data),
+  delete: (id: string) => api.delete(`/wiegekarten/${id}`),
 };
