@@ -1919,7 +1919,7 @@ async def get_kontrakte(
     }
 
 @app.post("/api/kontrakte")
-async def create_kontrakt(data: KontraktCreate, user = Depends(get_current_user)):
+async def create_kontrakt(data: KontraktCreate, skip_validation: bool = False, user = Depends(get_current_user)):
     """Neuen Kontrakt erstellen"""
     # Bestimme ist_einkauf aus vorgang_typ
     ist_einkauf = data.vorgang_typ == "EK" if data.vorgang_typ else (data.ist_einkauf if data.ist_einkauf is not None else True)
@@ -2009,10 +2009,24 @@ async def create_kontrakt(data: KontraktCreate, user = Depends(get_current_user)
         "letzte_aenderung": datetime.utcnow(),
     }
     
+    # Validierung durchführen (wenn nicht übersprungen)
+    validation_result = None
+    if not skip_validation:
+        validation_result = await KontraktValidator.validate(kontrakt, db)
+        if not validation_result.is_valid:
+            return {
+                "success": False,
+                "error": "Validierungsfehler",
+                **validation_result.to_dict()
+            }
+    
     await db.kontrakte.insert_one(kontrakt)
     kontrakt["id"] = kontrakt.pop("_id")
     
-    return {"success": True, "data": kontrakt}
+    response = {"success": True, "data": kontrakt}
+    if validation_result and validation_result.warnings:
+        response["warnings"] = validation_result.warnings
+    return response
 
 @app.get("/api/kontrakte/{kontrakt_id}")
 async def get_kontrakt(kontrakt_id: str, user = Depends(get_current_user)):
