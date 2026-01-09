@@ -758,98 +758,12 @@ export function KontraktePage() {
                     </div>
                   )}
 
-                  {isEditing && (
-                    <div className="mt-6 pt-4 border-t">
-                      <Button 
-                        type="button" 
-                        onClick={handleSave}
-                        className="w-full bg-emerald-600 hover:bg-emerald-700"
-                      >
-                        <Save className="h-4 w-4 mr-2" />
-                        Speichern
-                      </Button>
-                    </div>
-                  )}
                 </form>
               </ScrollArea>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
-
-      {/* Create Dialog */}
-      <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <FileText className="h-5 w-5 text-emerald-500" />
-              Neuer Kontrakt
-            </DialogTitle>
-            <DialogDescription>
-              Legen Sie einen neuen Einkaufs- oder Verkaufskontrakt an.
-            </DialogDescription>
-          </DialogHeader>
-
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <Label>Kontrakttyp *</Label>
-                <Select value={watchFields.vorgang_typ || 'EK'} onValueChange={(v) => setValue('vorgang_typ', v)}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="EK">Einkaufskontrakt</SelectItem>
-                    <SelectItem value="VK">Verkaufskontrakt</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-1.5">
-                <Label>Buchungsnummer</Label>
-                <Input {...register('buchungsnummer')} className="font-mono" />
-              </div>
-            </div>
-
-            <div className="space-y-1.5">
-              <Label>Vertragspartner (Firma/Name) *</Label>
-              <Input {...register('name1')} placeholder="Firma GmbH" />
-              {errors.name1 && <p className="text-xs text-red-500">{errors.name1.message}</p>}
-            </div>
-
-            <div className="grid grid-cols-3 gap-4">
-              <div className="space-y-1.5">
-                <Label>PLZ</Label>
-                <Input {...register('plz')} />
-              </div>
-              <div className="col-span-2 space-y-1.5">
-                <Label>Ort</Label>
-                <Input {...register('ort')} />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <Label>Gültig von</Label>
-                <Input {...register('gueltig_von')} type="date" />
-              </div>
-              <div className="space-y-1.5">
-                <Label>Gültig bis</Label>
-                <Input {...register('gueltig_bis')} type="date" />
-              </div>
-            </div>
-
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => { setShowCreateDialog(false); reset(); }}>
-                Abbrechen
-              </Button>
-              <Button type="submit" className="bg-emerald-600 hover:bg-emerald-700">
-                <Plus className="h-4 w-4 mr-2" />
-                Erstellen
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
