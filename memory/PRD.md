@@ -322,6 +322,23 @@ Passwort: Admin123!
 ### Dashboard
 - `GET /api/dashboard/stats` - Statistiken
 
+### Fuhren (NEU - 09.01.2026)
+- `GET /api/fuhren` - Liste mit Suche/Pagination/Status-Filter
+- `GET /api/fuhren/{id}` - Einzelne Fuhre
+- `POST /api/fuhren` - Neue Fuhre
+- `PUT /api/fuhren/{id}` - Fuhre aktualisieren
+- `DELETE /api/fuhren/{id}` - Soft-Delete
+- `POST /api/fuhren/{id}/storno` - Fuhre stornieren
+
+### Rechnungen (NEU - 09.01.2026)
+- `GET /api/rechnungen` - Liste mit Suche/Pagination/Typ-/Status-Filter
+- `GET /api/rechnungen/{id}` - Einzelne Rechnung mit Positionen
+- `POST /api/rechnungen` - Neue Rechnung/Gutschrift
+- `PUT /api/rechnungen/{id}` - Rechnung aktualisieren
+- `DELETE /api/rechnungen/{id}` - Soft-Delete
+- `POST /api/rechnungen/{id}/positionen` - Position hinzufügen
+- `POST /api/rechnungen/aus-fuhre/{fuhre_id}` - Rechnung/Gutschrift aus Fuhre erstellen
+
 ---
 
 ## Offene/Kommende Aufgaben
@@ -330,16 +347,19 @@ Passwort: Admin123!
 - [x] Geschäftslogik aus Java-Code integrieren (Adress-Validierung) ✅ ERLEDIGT
 - [x] Artikel-Modul mit Sidebar-Layout redesignen ✅ ERLEDIGT (09.01.2026)
 - [x] Kontrakte-Modul mit Sidebar-Layout redesignen ✅ ERLEDIGT (09.01.2026)
-- [ ] Backend-Refactoring: `server.py` in Module aufteilen (routers, models, services) - DRINGEND
+- [x] Fuhren-Modul implementieren ✅ ERLEDIGT (09.01.2026)
+- [x] Rechnungen-Modul implementieren ✅ ERLEDIGT (09.01.2026)
+- [ ] Backend-Refactoring: `server.py` in Module aufteilen (routers, models, services) - DRINGEND (>3400 Zeilen!)
 
 ### P1 - Hohe Priorität
-- [ ] Fuhren-Modul implementieren
-- [ ] Rechnungen-Modul implementieren
-- [ ] Geschäftslogik für Artikel-Validierung integrieren
-- [ ] Geschäftslogik für Kontrakt-Validierung integrieren
+- [ ] Geschäftslogik für Artikel-Validierung aus Java-Code portieren
+- [ ] Geschäftslogik für Kontrakt-Validierung aus Java-Code portieren
+- [ ] Geschäftslogik für Fuhren-Validierung aus Java-Code portieren
+- [ ] PDF-Export für Rechnungen und Lieferscheine
 
 ### P2 - Mittlere Priorität
 - [ ] Positionen im Kontrakt bearbeiten (UI zum Hinzufügen/Löschen)
+- [ ] Positionen in Rechnungen bearbeiten/löschen
 - [ ] Suchfeld in der globalen Navigation funktionsfähig machen
 - [ ] Dark/Light Mode Toggle
 - [ ] Datumsauswahl mit shadcn Calendar statt native Input
