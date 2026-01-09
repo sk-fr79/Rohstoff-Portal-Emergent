@@ -51,6 +51,7 @@ async def lifespan(app: FastAPI):
     await db.fuhren.create_index([("mandant_id", 1), ("fuhren_nr", 1)])
     await db.rechnungen.create_index([("mandant_id", 1), ("rechnungs_nr", 1)])
     await db.wiegekarten.create_index([("mandant_id", 1), ("wiegekarten_nr", 1)])
+    await db.kreditversicherungen.create_index([("mandant_id", 1), ("versicherte_adressen.adresse_id", 1)])
     
     # Demo-Mandant erstellen wenn nicht vorhanden
     existing = await db.mandanten.find_one({"kurzname": "DEMO"})
