@@ -514,6 +514,15 @@ Passwort: Admin123!
   - Alle DELETE-Endpunkte auf Hard Delete umgestellt
   - Gelöschte Datensätze werden vollständig aus der DB entfernt
   - Cleanup-Endpunkt für soft-deleted Altdaten: DELETE /api/cleanup/soft-deleted
+- [x] **Benutzer- und Berechtigungssystem implementiert** ✅ ERLEDIGT (09.01.2026)
+  - **Benutzerverwaltung**: Grid mit allen Benutzern, CRUD, Passwort-Reset
+  - **Benutzerrollen**: Administrator (System-Rolle, nicht löschbar), Sachbearbeiter, Einkäufer, Verkäufer, Buchhalter, Lager
+  - **Abteilungen**: Geschäftsführung, Einkauf, Verkauf, Disposition, Buchhaltung, Lager (Benutzer kann N Abteilungen haben)
+  - **Granulare Zugriffssteuerung**: Modulbasiert, Rollen-/Abteilungs-/Benutzerbasiert
+  - **Berechtigungsstufen**: Read, Write, Full, Denied (Ausblenden)
+  - **Vererbung**: Benutzer > Rolle > Abteilung (bei mehreren Abteilungen höchstes Recht)
+  - **Admin-Only**: Nur Administratoren haben Zugriff auf /api/admin/* Endpunkte
+  - Test: 23/23 Backend-Tests, 100% Frontend bestanden
 - [ ] Positionen im Kontrakt bearbeiten (UI zum Hinzufügen/Löschen)
 - [ ] Positionen in Rechnungen bearbeiten/löschen
 - [ ] Suchfeld in der globalen Navigation funktionsfähig machen
@@ -524,7 +533,7 @@ Passwort: Admin123!
 - [ ] PWA Service Worker
 - [ ] Offline-Fähigkeit
 - [ ] Echte Aktivitäten-Historie im Dashboard
-- [ ] Benutzereinstellungen-Seite
+- [x] Benutzereinstellungen-Seite ✅ ERLEDIGT (Teil von Einstellungen-Bereich)
 
 ---
 
