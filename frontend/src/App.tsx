@@ -8,6 +8,8 @@ import { AdressenPage } from '@/features/adressen/AdressenPage';
 import { ArtikelPage } from '@/features/artikel/ArtikelPage';
 import { KontraktePage } from '@/features/kontrakte/KontraktePage';
 import { WiegekartenPage } from '@/features/wiegekarten/WiegekartenPage';
+import FuhrenPage from '@/features/fuhren/FuhrenPage';
+import RechnungenPage from '@/features/rechnungen/RechnungenPage';
 
 // Protected Route Wrapper
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -42,6 +44,8 @@ export default function App() {
           <Route path="artikel" element={<ArtikelPage />} />
           <Route path="kontrakte" element={<KontraktePage />} />
           <Route path="wiegekarten" element={<WiegekartenPage />} />
+          <Route path="fuhren" element={<FuhrenPage />} />
+          <Route path="rechnungen" element={<RechnungenPage />} />
         </Route>
         
         {/* Fallback */}
