@@ -850,6 +850,219 @@ async def delete_ansprechpartner(
 
 
 # ============================================================
+# BANKVERBINDUNGEN (Echo2: KONTEN)
+# ============================================================
+
+class BankverbindungCreate(BaseModel):
+    """Bankverbindung-Datenmodell (aus Echo2 JT_KONTO)"""
+    iban: str = Field(..., max_length=34, description="IBAN")
+    bic: Optional[str] = Field(None, max_length=11, description="BIC/SWIFT-Code")
+    bank_name: Optional[str] = Field(None, max_length=100, description="Name der Bank")
+    kontonummer: Optional[str] = Field(None, max_length=20, description="Kontonummer (alt)")
+    bankleitzahl: Optional[str] = Field(None, max_length=10, description="BLZ (alt)")
+    kontoinhaber: Optional[str] = Field(None, max_length=100, description="Kontoinhaber")
+    verwendungszweck: Optional[str] = Field(None, max_length=10, description="EK/VK/Beides")
+    ist_hauptkonto: bool = False
+    aktiv: bool = True
+    bemerkungen: Optional[str] = Field(None, max_length=200)
+
+
+@router.get("/adressen/{adresse_id}/bankverbindungen")
+async def get_bankverbindungen(adresse_id: str, user = Depends(get_current_user)):
+    """Bankverbindungen einer Adresse abrufen"""
+    db = get_db()
+    adresse = await db.adressen.find_one(
+        {"_id": adresse_id, "mandant_id": user["mandant_id"]},
+        {"bankverbindungen": 1}
+    )
+    
+    if not adresse:
+        raise HTTPException(status_code=404, detail="Adresse nicht gefunden")
+    
+    return {"success": True, "data": adresse.get("bankverbindungen", [])}
+
+
+@router.post("/adressen/{adresse_id}/bankverbindungen")
+async def add_bankverbindung(
+    adresse_id: str,
+    data: BankverbindungCreate,
+    user = Depends(get_current_user)
+):
+    """Bankverbindung hinzufügen"""
+    db = get_db()
+    
+    bankverbindung = {
+        "id": str(uuid.uuid4()),
+        **data.model_dump(),
+        "erstellt_am": datetime.utcnow(),
+    }
+    
+    # Wenn Hauptkonto, andere auf nicht-Haupt setzen
+    if data.ist_hauptkonto:
+        await db.adressen.update_one(
+            {"_id": adresse_id, "mandant_id": user["mandant_id"]},
+            {"$set": {"bankverbindungen.$[].ist_hauptkonto": False}}
+        )
+    
+    await db.adressen.update_one(
+        {"_id": adresse_id, "mandant_id": user["mandant_id"]},
+        {"$push": {"bankverbindungen": bankverbindung}}
+    )
+    
+    return {"success": True, "data": bankverbindung}
+
+
+@router.put("/adressen/{adresse_id}/bankverbindungen/{bank_id}")
+async def update_bankverbindung(
+    adresse_id: str,
+    bank_id: str,
+    data: dict,
+    user = Depends(get_current_user)
+):
+    """Bankverbindung aktualisieren"""
+    db = get_db()
+    
+    # Wenn Hauptkonto, andere auf nicht-Haupt setzen
+    if data.get("ist_hauptkonto"):
+        await db.adressen.update_one(
+            {"_id": adresse_id, "mandant_id": user["mandant_id"]},
+            {"$set": {"bankverbindungen.$[].ist_hauptkonto": False}}
+        )
+    
+    await db.adressen.update_one(
+        {"_id": adresse_id, "mandant_id": user["mandant_id"], "bankverbindungen.id": bank_id},
+        {"$set": {f"bankverbindungen.$.{k}": v for k, v in data.items()}}
+    )
+    
+    return {"success": True}
+
+
+@router.delete("/adressen/{adresse_id}/bankverbindungen/{bank_id}")
+async def delete_bankverbindung(
+    adresse_id: str,
+    bank_id: str,
+    user = Depends(get_current_user)
+):
+    """Bankverbindung löschen"""
+    db = get_db()
+    await db.adressen.update_one(
+        {"_id": adresse_id, "mandant_id": user["mandant_id"]},
+        {"$pull": {"bankverbindungen": {"id": bank_id}}}
+    )
+    
+    return {"success": True}
+
+
+# ============================================================
+# LIEFERADRESSEN (Echo2: LIEFERADRESSEN)
+# ============================================================
+
+class LieferadresseCreate(BaseModel):
+    """Lieferadresse-Datenmodell (aus Echo2 JT_LIEFERADRESSE)"""
+    bezeichnung: str = Field(..., max_length=50, description="Bezeichnung/Name der Lieferadresse")
+    name1: Optional[str] = Field(None, max_length=40)
+    name2: Optional[str] = Field(None, max_length=40)
+    strasse: Optional[str] = Field(None, max_length=45)
+    hausnummer: Optional[str] = Field(None, max_length=10)
+    plz: Optional[str] = Field(None, max_length=10)
+    ort: Optional[str] = Field(None, max_length=30)
+    land: Optional[str] = Field("Deutschland", max_length=30)
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+    ansprechpartner: Optional[str] = Field(None, max_length=100)
+    telefon: Optional[str] = Field(None, max_length=30)
+    bemerkungen: Optional[str] = Field(None, max_length=300)
+    aktiv: bool = True
+    ist_standard: bool = False
+
+
+@router.get("/adressen/{adresse_id}/lieferadressen")
+async def get_lieferadressen(adresse_id: str, user = Depends(get_current_user)):
+    """Lieferadressen einer Adresse abrufen"""
+    db = get_db()
+    adresse = await db.adressen.find_one(
+        {"_id": adresse_id, "mandant_id": user["mandant_id"]},
+        {"lieferadressen": 1}
+    )
+    
+    if not adresse:
+        raise HTTPException(status_code=404, detail="Adresse nicht gefunden")
+    
+    return {"success": True, "data": adresse.get("lieferadressen", [])}
+
+
+@router.post("/adressen/{adresse_id}/lieferadressen")
+async def add_lieferadresse(
+    adresse_id: str,
+    data: LieferadresseCreate,
+    user = Depends(get_current_user)
+):
+    """Lieferadresse hinzufügen"""
+    db = get_db()
+    
+    lieferadresse = {
+        "id": str(uuid.uuid4()),
+        **data.model_dump(),
+        "erstellt_am": datetime.utcnow(),
+    }
+    
+    # Wenn Standard, andere auf nicht-Standard setzen
+    if data.ist_standard:
+        await db.adressen.update_one(
+            {"_id": adresse_id, "mandant_id": user["mandant_id"]},
+            {"$set": {"lieferadressen.$[].ist_standard": False}}
+        )
+    
+    await db.adressen.update_one(
+        {"_id": adresse_id, "mandant_id": user["mandant_id"]},
+        {"$push": {"lieferadressen": lieferadresse}}
+    )
+    
+    return {"success": True, "data": lieferadresse}
+
+
+@router.put("/adressen/{adresse_id}/lieferadressen/{liefer_id}")
+async def update_lieferadresse(
+    adresse_id: str,
+    liefer_id: str,
+    data: dict,
+    user = Depends(get_current_user)
+):
+    """Lieferadresse aktualisieren"""
+    db = get_db()
+    
+    # Wenn Standard, andere auf nicht-Standard setzen
+    if data.get("ist_standard"):
+        await db.adressen.update_one(
+            {"_id": adresse_id, "mandant_id": user["mandant_id"]},
+            {"$set": {"lieferadressen.$[].ist_standard": False}}
+        )
+    
+    await db.adressen.update_one(
+        {"_id": adresse_id, "mandant_id": user["mandant_id"], "lieferadressen.id": liefer_id},
+        {"$set": {f"lieferadressen.$.{k}": v for k, v in data.items()}}
+    )
+    
+    return {"success": True}
+
+
+@router.delete("/adressen/{adresse_id}/lieferadressen/{liefer_id}")
+async def delete_lieferadresse(
+    adresse_id: str,
+    liefer_id: str,
+    user = Depends(get_current_user)
+):
+    """Lieferadresse löschen"""
+    db = get_db()
+    await db.adressen.update_one(
+        {"_id": adresse_id, "mandant_id": user["mandant_id"]},
+        {"$pull": {"lieferadressen": {"id": liefer_id}}}
+    )
+    
+    return {"success": True}
+
+
+# ============================================================
 # UST-ID VALIDIERUNG
 # ============================================================
 
