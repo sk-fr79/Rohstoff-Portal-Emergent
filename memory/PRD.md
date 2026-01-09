@@ -15,6 +15,39 @@ Die gesamte Geschäftslogik der bestehenden Anwendung soll 1:1 übernommen werde
 
 ## Implementiert (Stand: 09.01.2026)
 
+### ✅ Artikel-Modul - Redesign mit Sidebar-Layout (NEU - 09.01.2026)
+Komplette Neugestaltung der Artikel-Seite im Stil der Adressen-Seite:
+- **Tabellen-Ansicht:** DataTable mit Spalten ANR, Bezeichnung, Einheit, Gruppe, Gefahrgut, Status
+- **Detailansicht:** Slide-In Panel (600px) von rechts mit Sidebar-Navigation
+  - Sektionen: Stammdaten, Einheiten, Klassifizierung, AVV-Codes, Zoll & Export, Bemerkungen
+- **Bearbeitungsmodus:** Toggle Bearbeiten/Speichern Button
+- **Filter:** Toggle für inaktive Artikel
+- **Create-Dialog:** Formular mit ANR, Artikelbezeichnung, Einheit, Artikelgruppe, Aktiv/Gefahrgut
+- **Backend-Endpunkte:**
+  - GET /api/artikel - Liste mit Suche und Pagination
+  - GET /api/artikel/{id} - Einzelner Artikel
+  - POST /api/artikel - Neuer Artikel
+  - PUT /api/artikel/{id} - Artikel aktualisieren
+  - DELETE /api/artikel/{id} - Soft-Delete (aktiv=false)
+- **24 Tests bestanden (100%)**
+
+### ✅ Kontrakte-Modul - Redesign mit Sidebar-Layout (NEU - 09.01.2026)
+Komplette Neugestaltung der Kontrakte-Seite im Stil der Adressen-Seite:
+- **Tabellen-Ansicht:** DataTable mit Spalten Nr., Typ, Vertragspartner, Gültig bis, Status, Positionen
+- **Detailansicht:** Slide-In Panel (600px) von rechts mit Sidebar-Navigation
+  - Sektionen: Kopfdaten, Vertragspartner, Termine, Konditionen, Positionen, Bemerkungen
+- **Bearbeitungsmodus:** Toggle Bearbeiten/Speichern Button
+- **Filter:** Dropdown für Kontrakttyp (Alle/Einkauf/Verkauf)
+- **Status-Badges:** Farbcodiert (OFFEN=blau, AKTIV=grün, TEILERFUELLT=gelb, ERFUELLT=emerald, STORNO=rot)
+- **Create-Dialog:** Formular mit Kontrakttyp, Buchungsnummer, Vertragspartner, PLZ, Ort, Gültigkeitsdatum
+- **Backend-Endpunkte:**
+  - GET /api/kontrakte - Liste mit Suche, Pagination und Typfilter
+  - GET /api/kontrakte/{id} - Einzelner Kontrakt
+  - POST /api/kontrakte - Neuer Kontrakt (erweitertes Schema)
+  - PUT /api/kontrakte/{id} - Kontrakt aktualisieren
+  - DELETE /api/kontrakte/{id} - Soft-Delete (deleted=true)
+  - POST /api/kontrakte/{id}/positionen - Position hinzufügen
+
 ### ✅ Wiegekarten-Modul (NEU - 09.01.2026)
 Komplettes Modul für Fahrzeugwaage mit Systec IT 4000 IP-Wiegeterminal:
 - **Tabellen-Ansicht:** Grid mit Doppelklick zur Detailansicht
