@@ -284,31 +284,8 @@ export function MainLayout() {
         </TooltipProvider>
       </nav>
 
-      {/* Collapse Toggle Button (Desktop only) */}
-      {!isMobile && (
-        <div className="px-3 pb-2">
-          <button
-            onClick={toggleSidebar}
-            className={cn(
-              "w-full flex items-center justify-center p-2 rounded-lg transition-colors",
-              "text-gray-400 hover:bg-white/10 hover:text-white",
-              "border border-white/10"
-            )}
-          >
-            {collapsed ? (
-              <ChevronRight className="h-5 w-5" />
-            ) : (
-              <>
-                <ChevronLeft className="h-5 w-5 mr-2" />
-                <span className="text-sm">Einklappen</span>
-              </>
-            )}
-          </button>
-        </div>
-      )}
-
       {/* User Section */}
-      <div className={cn("border-t border-white/10", collapsed ? "p-2" : "p-4")}>
+      <div className={cn("border-t border-white/10", collapsed ? "p-3" : "p-4")}>
         {collapsed ? (
           // Collapsed: Show only avatar with tooltip
           <TooltipProvider delayDuration={0}>
