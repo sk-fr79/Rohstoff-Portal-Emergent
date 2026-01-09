@@ -430,6 +430,8 @@ Passwort: Admin123!
 - [x] UX-Refactoring: "Neu"-Button → Sidebar in allen Modulen ✅ ERLEDIGT (09.01.2026)
 - [x] Backend-Refactoring: `server.py` in Module aufteilen ✅ ERLEDIGT (09.01.2026)
 - [x] Adressformular-Redesign mit Firma/Privat-Toggle, SVG-Flaggen, Händler/Sachbearbeiter ✅ ERLEDIGT (09.01.2026)
+- [x] Echo2 Steuer-Validierungslogik (__FS_Adress_Check.java) implementiert ✅ ERLEDIGT (09.01.2026)
+- [x] Default-Werte für Sperren korrigiert (wareneingang/warenausgang = True) ✅ ERLEDIGT (09.01.2026)
 
 ### P1 - Hohe Priorität
 - [ ] PDF-Export für Rechnungen und Lieferscheine
