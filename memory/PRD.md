@@ -275,6 +275,46 @@ Portiert aus Java-Code: `rohstoff.Echo2BusinessLogic.FIRMENSTAMM.__FS_Adress_Che
 - FIRMA/PRIVAT Toggle mit kontextabhängiger Beschreibung
 - Sonderschalter werden automatisch aktiviert/deaktiviert basierend auf Land und Typ
 
+### ✅ Echo2 Steuer-Validierungslogik vollständig portiert (NEU - 09.01.2026)
+Komplette Geschäftslogik aus `__FS_Adress_Check.java` nach Python migriert:
+
+**Validierungsregeln:**
+1. **Firma/Privat-Exklusivität:** Adresse muss entweder FIRMA oder PRIVAT sein (nie beides/keines)
+2. **Teilweise UST-ID:** Wenn UST-Länderkürzel ODER UST-ID gesetzt, müssen beide ausgefüllt sein
+3. **UST-Länderkürzel-Konsistenz:** Präfix muss zum Land passen (z.B. AT für Österreich)
+4. **Ausnahmeschalter nur im Inland:** `firma_ohne_ustid` und `privat_mit_ustid` nur für Deutschland sinnvoll
+5. **Keine doppelten Ausnahmeschalter:** Beide können nicht gleichzeitig aktiv sein
+
+**FIRMA-Validierung:**
+- Inland ohne UST-ID: Nur mit `firma_ohne_ustid=True` UND Steuernummer erlaubt
+- EU-Ausland: UST-ID ist Pflicht
+- Mit UST-ID: `firma_ohne_ustid` darf nicht gesetzt sein
+- `privat_mit_ustid` darf bei FIRMA nie gesetzt sein
+
+**PRIVAT-Validierung:**
+- Inland mit UST-ID: Nur mit `privat_mit_ustid=True` erlaubt
+- Inland ohne UST-ID: Ausweisnummer ODER Steuernummer erforderlich
+- Ausland: UST-ID nicht erlaubt, Ausweisnummer ist Pflicht
+- `firma_ohne_ustid` darf bei PRIVAT nie gesetzt sein
+
+**Korrigierte Default-Werte:**
+- `wareneingang_sperren: bool = True` (war: False)
+- `warenausgang_sperren: bool = True` (war: False)
+
+**Neue Felder hinzugefügt:**
+- `erstkontakt`: Datum des Erstkontakts
+- `branche`: Branche/Industrie
+- `adressklasse`: Klassifizierung (A/B/C)
+- `potential`: Potentialklasse
+- `kredit_limit`: Kreditlimit
+- `kredit_limit_waehrung`: Währung des Kreditlimits
+- `ist_lieferant`: Einkaufsfreigabe
+- `ist_abnehmer`: Verkaufsfreigabe
+
+**Test-Ergebnis:** 37/37 Tests bestanden (100%)
+- 20 neue Tests für Steuer-Validierung
+- Alle Szenarien aus Echo2-Java-Code abgedeckt
+
 ### ✅ Adressen-Stammdaten - Vollständige Feldstruktur aus Java-System
 - **Tab 1 - Adresse:**
   - Status: Aktiv, Wareneingang, Warenausgang, Firma, Barkunde, Scheckdruck
