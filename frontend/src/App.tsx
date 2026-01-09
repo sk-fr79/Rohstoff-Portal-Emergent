@@ -47,6 +47,7 @@ export default function App() {
           <Route path="wiegekarten" element={<WiegekartenPage />} />
           <Route path="fuhren" element={<FuhrenPage />} />
           <Route path="rechnungen" element={<RechnungenPage />} />
+          <Route path="kreditversicherungen" element={<KreditversicherungenPage />} />
         </Route>
         
         {/* Fallback */}
