@@ -3410,7 +3410,7 @@ async def get_fuhre_by_id(fuhre_id: str, user = Depends(get_current_user)):
 
 
 @app.put("/api/fuhren/{fuhre_id}")
-async def update_fuhre(fuhre_id: str, data: FuhreUpdate, user = Depends(get_current_user)):
+async def update_fuhre(fuhre_id: str, data: FuhreUpdate, skip_validation: bool = False, user = Depends(get_current_user)):
     """Fuhre aktualisieren"""
     existing = await db.fuhren.find_one({
         "_id": fuhre_id,
@@ -3421,6 +3421,30 @@ async def update_fuhre(fuhre_id: str, data: FuhreUpdate, user = Depends(get_curr
         raise HTTPException(status_code=404, detail="Fuhre nicht gefunden")
     
     update_data = {k: v for k, v in data.model_dump().items() if v is not None}
+    
+    # Status-Übergang validieren
+    if "status" in update_data and not skip_validation:
+        old_status = existing.get("status", "OFFEN")
+        new_status = update_data["status"]
+        status_validation = await FuhreValidator.validate_status_transition(old_status, new_status)
+        if not status_validation.is_valid:
+            return {
+                "success": False,
+                "error": "Statusübergang nicht erlaubt",
+                **status_validation.to_dict()
+            }
+    
+    # Validierung durchführen (wenn nicht übersprungen)
+    validation_result = None
+    if not skip_validation:
+        merged = {**existing, **update_data}
+        validation_result = await FuhreValidator.validate(merged, db)
+        if not validation_result.is_valid:
+            return {
+                "success": False,
+                "error": "Validierungsfehler",
+                **validation_result.to_dict()
+            }
     
     # Preise neu berechnen wenn Mengen oder Einzelpreise geändert wurden
     menge_aufladen = update_data.get("menge_aufladen", existing.get("menge_aufladen", 0))
@@ -3438,7 +3462,10 @@ async def update_fuhre(fuhre_id: str, data: FuhreUpdate, user = Depends(get_curr
     fuhre = await db.fuhren.find_one({"_id": fuhre_id})
     fuhre["id"] = fuhre.pop("_id")
     
-    return {"success": True, "data": fuhre}
+    response = {"success": True, "data": fuhre}
+    if validation_result and validation_result.warnings:
+        response["warnings"] = validation_result.warnings
+    return response
 
 
 @app.delete("/api/fuhren/{fuhre_id}")
