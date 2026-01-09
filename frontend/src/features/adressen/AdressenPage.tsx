@@ -290,10 +290,10 @@ export function AdressenPage() {
       weitere_ustids: weitereUstIds,
     };
     
-    if (isEditing && selectedAdresse) {
-      updateMutation.mutate({ id: selectedAdresse.id, data: fullData });
-    } else {
+    if (isNewRecord) {
       createMutation.mutate(fullData as any);
+    } else if (selectedAdresse) {
+      updateMutation.mutate({ id: selectedAdresse.id, data: fullData });
     }
   };
 
