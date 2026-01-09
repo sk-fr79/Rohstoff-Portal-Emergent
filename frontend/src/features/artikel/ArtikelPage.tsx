@@ -125,11 +125,20 @@ export function ArtikelPage() {
 
   const createMutation = useMutation({
     mutationFn: (data: ArtikelForm) => artikelApi.create(data),
-    onSuccess: () => {
+    onSuccess: (response) => {
       queryClient.invalidateQueries({ queryKey: ['artikel'] });
       toast.success('Artikel erfolgreich erstellt');
-      setShowCreateDialog(false);
-      reset();
+      // Nach erfolgreicher Erstellung: Sidebar bleibt offen mit neuem Datensatz
+      if (response.data?.data) {
+        setSelectedArtikel(response.data.data);
+        Object.entries(response.data.data).forEach(([key, value]) => {
+          if (key in artikelSchema.shape) {
+            setValue(key as keyof ArtikelForm, value as any);
+          }
+        });
+      }
+      setIsNewRecord(false);
+      setIsEditing(false);
     },
     onError: (error: any) => {
       toast.error(error.response?.data?.detail || 'Fehler beim Erstellen');
@@ -179,9 +188,61 @@ export function ArtikelPage() {
     )();
   };
 
+  // Neue Artikel anlegen - öffnet Sidebar mit leerem Datensatz
+  const handleNewArtikel = () => {
+    const emptyArtikel: Artikel = {
+      id: 'NEU',
+      artbez1: '',
+      einheit: 'kg',
+      einheit_preis: 't',
+      mengendivisor: 1000,
+      genauigkeit_mengen: 3,
+      aktiv: true,
+      gefahrgut: false,
+      ist_leergut: false,
+      elektro_elektronik: false,
+      ist_produkt: false,
+      dienstleistung: false,
+      end_of_waste: false,
+      end_of_waste_lager: false,
+    };
+    setSelectedArtikel(emptyArtikel);
+    reset(emptyArtikel);
+    setIsNewRecord(true);
+    setIsEditing(true);
+    setActiveSection('stamm');
+  };
+
+  // Sidebar schließen
+  const handleClose = () => {
+    setSelectedArtikel(null);
+    setIsEditing(false);
+    setIsNewRecord(false);
+    reset();
+  };
+
+  // Abbrechen
+  const handleCancel = () => {
+    if (isNewRecord) {
+      setSelectedArtikel(null);
+      setIsNewRecord(false);
+      reset();
+    } else {
+      setIsEditing(false);
+      if (selectedArtikel) {
+        Object.entries(selectedArtikel).forEach(([key, value]) => {
+          if (key in artikelSchema.shape) {
+            setValue(key as keyof ArtikelForm, value as any);
+          }
+        });
+      }
+    }
+  };
+
   // Detailansicht öffnen
   const openDetail = (artikel: Artikel) => {
     setSelectedArtikel(artikel);
+    setIsNewRecord(false);
     setIsEditing(false);
     setActiveSection('stamm');
     Object.entries(artikel).forEach(([key, value]) => {
@@ -312,7 +373,7 @@ export function ArtikelPage() {
                 Inaktive {inactiveCount > 0 && `(${inactiveCount})`}
               </Label>
             </div>
-            <Button onClick={() => setShowCreateDialog(true)} className="bg-emerald-600 hover:bg-emerald-700">
+            <Button onClick={handleNewArtikel} className="bg-emerald-600 hover:bg-emerald-700" data-testid="new-artikel-btn">
               <Plus className="h-4 w-4 mr-2" />
               Neuer Artikel
             </Button>
