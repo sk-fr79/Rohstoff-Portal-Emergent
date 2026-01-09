@@ -243,7 +243,7 @@ export function AdressenPage() {
   const watchFields = watch();
   
   // Helper: Firma-Status zuverlässig ermitteln (watchFields hat Vorrang vor selectedAdresse)
-  const istFirma = watchFields.ist_firma !== undefined ? watchFields.ist_firma : (selectedAdresse?.ist_firma ?? true);
+  const istFirma = istFirma !== undefined ? istFirma : (selectedAdresse?.ist_firma ?? true);
 
   // Queries & Mutations
   const { data: adressenData, isLoading } = useQuery({
@@ -712,15 +712,15 @@ export function AdressenPage() {
                     ) : (
                       <div className={cn(
                         "h-12 w-12 rounded-lg flex items-center justify-center",
-                        watchFields.ist_firma ? "bg-blue-50" : "bg-purple-50"
+                        istFirma ? "bg-blue-50" : "bg-purple-50"
                       )}>
-                        {watchFields.ist_firma ? 
+                        {istFirma ? 
                           <Building2 className="h-6 w-6 text-blue-400" /> : 
                           <User className="h-6 w-6 text-purple-400" />
                         }
                       </div>
                     )}
-                    {isEditing && watchFields.ist_firma && (
+                    {isEditing && istFirma && (
                       <label className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-lg opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity">
                         <Camera className="h-5 w-5 text-white" />
                         <input type="file" accept="image/*" className="hidden" onChange={handleLogoUpload} />
@@ -793,8 +793,8 @@ export function AdressenPage() {
                   {/* Stammdaten Section */}
                   {activeSection === 'stamm' && (() => {
                     // Helper: Firma-Status sicher ermitteln
-                    const istFirma = watchFields.ist_firma !== undefined 
-                      ? watchFields.ist_firma 
+                    const istFirma = istFirma !== undefined 
+                      ? istFirma 
                       : (selectedAdresse?.ist_firma ?? true);
                     
                     return (
@@ -822,12 +822,12 @@ export function AdressenPage() {
                             <div>
                               <span className={cn(
                                 "font-semibold text-lg",
-                                watchFields.ist_firma ? "text-blue-700" : "text-purple-700"
+                                istFirma ? "text-blue-700" : "text-purple-700"
                               )}>
-                                {watchFields.ist_firma ? 'Geschäftskunde' : 'Privatperson'}
+                                {istFirma ? 'Geschäftskunde' : 'Privatperson'}
                               </span>
                               <p className="text-sm text-gray-500">
-                                {watchFields.ist_firma 
+                                {istFirma 
                                   ? 'Firmenkonto mit UST-ID und Handelsregister' 
                                   : 'Privatkonto mit persönlichen Daten'}
                               </p>
@@ -835,21 +835,21 @@ export function AdressenPage() {
                           </div>
                           {isEditing && (
                             <div className="flex items-center gap-3 bg-white/80 backdrop-blur-sm px-4 py-2 rounded-lg shadow-sm">
-                              <span className={cn("text-sm font-medium", watchFields.ist_firma === false && "text-purple-600")}>Privat</span>
+                              <span className={cn("text-sm font-medium", istFirma === false && "text-purple-600")}>Privat</span>
                               <Switch 
-                                checked={Boolean(watchFields.ist_firma)} 
+                                checked={Boolean(istFirma)} 
                                 onCheckedChange={(checked) => {
                                   setValue('ist_firma', checked);
                                 }}
                               />
-                              <span className={cn("text-sm font-medium", watchFields.ist_firma === true && "text-blue-600")}>Firma</span>
+                              <span className={cn("text-sm font-medium", istFirma === true && "text-blue-600")}>Firma</span>
                             </div>
                           )}
                         </div>
                       </div>
 
                       {/* Firmenlogo Upload - nur für Firmen */}
-                      {watchFields.ist_firma && isEditing && (
+                      {istFirma && isEditing && (
                         <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg border border-gray-100">
                           {selectedAdresse?.firmenlogo ? (
                             <img 
@@ -873,12 +873,12 @@ export function AdressenPage() {
                       {/* Grundinformationen - Smart Layout */}
                       <div className="bg-white rounded-xl border border-gray-100 p-5 space-y-5">
                         <h3 className="text-sm font-semibold text-gray-900 flex items-center gap-2">
-                          {watchFields.ist_firma ? (
+                          {istFirma ? (
                             <Building2 className="h-4 w-4 text-blue-500" />
                           ) : (
                             <User className="h-4 w-4 text-purple-500" />
                           )}
-                          {watchFields.ist_firma ? 'Firmendaten' : 'Persönliche Daten'}
+                          {istFirma ? 'Firmendaten' : 'Persönliche Daten'}
                         </h3>
                         
                         <div className="grid grid-cols-6 gap-4">
@@ -894,7 +894,7 @@ export function AdressenPage() {
                                 <SelectValue placeholder="Wählen..." />
                               </SelectTrigger>
                               <SelectContent>
-                                {watchFields.ist_firma ? (
+                                {istFirma ? (
                                   <SelectItem value="Firma">Firma</SelectItem>
                                 ) : (
                                   <>
@@ -908,7 +908,7 @@ export function AdressenPage() {
                           </div>
 
                           {/* Firma - nur bei Geschäftskunden */}
-                          {watchFields.ist_firma && (
+                          {istFirma && (
                             <div className="col-span-4 space-y-1.5">
                               <Label className="text-sm text-gray-600">Firmenname *</Label>
                               <Input 
@@ -922,7 +922,7 @@ export function AdressenPage() {
                           )}
 
                           {/* Vorname & Nachname - nur bei Privatpersonen */}
-                          {!watchFields.ist_firma && (
+                          {!istFirma && (
                             <>
                               <div className="col-span-2 space-y-1.5">
                                 <Label className="text-sm text-gray-600">Vorname</Label>
@@ -947,20 +947,20 @@ export function AdressenPage() {
                           )}
 
                           {/* Adresszusatz / Name 2 - immer sichtbar */}
-                          <div className={cn("space-y-1.5", watchFields.ist_firma ? "col-span-3" : "col-span-6")}>
+                          <div className={cn("space-y-1.5", istFirma ? "col-span-3" : "col-span-6")}>
                             <Label className="text-sm text-gray-600">
-                              {watchFields.ist_firma ? 'Zusatz / Abteilung' : 'Adresszusatz'}
+                              {istFirma ? 'Zusatz / Abteilung' : 'Adresszusatz'}
                             </Label>
                             <Input 
                               {...register('name2')} 
                               disabled={!isEditing} 
                               className="bg-white"
-                              placeholder={watchFields.ist_firma ? "z.B. Einkaufsabteilung" : "z.B. c/o Familie Schmidt"}
+                              placeholder={istFirma ? "z.B. Einkaufsabteilung" : "z.B. c/o Familie Schmidt"}
                             />
                           </div>
 
                           {/* Rechtsform - nur bei Firmen */}
-                          {watchFields.ist_firma && (
+                          {istFirma && (
                             <div className="col-span-3 space-y-1.5">
                               <Label className="text-sm text-gray-600">Rechtsform</Label>
                               <Select 
@@ -1271,7 +1271,7 @@ export function AdressenPage() {
                               <Switch 
                                 checked={watchFields.firma_ohne_ustid} 
                                 onCheckedChange={(c) => setValue('firma_ohne_ustid', c)} 
-                                disabled={!isEditing || !watchFields.ist_firma || watchFields.land !== 'Deutschland'} 
+                                disabled={!isEditing || !istFirma || watchFields.land !== 'Deutschland'} 
                               />
                               <Label className="text-sm text-gray-700">Firma ohne UST-ID</Label>
                             </div>
@@ -1281,7 +1281,7 @@ export function AdressenPage() {
                               <Switch 
                                 checked={watchFields.privat_mit_ustid} 
                                 onCheckedChange={(c) => setValue('privat_mit_ustid', c)} 
-                                disabled={!isEditing || watchFields.ist_firma || watchFields.land !== 'Deutschland'} 
+                                disabled={!isEditing || istFirma || watchFields.land !== 'Deutschland'} 
                               />
                               <Label className="text-sm text-gray-700">Privat mit UST-ID</Label>
                             </div>
