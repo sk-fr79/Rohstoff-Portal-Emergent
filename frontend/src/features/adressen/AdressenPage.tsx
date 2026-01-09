@@ -32,6 +32,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { BankverbindungenTab } from './components/BankverbindungenTab';
 import { LieferadressenTab } from './components/LieferadressenTab';
 import { ValidationDisplay, SteuerStatusBadge } from './components/ValidationDisplay';
+import { KreditversicherungTab } from './components/KreditversicherungTab';
 
 // Import SVG Flags from country-flag-icons
 import DE from 'country-flag-icons/react/3x2/DE';
