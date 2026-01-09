@@ -1,11 +1,12 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { ColumnDef } from '@tanstack/react-table';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { 
-  Plus, Pencil, Trash2, Shield, Users, Euro,
-  X, Save, Loader2, Search, ChevronRight, FileText
+  Plus, Pencil, Trash2, Shield, Users, Euro, TrendingUp,
+  X, Save, Loader2, Search, ChevronRight, FileText, Calendar,
+  Building2, AlertTriangle, CheckCircle, ChevronDown, MoreHorizontal
 } from 'lucide-react';
 import { api } from '@/services/api/client';
 import { Button } from '@/components/ui/button';
@@ -16,26 +17,30 @@ import { Switch } from '@/components/ui/switch';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
+import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 // Types
-interface VersicherteAdresse {
+interface KundenPosition {
   id: string;
   adresse_id: string;
   adresse_name?: string;
   adresse_ort?: string;
   adresse_kdnr?: string;
-}
-
-interface KVPosition {
-  id: string;
-  gueltig_ab: string;
+  kreditlimit: number;
+  unterversicherungsnummer?: string;
+  fakturierungsfrist?: number;
   gueltig_bis?: string;
-  betrag: number;
-  betrag_anfrage?: number;
-  waehrung: string;
   aktiv: boolean;
   bemerkungen?: string;
+  erstellt_am?: string;
+  geaendert_am?: string;
 }
 
 interface Kreditversicherung {
@@ -43,12 +48,17 @@ interface Kreditversicherung {
   versicherungsnummer?: string;
   versicherer_id?: string;
   versicherer_name?: string;
-  fakturierungsfrist?: number;
+  gesamtlimit: number;
+  gueltig_von?: string;
+  gueltig_bis?: string;
   aktiv: boolean;
   bemerkungen?: string;
-  versicherte_adressen: VersicherteAdresse[];
-  positionen: KVPosition[];
+  kunden_positionen: KundenPosition[];
   created_at?: string;
+  // Berechnete Felder
+  auslastung_prozent?: number;
+  summe_kundenlimits?: number;
+  anzahl_kunden?: number;
 }
 
 const formatCurrency = (value: number): string => {
@@ -72,25 +82,31 @@ export default function KreditversicherungenPage() {
   const [selectedKV, setSelectedKV] = useState<Kreditversicherung | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [isNewRecord, setIsNewRecord] = useState(false);
-  const [showAddresseDialog, setShowAddresseDialog] = useState(false);
-  const [showPositionDialog, setShowPositionDialog] = useState(false);
+  const [showAddKundeDialog, setShowAddKundeDialog] = useState(false);
+  const [showEditKundeDialog, setShowEditKundeDialog] = useState(false);
   const [addressSearchQuery, setAddressSearchQuery] = useState('');
-  const [editingPosition, setEditingPosition] = useState<KVPosition | null>(null);
+  const [kundenSearchQuery, setKundenSearchQuery] = useState('');
+  const [editingKunde, setEditingKunde] = useState<KundenPosition | null>(null);
 
-  // Form state
+  // Form state für Hauptvertrag
   const [formData, setFormData] = useState({
     versicherungsnummer: '',
     versicherer_name: '',
-    fakturierungsfrist: 0,
+    gesamtlimit: 0,
+    gueltig_von: '',
+    gueltig_bis: '',
     aktiv: true,
     bemerkungen: '',
   });
 
-  const [positionForm, setPositionForm] = useState({
-    gueltig_ab: new Date().toISOString().split('T')[0],
+  // Form state für Kundenposition
+  const [kundeForm, setKundeForm] = useState({
+    adresse_id: '',
+    adresse_name: '',
+    kreditlimit: 0,
+    unterversicherungsnummer: '',
+    fakturierungsfrist: 0,
     gueltig_bis: '',
-    betrag: 0,
-    betrag_anfrage: 0,
     aktiv: true,
     bemerkungen: '',
   });
@@ -103,6 +119,24 @@ export default function KreditversicherungenPage() {
       return response.data.data || [];
     },
   });
+
+  // Einzelne KV nachladen für aktuelle Daten
+  const { data: selectedKVDetails } = useQuery({
+    queryKey: ['kreditversicherung', selectedKV?.id],
+    queryFn: async () => {
+      if (!selectedKV?.id) return null;
+      const response = await api.get(`/kreditversicherungen/${selectedKV.id}`);
+      return response.data.data;
+    },
+    enabled: !!selectedKV?.id && !isNewRecord,
+  });
+
+  // Sync selectedKV mit Details
+  useEffect(() => {
+    if (selectedKVDetails && !isNewRecord) {
+      setSelectedKV(selectedKVDetails);
+    }
+  }, [selectedKVDetails, isNewRecord]);
 
   const { data: addressResults } = useQuery({
     queryKey: ['adressen-search', addressSearchQuery],
@@ -122,7 +156,7 @@ export default function KreditversicherungenPage() {
       toast.success('Kreditversicherung erstellt');
       setSelectedKV(response.data.data);
       setIsNewRecord(false);
-      setIsEditing(false);
+      setIsEditing(true); // Weiter bearbeiten für Kunden hinzufügen
     },
     onError: () => toast.error('Fehler beim Erstellen'),
   });
@@ -132,6 +166,7 @@ export default function KreditversicherungenPage() {
       api.put(`/kreditversicherungen/${id}`, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['kreditversicherungen'] });
+      queryClient.invalidateQueries({ queryKey: ['kreditversicherung', selectedKV?.id] });
       toast.success('Kreditversicherung aktualisiert');
       setIsEditing(false);
     },
@@ -145,79 +180,63 @@ export default function KreditversicherungenPage() {
       toast.success('Kreditversicherung deaktiviert');
       setSelectedKV(null);
     },
-    onError: () => toast.error('Fehler beim Löschen'),
-  });
-  
-  // Use deleteMutation to avoid unused variable error
-  const handleDelete = (id: string) => deleteMutation.mutate(id);
-
-  const addAdresseMutation = useMutation({
-    mutationFn: ({ kvId, adresseId }: { kvId: string; adresseId: string }) =>
-      api.post(`/kreditversicherungen/${kvId}/adressen`, { adresse_id: adresseId }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['kreditversicherungen'] });
-      toast.success('Adresse hinzugefügt');
-      setShowAddresseDialog(false);
-      setAddressSearchQuery('');
-    },
-    onError: () => toast.error('Fehler beim Hinzufügen'),
+    onError: () => toast.error('Fehler beim Deaktivieren'),
   });
 
-  const removeAdresseMutation = useMutation({
-    mutationFn: ({ kvId, linkId }: { kvId: string; linkId: string }) =>
-      api.delete(`/kreditversicherungen/${kvId}/adressen/${linkId}`),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['kreditversicherungen'] });
-      toast.success('Adresse entfernt');
-    },
-    onError: () => toast.error('Fehler beim Entfernen'),
-  });
-
-  const addPositionMutation = useMutation({
+  const addKundeMutation = useMutation({
     mutationFn: ({ kvId, data }: { kvId: string; data: any }) =>
       api.post(`/kreditversicherungen/${kvId}/positionen`, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['kreditversicherungen'] });
-      toast.success('Position hinzugefügt');
-      setShowPositionDialog(false);
-      resetPositionForm();
+      queryClient.invalidateQueries({ queryKey: ['kreditversicherung', selectedKV?.id] });
+      toast.success('Kunde hinzugefügt');
+      setShowAddKundeDialog(false);
+      resetKundeForm();
     },
-    onError: () => toast.error('Fehler beim Hinzufügen'),
+    onError: (error: any) => {
+      const msg = error.response?.data?.detail || 'Fehler beim Hinzufügen';
+      toast.error(msg);
+    },
   });
 
-  const updatePositionMutation = useMutation({
+  const updateKundeMutation = useMutation({
     mutationFn: ({ kvId, posId, data }: { kvId: string; posId: string; data: any }) =>
       api.put(`/kreditversicherungen/${kvId}/positionen/${posId}`, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['kreditversicherungen'] });
-      toast.success('Position aktualisiert');
-      setShowPositionDialog(false);
-      resetPositionForm();
+      queryClient.invalidateQueries({ queryKey: ['kreditversicherung', selectedKV?.id] });
+      toast.success('Kunde aktualisiert');
+      setShowEditKundeDialog(false);
+      resetKundeForm();
     },
     onError: () => toast.error('Fehler beim Aktualisieren'),
   });
 
-  const deletePositionMutation = useMutation({
+  const deleteKundeMutation = useMutation({
     mutationFn: ({ kvId, posId }: { kvId: string; posId: string }) =>
       api.delete(`/kreditversicherungen/${kvId}/positionen/${posId}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['kreditversicherungen'] });
-      toast.success('Position gelöscht');
+      queryClient.invalidateQueries({ queryKey: ['kreditversicherung', selectedKV?.id] });
+      toast.success('Kunde entfernt');
     },
-    onError: () => toast.error('Fehler beim Löschen'),
+    onError: () => toast.error('Fehler beim Entfernen'),
   });
 
   // Helpers
-  const resetPositionForm = () => {
-    setPositionForm({
-      gueltig_ab: new Date().toISOString().split('T')[0],
+  const resetKundeForm = () => {
+    setKundeForm({
+      adresse_id: '',
+      adresse_name: '',
+      kreditlimit: 0,
+      unterversicherungsnummer: '',
+      fakturierungsfrist: 0,
       gueltig_bis: '',
-      betrag: 0,
-      betrag_anfrage: 0,
       aktiv: true,
       bemerkungen: '',
     });
-    setEditingPosition(null);
+    setEditingKunde(null);
+    setAddressSearchQuery('');
   };
 
   const handleNewKV = () => {
@@ -225,16 +244,19 @@ export default function KreditversicherungenPage() {
       id: '',
       versicherungsnummer: '',
       versicherer_name: '',
-      fakturierungsfrist: 0,
+      gesamtlimit: 0,
+      gueltig_von: new Date().toISOString().split('T')[0],
+      gueltig_bis: '',
       aktiv: true,
       bemerkungen: '',
-      versicherte_adressen: [],
-      positionen: [],
+      kunden_positionen: [],
     });
     setFormData({
       versicherungsnummer: '',
       versicherer_name: '',
-      fakturierungsfrist: 0,
+      gesamtlimit: 0,
+      gueltig_von: new Date().toISOString().split('T')[0],
+      gueltig_bis: '',
       aktiv: true,
       bemerkungen: '',
     });
@@ -247,7 +269,9 @@ export default function KreditversicherungenPage() {
     setFormData({
       versicherungsnummer: kv.versicherungsnummer || '',
       versicherer_name: kv.versicherer_name || '',
-      fakturierungsfrist: kv.fakturierungsfrist || 0,
+      gesamtlimit: kv.gesamtlimit || 0,
+      gueltig_von: kv.gueltig_von || '',
+      gueltig_bis: kv.gueltig_bis || '',
       aktiv: kv.aktiv,
       bemerkungen: kv.bemerkungen || '',
     });
@@ -263,37 +287,86 @@ export default function KreditversicherungenPage() {
     }
   };
 
-  const handleEditPosition = (pos: KVPosition) => {
-    setEditingPosition(pos);
-    setPositionForm({
-      gueltig_ab: pos.gueltig_ab,
-      gueltig_bis: pos.gueltig_bis || '',
-      betrag: pos.betrag,
-      betrag_anfrage: pos.betrag_anfrage || 0,
-      aktiv: pos.aktiv,
-      bemerkungen: pos.bemerkungen || '',
+  const handleEditKunde = (kunde: KundenPosition) => {
+    setEditingKunde(kunde);
+    setKundeForm({
+      adresse_id: kunde.adresse_id,
+      adresse_name: kunde.adresse_name || '',
+      kreditlimit: kunde.kreditlimit,
+      unterversicherungsnummer: kunde.unterversicherungsnummer || '',
+      fakturierungsfrist: kunde.fakturierungsfrist || 0,
+      gueltig_bis: kunde.gueltig_bis || '',
+      aktiv: kunde.aktiv,
+      bemerkungen: kunde.bemerkungen || '',
     });
-    setShowPositionDialog(true);
+    setShowEditKundeDialog(true);
   };
 
-  const handleSavePosition = () => {
+  const handleSaveKunde = () => {
     if (!selectedKV) return;
     
-    const data = {
-      ...positionForm,
-      gueltig_bis: positionForm.gueltig_bis || null,
-      betrag_anfrage: positionForm.betrag_anfrage || null,
-    };
-
-    if (editingPosition) {
-      updatePositionMutation.mutate({ 
+    if (editingKunde) {
+      updateKundeMutation.mutate({ 
         kvId: selectedKV.id, 
-        posId: editingPosition.id, 
-        data 
+        posId: editingKunde.id, 
+        data: {
+          kreditlimit: kundeForm.kreditlimit,
+          unterversicherungsnummer: kundeForm.unterversicherungsnummer || null,
+          fakturierungsfrist: kundeForm.fakturierungsfrist || null,
+          gueltig_bis: kundeForm.gueltig_bis || null,
+          aktiv: kundeForm.aktiv,
+          bemerkungen: kundeForm.bemerkungen || null,
+        }
       });
     } else {
-      addPositionMutation.mutate({ kvId: selectedKV.id, data });
+      addKundeMutation.mutate({ 
+        kvId: selectedKV.id, 
+        data: {
+          adresse_id: kundeForm.adresse_id,
+          kreditlimit: kundeForm.kreditlimit,
+          unterversicherungsnummer: kundeForm.unterversicherungsnummer || null,
+          fakturierungsfrist: kundeForm.fakturierungsfrist || null,
+          gueltig_bis: kundeForm.gueltig_bis || null,
+          aktiv: kundeForm.aktiv,
+          bemerkungen: kundeForm.bemerkungen || null,
+        }
+      });
     }
+  };
+
+  const handleSelectAddress = (addr: any) => {
+    setKundeForm({
+      ...kundeForm,
+      adresse_id: addr.id,
+      adresse_name: addr.name1,
+    });
+    setAddressSearchQuery('');
+  };
+
+  // Gefilterte Kundenliste
+  const filteredKunden = useMemo(() => {
+    if (!selectedKV?.kunden_positionen) return [];
+    let kunden = [...selectedKV.kunden_positionen];
+    
+    if (kundenSearchQuery) {
+      const q = kundenSearchQuery.toLowerCase();
+      kunden = kunden.filter(k => 
+        (k.adresse_name || '').toLowerCase().includes(q) ||
+        (k.adresse_kdnr || '').toLowerCase().includes(q) ||
+        (k.adresse_ort || '').toLowerCase().includes(q) ||
+        (k.unterversicherungsnummer || '').toLowerCase().includes(q)
+      );
+    }
+    
+    return kunden;
+  }, [selectedKV?.kunden_positionen, kundenSearchQuery]);
+
+  // Auslastungs-Farbe
+  const getAuslastungColor = (prozent: number) => {
+    if (prozent >= 100) return 'bg-red-500';
+    if (prozent >= 80) return 'bg-amber-500';
+    if (prozent >= 50) return 'bg-blue-500';
+    return 'bg-green-500';
   };
 
   // Table columns
@@ -302,29 +375,56 @@ export default function KreditversicherungenPage() {
       accessorKey: 'versicherungsnummer',
       header: 'Nummer',
       cell: ({ row }) => (
-        <span className="font-mono">{row.original.versicherungsnummer || row.original.id.slice(0, 8)}</span>
+        <span className="font-mono text-sm">{row.original.versicherungsnummer || row.original.id}</span>
       ),
     },
     {
       accessorKey: 'versicherer_name',
       header: 'Versicherer',
+      cell: ({ row }) => (
+        <span className="font-medium">{row.original.versicherer_name || '-'}</span>
+      ),
     },
     {
-      id: 'limit',
-      header: 'Aktuelles Limit',
+      id: 'gesamtlimit',
+      header: 'Gesamtlimit',
+      cell: ({ row }) => (
+        <span className="font-semibold">{formatCurrency(row.original.gesamtlimit)}</span>
+      ),
+    },
+    {
+      id: 'auslastung',
+      header: 'Auslastung',
       cell: ({ row }) => {
-        const aktivePosi = row.original.positionen?.find(p => p.aktiv);
-        return aktivePosi ? formatCurrency(aktivePosi.betrag) : '-';
+        const prozent = row.original.auslastung_prozent || 0;
+        return (
+          <div className="w-32">
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-sm font-medium">{prozent.toFixed(1)}%</span>
+            </div>
+            <Progress 
+              value={Math.min(prozent, 100)} 
+              className={cn("h-2", getAuslastungColor(prozent))}
+            />
+          </div>
+        );
       },
     },
     {
-      id: 'adressen',
+      id: 'kunden',
       header: 'Kunden',
       cell: ({ row }) => (
         <Badge variant="secondary">
           <Users className="w-3 h-3 mr-1" />
-          {row.original.versicherte_adressen?.length || 0}
+          {row.original.anzahl_kunden || 0}
         </Badge>
+      ),
+    },
+    {
+      id: 'gueltig_bis',
+      header: 'Gültig bis',
+      cell: ({ row }) => (
+        <span className="text-sm text-gray-600">{formatDate(row.original.gueltig_bis)}</span>
       ),
     },
     {
@@ -338,18 +438,110 @@ export default function KreditversicherungenPage() {
     },
   ], []);
 
+  // Kunden-Tabelle Columns
+  const kundenColumns: ColumnDef<KundenPosition>[] = useMemo(() => [
+    {
+      accessorKey: 'adresse_kdnr',
+      header: 'KdNr',
+      cell: ({ row }) => (
+        <span className="font-mono text-sm">{row.original.adresse_kdnr || '-'}</span>
+      ),
+    },
+    {
+      accessorKey: 'adresse_name',
+      header: 'Kunde',
+      cell: ({ row }) => (
+        <div>
+          <p className="font-medium">{row.original.adresse_name}</p>
+          <p className="text-xs text-gray-500">{row.original.adresse_ort}</p>
+        </div>
+      ),
+    },
+    {
+      accessorKey: 'unterversicherungsnummer',
+      header: 'Unter-Nr.',
+      cell: ({ row }) => (
+        <span className="font-mono text-sm">{row.original.unterversicherungsnummer || '-'}</span>
+      ),
+    },
+    {
+      accessorKey: 'kreditlimit',
+      header: 'Kreditlimit',
+      cell: ({ row }) => (
+        <span className="font-semibold">{formatCurrency(row.original.kreditlimit)}</span>
+      ),
+    },
+    {
+      accessorKey: 'fakturierungsfrist',
+      header: 'Fakt.-Frist',
+      cell: ({ row }) => (
+        <span>{row.original.fakturierungsfrist ? `${row.original.fakturierungsfrist} Tage` : '-'}</span>
+      ),
+    },
+    {
+      accessorKey: 'gueltig_bis',
+      header: 'Gültig bis',
+      cell: ({ row }) => (
+        <span className="text-sm">{formatDate(row.original.gueltig_bis)}</span>
+      ),
+    },
+    {
+      accessorKey: 'aktiv',
+      header: 'Status',
+      cell: ({ row }) => (
+        <Badge className={row.original.aktiv ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'}>
+          {row.original.aktiv ? 'Aktiv' : 'Inaktiv'}
+        </Badge>
+      ),
+    },
+    {
+      id: 'actions',
+      header: '',
+      cell: ({ row }) => (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon" className="h-8 w-8">
+              <MoreHorizontal className="w-4 h-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={() => handleEditKunde(row.original)}>
+              <Pencil className="w-4 h-4 mr-2" />
+              Bearbeiten
+            </DropdownMenuItem>
+            <DropdownMenuItem 
+              className="text-red-600"
+              onClick={() => {
+                if (selectedKV && confirm('Kunde wirklich entfernen?')) {
+                  deleteKundeMutation.mutate({ kvId: selectedKV.id, posId: row.original.id });
+                }
+              }}
+            >
+              <Trash2 className="w-4 h-4 mr-2" />
+              Entfernen
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      ),
+    },
+  ], [selectedKV]);
+
   return (
-    <div className="flex h-full bg-gray-50">
-      {/* Linke Seite: Tabelle */}
+    <div className="flex h-full bg-gray-50" data-testid="kreditversicherungen-page">
+      {/* Linke Seite: Hauptverträge-Liste */}
       <div className="flex-1 p-6 overflow-auto">
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Kreditversicherungen</h1>
-            <p className="text-gray-500">Verwaltung von Kreditversicherungsverträgen</p>
+            <p className="text-gray-500">Verwaltung von Kreditversicherungsverträgen und Kundenlimits</p>
           </div>
-          <Button onClick={handleNewKV} className="bg-purple-600 hover:bg-purple-700">
+          <Button 
+            onClick={handleNewKV} 
+            className="bg-purple-600 hover:bg-purple-700"
+            data-testid="new-kv-btn"
+          >
             <Plus className="w-4 h-4 mr-2" />
-            Neue Kreditversicherung
+            Neuer Vertrag
           </Button>
         </div>
 
@@ -362,7 +554,7 @@ export default function KreditversicherungenPage() {
             columns={columns}
             data={kreditversicherungen || []}
             onRowDoubleClick={(row) => handleSelectKV(row)}
-            searchPlaceholder="Suchen..."
+            searchPlaceholder="Suche nach Nummer, Versicherer oder Kunde..."
           />
         )}
       </div>
@@ -375,7 +567,8 @@ export default function KreditversicherungenPage() {
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: '100%', opacity: 0 }}
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="w-[500px] bg-white border-l border-gray-200 flex flex-col shadow-xl"
+            className="w-[700px] bg-white border-l border-gray-200 flex flex-col shadow-xl"
+            data-testid="kv-detail-panel"
           >
             {/* Header */}
             <div className="p-4 border-b border-gray-200 flex items-center justify-between bg-gradient-to-r from-purple-50 to-white">
@@ -385,7 +578,7 @@ export default function KreditversicherungenPage() {
                 </div>
                 <div>
                   <h2 className="font-semibold text-gray-900">
-                    {isNewRecord ? 'Neue Kreditversicherung' : formData.versicherungsnummer || selectedKV.id.slice(0, 8)}
+                    {isNewRecord ? 'Neuer Hauptvertrag' : formData.versicherungsnummer || selectedKV.id}
                   </h2>
                   <p className="text-sm text-gray-500">
                     {isNewRecord ? 'Wird erstellt...' : formData.versicherer_name || 'Kein Versicherer'}
@@ -394,10 +587,24 @@ export default function KreditversicherungenPage() {
               </div>
               <div className="flex items-center gap-2">
                 {!isEditing && !isNewRecord && (
-                  <Button variant="outline" size="sm" onClick={() => setIsEditing(true)}>
-                    <Pencil className="w-4 h-4 mr-1" />
-                    Bearbeiten
-                  </Button>
+                  <>
+                    <Button variant="outline" size="sm" onClick={() => setIsEditing(true)}>
+                      <Pencil className="w-4 h-4 mr-1" />
+                      Bearbeiten
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="text-red-600 hover:bg-red-50"
+                      onClick={() => {
+                        if (confirm('Kreditversicherung wirklich deaktivieren?')) {
+                          deleteMutation.mutate(selectedKV.id);
+                        }
+                      }}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </>
                 )}
                 {isEditing && (
                   <>
@@ -422,15 +629,35 @@ export default function KreditversicherungenPage() {
               </div>
             </div>
 
+            {/* Auslastungs-Anzeige */}
+            {!isNewRecord && (
+              <div className="p-4 border-b border-gray-200 bg-gray-50">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-medium text-gray-700">Auslastung des Gesamtlimits</span>
+                  <span className="text-lg font-bold">
+                    {(selectedKV.auslastung_prozent || 0).toFixed(1)}%
+                  </span>
+                </div>
+                <Progress 
+                  value={Math.min(selectedKV.auslastung_prozent || 0, 100)} 
+                  className="h-3"
+                />
+                <div className="flex justify-between mt-2 text-sm text-gray-500">
+                  <span>Summe Kundenlimits: {formatCurrency(selectedKV.summe_kundenlimits || 0)}</span>
+                  <span>Gesamtlimit: {formatCurrency(selectedKV.gesamtlimit || 0)}</span>
+                </div>
+              </div>
+            )}
+
             {/* Content */}
             <div className="flex-1 overflow-auto p-4 space-y-6">
-              {/* Kopfdaten */}
+              {/* Hauptvertrag-Daten */}
               <div className="space-y-4">
                 <h3 className="font-medium text-gray-900 flex items-center gap-2">
                   <FileText className="w-4 h-4" />
-                  Vertragsdaten
+                  Hauptvertrag (Kopf)
                 </h3>
-                <div className="grid gap-4">
+                <div className="grid grid-cols-2 gap-4">
                   <div>
                     <Label>Versicherungsnummer</Label>
                     <Input
@@ -438,6 +665,7 @@ export default function KreditversicherungenPage() {
                       onChange={(e) => setFormData({ ...formData, versicherungsnummer: e.target.value })}
                       disabled={!isEditing}
                       placeholder="z.B. KV-2024-001"
+                      data-testid="kv-nummer-input"
                     />
                   </div>
                   <div>
@@ -447,18 +675,20 @@ export default function KreditversicherungenPage() {
                       onChange={(e) => setFormData({ ...formData, versicherer_name: e.target.value })}
                       disabled={!isEditing}
                       placeholder="Name der Versicherung"
+                      data-testid="kv-versicherer-input"
                     />
                   </div>
                   <div>
-                    <Label>Verlängerte Fakturierungsfrist (Tage)</Label>
+                    <Label>Gesamtlimit (EUR) *</Label>
                     <Input
                       type="number"
-                      value={formData.fakturierungsfrist}
-                      onChange={(e) => setFormData({ ...formData, fakturierungsfrist: parseInt(e.target.value) || 0 })}
+                      value={formData.gesamtlimit}
+                      onChange={(e) => setFormData({ ...formData, gesamtlimit: parseFloat(e.target.value) || 0 })}
                       disabled={!isEditing}
+                      data-testid="kv-gesamtlimit-input"
                     />
                   </div>
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between pt-6">
                     <Label>Aktiv</Label>
                     <Switch
                       checked={formData.aktiv}
@@ -467,128 +697,88 @@ export default function KreditversicherungenPage() {
                     />
                   </div>
                   <div>
-                    <Label>Bemerkungen</Label>
-                    <Textarea
-                      value={formData.bemerkungen}
-                      onChange={(e) => setFormData({ ...formData, bemerkungen: e.target.value })}
+                    <Label>Vertragsbeginn</Label>
+                    <Input
+                      type="date"
+                      value={formData.gueltig_von}
+                      onChange={(e) => setFormData({ ...formData, gueltig_von: e.target.value })}
                       disabled={!isEditing}
-                      rows={2}
+                      data-testid="kv-von-input"
+                    />
+                  </div>
+                  <div>
+                    <Label>Vertragsende (sticht Unterverträge)</Label>
+                    <Input
+                      type="date"
+                      value={formData.gueltig_bis}
+                      onChange={(e) => setFormData({ ...formData, gueltig_bis: e.target.value })}
+                      disabled={!isEditing}
+                      data-testid="kv-bis-input"
                     />
                   </div>
                 </div>
+                <div>
+                  <Label>Bemerkungen</Label>
+                  <Textarea
+                    value={formData.bemerkungen}
+                    onChange={(e) => setFormData({ ...formData, bemerkungen: e.target.value })}
+                    disabled={!isEditing}
+                    rows={2}
+                  />
+                </div>
               </div>
 
-              {/* Positionen (Limits) */}
-              {!isNewRecord && (
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <h3 className="font-medium text-gray-900 flex items-center gap-2">
-                      <Euro className="w-4 h-4" />
-                      Limits / Positionen
-                    </h3>
-                    {isEditing && (
-                      <Button size="sm" variant="outline" onClick={() => {
-                        resetPositionForm();
-                        setShowPositionDialog(true);
-                      }}>
-                        <Plus className="w-4 h-4 mr-1" />
-                        Hinzufügen
-                      </Button>
-                    )}
-                  </div>
-
-                  {selectedKV.positionen?.length === 0 ? (
-                    <p className="text-sm text-gray-500 text-center py-4">Keine Positionen</p>
-                  ) : (
-                    <div className="space-y-2">
-                      {selectedKV.positionen?.map((pos) => (
-                        <div 
-                          key={pos.id}
-                          className={cn(
-                            "p-3 rounded-lg border bg-white",
-                            pos.aktiv ? "border-green-200" : "border-gray-200 opacity-60"
-                          )}
-                        >
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <p className="font-semibold">{formatCurrency(pos.betrag)}</p>
-                              <p className="text-sm text-gray-500">
-                                {formatDate(pos.gueltig_ab)} - {formatDate(pos.gueltig_bis)}
-                              </p>
-                            </div>
-                            {isEditing && (
-                              <div className="flex gap-1">
-                                <Button variant="ghost" size="icon" onClick={() => handleEditPosition(pos)}>
-                                  <Pencil className="w-4 h-4" />
-                                </Button>
-                                <Button 
-                                  variant="ghost" 
-                                  size="icon" 
-                                  className="text-red-600"
-                                  onClick={() => deletePositionMutation.mutate({ 
-                                    kvId: selectedKV.id, 
-                                    posId: pos.id 
-                                  })}
-                                >
-                                  <Trash2 className="w-4 h-4" />
-                                </Button>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* Versicherte Adressen */}
+              {/* Kundenpositionen (Grid-Tabelle) */}
               {!isNewRecord && (
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <h3 className="font-medium text-gray-900 flex items-center gap-2">
                       <Users className="w-4 h-4" />
-                      Versicherte Kunden
+                      Kundenpositionen ({selectedKV.anzahl_kunden || 0})
                     </h3>
-                    {isEditing && (
-                      <Button size="sm" variant="outline" onClick={() => setShowAddresseDialog(true)}>
-                        <Plus className="w-4 h-4 mr-1" />
-                        Hinzufügen
-                      </Button>
-                    )}
+                    <Button 
+                      size="sm" 
+                      variant="outline" 
+                      onClick={() => {
+                        resetKundeForm();
+                        setShowAddKundeDialog(true);
+                      }}
+                      data-testid="add-kunde-btn"
+                    >
+                      <Plus className="w-4 h-4 mr-1" />
+                      Kunde hinzufügen
+                    </Button>
                   </div>
 
-                  {selectedKV.versicherte_adressen?.length === 0 ? (
-                    <p className="text-sm text-gray-500 text-center py-4">Keine Kunden verknüpft</p>
+                  {/* Suchfeld für Kunden */}
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <Input
+                      value={kundenSearchQuery}
+                      onChange={(e) => setKundenSearchQuery(e.target.value)}
+                      placeholder="Kunden suchen..."
+                      className="pl-9"
+                      data-testid="kunden-search-input"
+                    />
+                  </div>
+
+                  {/* Kunden-Grid */}
+                  {filteredKunden.length === 0 ? (
+                    <div className="text-center py-8 text-gray-500 bg-gray-50 rounded-lg border-2 border-dashed">
+                      <Users className="w-10 h-10 mx-auto mb-2 text-gray-300" />
+                      <p>Keine Kunden hinterlegt</p>
+                      <p className="text-sm text-gray-400 mt-1">
+                        Fügen Sie Kunden mit individuellem Kreditlimit hinzu
+                      </p>
+                    </div>
                   ) : (
-                    <div className="space-y-2">
-                      {selectedKV.versicherte_adressen?.map((addr) => (
-                        <div 
-                          key={addr.id}
-                          className="p-3 rounded-lg border bg-white flex items-center justify-between"
-                        >
-                          <div>
-                            <p className="font-medium">{addr.adresse_name || addr.adresse_id}</p>
-                            <p className="text-sm text-gray-500">
-                              {addr.adresse_kdnr && <span className="font-mono mr-2">{addr.adresse_kdnr}</span>}
-                              {addr.adresse_ort}
-                            </p>
-                          </div>
-                          {isEditing && (
-                            <Button 
-                              variant="ghost" 
-                              size="icon" 
-                              className="text-red-600"
-                              onClick={() => removeAdresseMutation.mutate({ 
-                                kvId: selectedKV.id, 
-                                linkId: addr.id 
-                              })}
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          )}
-                        </div>
-                      ))}
+                    <div className="border rounded-lg overflow-hidden">
+                      <DataTable
+                        columns={kundenColumns}
+                        data={filteredKunden}
+                        searchPlaceholder=""
+                        showSearch={false}
+                      />
                     </div>
                   )}
                 </div>
@@ -598,120 +788,204 @@ export default function KreditversicherungenPage() {
         )}
       </AnimatePresence>
 
-      {/* Dialog: Adresse hinzufügen */}
-      <Dialog open={showAddresseDialog} onOpenChange={setShowAddresseDialog}>
-        <DialogContent>
+      {/* Dialog: Kunde hinzufügen */}
+      <Dialog open={showAddKundeDialog} onOpenChange={setShowAddKundeDialog}>
+        <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle>Kunde zur Kreditversicherung hinzufügen</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
-            <div>
-              <Label>Kunde suchen</Label>
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                <Input
-                  value={addressSearchQuery}
-                  onChange={(e) => setAddressSearchQuery(e.target.value)}
-                  placeholder="Name, Ort oder Kundennummer..."
-                  className="pl-9"
-                />
+            {/* Kunde suchen */}
+            {!kundeForm.adresse_id ? (
+              <div className="space-y-2">
+                <Label>Kunde suchen *</Label>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <Input
+                    value={addressSearchQuery}
+                    onChange={(e) => setAddressSearchQuery(e.target.value)}
+                    placeholder="Name, Ort oder Kundennummer..."
+                    className="pl-9"
+                    data-testid="kunde-search-input"
+                  />
+                </div>
+                {addressResults && addressResults.length > 0 && (
+                  <div className="max-h-60 overflow-auto border rounded-lg divide-y">
+                    {addressResults.map((addr: any) => (
+                      <button
+                        key={addr.id}
+                        className="w-full p-3 text-left hover:bg-gray-50 flex items-center justify-between"
+                        onClick={() => handleSelectAddress(addr)}
+                      >
+                        <div>
+                          <p className="font-medium">{addr.name1}</p>
+                          <p className="text-sm text-gray-500">{addr.kdnr} · {addr.ort}</p>
+                        </div>
+                        <ChevronRight className="w-4 h-4 text-gray-400" />
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
-            </div>
-            {addressResults && addressResults.length > 0 && (
-              <div className="max-h-60 overflow-auto border rounded-lg divide-y">
-                {addressResults.map((addr: any) => (
-                  <button
-                    key={addr.id}
-                    className="w-full p-3 text-left hover:bg-gray-50 flex items-center justify-between"
-                    onClick={() => {
-                      if (selectedKV) {
-                        addAdresseMutation.mutate({ kvId: selectedKV.id, adresseId: addr.id });
-                      }
-                    }}
-                  >
-                    <div>
-                      <p className="font-medium">{addr.name1}</p>
-                      <p className="text-sm text-gray-500">{addr.kdnr} · {addr.ort}</p>
-                    </div>
-                    <ChevronRight className="w-4 h-4 text-gray-400" />
-                  </button>
-                ))}
+            ) : (
+              <div className="p-3 bg-purple-50 rounded-lg border border-purple-200 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Building2 className="w-5 h-5 text-purple-600" />
+                  <span className="font-medium">{kundeForm.adresse_name}</span>
+                </div>
+                <Button variant="ghost" size="sm" onClick={() => setKundeForm({ ...kundeForm, adresse_id: '', adresse_name: '' })}>
+                  Ändern
+                </Button>
               </div>
             )}
+
+            {kundeForm.adresse_id && (
+              <>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label>Kreditlimit (EUR) *</Label>
+                    <Input
+                      type="number"
+                      value={kundeForm.kreditlimit}
+                      onChange={(e) => setKundeForm({ ...kundeForm, kreditlimit: parseFloat(e.target.value) || 0 })}
+                      data-testid="kunde-limit-input"
+                    />
+                  </div>
+                  <div>
+                    <Label>Unterversicherungsnummer</Label>
+                    <Input
+                      value={kundeForm.unterversicherungsnummer}
+                      onChange={(e) => setKundeForm({ ...kundeForm, unterversicherungsnummer: e.target.value })}
+                      placeholder="z.B. UV-001"
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label>Fakturierungsfrist (Tage)</Label>
+                    <Input
+                      type="number"
+                      value={kundeForm.fakturierungsfrist}
+                      onChange={(e) => setKundeForm({ ...kundeForm, fakturierungsfrist: parseInt(e.target.value) || 0 })}
+                    />
+                  </div>
+                  <div>
+                    <Label>Gültig bis (optional)</Label>
+                    <Input
+                      type="date"
+                      value={kundeForm.gueltig_bis}
+                      onChange={(e) => setKundeForm({ ...kundeForm, gueltig_bis: e.target.value })}
+                    />
+                    <p className="text-xs text-gray-500 mt-1">Hauptvertrag-Ende sticht</p>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between">
+                  <Label>Aktiv</Label>
+                  <Switch
+                    checked={kundeForm.aktiv}
+                    onCheckedChange={(v) => setKundeForm({ ...kundeForm, aktiv: v })}
+                  />
+                </div>
+                <div>
+                  <Label>Bemerkungen</Label>
+                  <Textarea
+                    value={kundeForm.bemerkungen}
+                    onChange={(e) => setKundeForm({ ...kundeForm, bemerkungen: e.target.value })}
+                    rows={2}
+                  />
+                </div>
+              </>
+            )}
           </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowAddKundeDialog(false)}>
+              Abbrechen
+            </Button>
+            <Button 
+              onClick={handleSaveKunde} 
+              disabled={!kundeForm.adresse_id || addKundeMutation.isPending}
+              data-testid="save-kunde-btn"
+            >
+              {addKundeMutation.isPending && <Loader2 className="w-4 h-4 mr-1 animate-spin" />}
+              Hinzufügen
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      {/* Dialog: Position hinzufügen/bearbeiten */}
-      <Dialog open={showPositionDialog} onOpenChange={setShowPositionDialog}>
-        <DialogContent>
+      {/* Dialog: Kunde bearbeiten */}
+      <Dialog open={showEditKundeDialog} onOpenChange={setShowEditKundeDialog}>
+        <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>
-              {editingPosition ? 'Position bearbeiten' : 'Neue Position / Limit'}
-            </DialogTitle>
+            <DialogTitle>Kundenposition bearbeiten</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label>Gültig ab *</Label>
-                <Input
-                  type="date"
-                  value={positionForm.gueltig_ab}
-                  onChange={(e) => setPositionForm({ ...positionForm, gueltig_ab: e.target.value })}
-                />
-              </div>
-              <div>
-                <Label>Gültig bis</Label>
-                <Input
-                  type="date"
-                  value={positionForm.gueltig_bis}
-                  onChange={(e) => setPositionForm({ ...positionForm, gueltig_bis: e.target.value })}
-                />
-              </div>
+            <div className="p-3 bg-purple-50 rounded-lg border border-purple-200 flex items-center gap-3">
+              <Building2 className="w-5 h-5 text-purple-600" />
+              <span className="font-medium">{editingKunde?.adresse_name}</span>
             </div>
+
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label>Kreditlimit (EUR) *</Label>
                 <Input
                   type="number"
-                  value={positionForm.betrag}
-                  onChange={(e) => setPositionForm({ ...positionForm, betrag: parseFloat(e.target.value) || 0 })}
+                  value={kundeForm.kreditlimit}
+                  onChange={(e) => setKundeForm({ ...kundeForm, kreditlimit: parseFloat(e.target.value) || 0 })}
                 />
               </div>
               <div>
-                <Label>Angefragter Betrag</Label>
+                <Label>Unterversicherungsnummer</Label>
+                <Input
+                  value={kundeForm.unterversicherungsnummer}
+                  onChange={(e) => setKundeForm({ ...kundeForm, unterversicherungsnummer: e.target.value })}
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Fakturierungsfrist (Tage)</Label>
                 <Input
                   type="number"
-                  value={positionForm.betrag_anfrage}
-                  onChange={(e) => setPositionForm({ ...positionForm, betrag_anfrage: parseFloat(e.target.value) || 0 })}
+                  value={kundeForm.fakturierungsfrist}
+                  onChange={(e) => setKundeForm({ ...kundeForm, fakturierungsfrist: parseInt(e.target.value) || 0 })}
+                />
+              </div>
+              <div>
+                <Label>Gültig bis (optional)</Label>
+                <Input
+                  type="date"
+                  value={kundeForm.gueltig_bis}
+                  onChange={(e) => setKundeForm({ ...kundeForm, gueltig_bis: e.target.value })}
                 />
               </div>
             </div>
             <div className="flex items-center justify-between">
               <Label>Aktiv</Label>
               <Switch
-                checked={positionForm.aktiv}
-                onCheckedChange={(v) => setPositionForm({ ...positionForm, aktiv: v })}
+                checked={kundeForm.aktiv}
+                onCheckedChange={(v) => setKundeForm({ ...kundeForm, aktiv: v })}
               />
             </div>
             <div>
               <Label>Bemerkungen</Label>
               <Textarea
-                value={positionForm.bemerkungen}
-                onChange={(e) => setPositionForm({ ...positionForm, bemerkungen: e.target.value })}
+                value={kundeForm.bemerkungen}
+                onChange={(e) => setKundeForm({ ...kundeForm, bemerkungen: e.target.value })}
                 rows={2}
               />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowPositionDialog(false)}>
+            <Button variant="outline" onClick={() => setShowEditKundeDialog(false)}>
               Abbrechen
             </Button>
-            <Button onClick={handleSavePosition} disabled={addPositionMutation.isPending || updatePositionMutation.isPending}>
-              {(addPositionMutation.isPending || updatePositionMutation.isPending) && (
-                <Loader2 className="w-4 h-4 mr-1 animate-spin" />
-              )}
-              {editingPosition ? 'Speichern' : 'Hinzufügen'}
+            <Button 
+              onClick={handleSaveKunde} 
+              disabled={updateKundeMutation.isPending}
+            >
+              {updateKundeMutation.isPending && <Loader2 className="w-4 h-4 mr-1 animate-spin" />}
+              Speichern
             </Button>
           </DialogFooter>
         </DialogContent>
