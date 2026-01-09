@@ -1,0 +1,115 @@
+{
+  "summary": "Fuhren & Rechnungen modules testing completed. Backend: 32/32 tests passed (100%). Frontend: Both modules fully functional with table views, detail panels, sidebar navigation, and create dialogs. One backend bug found: POST /api/rechnungen/aus-fuhre/{id}?vorgang_typ=GUTSCHRIFT returns 500 when menge_aufladen or einzelpreis_ek is None.",
+  "backend_issues": {
+    "critical": [
+      {
+        "endpoint": "POST /api/rechnungen/aus-fuhre/{fuhre_id}?vorgang_typ=GUTSCHRIFT",
+        "issue": "Returns 500 Internal Server Error when Fuhre has None values for menge_aufladen or einzelpreis_ek. Error: TypeError: unsupported operand type(s) for *: 'NoneType' and 'NoneType' at line 3369",
+        "priority": "HIGH",
+        "fix_suggestion": "Change fuhre.get('menge_aufladen', 0) to (fuhre.get('menge_aufladen') or 0) to handle explicit None values"
+      }
+    ],
+    "minor": [
+      {
+        "endpoint": "POST /api/fuhren, POST /api/rechnungen",
+        "issue": "Create endpoints return HTTP 200 instead of 201 Created",
+        "priority": "LOW"
+      }
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {
+        "screen": "Dashboard chart",
+        "issues": ["Console warning: 'The width(-1) and height(-1) of chart should be greater than 0' - Recharts component sizing issue on initial load"]
+      }
+    ]
+  },
+  "test_report_links": [
+    "/app/tests/test_fuhren_rechnungen.py",
+    "/app/test_reports/pytest/pytest_fuhren_rechnungen_results.xml"
+  ],
+  "action_items": [
+    "FIX CRITICAL: Backend /api/rechnungen/aus-fuhre endpoint - handle None values for menge and einzelpreis (line 3341-3348 in server.py)",
+    "OPTIONAL: Change POST endpoints to return 201 instead of 200 for create operations"
+  ],
+  "critical_code_review_comments": [
+    "Fuhren sidebar has 7 sections: Stammdaten, Lieferant, Abnehmer, Artikel & Mengen, Transport, Wiegekarten, Bemerkungen - all working",
+    "Rechnungen sidebar has 6 sections: Kopfdaten, Adressat, Termine, Positionen, Zahlungen, Bemerkungen - all working",
+    "Both modules use slide-in detail panel from right side (600px width) - consistent with Adressen page",
+    "Rechnungen shows both RECHNUNG (RG-) and GUTSCHRIFT (GS-) with different icons",
+    "Summen calculation working correctly: Netto + MwSt = Brutto",
+    "Positionen table in Rechnungen shows Artikel, Menge, Einzelpreis, Gesamt columns",
+    "Navigation sidebar shows Fuhren under Bewegungsdaten (but not visible in collapsed state - only Kontrakte and Rechnungen shown)",
+    "data-testid attributes present: fuhren-page, fuhre-detail-panel, rechnungen-page, rechnung-detail-panel, new-fuhre-btn, new-rechnung-btn"
+  ],
+  "updated_files": [
+    "/app/tests/test_fuhren_rechnungen.py"
+  ],
+  "success_rate": {
+    "backend": "100% (32/32 tests passed)",
+    "frontend": "95% (all features working, minor chart sizing warning)"
+  },
+  "test_credentials": {
+    "username": "admin",
+    "password": "Admin123!"
+  },
+  "seed_data_creation": "Test data created with TEST_ prefix during backend tests. Existing data: 1 Fuhre (F-00001), multiple Rechnungen (RG-00001 to RG-00019), Gutschriften (GS-00001 to GS-00003)",
+  "retest_needed": true,
+  "main_agent_can_self_test": false,
+  "context_for_next_testing_agent": "Fuhren and Rechnungen modules fully functional. Backend endpoints: GET/POST/PUT/DELETE for /api/fuhren and /api/rechnungen, POST /api/rechnungen/{id}/positionen, POST /api/rechnungen/aus-fuhre/{fuhre_id}. Frontend: Table view with double-click to detail panel, sidebar navigation between sections, edit mode, create dialogs. CRITICAL BUG: Gutschrift creation from Fuhre fails with 500 when menge_aufladen or einzelpreis_ek is None.",
+  "features_tested": {
+    "fuhren_module": {
+      "backend_endpoints": {
+        "GET /api/fuhren": "WORKING - List with pagination, search, status filter",
+        "GET /api/fuhren/{id}": "WORKING - Get single Fuhre with all fields",
+        "POST /api/fuhren": "WORKING - Create with required fields (returns 200 instead of 201)",
+        "PUT /api/fuhren/{id}": "WORKING - Update Fuhre fields",
+        "DELETE /api/fuhren/{id}": "WORKING - Soft-delete (sets deleted=true)"
+      },
+      "frontend_ui": {
+        "fuhren_list": "WORKING - Table with Nr., Abholdatum, Lieferant, Abnehmer, Artikel, Menge, Kennzeichen, Status columns",
+        "status_filter": "WORKING - Dropdown with Alle Status option",
+        "detail_sidebar": "WORKING - Slide-in panel with 7 sections",
+        "sidebar_sections": ["Stammdaten", "Lieferant", "Abnehmer", "Artikel & Mengen", "Transport", "Wiegekarten", "Bemerkungen"],
+        "edit_mode": "WORKING - Toggle between view/edit with Bearbeiten button",
+        "neue_fuhre_dialog": "WORKING - Form with Lieferant, Abnehmer, Artikel, Datum, Menge, Transportmittel"
+      }
+    },
+    "rechnungen_module": {
+      "backend_endpoints": {
+        "GET /api/rechnungen": "WORKING - List with pagination, search, type/status filter",
+        "GET /api/rechnungen/{id}": "WORKING - Get single Rechnung with positionen and summen",
+        "POST /api/rechnungen": "WORKING - Create Rechnung or Gutschrift (returns 200 instead of 201)",
+        "PUT /api/rechnungen/{id}": "WORKING - Update Rechnung fields",
+        "DELETE /api/rechnungen/{id}": "WORKING - Soft-delete (sets deleted=true)",
+        "POST /api/rechnungen/{id}/positionen": "WORKING - Add position with automatic sum calculation",
+        "POST /api/rechnungen/aus-fuhre/{fuhre_id}?vorgang_typ=RECHNUNG": "WORKING - Create Rechnung from Fuhre",
+        "POST /api/rechnungen/aus-fuhre/{fuhre_id}?vorgang_typ=GUTSCHRIFT": "BUG - Returns 500 when menge_aufladen or einzelpreis_ek is None"
+      },
+      "frontend_ui": {
+        "rechnungen_list": "WORKING - Table with Nr., Typ, Adressat, Datum, Netto, Brutto, Status columns",
+        "type_filter": "WORKING - Dropdown with Alle Typen/Rechnungen/Gutschriften options",
+        "status_filter": "WORKING - Dropdown with Alle Status and status options",
+        "detail_sidebar": "WORKING - Slide-in panel with 6 sections",
+        "sidebar_sections": ["Kopfdaten", "Adressat", "Termine", "Positionen", "Zahlungen", "Bemerkungen"],
+        "summen_display": "WORKING - Shows Netto, MwSt, Brutto with correct calculation",
+        "positionen_table": "WORKING - Shows Artikel, Menge, Einzelpreis, Gesamt with + Position button",
+        "edit_mode": "WORKING - Toggle between view/edit with Bearbeiten/Speichern buttons",
+        "neue_rechnung_dialog": "WORKING - Form with Belegart, Adresse, Name, Datum, Währung"
+      }
+    }
+  },
+  "known_bugs": {
+    "backend": [
+      {
+        "location": "/app/backend/server.py line 3341-3369",
+        "description": "create_rechnung_aus_fuhre endpoint fails with TypeError when creating Gutschrift from Fuhre that has None values for menge_aufladen or einzelpreis_ek",
+        "root_cause": "fuhre.get('menge_aufladen', 0) returns None if the value is explicitly None in database, not the default 0",
+        "fix": "Change to (fuhre.get('menge_aufladen') or 0) to handle explicit None values"
+      }
+    ]
+  }
+}
