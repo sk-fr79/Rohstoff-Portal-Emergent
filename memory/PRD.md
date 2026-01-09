@@ -493,12 +493,17 @@ Passwort: Admin123!
 - [ ] Sammelrechnungen (mehrere Fuhren → eine Rechnung)
 
 ### P2 - Mittlere Priorität
-- [x] **Kreditversicherungs-Verwaltung** (Echo2: KREDITVERSICH) ✅ ERLEDIGT (09.01.2026)
-  - Collection `kreditversicherungen` mit Kopf, Positionen, verknüpften Adressen
-  - Endpunkte: CRUD + /api/adressen/{id}/kreditlimits + /api/adressen/{id}/kreditstatus
+- [x] **Kreditversicherungs-Verwaltung NEUGESTALTET** (Echo2: KREDITVERSICH) ✅ ERLEDIGT (09.01.2026)
+  - **NEUE STRUKTUR**: 1 Hauptvertrag (Kopf) → n Kundenpositionen (1:n Beziehung)
+  - **Hauptvertrag (Kopf)**: Gesamtlimit, Vertragsbeginn/-ende, Versicherer
+  - **Kundenposition**: Eigenes Kreditlimit, Unterversicherungsnr., Fakturierungsfrist, Gültigkeitsdatum
+  - **Auslastung** = Summe Kundenlimits / Gesamtlimit × 100%
+  - **Enddatum Hauptvertrag sticht** immer das Enddatum der Unterverträge
+  - Endpunkte: CRUD + /api/kreditversicherungen/{id}/positionen + /api/adressen/{id}/kreditlimits
   - Tab in AdressenPage + eigenständige Verwaltungsseite /kreditversicherungen
+  - Smarte Grid-Tabelle mit Suchfunktion für Kundenpositionen
   - Prüfung neuer Beträge gegen Limits (POST /api/kreditpruefung)
-  - Test: 14/14 Backend-Tests, 100% Frontend
+  - Test: 14/14 Backend-Tests, 100% Frontend bestanden
 - [ ] Positionen im Kontrakt bearbeiten (UI zum Hinzufügen/Löschen)
 - [ ] Positionen in Rechnungen bearbeiten/löschen
 - [ ] Suchfeld in der globalen Navigation funktionsfähig machen
