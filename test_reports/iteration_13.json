@@ -1,0 +1,85 @@
+{
+  "summary": "Completed testing of redesigned Kreditversicherung module with new 1:n structure (Hauptvertrag + Kundenpositionen). All 14 backend API tests pass (100%). Frontend KreditversicherungenPage and KreditversicherungTab working correctly with auslastung calculation.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {
+        "screen": "KreditversicherungenPage",
+        "issues": ["Old entries with versicherte_adressen/positionen structure show 0% auslastung - this is expected behavior as they don't have kunden_positionen"]
+      }
+    ]
+  },
+  "test_report_links": [
+    "/app/tests/test_kreditversicherung_new.py",
+    "/app/test_reports/pytest/pytest_kreditversicherung_new_results.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "Backend correctly handles both old (versicherte_adressen + positionen) and new (kunden_positionen) data structures",
+    "Auslastung calculation works correctly: summe_kundenlimits / gesamtlimit * 100",
+    "Effective end date logic correctly implemented: Hauptvertrag end date overrides Kundenposition end date",
+    "Minor React warning in KreditversicherungTab about refs on Badge component - not blocking functionality"
+  ],
+  "updated_files": [
+    "/app/tests/test_kreditversicherung_new.py"
+  ],
+  "success_rate": {
+    "backend": "100% (14/14 tests passed)",
+    "frontend": "100% (all pages and tabs working)"
+  },
+  "test_credentials": {
+    "username": "admin (field: benutzername)",
+    "password": "Admin123! (field: passwort)"
+  },
+  "seed_data_creation": "Test Kreditversicherungen created with TEST-NEW-KV-001 and TEST-UI-001 prefixes during testing",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Kreditversicherung module fully redesigned and tested. New structure uses kunden_positionen[] array instead of separate versicherte_adressen[] and positionen[] arrays. Auslastung = summe(kunden_positionen.kreditlimit) / gesamtlimit * 100. Old data with versicherte_adressen structure shows 0% auslastung (expected). KV-D5211B99 is a test entry with new structure showing 30% auslastung.",
+  "features_tested": {
+    "backend_hauptvertrag_crud": {
+      "GET_list_with_auslastung": "PASS - Returns list with auslastung_prozent, summe_kundenlimits, anzahl_kunden",
+      "POST_create_with_gesamtlimit": "PASS - Creates Hauptvertrag with gesamtlimit, gueltig_von, gueltig_bis",
+      "GET_single_with_calculated_fields": "PASS - Returns single KV with all calculated fields",
+      "PUT_update": "PASS - Updates Hauptvertrag fields",
+      "DELETE_soft": "PASS - Soft deletes (sets aktiv=false)"
+    },
+    "backend_kundenpositionen": {
+      "POST_add_position": "PASS - Adds Kundenposition with kreditlimit, unterversicherungsnummer, fakturierungsfrist",
+      "PUT_update_position": "PASS - Updates Kundenposition fields",
+      "DELETE_position": "PASS - Removes Kundenposition from array",
+      "duplicate_adresse_rejected": "PASS - Returns 400 when same adresse already linked"
+    },
+    "backend_auslastung_calculation": {
+      "calculation_correct": "PASS - 150000/500000 = 30%, 200000/500000 = 40%",
+      "updates_on_position_change": "PASS - Auslastung recalculated when position added/updated/deleted"
+    },
+    "backend_adressen_kreditlimits": {
+      "GET_kreditlimits": "PASS - Returns all credit limits for address with effective dates",
+      "GET_kreditstatus": "PASS - Returns status (ok/warnung/ueberschritten/kein_limit) with verfuegbar"
+    },
+    "backend_kreditpruefung": {
+      "POST_within_limit": "PASS - Returns status 'ok' for amount within limit",
+      "POST_exceeding_limit": "PASS - Returns status 'ueberschritten' with warnung_text"
+    },
+    "frontend_kreditversicherungen_page": {
+      "page_loads": "PASS - Page loads at /kreditversicherungen",
+      "table_with_auslastung": "PASS - Table shows Auslastung column with progress bar",
+      "neuer_vertrag_button": "PASS - Opens detail panel for new Hauptvertrag",
+      "detail_panel_opens": "PASS - Double-click opens detail panel with form",
+      "auslastung_display": "PASS - Shows Auslastung des Gesamtlimits with percentage and bar",
+      "kundenpositionen_section": "PASS - Shows Kundenpositionen grid with search",
+      "kunde_hinzufuegen_dialog": "PASS - Dialog opens with address search"
+    },
+    "frontend_kreditversicherung_tab": {
+      "tab_visible": "PASS - Tab visible in AdressenPage detail panel",
+      "status_badge": "PASS - Shows OK/Warnung/Überschritten badge",
+      "limit_display": "PASS - Shows LIMIT, FORDERUNGEN, VERFÜGBAR",
+      "aktive_limits_list": "PASS - Shows list of active limits from multiple KVs"
+    }
+  }
+}
