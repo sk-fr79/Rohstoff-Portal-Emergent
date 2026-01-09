@@ -791,13 +791,7 @@ export function AdressenPage() {
                 {/* Section Content */}
                 <div className="flex-1 overflow-auto p-6">
                   {/* Stammdaten Section */}
-                  {activeSection === 'stamm' && (() => {
-                    // Helper: Firma-Status sicher ermitteln
-                    const istFirma = istFirma !== undefined 
-                      ? istFirma 
-                      : (selectedAdresse?.ist_firma ?? true);
-                    
-                    return (
+                  {activeSection === 'stamm' && (
                     <div className="space-y-6">
                       {/* Typ-Auswahl mit visuellem Feedback */}
                       <div className="relative">
