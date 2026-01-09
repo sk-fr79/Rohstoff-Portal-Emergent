@@ -1541,6 +1541,22 @@ export function AdressenPage() {
                     </div>
                   )}
 
+                  {/* Bankverbindungen Section */}
+                  {activeSection === 'bankverbindungen' && selectedAdresse?.id && (
+                    <BankverbindungenTab 
+                      adresseId={selectedAdresse.id} 
+                      isEditing={isEditing} 
+                    />
+                  )}
+
+                  {/* Lieferadressen Section */}
+                  {activeSection === 'lieferadressen' && selectedAdresse?.id && (
+                    <LieferadressenTab 
+                      adresseId={selectedAdresse.id} 
+                      isEditing={isEditing} 
+                    />
+                  )}
+
                   {/* Bemerkungen Section */}
                   {activeSection === 'bemerkungen' && (
                     <div className="space-y-6">
