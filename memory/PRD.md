@@ -15,6 +15,33 @@ Die gesamte Geschäftslogik der bestehenden Anwendung soll 1:1 übernommen werde
 
 ## Implementiert (Stand: 09.01.2026)
 
+### ✅ Geschäftslogik-Validierung (NEU - 09.01.2026)
+Portierung der Validierungslogik aus dem Java/Echo2-Code:
+
+**ArtikelValidator:**
+- Typ-Kombinationen: Gefahrgut+Leergut, Gefahrgut+Dienstleistung, Produkt+Dienstleistung = FEHLER
+- Einheiten-Divisor: Wenn Einheit==Preiseinheit, muss Divisor=1 sein
+- AVV/Basel/OECD-Codes: Produkte/Dienstleistungen/EndOfWaste dürfen keine haben
+- Zolltarifnummer: Warnung wenn Rohstoff ohne Zolltarifnummer
+
+**KontraktValidator:**
+- Pflichtfeld: name1 (Vertragspartner) erforderlich
+- Gültigkeitsdaten: gueltig_bis darf nicht vor gueltig_von liegen
+- Positions-Prüfung: Warnung wenn Position ohne Menge/Preis
+
+**FuhreValidator:**
+- Pflichtfelder: Lieferant, Abnehmer, Artikel erforderlich
+- Datumslogik: Anlieferungsdatum >= Abholdatum
+- Mengenabweichung: Warnung wenn Lade-/Ablademenge > 5% abweicht
+- AVV-Code-Pflicht: Rohstoffe ohne AVV-Code = FEHLER
+- Status-Workflow: Nur erlaubte Übergänge (OFFEN→IN_TRANSPORT→GELIEFERT→ABGERECHNET)
+
+**Integration:**
+- Alle Create/Update-Endpunkte rufen Validierung auf
+- Parameter `skip_validation=true` zum Überspringen
+- Validierungs-Endpunkte: POST /api/artikel/validieren, POST /api/kontrakte/validieren, POST /api/fuhren/validieren
+- **30 Tests bestanden (100%)**
+
 ### ✅ Fuhren-Modul (Transporte) - NEU - 09.01.2026
 Komplettes Transportmodul mit Verknüpfung zu Wiegekarten:
 - **Tabellen-Ansicht:** DataTable mit Spalten Nr., Abholdatum, Lieferant, Abnehmer, Artikel, Menge, Kennzeichen, Status
