@@ -445,12 +445,26 @@ class TestKreditversicherungNewStructure:
 
     def test_13_kreditpruefung_exceeding_limit(self):
         """POST /api/kreditpruefung - check credit exceeding limit returns 'ueberschritten'"""
-        kv_id, pos_id, adresse_id = self.test_05_add_kundenposition()
+        # Create a fresh KV and address to avoid interference from other tests
+        kv_id = self.test_02_create_hauptvertrag_with_gesamtlimit()
         
-        # Test with amount exceeding limit (150000 limit, 200000 request)
+        # Create a new test address specifically for this test
+        adresse_id = self._create_test_adresse()
+        assert adresse_id is not None, "Failed to create test address"
+        
+        # Add Kundenposition with small limit (50000)
+        position_payload = {
+            "adresse_id": adresse_id,
+            "kreditlimit": 50000,  # Small limit
+            "aktiv": True
+        }
+        
+        self.session.post(f"{BASE_URL}/api/kreditversicherungen/{kv_id}/positionen", json=position_payload)
+        
+        # Test with amount exceeding limit (50000 limit, 100000 request)
         pruefung_payload = {
             "adresse_ids": [adresse_id],
-            "neuer_betrag": 200000
+            "neuer_betrag": 100000
         }
         
         response = self.session.post(f"{BASE_URL}/api/kreditpruefung", json=pruefung_payload)
