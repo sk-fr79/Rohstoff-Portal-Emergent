@@ -266,14 +266,19 @@ Passwort: Admin123!
 - `POST /api/adressen/validieren` - Validiert Adresse nach Geschäftslogik
 - `GET /api/laender` - Liste der konfigurierten Länder mit UST-Präfixen
 
-### Artikel
+### Artikel (NEU erweitert - 09.01.2026)
 - `GET /api/artikel` - Liste mit Suche/Pagination
+- `GET /api/artikel/{id}` - Einzelner Artikel ✅
 - `POST /api/artikel` - Neuer Artikel
+- `PUT /api/artikel/{id}` - Artikel aktualisieren ✅
+- `DELETE /api/artikel/{id}` - Soft-Delete (aktiv=false) ✅
 
-### Kontrakte
+### Kontrakte (NEU erweitert - 09.01.2026)
 - `GET /api/kontrakte` - Liste mit Filter
 - `GET /api/kontrakte/{id}` - Einzelner Kontrakt
-- `POST /api/kontrakte` - Neuer Kontrakt
+- `POST /api/kontrakte` - Neuer Kontrakt (erweitertes Schema mit vorgang_typ)
+- `PUT /api/kontrakte/{id}` - Kontrakt aktualisieren ✅
+- `DELETE /api/kontrakte/{id}` - Soft-Delete (deleted=true) ✅
 - `POST /api/kontrakte/{id}/positionen` - Position hinzufügen
 - `POST /api/kontrakte/{id}/abschliessen` - Kontrakt abschließen
 
@@ -286,21 +291,21 @@ Passwort: Admin123!
 
 ### P0 - Aktueller Fokus
 - [x] Geschäftslogik aus Java-Code integrieren (Adress-Validierung) ✅ ERLEDIGT
+- [x] Artikel-Modul mit Sidebar-Layout redesignen ✅ ERLEDIGT (09.01.2026)
+- [x] Kontrakte-Modul mit Sidebar-Layout redesignen ✅ ERLEDIGT (09.01.2026)
+- [ ] Backend-Refactoring: `server.py` in Module aufteilen (routers, models, services) - DRINGEND
+
+### P1 - Hohe Priorität
+- [ ] Fuhren-Modul implementieren
+- [ ] Rechnungen-Modul implementieren
 - [ ] Geschäftslogik für Artikel-Validierung integrieren
 - [ ] Geschäftslogik für Kontrakt-Validierung integrieren
 
-### P1 - Hohe Priorität
-- [ ] Backend-Refactoring: `server.py` in Module aufteilen (routers, models, services)
-- [ ] Fuhren-Modul implementieren
-- [ ] Rechnungen-Modul implementieren
-- [ ] Adresse bearbeiten mit PUT-API verbinden
-- [ ] Artikel bearbeiten/löschen im Frontend
-
 ### P2 - Mittlere Priorität
-- [ ] Detailansicht für Kontrakte
-- [ ] Positionen im Kontrakt bearbeiten
+- [ ] Positionen im Kontrakt bearbeiten (UI zum Hinzufügen/Löschen)
 - [ ] Suchfeld in der globalen Navigation funktionsfähig machen
 - [ ] Dark/Light Mode Toggle
+- [ ] Datumsauswahl mit shadcn Calendar statt native Input
 
 ### P3 - Niedrige Priorität
 - [ ] PWA Service Worker
@@ -315,7 +320,9 @@ Passwort: Admin123!
 ```
 /app/
 ├── backend/
-│   ├── server.py          # Haupt-API mit allen Endpunkten
+│   ├── server.py          # Haupt-API mit allen Endpunkten (>2500 Zeilen - Refactoring nötig!)
+│   ├── tests/             # Pytest Tests
+│   │   └── test_artikel_kontrakte.py  # 24 Tests für Artikel/Kontrakte
 │   └── requirements.txt
 ├── frontend/
 │   ├── src/
@@ -324,8 +331,9 @@ Passwort: Admin123!
 │   │   │   ├── auth/       # Login
 │   │   │   ├── dashboard/  # Dashboard mit Chart
 │   │   │   ├── adressen/   # Adressverwaltung
-│   │   │   ├── artikel/    # Artikelverwaltung
-│   │   │   └── kontrakte/  # Kontraktverwaltung
+│   │   │   ├── artikel/    # Artikelverwaltung (NEU: Sidebar-Layout)
+│   │   │   ├── kontrakte/  # Kontraktverwaltung (NEU: Sidebar-Layout)
+│   │   │   └── wiegekarten/ # Wiegekartenverwaltung
 │   │   ├── services/api/   # API Client
 │   │   └── store/          # Zustand Store
 │   └── package.json
