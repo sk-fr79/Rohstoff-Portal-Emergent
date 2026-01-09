@@ -22,6 +22,7 @@ import {
   Scale,
   BarChart3,
   Building2,
+  Shield,
 } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { Button } from '@/components/ui/button';
