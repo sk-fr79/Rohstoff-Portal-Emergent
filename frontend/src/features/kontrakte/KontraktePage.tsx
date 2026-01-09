@@ -448,9 +448,9 @@ export function KontraktePage() {
               <div className="flex items-center gap-3">
                 <div className={cn(
                   "h-10 w-10 rounded-lg flex items-center justify-center",
-                  selectedKontrakt.vorgang_typ === 'EK' ? "bg-green-100" : "bg-blue-100"
+                  watchFields.vorgang_typ === 'EK' ? "bg-green-100" : "bg-blue-100"
                 )}>
-                  {selectedKontrakt.vorgang_typ === 'EK' ? (
+                  {watchFields.vorgang_typ === 'EK' ? (
                     <ArrowDownToLine className="h-5 w-5 text-green-600" />
                   ) : (
                     <ArrowUpFromLine className="h-5 w-5 text-blue-600" />
@@ -458,32 +458,43 @@ export function KontraktePage() {
                 </div>
                 <div>
                   <h2 className="font-bold text-lg">
-                    {selectedKontrakt.kontraktnr || selectedKontrakt.buchungsnummer || 'Neuer Kontrakt'}
+                    {isNewRecord ? 'Neuer Kontrakt' : (selectedKontrakt.kontraktnr || selectedKontrakt.buchungsnummer || 'Kontrakt')}
                   </h2>
                   <div className="flex items-center gap-2">
                     <span className="text-sm text-gray-500">
-                      {selectedKontrakt.vorgang_typ === 'EK' ? 'Einkaufskontrakt' : 'Verkaufskontrakt'}
+                      {watchFields.vorgang_typ === 'EK' ? 'Einkaufskontrakt' : 'Verkaufskontrakt'}
                     </span>
                     <Badge className={cn(
-                      statusColors[selectedKontrakt.status || 'OFFEN']?.bg,
-                      statusColors[selectedKontrakt.status || 'OFFEN']?.text
+                      statusColors[watchFields.status || 'OFFEN']?.bg,
+                      statusColors[watchFields.status || 'OFFEN']?.text
                     )}>
-                      {selectedKontrakt.status || 'OFFEN'}
+                      {watchFields.status || 'OFFEN'}
                     </Badge>
                   </div>
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <Button
-                  variant={isEditing ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => isEditing ? handleSave() : setIsEditing(true)}
-                  className={isEditing ? "bg-emerald-600 hover:bg-emerald-700" : ""}
-                >
-                  {isEditing ? <Save className="h-4 w-4 mr-1" /> : <Pencil className="h-4 w-4 mr-1" />}
-                  {isEditing ? 'Speichern' : 'Bearbeiten'}
-                </Button>
-                <Button variant="ghost" size="icon" onClick={() => setSelectedKontrakt(null)}>
+                {isEditing ? (
+                  <>
+                    <Button variant="outline" size="sm" onClick={handleCancel}>
+                      Abbrechen
+                    </Button>
+                    <Button
+                      size="sm"
+                      onClick={handleSave}
+                      className="bg-emerald-600 hover:bg-emerald-700"
+                    >
+                      <Save className="h-4 w-4 mr-1" />
+                      Speichern
+                    </Button>
+                  </>
+                ) : (
+                  <Button variant="outline" size="sm" onClick={() => setIsEditing(true)}>
+                    <Pencil className="h-4 w-4 mr-1" />
+                    Bearbeiten
+                  </Button>
+                )}
+                <Button variant="ghost" size="icon" onClick={handleClose}>
                   <X className="h-5 w-5" />
                 </Button>
               </div>
