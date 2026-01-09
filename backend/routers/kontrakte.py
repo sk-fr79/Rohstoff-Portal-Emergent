@@ -198,17 +198,28 @@ async def update_kontrakt(
 
 @router.delete("/kontrakte/{kontrakt_id}")
 async def delete_kontrakt(kontrakt_id: str, user = Depends(get_current_user)):
-    """Kontrakt löschen (Soft-Delete)"""
+    """Kontrakt löschen (Hard Delete)"""
     db = get_db()
-    result = await db.kontrakte.update_one(
-        {"_id": kontrakt_id, "mandant_id": user["mandant_id"]},
-        {"$set": {"deleted": True}}
-    )
     
-    if result.modified_count == 0:
+    # Prüfen ob Kontrakt existiert
+    kontrakt = await db.kontrakte.find_one({
+        "_id": kontrakt_id, 
+        "mandant_id": user["mandant_id"]
+    })
+    
+    if not kontrakt:
         raise HTTPException(status_code=404, detail="Kontrakt nicht gefunden")
     
-    return {"success": True}
+    # Kontrakt endgültig löschen
+    result = await db.kontrakte.delete_one({
+        "_id": kontrakt_id, 
+        "mandant_id": user["mandant_id"]
+    })
+    
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Kontrakt konnte nicht gelöscht werden")
+    
+    return {"success": True, "message": "Kontrakt gelöscht"}
 
 
 @router.post("/kontrakte/{kontrakt_id}/positionen")
