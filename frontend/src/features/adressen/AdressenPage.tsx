@@ -314,7 +314,7 @@ export function AdressenPage() {
 
   // Neue Adresse anlegen - öffnet Sidebar mit leerem Datensatz
   const handleNewAdresse = () => {
-    const emptyAdresse: Adresse = {
+    const emptyAdresse: Partial<Adresse> & { id: string; name1: string } = {
       id: 'NEU',
       kdnr: '(wird automatisch vergeben)',
       name1: '',
@@ -327,7 +327,7 @@ export function AdressenPage() {
       sprache: 'Deutsch',
       waehrung: 'EUR',
     };
-    setSelectedAdresse(emptyAdresse);
+    setSelectedAdresse(emptyAdresse as Adresse);
     reset({
       adresstyp: 1,
       aktiv: true,
