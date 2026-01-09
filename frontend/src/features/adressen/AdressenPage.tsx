@@ -286,6 +286,9 @@ export function AdressenPage() {
   const [ustIdProtokollLoading, setUstIdProtokollLoading] = useState(false);
   const [validatingUstId, setValidatingUstId] = useState(false);
   const [validatingUstIdIndex, setValidatingUstIdIndex] = useState<number | null>(null); // für weitere UST-IDs
+  
+  // State für Validierungsergebnis (Steuer-Validierung)
+  const [lastValidation, setLastValidation] = useState<any>(null);
 
   const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm<AdresseForm>({
     resolver: zodResolver(adresseSchema),
