@@ -701,6 +701,10 @@ async def update_adresse(
             ausweis_ablauf=merged.get("ausweis_ablauf"),
             firma_ohne_ustid=merged.get("firma_ohne_ustid", False),
             privat_mit_ustid=merged.get("privat_mit_ustid", False),
+            name1=merged.get("name1"),
+            strasse=merged.get("strasse"),
+            plz=merged.get("plz"),
+            ort=merged.get("ort"),
         )
         
         if not validierung.ist_gueltig:
