@@ -6,10 +6,11 @@ Portiert aus Java/Echo2:
 - BSK_P_MASK_MapValidator_CheckMengeInLieferdaten.java
 - FU_MAP_SET_AND_VALID__Check_AVV_CodeAllowed.java
 - __FU_Pruefer_auf_AVV_UND_NOTI.java
+- __FS_Adress_Check.java (Steuer-Validierung)
 """
 
-from typing import List
-from datetime import datetime
+from typing import List, Dict, Any, Optional
+from datetime import datetime, date
 
 
 class ValidationResult:

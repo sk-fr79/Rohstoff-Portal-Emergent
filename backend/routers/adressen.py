@@ -96,12 +96,16 @@ class AdresseCreate(BaseModel):
     lieferbedingung_ek: Optional[str] = Field(None, max_length=50)
     lieferbedingung_vk: Optional[str] = Field(None, max_length=50)
     
-    # Sperren
+    # Sperren - WICHTIG: Default TRUE gemäß Echo2-Logik (bis zur Freigabe gesperrt!)
     rechnungen_sperren: bool = False
     gutschriften_sperren: bool = False
-    wareneingang_sperren: bool = False
-    warenausgang_sperren: bool = False
+    wareneingang_sperren: bool = True  # Default: gesperrt bis Freigabe
+    warenausgang_sperren: bool = True  # Default: gesperrt bis Freigabe
     wird_nicht_gemahnt: bool = False
+    
+    # Einkauf/Verkauf Freigabe (aus Echo2: IST_LIEFERANT, IST_ABNEHMER)
+    ist_lieferant: bool = False  # Einkaufsfreigabe
+    ist_abnehmer: bool = False   # Verkaufsfreigabe
     
     # Ausweis
     ausweis_nummer: Optional[str] = Field(None, max_length=30)
