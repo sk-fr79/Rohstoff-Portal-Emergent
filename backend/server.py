@@ -3424,3 +3424,8 @@ async def create_rechnung_aus_fuhre(
     
     rechnung["id"] = rechnung.pop("_id")
     return {"success": True, "data": rechnung}
+
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8001)

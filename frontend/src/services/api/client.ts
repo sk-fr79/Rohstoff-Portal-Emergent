@@ -101,3 +101,27 @@ export const kontrakteApi = {
   abschliessen: (id: string) => api.post(`/kontrakte/${id}/abschliessen`),
   addPosition: (id: string, data: unknown) => api.post(`/kontrakte/${id}/positionen`, data),
 };
+
+// Fuhren API (Transporte)
+export const fuhrenApi = {
+  list: (params?: Record<string, unknown>) => api.get('/fuhren', { params }),
+  search: (params?: Record<string, unknown>) => api.get('/fuhren', { params }),
+  getById: (id: string) => api.get(`/fuhren/${id}`),
+  create: (data: unknown) => api.post('/fuhren', data),
+  update: (id: string, data: unknown) => api.put(`/fuhren/${id}`, data),
+  delete: (id: string) => api.delete(`/fuhren/${id}`),
+  storno: (id: string, grund?: string) => api.post(`/fuhren/${id}/storno`, { grund }),
+};
+
+// Rechnungen API
+export const rechnungenApi = {
+  list: (params?: Record<string, unknown>) => api.get('/rechnungen', { params }),
+  search: (params?: Record<string, unknown>) => api.get('/rechnungen', { params }),
+  getById: (id: string) => api.get(`/rechnungen/${id}`),
+  create: (data: unknown) => api.post('/rechnungen', data),
+  update: (id: string, data: unknown) => api.put(`/rechnungen/${id}`, data),
+  delete: (id: string) => api.delete(`/rechnungen/${id}`),
+  addPosition: (id: string, data: unknown) => api.post(`/rechnungen/${id}/positionen`, data),
+  createFromFuhre: (fuhreId: string, vorgangTyp: string) => 
+    api.post(`/rechnungen/aus-fuhre/${fuhreId}`, null, { params: { vorgang_typ: vorgangTyp } }),
+};
