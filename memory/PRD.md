@@ -398,7 +398,7 @@ Passwort: Admin123!
 - [x] Rechnungen-Modul implementieren ✅ ERLEDIGT (09.01.2026)
 - [x] Geschäftslogik-Validierung portieren (Artikel, Kontrakte, Fuhren) ✅ ERLEDIGT (09.01.2026)
 - [x] UX-Refactoring: "Neu"-Button → Sidebar in allen Modulen ✅ ERLEDIGT (09.01.2026)
-- [ ] Backend-Refactoring: `server.py` in Module aufteilen (routers, models, services) - DRINGEND (>3600 Zeilen!)
+- [x] Backend-Refactoring: `server.py` in Module aufteilen ✅ ERLEDIGT (09.01.2026)
 
 ### P1 - Hohe Priorität
 - [ ] PDF-Export für Rechnungen und Lieferscheine
@@ -420,14 +420,31 @@ Passwort: Admin123!
 
 ---
 
-## Dateistruktur
+## Dateistruktur (NEU - Modulare Architektur)
 
 ```
 /app/
 ├── backend/
-│   ├── server.py          # Haupt-API mit allen Endpunkten (>2500 Zeilen - Refactoring nötig!)
-│   ├── tests/             # Pytest Tests
-│   │   └── test_artikel_kontrakte.py  # 24 Tests für Artikel/Kontrakte
+│   ├── server.py          # Haupt-Entry-Point (~130 Zeilen)
+│   ├── server_backup.py   # Backup der alten monolithischen Datei
+│   ├── routers/           # API-Endpunkte (~2200 Zeilen)
+│   │   ├── auth.py        # Login, Logout, User-Info
+│   │   ├── dashboard.py   # Dashboard-Statistiken
+│   │   ├── adressen.py    # Adressen-CRUD, UST-ID, Ansprechpartner
+│   │   ├── artikel.py     # Artikel-CRUD mit Validierung
+│   │   ├── kontrakte.py   # Kontrakte-CRUD mit Positionen
+│   │   ├── wiegekarten.py # Wiegekarten-CRUD, Waage-Integration
+│   │   ├── fuhren.py      # Fuhren-CRUD mit Status-Workflow
+│   │   └── rechnungen.py  # Rechnungen/Gutschriften-CRUD
+│   ├── services/          # Geschäftslogik (~320 Zeilen)
+│   │   ├── database.py    # MongoDB-Verbindung
+│   │   └── validation.py  # Artikel-, Kontrakt-, Fuhren-Validierung
+│   ├── models/            # Pydantic-Schemas
+│   │   └── auth.py        # Login/Logout-Modelle
+│   ├── utils/             # Hilfsfunktionen
+│   │   └── auth.py        # JWT, Password-Hashing
+│   └── tests/             # Pytest Tests
+│       └── test_artikel_kontrakte.py
 │   └── requirements.txt
 ├── frontend/
 │   ├── src/
