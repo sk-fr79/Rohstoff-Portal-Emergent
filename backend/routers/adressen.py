@@ -120,6 +120,14 @@ class AdresseCreate(BaseModel):
     bemerkungen: Optional[str] = Field(None, max_length=700)
     bemerkung_fahrplan: Optional[str] = Field(None, max_length=300)
     lieferinfo_tpa: Optional[str] = Field(None, max_length=300)
+    
+    # Zusätzliche Felder aus Echo2 (NEU)
+    erstkontakt: Optional[str] = Field(None, max_length=10)  # Datum des Erstkontakts
+    branche: Optional[str] = Field(None, max_length=50)       # Branche/Industrie
+    adressklasse: Optional[str] = Field(None, max_length=10)  # Klassifizierung (A/B/C)
+    potential: Optional[str] = Field(None, max_length=20)     # Potentialklasse
+    kredit_limit: Optional[float] = None                      # Kreditlimit
+    kredit_limit_waehrung: Optional[str] = Field("EUR", max_length=3)
 
 
 class AdresseUpdate(BaseModel):
