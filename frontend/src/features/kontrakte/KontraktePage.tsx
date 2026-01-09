@@ -160,11 +160,20 @@ export function KontraktePage() {
 
   const createMutation = useMutation({
     mutationFn: (data: KontraktForm) => kontrakteApi.create(data),
-    onSuccess: () => {
+    onSuccess: (response) => {
       queryClient.invalidateQueries({ queryKey: ['kontrakte'] });
       toast.success('Kontrakt erfolgreich erstellt');
-      setShowCreateDialog(false);
-      reset();
+      // Nach erfolgreicher Erstellung: Sidebar bleibt offen mit neuem Datensatz
+      if (response.data?.data) {
+        setSelectedKontrakt(response.data.data);
+        Object.entries(response.data.data).forEach(([key, value]) => {
+          if (key in kontraktSchema.shape) {
+            setValue(key as keyof KontraktForm, value as any);
+          }
+        });
+      }
+      setIsNewRecord(false);
+      setIsEditing(false);
     },
     onError: (error: any) => {
       toast.error(error.response?.data?.detail || 'Fehler beim Erstellen');
@@ -214,9 +223,55 @@ export function KontraktePage() {
     )();
   };
 
+  // Neue Kontrakt anlegen - öffnet Sidebar mit leerem Datensatz
+  const handleNewKontrakt = () => {
+    const today = new Date().toISOString().split('T')[0];
+    const emptyKontrakt: Kontrakt = {
+      id: 'NEU',
+      vorgang_typ: 'EK',
+      name1: '',
+      waehrung_kurz: 'EUR',
+      status: 'OFFEN',
+      aktiv: true,
+      erstellungsdatum: today,
+    };
+    setSelectedKontrakt(emptyKontrakt);
+    reset(emptyKontrakt);
+    setIsNewRecord(true);
+    setIsEditing(true);
+    setActiveSection('kopf');
+  };
+
+  // Sidebar schließen
+  const handleClose = () => {
+    setSelectedKontrakt(null);
+    setIsEditing(false);
+    setIsNewRecord(false);
+    reset();
+  };
+
+  // Abbrechen
+  const handleCancel = () => {
+    if (isNewRecord) {
+      setSelectedKontrakt(null);
+      setIsNewRecord(false);
+      reset();
+    } else {
+      setIsEditing(false);
+      if (selectedKontrakt) {
+        Object.entries(selectedKontrakt).forEach(([key, value]) => {
+          if (key in kontraktSchema.shape) {
+            setValue(key as keyof KontraktForm, value as any);
+          }
+        });
+      }
+    }
+  };
+
   // Detailansicht öffnen
   const openDetail = (kontrakt: Kontrakt) => {
     setSelectedKontrakt(kontrakt);
+    setIsNewRecord(false);
     setIsEditing(false);
     setActiveSection('kopf');
     Object.entries(kontrakt).forEach(([key, value]) => {
@@ -359,7 +414,7 @@ export function KontraktePage() {
                 <SelectItem value="VK">Verkauf</SelectItem>
               </SelectContent>
             </Select>
-            <Button onClick={() => setShowCreateDialog(true)} className="bg-emerald-600 hover:bg-emerald-700">
+            <Button onClick={handleNewKontrakt} className="bg-emerald-600 hover:bg-emerald-700" data-testid="new-kontrakt-btn">
               <Plus className="h-4 w-4 mr-2" />
               Neuer Kontrakt
             </Button>
