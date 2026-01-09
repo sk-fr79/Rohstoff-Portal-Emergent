@@ -777,7 +777,6 @@ export default function KreditversicherungenPage() {
                         columns={kundenColumns}
                         data={filteredKunden}
                         searchPlaceholder=""
-                        showSearch={false}
                       />
                     </div>
                   )}
