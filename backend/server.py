@@ -3338,14 +3338,14 @@ async def create_rechnung_aus_fuhre(
     # Bestimme ob Rechnung (an Abnehmer) oder Gutschrift (an Lieferant)
     if vorgang_typ == "RECHNUNG":
         adresse_id = fuhre.get("id_adresse_ziel")
-        menge = fuhre.get("menge_abladen", 0)
-        einzelpreis = fuhre.get("einzelpreis_vk", 0)
-        steuersatz = fuhre.get("steuersatz_vk", 19.0)
+        menge = fuhre.get("menge_abladen") or 0
+        einzelpreis = fuhre.get("einzelpreis_vk") or 0
+        steuersatz = fuhre.get("steuersatz_vk") or 19.0
     else:
         adresse_id = fuhre.get("id_adresse_start")
-        menge = fuhre.get("menge_aufladen", 0)
-        einzelpreis = fuhre.get("einzelpreis_ek", 0)
-        steuersatz = fuhre.get("steuersatz_ek", 19.0)
+        menge = fuhre.get("menge_aufladen") or 0
+        einzelpreis = fuhre.get("einzelpreis_ek") or 0
+        steuersatz = fuhre.get("steuersatz_ek") or 19.0
     
     # Adresse laden
     adresse = await db.adressen.find_one({"_id": adresse_id})
