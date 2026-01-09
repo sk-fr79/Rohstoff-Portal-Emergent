@@ -1,13 +1,15 @@
 """
 Kreditversicherung Router - CRUD und Geschäftslogik
-Portiert aus Echo2:
-- KV_Info.java
-- KV_Info_Entry.java
-- KV_Lib.java
-- STATKD_StatusErmittlung_Kreditversicherung.java
+NEUGESTALTUNG gemäß Benutzeranforderungen:
+
+Struktur:
+- 1 Hauptvertrag (Kopf) mit Gesamtlimit + Start-/Enddatum
+- n Kundenpositionen (Unterverträge) mit eigenem Limit pro Kunde
+- Auslastung = Summe Kundenlimits / Gesamtlimit * 100%
+- Enddatum Hauptvertrag sticht immer das Enddatum der Unterverträge
 """
 
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, Query
 from pydantic import BaseModel, Field
 from typing import Optional, List
 from datetime import datetime, date
@@ -20,61 +22,95 @@ router = APIRouter(prefix="/api", tags=["Kreditversicherung"])
 
 
 # ============================================================
-# PYDANTIC MODELS
+# PYDANTIC MODELS - NEUE STRUKTUR
 # ============================================================
 
-class KreditversicherungPosition(BaseModel):
-    """Position/Limit einer Kreditversicherung (aus JT_KREDITVERS_POS)"""
+class KundenPosition(BaseModel):
+    """Untervertrag pro Kunde (1:n zum Hauptvertrag)"""
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    gueltig_ab: str = Field(..., description="Gültig ab (ISO-Date)")
-    gueltig_bis: Optional[str] = Field(None, description="Gültig bis (ISO-Date, optional)")
-    betrag: float = Field(..., description="Versicherungslimit in EUR")
-    betrag_anfrage: Optional[float] = Field(None, description="Angefragter Betrag")
-    waehrung: str = "EUR"
-    aktiv: bool = True
-    bemerkungen: Optional[str] = None
-
-
-class VersicherteAdresse(BaseModel):
-    """Verknüpfte Adresse (aus JT_KREDITVERS_ADRESSE)"""
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    adresse_id: str = Field(..., description="FK zu Adressen")
+    adresse_id: str = Field(..., description="FK zu Adressen (Kunde)")
     adresse_name: Optional[str] = None
     adresse_ort: Optional[str] = None
     adresse_kdnr: Optional[str] = None
-
-
-class KreditversicherungCreate(BaseModel):
-    """Kreditversicherung erstellen (aus JT_KREDITVERS_KOPF)"""
-    versicherungsnummer: Optional[str] = Field(None, max_length=50)
-    versicherer_id: Optional[str] = Field(None, description="FK zu Adressen (Versicherungsgesellschaft)")
-    versicherer_name: Optional[str] = None
+    
+    # Kreditlimit pro Kunde
+    kreditlimit: float = Field(0, description="Kreditlimit für diesen Kunden in EUR")
+    unterversicherungsnummer: Optional[str] = Field(None, description="Unterversicherungsnummer beim Versicherer")
     fakturierungsfrist: Optional[int] = Field(None, description="Verlängerte Fakturierungsfrist in Tagen")
+    
+    # Gültigkeit (Enddatum Hauptvertrag sticht)
+    gueltig_bis: Optional[str] = Field(None, description="Eigenes Gültigkeitsdatum (ISO-Date, Hauptvertrag sticht)")
+    
+    aktiv: bool = True
+    bemerkungen: Optional[str] = None
+    
+    # Audit
+    erstellt_am: Optional[str] = None
+    geaendert_am: Optional[str] = None
+
+
+class KundenPositionCreate(BaseModel):
+    """Kundenposition erstellen"""
+    adresse_id: str
+    kreditlimit: float = 0
+    unterversicherungsnummer: Optional[str] = None
+    fakturierungsfrist: Optional[int] = None
+    gueltig_bis: Optional[str] = None
     aktiv: bool = True
     bemerkungen: Optional[str] = None
 
 
-class KreditversicherungUpdate(BaseModel):
-    """Kreditversicherung aktualisieren"""
+class KundenPositionUpdate(BaseModel):
+    """Kundenposition aktualisieren"""
+    kreditlimit: Optional[float] = None
+    unterversicherungsnummer: Optional[str] = None
+    fakturierungsfrist: Optional[int] = None
+    gueltig_bis: Optional[str] = None
+    aktiv: Optional[bool] = None
+    bemerkungen: Optional[str] = None
+
+
+class KreditversicherungKopfCreate(BaseModel):
+    """Hauptvertrag erstellen"""
+    versicherungsnummer: Optional[str] = Field(None, max_length=50)
+    versicherer_id: Optional[str] = Field(None, description="FK zu Adressen (Versicherungsgesellschaft)")
+    versicherer_name: Optional[str] = None
+    
+    # Gesamtvolumen des Vertrags
+    gesamtlimit: float = Field(0, description="Gesamtvolumen/Gesamtlimit des Vertrags in EUR")
+    
+    # Vertragslaufzeit
+    gueltig_von: Optional[str] = Field(None, description="Vertragsbeginn (ISO-Date)")
+    gueltig_bis: Optional[str] = Field(None, description="Vertragsende (ISO-Date) - sticht Unterverträge")
+    
+    aktiv: bool = True
+    bemerkungen: Optional[str] = None
+
+
+class KreditversicherungKopfUpdate(BaseModel):
+    """Hauptvertrag aktualisieren"""
     versicherungsnummer: Optional[str] = None
     versicherer_id: Optional[str] = None
     versicherer_name: Optional[str] = None
-    fakturierungsfrist: Optional[int] = None
+    gesamtlimit: Optional[float] = None
+    gueltig_von: Optional[str] = None
+    gueltig_bis: Optional[str] = None
     aktiv: Optional[bool] = None
     bemerkungen: Optional[str] = None
 
 
 class KreditlimitInfo(BaseModel):
-    """Einzelnes Kreditlimit (entspricht KV_Info_Entry)"""
+    """Einzelnes Kreditlimit für Adress-Abfrage"""
     betrag: float
-    betrag_anfrage: Optional[float] = None
-    gueltig_ab: Optional[str] = None
-    gueltig_bis: Optional[str] = None
     beschreibung: Optional[str] = None
     kv_id: Optional[str] = None
     versicherungsnummer: Optional[str] = None
+    unterversicherungsnummer: Optional[str] = None
+    gueltig_ab: Optional[str] = None
+    gueltig_bis: Optional[str] = None  # Effektives Datum (min aus Kopf und Position)
     ist_intern: bool = False
     ist_aktiv: bool = True
+    fakturierungsfrist: Optional[int] = None
 
 
 class KreditstatusResponse(BaseModel):
@@ -83,7 +119,7 @@ class KreditstatusResponse(BaseModel):
     gesamtlimit: float
     aktuelle_forderungen: float
     verfuegbar: float
-    status: str  # "ok", "warnung", "ueberschritten"
+    status: str  # "ok", "warnung", "ueberschritten", "kein_limit"
     limits: List[KreditlimitInfo]
 
 
@@ -91,71 +127,117 @@ class KreditstatusResponse(BaseModel):
 # HELPER FUNCTIONS
 # ============================================================
 
-def ist_position_gueltig(position: dict, stichtag: date = None) -> bool:
-    """Prüft ob eine KV-Position zum Stichtag gültig ist"""
+def berechne_effektives_enddatum(kopf_gueltig_bis: Optional[str], position_gueltig_bis: Optional[str]) -> Optional[str]:
+    """
+    Berechnet das effektive Enddatum einer Kundenposition.
+    Hauptvertrag-Enddatum sticht IMMER das Positions-Enddatum.
+    """
+    if not kopf_gueltig_bis and not position_gueltig_bis:
+        return None
+    if not kopf_gueltig_bis:
+        return position_gueltig_bis
+    if not position_gueltig_bis:
+        return kopf_gueltig_bis
+    
+    # Beide vorhanden -> das frühere nehmen (Kopf sticht)
+    try:
+        kopf_date = datetime.fromisoformat(kopf_gueltig_bis).date()
+        pos_date = datetime.fromisoformat(position_gueltig_bis).date()
+        return kopf_gueltig_bis if kopf_date <= pos_date else position_gueltig_bis
+    except:
+        return kopf_gueltig_bis
+
+
+def ist_position_gueltig(kopf: dict, position: dict, stichtag: date = None) -> bool:
+    """
+    Prüft ob eine Kundenposition zum Stichtag gültig ist.
+    Berücksichtigt sowohl Kopf- als auch Positions-Enddatum.
+    """
     if stichtag is None:
         stichtag = date.today()
     
-    gueltig_ab = position.get("gueltig_ab")
-    gueltig_bis = position.get("gueltig_bis")
+    # Position muss aktiv sein
+    if not position.get("aktiv", True):
+        return False
     
-    if gueltig_ab:
+    # Kopf-Startdatum prüfen
+    if kopf.get("gueltig_von"):
         try:
-            ab_date = datetime.fromisoformat(gueltig_ab).date()
-            if ab_date > stichtag:
+            von_date = datetime.fromisoformat(kopf["gueltig_von"]).date()
+            if von_date > stichtag:
                 return False
         except:
             pass
     
-    if gueltig_bis:
+    # Effektives Enddatum prüfen (Kopf sticht)
+    effektives_ende = berechne_effektives_enddatum(
+        kopf.get("gueltig_bis"),
+        position.get("gueltig_bis")
+    )
+    
+    if effektives_ende:
         try:
-            bis_date = datetime.fromisoformat(gueltig_bis).date()
+            bis_date = datetime.fromisoformat(effektives_ende).date()
             if bis_date < stichtag:
                 return False
         except:
             pass
     
-    return position.get("aktiv", True)
+    return True
+
+
+def berechne_auslastung(gesamtlimit: float, summe_kundenlimits: float) -> float:
+    """Berechnet die Auslastung in Prozent"""
+    if gesamtlimit <= 0:
+        return 0.0 if summe_kundenlimits == 0 else 100.0
+    return round((summe_kundenlimits / gesamtlimit) * 100, 2)
 
 
 async def get_kreditlimits_for_adresse(adresse_id: str, db, stichtag: date = None) -> List[KreditlimitInfo]:
     """
     Ermittelt alle aktiven Kreditlimits für einen Kunden.
-    Entspricht KV_Info.getKreditlimitsFor() aus Java.
     """
     if stichtag is None:
         stichtag = date.today()
     
     limits = []
     
-    # 1. Externe Kreditversicherungen abfragen
+    # Externe Kreditversicherungen abfragen
     cursor = db.kreditversicherungen.find({
-        "versicherte_adressen.adresse_id": adresse_id,
+        "kunden_positionen.adresse_id": adresse_id,
         "aktiv": True
     })
     
     async for kv in cursor:
-        for position in kv.get("positionen", []):
-            if ist_position_gueltig(position, stichtag):
+        for position in kv.get("kunden_positionen", []):
+            if position.get("adresse_id") != adresse_id:
+                continue
+                
+            if ist_position_gueltig(kv, position, stichtag):
+                effektives_ende = berechne_effektives_enddatum(
+                    kv.get("gueltig_bis"),
+                    position.get("gueltig_bis")
+                )
+                
                 limits.append(KreditlimitInfo(
-                    betrag=position.get("betrag", 0),
-                    betrag_anfrage=position.get("betrag_anfrage"),
-                    gueltig_ab=position.get("gueltig_ab"),
-                    gueltig_bis=position.get("gueltig_bis"),
+                    betrag=position.get("kreditlimit", 0),
                     beschreibung=f"KV {kv.get('versicherungsnummer', kv['_id'][:8])}",
                     kv_id=kv["_id"],
                     versicherungsnummer=kv.get("versicherungsnummer"),
+                    unterversicherungsnummer=position.get("unterversicherungsnummer"),
+                    gueltig_ab=kv.get("gueltig_von"),
+                    gueltig_bis=effektives_ende,
                     ist_intern=False,
-                    ist_aktiv=True
+                    ist_aktiv=True,
+                    fakturierungsfrist=position.get("fakturierungsfrist")
                 ))
     
-    # 2. Internes Kreditlimit aus Adresse (KREDITBETRAG_INTERN)
+    # Internes Kreditlimit aus Adresse
     adresse = await db.adressen.find_one({"_id": adresse_id})
     if adresse and adresse.get("kredit_limit"):
         kredit_limit = adresse.get("kredit_limit", 0)
         gueltig_bis = adresse.get("kredit_limit_gueltig_bis")
         
-        # Prüfen ob noch gültig
         ist_gueltig = True
         if gueltig_bis:
             try:
@@ -176,30 +258,20 @@ async def get_kreditlimits_for_adresse(adresse_id: str, db, stichtag: date = Non
     return limits
 
 
-async def get_alle_verknuepfte_adressen(kv_id: str, db) -> List[str]:
-    """
-    Ermittelt alle Adress-IDs die zu einer Kreditversicherung gehören.
-    Entspricht KV_Info.getAllAddressIDsConnected() aus Java.
-    """
-    kv = await db.kreditversicherungen.find_one({"_id": kv_id})
-    if not kv:
-        return []
-    return [a["adresse_id"] for a in kv.get("versicherte_adressen", [])]
-
-
 # ============================================================
-# CRUD ENDPOINTS - KREDITVERSICHERUNGEN
+# CRUD ENDPOINTS - HAUPTVERTRAG (KOPF)
 # ============================================================
 
 @router.get("/kreditversicherungen")
 async def list_kreditversicherungen(
     aktiv: Optional[bool] = None,
     adresse_id: Optional[str] = None,
+    search: Optional[str] = None,
     skip: int = 0,
     limit: int = 100,
     user = Depends(get_current_user)
 ):
-    """Liste aller Kreditversicherungen"""
+    """Liste aller Kreditversicherungen mit Auslastung"""
     db = get_db()
     
     query = {"mandant_id": user["mandant_id"]}
@@ -208,13 +280,29 @@ async def list_kreditversicherungen(
         query["aktiv"] = aktiv
     
     if adresse_id:
-        query["versicherte_adressen.adresse_id"] = adresse_id
+        query["kunden_positionen.adresse_id"] = adresse_id
+    
+    if search:
+        query["$or"] = [
+            {"versicherungsnummer": {"$regex": search, "$options": "i"}},
+            {"versicherer_name": {"$regex": search, "$options": "i"}},
+            {"kunden_positionen.adresse_name": {"$regex": search, "$options": "i"}},
+        ]
     
     cursor = db.kreditversicherungen.find(query).skip(skip).limit(limit).sort("created_at", -1)
     
     items = []
     async for doc in cursor:
         doc["id"] = doc.pop("_id")
+        
+        # Auslastung berechnen
+        positionen = doc.get("kunden_positionen", [])
+        summe_kundenlimits = sum(p.get("kreditlimit", 0) for p in positionen if p.get("aktiv", True))
+        gesamtlimit = doc.get("gesamtlimit", 0)
+        doc["auslastung_prozent"] = berechne_auslastung(gesamtlimit, summe_kundenlimits)
+        doc["summe_kundenlimits"] = summe_kundenlimits
+        doc["anzahl_kunden"] = len([p for p in positionen if p.get("aktiv", True)])
+        
         items.append(doc)
     
     total = await db.kreditversicherungen.count_documents(query)
@@ -228,7 +316,7 @@ async def list_kreditversicherungen(
 
 @router.get("/kreditversicherungen/{kv_id}")
 async def get_kreditversicherung(kv_id: str, user = Depends(get_current_user)):
-    """Einzelne Kreditversicherung abrufen"""
+    """Einzelne Kreditversicherung mit Kundenpositionen und Auslastung abrufen"""
     db = get_db()
     
     kv = await db.kreditversicherungen.find_one({
@@ -240,44 +328,56 @@ async def get_kreditversicherung(kv_id: str, user = Depends(get_current_user)):
         raise HTTPException(status_code=404, detail="Kreditversicherung nicht gefunden")
     
     kv["id"] = kv.pop("_id")
+    
+    # Auslastung berechnen
+    positionen = kv.get("kunden_positionen", [])
+    summe_kundenlimits = sum(p.get("kreditlimit", 0) for p in positionen if p.get("aktiv", True))
+    gesamtlimit = kv.get("gesamtlimit", 0)
+    kv["auslastung_prozent"] = berechne_auslastung(gesamtlimit, summe_kundenlimits)
+    kv["summe_kundenlimits"] = summe_kundenlimits
+    kv["anzahl_kunden"] = len([p for p in positionen if p.get("aktiv", True)])
+    
     return {"success": True, "data": kv}
 
 
 @router.post("/kreditversicherungen")
-async def create_kreditversicherung(data: KreditversicherungCreate, user = Depends(get_current_user)):
-    """Neue Kreditversicherung anlegen"""
+async def create_kreditversicherung(data: KreditversicherungKopfCreate, user = Depends(get_current_user)):
+    """Neuen Hauptvertrag anlegen"""
     db = get_db()
     
-    kv_id = str(uuid.uuid4())[:8].upper()
+    kv_id = "KV-" + str(uuid.uuid4())[:8].upper()
     
     kv = {
         "_id": kv_id,
         "mandant_id": user["mandant_id"],
         **data.model_dump(),
-        "versicherte_adressen": [],
-        "positionen": [],
-        "created_at": datetime.utcnow(),
-        "updated_at": datetime.utcnow(),
+        "kunden_positionen": [],
+        "created_at": datetime.utcnow().isoformat(),
+        "updated_at": datetime.utcnow().isoformat(),
         "created_by": user.get("benutzername", "system"),
     }
     
     await db.kreditversicherungen.insert_one(kv)
     
     kv["id"] = kv.pop("_id")
+    kv["auslastung_prozent"] = 0.0
+    kv["summe_kundenlimits"] = 0.0
+    kv["anzahl_kunden"] = 0
+    
     return {"success": True, "data": kv}
 
 
 @router.put("/kreditversicherungen/{kv_id}")
 async def update_kreditversicherung(
     kv_id: str,
-    data: KreditversicherungUpdate,
+    data: KreditversicherungKopfUpdate,
     user = Depends(get_current_user)
 ):
-    """Kreditversicherung aktualisieren"""
+    """Hauptvertrag aktualisieren"""
     db = get_db()
     
     update_data = {k: v for k, v in data.model_dump().items() if v is not None}
-    update_data["updated_at"] = datetime.utcnow()
+    update_data["updated_at"] = datetime.utcnow().isoformat()
     
     result = await db.kreditversicherungen.update_one(
         {"_id": kv_id, "mandant_id": user["mandant_id"]},
@@ -287,20 +387,22 @@ async def update_kreditversicherung(
     if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="Kreditversicherung nicht gefunden")
     
-    kv = await db.kreditversicherungen.find_one({"_id": kv_id})
-    kv["id"] = kv.pop("_id")
-    
-    return {"success": True, "data": kv}
+    # Aktualisierten Datensatz zurückgeben
+    return await get_kreditversicherung(kv_id, user)
 
 
 @router.delete("/kreditversicherungen/{kv_id}")
 async def delete_kreditversicherung(kv_id: str, user = Depends(get_current_user)):
-    """Kreditversicherung löschen (soft delete)"""
+    """Kreditversicherung deaktivieren (soft delete)"""
     db = get_db()
     
     result = await db.kreditversicherungen.update_one(
         {"_id": kv_id, "mandant_id": user["mandant_id"]},
-        {"$set": {"aktiv": False, "deleted_at": datetime.utcnow()}}
+        {"$set": {
+            "aktiv": False, 
+            "deleted_at": datetime.utcnow().isoformat(),
+            "updated_at": datetime.utcnow().isoformat()
+        }}
     )
     
     if result.matched_count == 0:
@@ -310,87 +412,17 @@ async def delete_kreditversicherung(kv_id: str, user = Depends(get_current_user)
 
 
 # ============================================================
-# VERKNÜPFTE ADRESSEN
-# ============================================================
-
-@router.get("/kreditversicherungen/{kv_id}/adressen")
-async def get_kv_adressen(kv_id: str, user = Depends(get_current_user)):
-    """Verknüpfte Adressen einer Kreditversicherung abrufen"""
-    db = get_db()
-    
-    kv = await db.kreditversicherungen.find_one({
-        "_id": kv_id,
-        "mandant_id": user["mandant_id"]
-    })
-    
-    if not kv:
-        raise HTTPException(status_code=404, detail="Kreditversicherung nicht gefunden")
-    
-    return {"success": True, "data": kv.get("versicherte_adressen", [])}
-
-
-@router.post("/kreditversicherungen/{kv_id}/adressen")
-async def add_kv_adresse(
-    kv_id: str,
-    data: VersicherteAdresse,
-    user = Depends(get_current_user)
-):
-    """Adresse zu Kreditversicherung hinzufügen"""
-    db = get_db()
-    
-    # Adresse laden für Namen
-    adresse = await db.adressen.find_one({"_id": data.adresse_id})
-    if adresse:
-        data.adresse_name = adresse.get("name1", "")
-        data.adresse_ort = adresse.get("ort", "")
-        data.adresse_kdnr = adresse.get("kdnr", "")
-    
-    adresse_doc = data.model_dump()
-    
-    result = await db.kreditversicherungen.update_one(
-        {"_id": kv_id, "mandant_id": user["mandant_id"]},
-        {
-            "$push": {"versicherte_adressen": adresse_doc},
-            "$set": {"updated_at": datetime.utcnow()}
-        }
-    )
-    
-    if result.matched_count == 0:
-        raise HTTPException(status_code=404, detail="Kreditversicherung nicht gefunden")
-    
-    return {"success": True, "data": adresse_doc}
-
-
-@router.delete("/kreditversicherungen/{kv_id}/adressen/{adresse_link_id}")
-async def remove_kv_adresse(
-    kv_id: str,
-    adresse_link_id: str,
-    user = Depends(get_current_user)
-):
-    """Adresse von Kreditversicherung entfernen"""
-    db = get_db()
-    
-    result = await db.kreditversicherungen.update_one(
-        {"_id": kv_id, "mandant_id": user["mandant_id"]},
-        {
-            "$pull": {"versicherte_adressen": {"id": adresse_link_id}},
-            "$set": {"updated_at": datetime.utcnow()}
-        }
-    )
-    
-    if result.matched_count == 0:
-        raise HTTPException(status_code=404, detail="Kreditversicherung nicht gefunden")
-    
-    return {"success": True}
-
-
-# ============================================================
-# POSITIONEN (LIMITS)
+# CRUD ENDPOINTS - KUNDENPOSITIONEN (UNTERVERTRÄGE)
 # ============================================================
 
 @router.get("/kreditversicherungen/{kv_id}/positionen")
-async def get_kv_positionen(kv_id: str, user = Depends(get_current_user)):
-    """Positionen einer Kreditversicherung abrufen"""
+async def get_kv_positionen(
+    kv_id: str, 
+    search: Optional[str] = None,
+    aktiv: Optional[bool] = None,
+    user = Depends(get_current_user)
+):
+    """Kundenpositionen einer Kreditversicherung abrufen"""
     db = get_db()
     
     kv = await db.kreditversicherungen.find_one({
@@ -401,47 +433,105 @@ async def get_kv_positionen(kv_id: str, user = Depends(get_current_user)):
     if not kv:
         raise HTTPException(status_code=404, detail="Kreditversicherung nicht gefunden")
     
-    return {"success": True, "data": kv.get("positionen", [])}
+    positionen = kv.get("kunden_positionen", [])
+    
+    # Filter anwenden
+    if aktiv is not None:
+        positionen = [p for p in positionen if p.get("aktiv", True) == aktiv]
+    
+    if search:
+        search_lower = search.lower()
+        positionen = [
+            p for p in positionen 
+            if search_lower in (p.get("adresse_name") or "").lower()
+            or search_lower in (p.get("adresse_kdnr") or "").lower()
+            or search_lower in (p.get("adresse_ort") or "").lower()
+            or search_lower in (p.get("unterversicherungsnummer") or "").lower()
+        ]
+    
+    return {
+        "success": True, 
+        "data": positionen,
+        "kopf_gueltig_bis": kv.get("gueltig_bis")
+    }
 
 
 @router.post("/kreditversicherungen/{kv_id}/positionen")
 async def add_kv_position(
     kv_id: str,
-    data: KreditversicherungPosition,
+    data: KundenPositionCreate,
     user = Depends(get_current_user)
 ):
-    """Position zu Kreditversicherung hinzufügen"""
+    """Kundenposition zum Hauptvertrag hinzufügen"""
     db = get_db()
     
-    position_doc = data.model_dump()
+    # Prüfen ob KV existiert
+    kv = await db.kreditversicherungen.find_one({
+        "_id": kv_id,
+        "mandant_id": user["mandant_id"]
+    })
+    
+    if not kv:
+        raise HTTPException(status_code=404, detail="Kreditversicherung nicht gefunden")
+    
+    # Prüfen ob Adresse bereits verknüpft ist
+    existing = [p for p in kv.get("kunden_positionen", []) if p.get("adresse_id") == data.adresse_id]
+    if existing:
+        raise HTTPException(status_code=400, detail="Kunde ist bereits bei dieser Kreditversicherung hinterlegt")
+    
+    # Adresse laden für Namen
+    adresse = await db.adressen.find_one({"_id": data.adresse_id})
+    if not adresse:
+        raise HTTPException(status_code=404, detail="Adresse nicht gefunden")
+    
+    position = KundenPosition(
+        id=str(uuid.uuid4()),
+        adresse_id=data.adresse_id,
+        adresse_name=adresse.get("name1", ""),
+        adresse_ort=adresse.get("ort", ""),
+        adresse_kdnr=adresse.get("kdnr", ""),
+        kreditlimit=data.kreditlimit,
+        unterversicherungsnummer=data.unterversicherungsnummer,
+        fakturierungsfrist=data.fakturierungsfrist,
+        gueltig_bis=data.gueltig_bis,
+        aktiv=data.aktiv,
+        bemerkungen=data.bemerkungen,
+        erstellt_am=datetime.utcnow().isoformat(),
+        geaendert_am=datetime.utcnow().isoformat(),
+    )
     
     result = await db.kreditversicherungen.update_one(
         {"_id": kv_id, "mandant_id": user["mandant_id"]},
         {
-            "$push": {"positionen": position_doc},
-            "$set": {"updated_at": datetime.utcnow()}
+            "$push": {"kunden_positionen": position.model_dump()},
+            "$set": {"updated_at": datetime.utcnow().isoformat()}
         }
     )
     
     if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="Kreditversicherung nicht gefunden")
     
-    return {"success": True, "data": position_doc}
+    return {"success": True, "data": position.model_dump()}
 
 
 @router.put("/kreditversicherungen/{kv_id}/positionen/{position_id}")
 async def update_kv_position(
     kv_id: str,
     position_id: str,
-    data: dict,
+    data: KundenPositionUpdate,
     user = Depends(get_current_user)
 ):
-    """Position aktualisieren"""
+    """Kundenposition aktualisieren"""
     db = get_db()
     
     # Erlaubte Felder
-    allowed_fields = ["gueltig_ab", "gueltig_bis", "betrag", "betrag_anfrage", "waehrung", "aktiv", "bemerkungen"]
-    update_fields = {f"positionen.$.{k}": v for k, v in data.items() if k in allowed_fields}
+    update_fields = {}
+    for field, value in data.model_dump().items():
+        if value is not None:
+            update_fields[f"kunden_positionen.$.{field}"] = value
+    
+    update_fields["kunden_positionen.$.geaendert_am"] = datetime.utcnow().isoformat()
+    update_fields["updated_at"] = datetime.utcnow().isoformat()
     
     if not update_fields:
         raise HTTPException(status_code=400, detail="Keine gültigen Felder zum Aktualisieren")
@@ -450,9 +540,9 @@ async def update_kv_position(
         {
             "_id": kv_id,
             "mandant_id": user["mandant_id"],
-            "positionen.id": position_id
+            "kunden_positionen.id": position_id
         },
-        {"$set": {**update_fields, "updated_at": datetime.utcnow()}}
+        {"$set": update_fields}
     )
     
     if result.matched_count == 0:
@@ -467,14 +557,14 @@ async def delete_kv_position(
     position_id: str,
     user = Depends(get_current_user)
 ):
-    """Position löschen"""
+    """Kundenposition entfernen"""
     db = get_db()
     
     result = await db.kreditversicherungen.update_one(
         {"_id": kv_id, "mandant_id": user["mandant_id"]},
         {
-            "$pull": {"positionen": {"id": position_id}},
-            "$set": {"updated_at": datetime.utcnow()}
+            "$pull": {"kunden_positionen": {"id": position_id}},
+            "$set": {"updated_at": datetime.utcnow().isoformat()}
         }
     )
     
@@ -485,22 +575,21 @@ async def delete_kv_position(
 
 
 # ============================================================
-# ABFRAGEN (aus KV_Info.java)
+# ABFRAGEN FÜR ADRESSEN
 # ============================================================
 
 @router.get("/adressen/{adresse_id}/kreditlimits")
 async def get_adresse_kreditlimits(adresse_id: str, user = Depends(get_current_user)):
     """
     Alle Kreditlimits einer Adresse abrufen.
-    Entspricht KV_Info.getKreditlimitsFor() aus Java.
     """
     db = get_db()
     
     limits = await get_kreditlimits_for_adresse(adresse_id, db)
     
-    # Gesamtlimit berechnen (höchstes aktives Limit)
+    # Gesamtlimit berechnen (Summe aller aktiven Limits)
     aktive_limits = [l for l in limits if l.ist_aktiv]
-    gesamtlimit = max([l.betrag for l in aktive_limits], default=0)
+    gesamtlimit = sum([l.betrag for l in aktive_limits])
     
     return {
         "success": True,
@@ -523,10 +612,9 @@ async def get_adresse_kreditstatus(adresse_id: str, user = Depends(get_current_u
     # Limits abrufen
     limits = await get_kreditlimits_for_adresse(adresse_id, db)
     aktive_limits = [l for l in limits if l.ist_aktiv]
-    gesamtlimit = max([l.betrag for l in aktive_limits], default=0)
+    gesamtlimit = sum([l.betrag for l in aktive_limits])
     
     # Offene Forderungen berechnen (aus Rechnungen)
-    # TODO: Forderungen aus allen verknüpften Adressen summieren
     pipeline = [
         {"$match": {
             "mandant_id": user["mandant_id"],
@@ -565,7 +653,7 @@ async def get_adresse_kreditstatus(adresse_id: str, user = Depends(get_current_u
 
 
 # ============================================================
-# PRÜFUNG (aus STATKD_StatusErmittlung_Kreditversicherung.java)
+# KREDITPRÜFUNG FÜR FUHREN
 # ============================================================
 
 class KreditpruefungRequest(BaseModel):
@@ -577,7 +665,7 @@ class KreditpruefungRequest(BaseModel):
 class KreditpruefungResponse(BaseModel):
     """Ergebnis der Kreditprüfung"""
     geprueft: bool
-    status: str  # "ok", "warnung", "ueberschritten"
+    status: str  # "ok", "warnung", "ueberschritten", "kein_limit"
     gesamtlimit: float
     aktuelle_forderungen: float
     neuer_betrag: float
@@ -595,14 +683,9 @@ async def pruefe_kreditlimit(
 ):
     """
     Prüft ob ein neuer Betrag das Kreditlimit überschreiten würde.
-    Entspricht STATKD_StatusErmittlung_Kreditversicherung.pruefeFuhre() aus Java.
-    
-    Bei Fuhren werden alle beteiligten Adressen (Start, Ziel, Zwischenstopps) übergeben.
     """
     db = get_db()
     
-    # Alle verknüpften Adressen ermitteln
-    alle_adressen = set(data.adresse_ids)
     betroffene_adressen = []
     gesamtlimit = 0.0
     
@@ -621,16 +704,11 @@ async def pruefe_kreditlimit(
         
         for limit in limits:
             if limit.ist_aktiv:
-                gesamtlimit = max(gesamtlimit, limit.betrag)
-            
-            # Alle verknüpften Adressen der KV hinzufügen
-            if limit.kv_id:
-                verknuepfte = await get_alle_verknuepfte_adressen(limit.kv_id, db)
-                alle_adressen.update(verknuepfte)
+                gesamtlimit += limit.betrag
     
-    # Forderungen aller verknüpften Adressen summieren
+    # Forderungen berechnen
     aktuelle_forderungen = 0.0
-    for aid in alle_adressen:
+    for aid in data.adresse_ids:
         pipeline = [
             {"$match": {
                 "mandant_id": user["mandant_id"],
@@ -706,17 +784,12 @@ async def pruefe_fuhre_kreditlimit(fuhre_id: str, user = Depends(get_current_use
     
     # Beteiligte Adressen sammeln
     adresse_ids = []
-    if fuhre.get("start_adresse_id"):
-        adresse_ids.append(fuhre["start_adresse_id"])
-    if fuhre.get("ziel_adresse_id"):
-        adresse_ids.append(fuhre["ziel_adresse_id"])
+    if fuhre.get("lieferant_id"):
+        adresse_ids.append(fuhre["lieferant_id"])
+    if fuhre.get("abnehmer_id"):
+        adresse_ids.append(fuhre["abnehmer_id"])
     
-    # Zwischenstopps
-    for ort in fuhre.get("zwischenorte", []):
-        if ort.get("adresse_id"):
-            adresse_ids.append(ort["adresse_id"])
-    
-    # Betrag aus Fuhre (geschätzter Wert)
+    # Betrag aus Fuhre
     neuer_betrag = fuhre.get("preis_netto", 0) or fuhre.get("geschaetzter_wert", 0)
     
     # Kreditprüfung durchführen
