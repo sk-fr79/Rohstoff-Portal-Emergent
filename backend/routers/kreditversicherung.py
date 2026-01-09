@@ -16,7 +16,7 @@ import uuid
 from services.database import get_db
 from utils.auth import get_current_user
 
-router = APIRouter(tags=["Kreditversicherung"])
+router = APIRouter(prefix="/api", tags=["Kreditversicherung"])
 
 
 # ============================================================
