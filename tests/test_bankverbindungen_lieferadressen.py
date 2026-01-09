@@ -10,8 +10,8 @@ import requests
 import os
 import uuid
 
-# Use the public backend URL
-BASE_URL = os.environ.get('base_url', 'https://demobackend.emergentagent.com')
+# Use localhost for testing
+BASE_URL = "http://localhost:8001"
 
 # Test credentials
 TEST_USERNAME = "admin"
