@@ -802,7 +802,7 @@ export function AdressenPage() {
                           <div className="flex items-center gap-4">
                             <div className={cn(
                               "h-12 w-12 rounded-xl flex items-center justify-center transition-all duration-300",
-                              watchFields.ist_firma ? "bg-blue-100" : "bg-purple-100"
+                              {watchFields.ist_firma ? "bg-blue-100" : "bg-purple-100"
                             )}>
                               {watchFields.ist_firma ? (
                                 <Building2 className="h-6 w-6 text-blue-600" />
@@ -826,12 +826,14 @@ export function AdressenPage() {
                           </div>
                           {isEditing && (
                             <div className="flex items-center gap-3 bg-white/80 backdrop-blur-sm px-4 py-2 rounded-lg shadow-sm">
-                              <span className={cn("text-sm font-medium", !watchFields.ist_firma && "text-purple-600")}>Privat</span>
+                              <span className={cn("text-sm font-medium", watchFields.ist_firma === false && "text-purple-600")}>Privat</span>
                               <Switch 
-                                checked={watchFields.ist_firma ?? true} 
-                                onCheckedChange={(c) => setValue('ist_firma', c)} 
+                                checked={Boolean(watchFields.ist_firma)} 
+                                onCheckedChange={(checked) => {
+                                  setValue('ist_firma', checked);
+                                }}
                               />
-                              <span className={cn("text-sm font-medium", watchFields.ist_firma && "text-blue-600")}>Firma</span>
+                              <span className={cn("text-sm font-medium", watchFields.ist_firma === true && "text-blue-600")}>Firma</span>
                             </div>
                           )}
                         </div>
