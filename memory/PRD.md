@@ -399,6 +399,7 @@ Passwort: Admin123!
 - [x] Geschäftslogik-Validierung portieren (Artikel, Kontrakte, Fuhren) ✅ ERLEDIGT (09.01.2026)
 - [x] UX-Refactoring: "Neu"-Button → Sidebar in allen Modulen ✅ ERLEDIGT (09.01.2026)
 - [x] Backend-Refactoring: `server.py` in Module aufteilen ✅ ERLEDIGT (09.01.2026)
+- [x] Adressformular-Redesign mit Firma/Privat-Toggle, SVG-Flaggen, Händler/Sachbearbeiter ✅ ERLEDIGT (09.01.2026)
 
 ### P1 - Hohe Priorität
 - [ ] PDF-Export für Rechnungen und Lieferscheine
