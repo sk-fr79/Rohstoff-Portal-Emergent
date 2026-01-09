@@ -830,6 +830,13 @@ export function AdressenPage() {
                 </div>
               </div>
 
+              {/* Validierungsfehler-Anzeige */}
+              {lastValidation && !lastValidation.ist_gueltig && (
+                <div className="px-4 py-2 border-b border-gray-200 bg-red-50">
+                  <ValidationDisplay validierung={lastValidation} compact />
+                </div>
+              )}
+
               {/* Detail Content with Sidebar */}
               <div className="flex-1 flex overflow-hidden">
                 {/* Sidebar Navigation */}
