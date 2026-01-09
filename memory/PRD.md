@@ -32,6 +32,36 @@ Einheitliches Benutzererlebnis für das Erstellen und Bearbeiten von Datensätze
   - Doppelklick auf bestehenden Eintrag öffnet Sidebar zur Bearbeitung
 - **Test-Ergebnis:** 6/6 Module bestanden (100%)
 
+### ✅ Adressformular-Redesign: Smart Fields mit Firma/Privat-Toggle (NEU - 09.01.2026)
+Komplette Neugestaltung des Adress-Stammdaten-Formulars für eine intuitivere Benutzererfahrung:
+
+**Firma/Privat-Toggle:**
+- Visueller Switch zwischen "Geschäftskunde" und "Privatperson" mit farbigem Header
+- Dynamisches Ein-/Ausblenden von Feldern je nach gewähltem Typ:
+  - **Firma:** Firmenname, Rechtsform, Zusatz/Abteilung, Anrede "Firma"
+  - **Privatperson:** Vorname, Nachname, Anrede (Herr/Frau/Divers), Adresszusatz
+
+**SVG-Länderflaggen:**
+- Verwendung der `country-flag-icons` Library für hochwertige SVG-Flaggen
+- Flaggen werden neben dem Land im Dropdown und im Trigger angezeigt
+- 30 EU- und europäische Länder unterstützt (DE, AT, CH, NL, BE, FR, IT, ES, etc.)
+- Ersetzt die Emoji-Flaggen, die in vielen Browsern nicht korrekt dargestellt wurden
+
+**Umbenannte Felder:**
+- "Betreuer 1" → "Händler" (mit Briefcase-Icon)
+- "Betreuer 2" → "Sachbearbeiter" (mit ClipboardList-Icon)
+- Gruppiert unter "Zuständigkeit"-Sektion
+
+**Test-Ergebnis:** 8/8 Features bestanden (100%)
+- Firma-Formular: ✓
+- Privatperson-Formular: ✓
+- Dynamischer Toggle: ✓
+- SVG-Länderflaggen: ✓
+- Händler/Sachbearbeiter-Felder: ✓
+- Speichern (Firma): ✓
+- Speichern (Privatperson): ✓
+- Bestehende Adresse bearbeiten: ✓
+
 ### ✅ Geschäftslogik-Validierung (09.01.2026)
 Portierung der Validierungslogik aus dem Java/Echo2-Code:
 
