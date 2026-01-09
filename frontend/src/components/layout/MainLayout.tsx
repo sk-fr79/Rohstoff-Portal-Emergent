@@ -237,7 +237,7 @@ export function MainLayout() {
                   )}
                 </>
               ) : (
-                /* Ungrouped Items */
+                /* Ungrouped Items - same sizing as group headers when collapsed */
                 group.items.map((item) => (
                   collapsed ? (
                     <Tooltip key={item.path}>
@@ -247,7 +247,7 @@ export function MainLayout() {
                           onClick={() => isMobile && setMobileMenuOpen(false)}
                           className={({ isActive }) =>
                             cn(
-                              'flex items-center justify-center p-2.5 rounded-lg transition-all duration-200',
+                              'w-full h-10 flex items-center justify-center rounded-lg transition-all duration-200',
                               'text-gray-400 hover:bg-white/10 hover:text-white',
                               isActive && 'bg-emerald-500 text-white hover:bg-emerald-600'
                             )
