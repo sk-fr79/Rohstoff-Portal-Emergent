@@ -288,7 +288,7 @@ class TestBenutzerEndpoints:
             headers=auth_headers,
             json={
                 "benutzername": unique_username,
-                "email": f"{unique_username}@test.local",
+                "email": f"{unique_username}@example.com",
                 "passwort": "TestPass123!",
                 "vorname": "Test",
                 "nachname": "Benutzer",
@@ -313,7 +313,7 @@ class TestBenutzerEndpoints:
             headers=auth_headers,
             json={
                 "benutzername": "admin",  # Already exists
-                "email": "duplicate@test.local",
+                "email": "duplicate@example.com",
                 "passwort": "TestPass123!"
             }
         )
@@ -518,7 +518,7 @@ class TestAdminAccessControl:
             headers=auth_headers,
             json={
                 "benutzername": unique_username,
-                "email": f"{unique_username}@test.local",
+                "email": f"{unique_username}@example.com",
                 "passwort": "TestPass123!",
                 "aktiv": True
             }
