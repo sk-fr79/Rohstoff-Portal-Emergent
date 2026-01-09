@@ -1,97 +1,22 @@
-<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="31" failures="1" skipped="0" tests="32" time="0.631" timestamp="2026-01-09T00:57:20.923418+00:00" hostname="agent-env-83bf43b6-658a-437d-9216-71ca8e8c50a7"><testcase classname="tests.test_fuhren_rechnungen.TestAuth" name="test_login_success" time="0.065"><failure message="assert 404 == 200&#10; +  where 404 = &lt;Response [404]&gt;.status_code">tests/test_fuhren_rechnungen.py:35: in test_login_success
-    assert response.status_code == 200
-E   assert 404 == 200
-E    +  where 404 = &lt;Response [404]&gt;.status_code</failure></testcase><testcase classname="tests.test_fuhren_rechnungen.TestFuhrenAPI" name="test_list_fuhren" time="0.038"><error message="failed on setup with &quot;KeyError: 'access_token'&quot;">tests/test_fuhren_rechnungen.py:53: in auth_headers
-    token = response.json()["access_token"]
-            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-E   KeyError: 'access_token'</error></testcase><testcase classname="tests.test_fuhren_rechnungen.TestFuhrenAPI" name="test_list_fuhren_with_filter" time="0.000"><error message="failed on setup with &quot;KeyError: 'access_token'&quot;">tests/test_fuhren_rechnungen.py:53: in auth_headers
-    token = response.json()["access_token"]
-            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-E   KeyError: 'access_token'</error></testcase><testcase classname="tests.test_fuhren_rechnungen.TestFuhrenAPI" name="test_create_fuhre" time="0.000"><error message="failed on setup with &quot;KeyError: 'access_token'&quot;">tests/test_fuhren_rechnungen.py:53: in auth_headers
-    token = response.json()["access_token"]
-            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-E   KeyError: 'access_token'</error></testcase><testcase classname="tests.test_fuhren_rechnungen.TestFuhrenAPI" name="test_get_fuhre_by_id" time="0.000"><error message="failed on setup with &quot;KeyError: 'access_token'&quot;">tests/test_fuhren_rechnungen.py:53: in auth_headers
-    token = response.json()["access_token"]
-            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-E   KeyError: 'access_token'</error></testcase><testcase classname="tests.test_fuhren_rechnungen.TestFuhrenAPI" name="test_get_fuhre_not_found" time="0.000"><error message="failed on setup with &quot;KeyError: 'access_token'&quot;">tests/test_fuhren_rechnungen.py:53: in auth_headers
-    token = response.json()["access_token"]
-            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-E   KeyError: 'access_token'</error></testcase><testcase classname="tests.test_fuhren_rechnungen.TestFuhrenAPI" name="test_update_fuhre" time="0.000"><error message="failed on setup with &quot;KeyError: 'access_token'&quot;">tests/test_fuhren_rechnungen.py:53: in auth_headers
-    token = response.json()["access_token"]
-            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-E   KeyError: 'access_token'</error></testcase><testcase classname="tests.test_fuhren_rechnungen.TestFuhrenAPI" name="test_delete_fuhre_soft_delete" time="0.000"><error message="failed on setup with &quot;KeyError: 'access_token'&quot;">tests/test_fuhren_rechnungen.py:53: in auth_headers
-    token = response.json()["access_token"]
-            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-E   KeyError: 'access_token'</error></testcase><testcase classname="tests.test_fuhren_rechnungen.TestFuhrenAPI" name="test_fuhre_status_transitions" time="0.000"><error message="failed on setup with &quot;KeyError: 'access_token'&quot;">tests/test_fuhren_rechnungen.py:53: in auth_headers
-    token = response.json()["access_token"]
-            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-E   KeyError: 'access_token'</error></testcase><testcase classname="tests.test_fuhren_rechnungen.TestRechnungenAPI" name="test_list_rechnungen" time="0.044"><error message="failed on setup with &quot;KeyError: 'access_token'&quot;">tests/test_fuhren_rechnungen.py:250: in auth_headers
-    token = response.json()["access_token"]
-            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-E   KeyError: 'access_token'</error></testcase><testcase classname="tests.test_fuhren_rechnungen.TestRechnungenAPI" name="test_list_rechnungen_with_type_filter" time="0.000"><error message="failed on setup with &quot;KeyError: 'access_token'&quot;">tests/test_fuhren_rechnungen.py:250: in auth_headers
-    token = response.json()["access_token"]
-            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-E   KeyError: 'access_token'</error></testcase><testcase classname="tests.test_fuhren_rechnungen.TestRechnungenAPI" name="test_list_rechnungen_with_status_filter" time="0.000"><error message="failed on setup with &quot;KeyError: 'access_token'&quot;">tests/test_fuhren_rechnungen.py:250: in auth_headers
-    token = response.json()["access_token"]
-            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-E   KeyError: 'access_token'</error></testcase><testcase classname="tests.test_fuhren_rechnungen.TestRechnungenAPI" name="test_create_rechnung" time="0.000"><error message="failed on setup with &quot;KeyError: 'access_token'&quot;">tests/test_fuhren_rechnungen.py:250: in auth_headers
-    token = response.json()["access_token"]
-            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-E   KeyError: 'access_token'</error></testcase><testcase classname="tests.test_fuhren_rechnungen.TestRechnungenAPI" name="test_create_gutschrift" time="0.000"><error message="failed on setup with &quot;KeyError: 'access_token'&quot;">tests/test_fuhren_rechnungen.py:250: in auth_headers
-    token = response.json()["access_token"]
-            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-E   KeyError: 'access_token'</error></testcase><testcase classname="tests.test_fuhren_rechnungen.TestRechnungenAPI" name="test_get_rechnung_by_id" time="0.000"><error message="failed on setup with &quot;KeyError: 'access_token'&quot;">tests/test_fuhren_rechnungen.py:250: in auth_headers
-    token = response.json()["access_token"]
-            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-E   KeyError: 'access_token'</error></testcase><testcase classname="tests.test_fuhren_rechnungen.TestRechnungenAPI" name="test_get_rechnung_not_found" time="0.000"><error message="failed on setup with &quot;KeyError: 'access_token'&quot;">tests/test_fuhren_rechnungen.py:250: in auth_headers
-    token = response.json()["access_token"]
-            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-E   KeyError: 'access_token'</error></testcase><testcase classname="tests.test_fuhren_rechnungen.TestRechnungenAPI" name="test_update_rechnung" time="0.000"><error message="failed on setup with &quot;KeyError: 'access_token'&quot;">tests/test_fuhren_rechnungen.py:250: in auth_headers
-    token = response.json()["access_token"]
-            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-E   KeyError: 'access_token'</error></testcase><testcase classname="tests.test_fuhren_rechnungen.TestRechnungenAPI" name="test_add_position_to_rechnung" time="0.000"><error message="failed on setup with &quot;KeyError: 'access_token'&quot;">tests/test_fuhren_rechnungen.py:250: in auth_headers
-    token = response.json()["access_token"]
-            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-E   KeyError: 'access_token'</error></testcase><testcase classname="tests.test_fuhren_rechnungen.TestRechnungenAPI" name="test_rechnung_summen_calculation" time="0.000"><error message="failed on setup with &quot;KeyError: 'access_token'&quot;">tests/test_fuhren_rechnungen.py:250: in auth_headers
-    token = response.json()["access_token"]
-            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-E   KeyError: 'access_token'</error></testcase><testcase classname="tests.test_fuhren_rechnungen.TestRechnungenAPI" name="test_delete_rechnung_soft_delete" time="0.000"><error message="failed on setup with &quot;KeyError: 'access_token'&quot;">tests/test_fuhren_rechnungen.py:250: in auth_headers
-    token = response.json()["access_token"]
-            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-E   KeyError: 'access_token'</error></testcase><testcase classname="tests.test_fuhren_rechnungen.TestRechnungAusFuhre" name="test_create_rechnung_from_fuhre" time="0.037"><error message="failed on setup with &quot;KeyError: 'access_token'&quot;">tests/test_fuhren_rechnungen.py:475: in auth_headers
-    token = response.json()["access_token"]
-            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-E   KeyError: 'access_token'</error></testcase><testcase classname="tests.test_fuhren_rechnungen.TestRechnungAusFuhre" name="test_create_gutschrift_from_fuhre" time="0.000"><error message="failed on setup with &quot;KeyError: 'access_token'&quot;">tests/test_fuhren_rechnungen.py:475: in auth_headers
-    token = response.json()["access_token"]
-            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-E   KeyError: 'access_token'</error></testcase><testcase classname="tests.test_fuhren_rechnungen.TestFuhrenSidebarSections" name="test_fuhre_has_stammdaten_fields" time="0.037"><error message="failed on setup with &quot;KeyError: 'access_token'&quot;">tests/test_fuhren_rechnungen.py:567: in auth_headers
-    return {"Authorization": f"Bearer {response.json()['access_token']}"}
-                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-E   KeyError: 'access_token'</error></testcase><testcase classname="tests.test_fuhren_rechnungen.TestFuhrenSidebarSections" name="test_fuhre_has_lieferant_fields" time="0.000"><error message="failed on setup with &quot;KeyError: 'access_token'&quot;">tests/test_fuhren_rechnungen.py:567: in auth_headers
-    return {"Authorization": f"Bearer {response.json()['access_token']}"}
-                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-E   KeyError: 'access_token'</error></testcase><testcase classname="tests.test_fuhren_rechnungen.TestFuhrenSidebarSections" name="test_fuhre_has_abnehmer_fields" time="0.000"><error message="failed on setup with &quot;KeyError: 'access_token'&quot;">tests/test_fuhren_rechnungen.py:567: in auth_headers
-    return {"Authorization": f"Bearer {response.json()['access_token']}"}
-                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-E   KeyError: 'access_token'</error></testcase><testcase classname="tests.test_fuhren_rechnungen.TestFuhrenSidebarSections" name="test_fuhre_has_artikel_mengen_fields" time="0.000"><error message="failed on setup with &quot;KeyError: 'access_token'&quot;">tests/test_fuhren_rechnungen.py:567: in auth_headers
-    return {"Authorization": f"Bearer {response.json()['access_token']}"}
-                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-E   KeyError: 'access_token'</error></testcase><testcase classname="tests.test_fuhren_rechnungen.TestFuhrenSidebarSections" name="test_fuhre_has_transport_fields" time="0.000"><error message="failed on setup with &quot;KeyError: 'access_token'&quot;">tests/test_fuhren_rechnungen.py:567: in auth_headers
-    return {"Authorization": f"Bearer {response.json()['access_token']}"}
-                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-E   KeyError: 'access_token'</error></testcase><testcase classname="tests.test_fuhren_rechnungen.TestRechnungenSidebarSections" name="test_rechnung_has_kopfdaten_fields" time="0.033"><error message="failed on setup with &quot;KeyError: 'access_token'&quot;">tests/test_fuhren_rechnungen.py:630: in auth_headers
-    return {"Authorization": f"Bearer {response.json()['access_token']}"}
-                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-E   KeyError: 'access_token'</error></testcase><testcase classname="tests.test_fuhren_rechnungen.TestRechnungenSidebarSections" name="test_rechnung_has_adressat_fields" time="0.000"><error message="failed on setup with &quot;KeyError: 'access_token'&quot;">tests/test_fuhren_rechnungen.py:630: in auth_headers
-    return {"Authorization": f"Bearer {response.json()['access_token']}"}
-                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-E   KeyError: 'access_token'</error></testcase><testcase classname="tests.test_fuhren_rechnungen.TestRechnungenSidebarSections" name="test_rechnung_has_termine_fields" time="0.000"><error message="failed on setup with &quot;KeyError: 'access_token'&quot;">tests/test_fuhren_rechnungen.py:630: in auth_headers
-    return {"Authorization": f"Bearer {response.json()['access_token']}"}
-                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-E   KeyError: 'access_token'</error></testcase><testcase classname="tests.test_fuhren_rechnungen.TestRechnungenSidebarSections" name="test_rechnung_has_positionen" time="0.000"><error message="failed on setup with &quot;KeyError: 'access_token'&quot;">tests/test_fuhren_rechnungen.py:630: in auth_headers
-    return {"Authorization": f"Bearer {response.json()['access_token']}"}
-                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-E   KeyError: 'access_token'</error></testcase><testcase classname="tests.test_fuhren_rechnungen.TestRechnungenSidebarSections" name="test_rechnung_has_summen" time="0.000"><error message="failed on setup with &quot;KeyError: 'access_token'&quot;">tests/test_fuhren_rechnungen.py:630: in auth_headers
-    return {"Authorization": f"Bearer {response.json()['access_token']}"}
-                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-E   KeyError: 'access_token'</error></testcase></testsuite></testsuites>
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="7" skipped="0" tests="32" time="0.314" timestamp="2026-01-09T00:57:42.527070+00:00" hostname="agent-env-83bf43b6-658a-437d-9216-71ca8e8c50a7"><testcase classname="tests.test_fuhren_rechnungen.TestAuth" name="test_login_success" time="0.005" /><testcase classname="tests.test_fuhren_rechnungen.TestFuhrenAPI" name="test_list_fuhren" time="0.006" /><testcase classname="tests.test_fuhren_rechnungen.TestFuhrenAPI" name="test_list_fuhren_with_filter" time="0.003" /><testcase classname="tests.test_fuhren_rechnungen.TestFuhrenAPI" name="test_create_fuhre" time="0.009"><failure message="assert 200 == 201&#10; +  where 200 = &lt;Response [200]&gt;.status_code">tests/test_fuhren_rechnungen.py:127: in test_create_fuhre
+    assert response.status_code == 201
+E   assert 200 == 201
+E    +  where 200 = &lt;Response [200]&gt;.status_code</failure></testcase><testcase classname="tests.test_fuhren_rechnungen.TestFuhrenAPI" name="test_get_fuhre_by_id" time="0.006" /><testcase classname="tests.test_fuhren_rechnungen.TestFuhrenAPI" name="test_get_fuhre_not_found" time="0.002" /><testcase classname="tests.test_fuhren_rechnungen.TestFuhrenAPI" name="test_update_fuhre" time="0.004"><failure message="assert 200 == 201&#10; +  where 200 = &lt;Response [200]&gt;.status_code">tests/test_fuhren_rechnungen.py:166: in test_update_fuhre
+    assert create_response.status_code == 201
+E   assert 200 == 201
+E    +  where 200 = &lt;Response [200]&gt;.status_code</failure></testcase><testcase classname="tests.test_fuhren_rechnungen.TestFuhrenAPI" name="test_delete_fuhre_soft_delete" time="0.008" /><testcase classname="tests.test_fuhren_rechnungen.TestFuhrenAPI" name="test_fuhre_status_transitions" time="0.008" /><testcase classname="tests.test_fuhren_rechnungen.TestRechnungenAPI" name="test_list_rechnungen" time="0.004" /><testcase classname="tests.test_fuhren_rechnungen.TestRechnungenAPI" name="test_list_rechnungen_with_type_filter" time="0.002" /><testcase classname="tests.test_fuhren_rechnungen.TestRechnungenAPI" name="test_list_rechnungen_with_status_filter" time="0.002" /><testcase classname="tests.test_fuhren_rechnungen.TestRechnungenAPI" name="test_create_rechnung" time="0.006"><failure message="assert 200 == 201&#10; +  where 200 = &lt;Response [200]&gt;.status_code">tests/test_fuhren_rechnungen.py:307: in test_create_rechnung
+    assert response.status_code == 201
+E   assert 200 == 201
+E    +  where 200 = &lt;Response [200]&gt;.status_code</failure></testcase><testcase classname="tests.test_fuhren_rechnungen.TestRechnungenAPI" name="test_create_gutschrift" time="0.003"><failure message="assert 200 == 201&#10; +  where 200 = &lt;Response [200]&gt;.status_code">tests/test_fuhren_rechnungen.py:327: in test_create_gutschrift
+    assert response.status_code == 201
+E   assert 200 == 201
+E    +  where 200 = &lt;Response [200]&gt;.status_code</failure></testcase><testcase classname="tests.test_fuhren_rechnungen.TestRechnungenAPI" name="test_get_rechnung_by_id" time="0.004" /><testcase classname="tests.test_fuhren_rechnungen.TestRechnungenAPI" name="test_get_rechnung_not_found" time="0.002" /><testcase classname="tests.test_fuhren_rechnungen.TestRechnungenAPI" name="test_update_rechnung" time="0.007" /><testcase classname="tests.test_fuhren_rechnungen.TestRechnungenAPI" name="test_add_position_to_rechnung" time="0.005"><failure message="assert 200 == 201&#10; +  where 200 = &lt;Response [200]&gt;.status_code">tests/test_fuhren_rechnungen.py:402: in test_add_position_to_rechnung
+    assert pos_response.status_code == 201
+E   assert 200 == 201
+E    +  where 200 = &lt;Response [200]&gt;.status_code</failure></testcase><testcase classname="tests.test_fuhren_rechnungen.TestRechnungenAPI" name="test_rechnung_summen_calculation" time="0.007" /><testcase classname="tests.test_fuhren_rechnungen.TestRechnungenAPI" name="test_delete_rechnung_soft_delete" time="0.007" /><testcase classname="tests.test_fuhren_rechnungen.TestRechnungAusFuhre" name="test_create_rechnung_from_fuhre" time="0.010"><failure message="assert 200 == 201&#10; +  where 200 = &lt;Response [200]&gt;.status_code">tests/test_fuhren_rechnungen.py:507: in test_create_rechnung_from_fuhre
+    assert fuhre_response.status_code == 201
+E   assert 200 == 201
+E    +  where 200 = &lt;Response [200]&gt;.status_code</failure></testcase><testcase classname="tests.test_fuhren_rechnungen.TestRechnungAusFuhre" name="test_create_gutschrift_from_fuhre" time="0.006"><failure message="assert 500 == 201&#10; +  where 500 = &lt;Response [500]&gt;.status_code">tests/test_fuhren_rechnungen.py:553: in test_create_gutschrift_from_fuhre
+    assert gutschrift_response.status_code == 201
+E   assert 500 == 201
+E    +  where 500 = &lt;Response [500]&gt;.status_code</failure></testcase><testcase classname="tests.test_fuhren_rechnungen.TestFuhrenSidebarSections" name="test_fuhre_has_stammdaten_fields" time="0.006" /><testcase classname="tests.test_fuhren_rechnungen.TestFuhrenSidebarSections" name="test_fuhre_has_lieferant_fields" time="0.003" /><testcase classname="tests.test_fuhren_rechnungen.TestFuhrenSidebarSections" name="test_fuhre_has_abnehmer_fields" time="0.003" /><testcase classname="tests.test_fuhren_rechnungen.TestFuhrenSidebarSections" name="test_fuhre_has_artikel_mengen_fields" time="0.003" /><testcase classname="tests.test_fuhren_rechnungen.TestFuhrenSidebarSections" name="test_fuhre_has_transport_fields" time="0.003" /><testcase classname="tests.test_fuhren_rechnungen.TestRechnungenSidebarSections" name="test_rechnung_has_kopfdaten_fields" time="0.005" /><testcase classname="tests.test_fuhren_rechnungen.TestRechnungenSidebarSections" name="test_rechnung_has_adressat_fields" time="0.003" /><testcase classname="tests.test_fuhren_rechnungen.TestRechnungenSidebarSections" name="test_rechnung_has_termine_fields" time="0.003" /><testcase classname="tests.test_fuhren_rechnungen.TestRechnungenSidebarSections" name="test_rechnung_has_positionen" time="0.003" /><testcase classname="tests.test_fuhren_rechnungen.TestRechnungenSidebarSections" name="test_rechnung_has_summen" time="0.003" /></testsuite></testsuites>
