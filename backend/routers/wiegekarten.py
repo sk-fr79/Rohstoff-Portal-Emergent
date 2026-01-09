@@ -80,10 +80,14 @@ async def get_wiegekarten(
     cursor = db.wiegekarten.find(query).sort("erstellt_am", -1).skip((page - 1) * limit).limit(limit)
     wiegekarten = await cursor.to_list(length=limit)
     
+    # IDs normalisieren und ObjectId-Problem beheben
+    result = []
     for w in wiegekarten:
-        w["id"] = w.pop("_id")
+        item = {k: (str(v) if k == "_id" or hasattr(v, '__str__') and 'ObjectId' in str(type(v)) else v) for k, v in w.items()}
+        item["id"] = str(item.pop("_id"))
+        result.append(item)
     
-    return {"success": True, "data": wiegekarten, "pagination": {"page": page, "limit": limit, "total": total}}
+    return {"success": True, "data": result, "pagination": {"page": page, "limit": limit, "total": total}}
 
 
 @router.get("/wiegekarten/{wiegekarte_id}")
