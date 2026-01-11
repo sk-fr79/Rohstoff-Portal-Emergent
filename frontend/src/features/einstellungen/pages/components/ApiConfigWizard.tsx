@@ -96,29 +96,32 @@ const DEFAULT_CONFIG: ApiConfig = {
   is_active: true,
 };
 
-// Zolltarifnummern.de Preset
+// Zolltarifnummern.de Preset (V2 API mit semantischer Suche)
 const ZOLLTARIF_PRESET: Partial<ApiConfig> = {
   name: 'Zolltarifnummern.de',
-  description: 'Deutsche Zolltarifnummern-Datenbank mit Suchfunktion',
+  description: 'Deutsche Zolltarifnummern-Datenbank V2 - Semantische Suche mit AI Embeddings',
   api_type: 'REST',
-  base_url: 'https://www.zolltarifnummern.de/api/v2/search',
-  auth_type: 'api_key',
-  auth_config: {
-    api_key: '',
-    api_key_name: 'x-api-key',
-    api_key_location: 'header',
-  },
+  base_url: 'https://www.zolltarifnummern.de/api/v2/cnSuggest',
+  auth_type: 'none', // Keine Auth nötig, nur Rate-Limit (5 req/min)
+  auth_config: {},
   request_config: {
     method: 'GET',
-    headers: {},
-    query_params: { q: '' },
+    headers: {
+      'Accept': 'application/json',
+    },
+    query_params: { 
+      term: 'Fleisch', // Standard-Suchbegriff für Test
+      year: '2026',
+      lang: 'de',
+    },
   },
   response_mapping: {
     data_path: 'suggestions',
     field_mappings: [
       { source_path: 'code', target_field: 'code', is_primary_key: true, data_type: 'string' },
-      { source_path: 'text', target_field: 'bezeichnung', is_primary_key: false, data_type: 'string' },
-      { source_path: 'unit', target_field: 'einheit', is_primary_key: false, data_type: 'string' },
+      { source_path: 'value', target_field: 'bezeichnung', is_primary_key: false, data_type: 'string' },
+      { source_path: 'score', target_field: 'relevanz', is_primary_key: false, data_type: 'number' },
+      { source_path: 'data', target_field: 'detail_url', is_primary_key: false, data_type: 'string' },
     ],
   },
   reference_table: {
