@@ -11,6 +11,7 @@ interface User {
   nachname?: string;
   kuerzel?: string;
   istAdmin: boolean;
+  profilbild?: string | null;
 }
 
 interface AuthState {
