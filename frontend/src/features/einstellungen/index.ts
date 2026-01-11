@@ -7,3 +7,4 @@ export { BenutzerPage } from './pages/BenutzerPage';
 export { RollenPage } from './pages/RollenPage';
 export { AbteilungenPage } from './pages/AbteilungenPage';
 export { BerechtigungenPage } from './pages/BerechtigungenPage';
+export { ApisPage } from './pages/ApisPage';
