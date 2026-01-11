@@ -105,23 +105,83 @@ export default function App() {
           }
         >
           <Route index element={<Navigate to="/einstellungen/profil" replace />} />
-          {/* Benutzer-Einstellungen */}
-          <Route path="profil" element={<ProfilPage />} />
-          <Route path="kontakt" element={<ProfilPage />} />
-          <Route path="adresse" element={<ProfilPage />} />
-          <Route path="passwort" element={<PasswortPage />} />
-          <Route path="profilbild" element={<ProfilPage />} />
-          <Route path="signatur" element={<SignaturPage />} />
-          <Route path="unterschrift" element={<UnterschriftPage />} />
-          {/* Admin-Einstellungen */}
-          <Route path="system" element={<SystemeinstellungenPage />} />
-          <Route path="benutzer" element={<BenutzerPage />} />
-          <Route path="rollen" element={<RollenPage />} />
-          <Route path="abteilungen" element={<AbteilungenPage />} />
-          <Route path="berechtigungen" element={<BerechtigungenPage />} />
-          <Route path="mandanten" element={<SystemeinstellungenPage />} />
-          <Route path="sicherheit" element={<SystemeinstellungenPage />} />
-          <Route path="datenbank" element={<SystemeinstellungenPage />} />
+          {/* Benutzer-Einstellungen - Jeder eingeloggte Benutzer */}
+          <Route path="profil" element={
+            <ProtectedModule modul="einstellungen">
+              <ProfilPage />
+            </ProtectedModule>
+          } />
+          <Route path="kontakt" element={
+            <ProtectedModule modul="einstellungen">
+              <ProfilPage />
+            </ProtectedModule>
+          } />
+          <Route path="adresse" element={
+            <ProtectedModule modul="einstellungen">
+              <ProfilPage />
+            </ProtectedModule>
+          } />
+          <Route path="passwort" element={
+            <ProtectedModule modul="einstellungen">
+              <PasswortPage />
+            </ProtectedModule>
+          } />
+          <Route path="profilbild" element={
+            <ProtectedModule modul="einstellungen">
+              <ProfilPage />
+            </ProtectedModule>
+          } />
+          <Route path="signatur" element={
+            <ProtectedModule modul="einstellungen">
+              <SignaturPage />
+            </ProtectedModule>
+          } />
+          <Route path="unterschrift" element={
+            <ProtectedModule modul="einstellungen">
+              <UnterschriftPage />
+            </ProtectedModule>
+          } />
+          {/* Admin-Einstellungen - Nur Admins */}
+          <Route path="system" element={
+            <ProtectedModule modul="admin">
+              <SystemeinstellungenPage />
+            </ProtectedModule>
+          } />
+          <Route path="benutzer" element={
+            <ProtectedModule modul="admin">
+              <BenutzerPage />
+            </ProtectedModule>
+          } />
+          <Route path="rollen" element={
+            <ProtectedModule modul="admin">
+              <RollenPage />
+            </ProtectedModule>
+          } />
+          <Route path="abteilungen" element={
+            <ProtectedModule modul="admin">
+              <AbteilungenPage />
+            </ProtectedModule>
+          } />
+          <Route path="berechtigungen" element={
+            <ProtectedModule modul="admin">
+              <BerechtigungenPage />
+            </ProtectedModule>
+          } />
+          <Route path="mandanten" element={
+            <ProtectedModule modul="admin">
+              <SystemeinstellungenPage />
+            </ProtectedModule>
+          } />
+          <Route path="sicherheit" element={
+            <ProtectedModule modul="admin">
+              <SystemeinstellungenPage />
+            </ProtectedModule>
+          } />
+          <Route path="datenbank" element={
+            <ProtectedModule modul="admin">
+              <SystemeinstellungenPage />
+            </ProtectedModule>
+          } />
         </Route>
         
         {/* Fallback */}
