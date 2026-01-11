@@ -21,6 +21,7 @@ import {
   ArrowLeft,
 } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
+import { usePermissionsStore } from '@/store/permissionsStore';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -49,7 +50,11 @@ export function SettingsLayout() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { user, logout } = useAuthStore();
+  const { istAdmin } = usePermissionsStore();
   const navigate = useNavigate();
+
+  // Prüfen ob Benutzer Admin-Zugriff hat (aus Auth oder Permissions Store)
+  const hasAdminAccess = user?.istAdmin || istAdmin;
 
   const handleLogout = () => {
     logout();
@@ -153,7 +158,7 @@ export function SettingsLayout() {
           </div>
 
           {/* Admin-Einstellungen (nur für Administratoren) */}
-          {user?.istAdmin && (
+          {hasAdminAccess && (
             <div className="mb-4 pt-4 border-t border-white/10">
               {!collapsed && (
                 <p className="px-3 mb-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">
