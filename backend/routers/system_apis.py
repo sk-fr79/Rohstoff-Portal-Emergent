@@ -1553,14 +1553,32 @@ AVAILABLE_MODULES = {
 
 class FieldBindingCreate(BaseModel):
     """Feld-Verknüpfung erstellen"""
-    reference_table_id: str = Field(..., description="ID der Referenztabelle")
+    # Datenquelle: reference_table oder api_query
+    source_type: str = Field(default="reference_table", description="Datenquelle: 'reference_table' oder 'api_query'")
+    
+    # Für Referenztabelle
+    reference_table_id: Optional[str] = Field(default=None, description="ID der Referenztabelle")
+    
+    # Für API-Abfrage
+    api_config_id: Optional[str] = Field(default=None, description="ID der API-Konfiguration für Live-Abfragen")
+    
+    # Modul und Feld
     module: str = Field(..., description="Modul-Name (artikel, adressen, etc.)")
     field_name: str = Field(..., description="Feldname im Modul")
-    display_field: str = Field(..., description="Anzeigefeld aus Referenztabelle (z.B. 'bezeichnung')")
-    value_field: str = Field(..., description="Wertfeld aus Referenztabelle (z.B. 'code')")
+    
+    # Mapping
+    display_field: str = Field(default="bezeichnung", description="Anzeigefeld (z.B. 'bezeichnung')")
+    value_field: str = Field(default="code", description="Wertfeld (z.B. 'code')")
     additional_display_fields: List[str] = Field(default_factory=list, description="Weitere Anzeigefelder")
+    
+    # Optionen
     is_required: bool = Field(default=False, description="Pflichtfeld?")
     allow_search: bool = Field(default=True, description="Durchsuchbar?")
+    
+    # API-spezifische Optionen
+    min_search_chars: int = Field(default=3, description="Mindest-Suchzeichen für API-Abfrage")
+    cache_ttl_seconds: int = Field(default=300, description="Cache-Dauer in Sekunden (Standard: 5 Min)")
+    fallback_to_reference: bool = Field(default=True, description="Bei API-Fehler auf Referenztabelle zurückfallen")
 
 
 class FieldBindingResponse(BaseModel):
