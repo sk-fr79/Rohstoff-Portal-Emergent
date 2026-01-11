@@ -82,12 +82,12 @@ class TestWaageUserDeniedEndpoints:
         assert response.status_code == 403, f"Expected 403 for rechnungen, got {response.status_code}: {response.text}"
         print("✓ Waage correctly denied access to /api/rechnungen (403)")
     
-    def test_waage_denied_kreditversicherung_read(self, waage_token):
-        """Waage user should NOT be able to read /api/kreditversicherung (403)"""
+    def test_waage_denied_kreditversicherungen_read(self, waage_token):
+        """Waage user should NOT be able to read /api/kreditversicherungen (403)"""
         headers = {"Authorization": f"Bearer {waage_token}"}
-        response = requests.get(f"{BASE_URL}/api/kreditversicherung", headers=headers)
-        assert response.status_code == 403, f"Expected 403 for kreditversicherung, got {response.status_code}: {response.text}"
-        print("✓ Waage correctly denied access to /api/kreditversicherung (403)")
+        response = requests.get(f"{BASE_URL}/api/kreditversicherungen", headers=headers)
+        assert response.status_code == 403, f"Expected 403 for kreditversicherungen, got {response.status_code}: {response.text}"
+        print("✓ Waage correctly denied access to /api/kreditversicherungen (403)")
 
 
 class TestWaageUserReadOnlyEndpoints:
