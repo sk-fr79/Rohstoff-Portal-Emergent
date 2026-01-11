@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { ColumnDef } from '@tanstack/react-table';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -11,7 +11,7 @@ import {
   Save, Phone, Mail, Globe, CreditCard, FileText, Users, X, Upload,
   Banknote, Shield, Clock, MessageSquare, AlertTriangle, UserCircle,
   Image as ImageIcon, Camera, Scan, Loader2, EyeOff, CheckCircle, XCircle,
-  History, Search, RefreshCw, Briefcase, ClipboardList
+  History, Search, RefreshCw, Briefcase, ClipboardList, GripVertical
 } from 'lucide-react';
 import { adressenApi, api } from '@/services/api/client';
 import { Button } from '@/components/ui/button';
