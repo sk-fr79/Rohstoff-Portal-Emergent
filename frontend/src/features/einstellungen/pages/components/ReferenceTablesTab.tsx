@@ -430,6 +430,11 @@ export function ReferenceTablesTab() {
         </div>
       )}
 
+      {/* Field Bindings Section */}
+      <div className="pt-6 border-t">
+        <FieldBindingsManager />
+      </div>
+
       {/* Delete Dialog */}
       <Dialog open={deleteDialog.open} onOpenChange={(open) => setDeleteDialog({ open })}>
         <DialogContent>
