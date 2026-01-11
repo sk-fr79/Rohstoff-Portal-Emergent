@@ -777,12 +777,12 @@ export function AdressenPage() {
       </div>
 
       {/* Content Area */}
-      <div className="flex-1 flex overflow-hidden">
+      <div ref={containerRef} className="flex-1 flex overflow-hidden">
         {/* Main Table */}
-        <div className={cn(
-          "flex-1 p-6 overflow-auto transition-all duration-300",
-          selectedAdresse && "lg:w-1/2"
-        )}>
+        <div 
+          className="p-6 overflow-auto transition-none"
+          style={{ width: selectedAdresse ? `${panelWidth}%` : '100%' }}
+        >
           <div className="bg-white rounded-xl shadow-sm border border-gray-100">
             <DataTable 
               columns={columns} 
@@ -793,6 +793,34 @@ export function AdressenPage() {
           </div>
         </div>
 
+        {/* Resizable Handle */}
+        {selectedAdresse && (
+          <div
+            className={cn(
+              "relative flex w-1.5 items-center justify-center bg-gray-100 transition-colors cursor-col-resize select-none",
+              "hover:bg-emerald-200 active:bg-emerald-300",
+              isDragging && "bg-emerald-400"
+            )}
+            onMouseDown={(e) => {
+              e.preventDefault();
+              setIsDragging(true);
+            }}
+            data-testid="resize-handle"
+          >
+            {/* Visual grip indicator */}
+            <div className={cn(
+              "absolute flex h-10 w-5 items-center justify-center rounded-sm",
+              "bg-gray-200/80 backdrop-blur-sm opacity-0 transition-opacity",
+              "hover:opacity-100",
+              isDragging && "opacity-100 bg-emerald-400"
+            )}>
+              <GripVertical className="h-4 w-4 text-gray-500" />
+            </div>
+            {/* Wider hit area */}
+            <div className="absolute inset-y-0 -left-2 -right-2" />
+          </div>
+        )}
+
         {/* Detail Panel */}
         <AnimatePresence>
           {selectedAdresse && (
@@ -801,7 +829,8 @@ export function AdressenPage() {
               animate={{ x: 0, opacity: 1 }}
               exit={{ x: '100%', opacity: 0 }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="w-full lg:w-1/2 border-l border-gray-200 bg-white flex flex-col overflow-hidden"
+              className="border-l border-gray-200 bg-white flex flex-col overflow-hidden"
+              style={{ width: `${100 - panelWidth}%` }}
             >
               {/* Detail Header - mit transparentem Logo */}
               <div className="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between">
