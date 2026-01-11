@@ -946,7 +946,7 @@ async def update_bankverbindung(
     adresse_id: str,
     bank_id: str,
     data: dict,
-    user = Depends(get_current_user)
+    user = Depends(require_permission("adressen", "write"))
 ):
     """Bankverbindung aktualisieren"""
     db = get_db()
@@ -970,7 +970,7 @@ async def update_bankverbindung(
 async def delete_bankverbindung(
     adresse_id: str,
     bank_id: str,
-    user = Depends(get_current_user)
+    user = Depends(require_permission("adressen", "full"))
 ):
     """Bankverbindung löschen"""
     db = get_db()
@@ -1006,7 +1006,7 @@ class LieferadresseCreate(BaseModel):
 
 
 @router.get("/adressen/{adresse_id}/lieferadressen")
-async def get_lieferadressen(adresse_id: str, user = Depends(get_current_user)):
+async def get_lieferadressen(adresse_id: str, user = Depends(require_permission("adressen", "read"))):
     """Lieferadressen einer Adresse abrufen"""
     db = get_db()
     adresse = await db.adressen.find_one(
@@ -1024,7 +1024,7 @@ async def get_lieferadressen(adresse_id: str, user = Depends(get_current_user)):
 async def add_lieferadresse(
     adresse_id: str,
     data: LieferadresseCreate,
-    user = Depends(get_current_user)
+    user = Depends(require_permission("adressen", "write"))
 ):
     """Lieferadresse hinzufügen"""
     db = get_db()
