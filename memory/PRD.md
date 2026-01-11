@@ -597,18 +597,27 @@ Passwort: Admin123!
 -   Keine.
 
 ## CHANGELOG (2026-01-11)
-### Verifizierung abgeschlossen:
-1. **Berechtigungssystem VOLLSTÄNDIG VERIFIZIERT** ✅
-   - **Backend-Tests**: 20/20 Tests bestanden (100%)
-   - **Frontend-Tests**: Routenschutz + Sidebar-Filterung funktionieren korrekt
-   - **Getestete Szenarien:**
-     - Admin-Benutzer hat vollen Zugriff auf alle Endpunkte
-     - Waage-Benutzer wird korrekt für gesperrte Module blockiert (403)
-     - Waage-Benutzer kann nur lesen (nicht schreiben) für read-only Module
-     - Frontend zeigt "Kein Zugriff"-Seite bei direktem URL-Zugriff auf gesperrte Routen
-     - Sidebar wird basierend auf Berechtigungen gefiltert
-   - **Test-Datei**: `/app/tests/test_berechtigungen_system.py`
-   - **Test-Report**: `/app/test_reports/iteration_15.json`
+### P0 Berechtigungsdurchsetzung - VERIFIZIERT ✅
+1. **Backend-Tests**: 20/20 Tests bestanden (100%)
+2. **Frontend-Tests**: Routenschutz + Sidebar-Filterung funktionieren korrekt
+3. **Test-Report**: `/app/test_reports/iteration_15.json`
+
+### P1 Einstellungs-Formulare an Backend angebunden ✅
+1. **Neue Backend-Endpunkte erstellt:**
+   - `GET/PUT /api/profil` - Eigenes Benutzerprofil verwalten
+   - `POST /api/profil/passwort` - Eigenes Passwort ändern
+   - `PUT/DELETE /api/profil/profilbild` - Profilbild hochladen/löschen
+   - `PUT/DELETE /api/profil/unterschrift` - Unterschrift hochladen/löschen
+   - `GET/PUT /api/admin/systemeinstellungen` - Systemweite Einstellungen (Admin only)
+
+2. **Frontend-Seiten mit Backend verbunden:**
+   - `ProfilPage.tsx` - Lädt und speichert Profildaten
+   - `PasswortPage.tsx` - Passwort ändern mit Stärke-Indikator
+   - `SystemeinstellungenPage.tsx` - Systemeinstellungen (nur für Admins)
+
+3. **Test-Ergebnis**: 16/16 Backend-Tests bestanden (100%)
+4. **Test-Report**: `/app/test_reports/iteration_16.json`
+5. **Test-Dateien**: `/app/tests/test_profil_einstellungen.py`
 
 ## CHANGELOG (2026-01-09)
 ### Neue Features:
