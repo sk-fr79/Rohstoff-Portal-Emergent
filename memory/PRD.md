@@ -15,6 +15,46 @@ Die gesamte Geschäftslogik der bestehenden Anwendung soll 1:1 übernommen werde
 
 ## Implementiert (Stand: 11.01.2026)
 
+### ✅ Intelligente Referenztabellen-Verknüpfung (NEU - 11.01.2026)
+Zentrales System zur Verknüpfung von Referenztabellen mit Modul-Feldern:
+
+**Konzept:**
+- In den Einstellungen konfiguriert der Admin, welche Referenztabelle mit welchem Modul-Feld verknüpft wird
+- Im jeweiligen Modul wird das Textfeld automatisch durch ein durchsuchbares Dropdown ersetzt
+- Nur Werte aus der Referenztabelle sind erlaubt (Validierung)
+- Mandanten-spezifische Konfiguration
+
+**Backend-Endpoints:**
+- `GET /api/system/modules` - Liste verfügbarer Module und Felder
+- `GET /api/system/field-bindings` - Liste aller Verknüpfungen
+- `POST /api/system/field-bindings` - Neue Verknüpfung erstellen
+- `DELETE /api/system/field-bindings/{id}` - Verknüpfung löschen
+- `GET /api/system/field-binding/lookup` - Verknüpfungsdetails für ein Feld
+- `GET /api/system/reference-select/{module}/{field_name}` - Dropdown-Optionen mit Suche
+- `POST /api/system/validate-reference-value` - Validierung eines Werts
+
+**Frontend-Komponenten:**
+- **ReferenceSelect:** Wiederverwendbare Dropdown-Komponente, die automatisch auf Verknüpfungen prüft
+- **FieldBindingsManager:** Admin-UI zum Verwalten der Verknüpfungen
+
+**Verfügbare Module:**
+- `artikel`: zolltarifnr, avv_code_eingang, avv_code_ausgang, basel_code, oecd_code, artikelgruppe
+- `adressen`: land, branche, adressklasse
+- `kontrakte`: lieferbedingung, zahlungsbedingung
+- `fuhren`: transportmittel, entsorgungsart
+
+**Integration:**
+- Artikel-Modul: Zolltarifnummer-Feld zeigt jetzt Dropdown mit Zolltarifnummern aus der Referenztabelle
+
+**Tests:** 22/22 Backend-Tests bestanden (100%)
+
+**Dateien:**
+- Backend: `/app/backend/routers/system_apis.py` (Zeilen 1510-1850)
+- Frontend: `/app/frontend/src/components/ui/reference-select.tsx`
+- Frontend: `/app/frontend/src/features/einstellungen/pages/components/FieldBindingsManager.tsx`
+
+---
+
 ### ✅ CSV/Excel Upload für Referenztabellen (NEU - 11.01.2026)
 Intelligentes Upload-System zur manuellen Erstellung von Referenztabellen aus CSV/Excel-Dateien:
 
