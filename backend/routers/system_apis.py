@@ -6,7 +6,7 @@ Router für externe API-Verwaltung und Referenzdaten
 from fastapi import APIRouter, HTTPException, Depends, Query, UploadFile, File
 from pydantic import BaseModel, Field, validator
 from typing import Optional, List, Dict, Any, Literal
-from datetime import datetime
+from datetime import datetime, timedelta
 from enum import Enum
 import uuid
 import httpx
