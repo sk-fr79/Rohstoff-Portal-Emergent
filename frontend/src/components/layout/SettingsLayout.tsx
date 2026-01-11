@@ -214,16 +214,57 @@ export function SettingsLayout() {
 
       {/* User Section */}
       <div className={cn("border-t border-white/10", collapsed ? "p-3" : "p-4")}>
+        {/* Zurück ins ERP-Portal Button */}
+        {collapsed ? (
+          <TooltipProvider delayDuration={0}>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  onClick={handleBackToERP}
+                  className="w-full h-10 mb-3 text-emerald-400 hover:text-white hover:bg-emerald-500/20"
+                  data-testid="sidebar-back-to-erp-btn"
+                >
+                  <ArrowLeft className="h-5 w-5" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="right" className="bg-slate-800 text-white border-slate-700">
+                <p>Zurück ins ERP-Portal</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        ) : (
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={handleBackToERP}
+            className="w-full mb-3 text-emerald-400 hover:text-white hover:bg-emerald-500/20 justify-start"
+            data-testid="sidebar-back-to-erp-btn"
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Zurück ins ERP-Portal
+          </Button>
+        )}
+        
         {collapsed ? (
           <TooltipProvider delayDuration={0}>
             <div className="flex flex-col items-center gap-2">
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <div className="h-10 w-10 rounded-full bg-blue-500/20 flex items-center justify-center cursor-pointer">
-                    <span className="text-sm font-semibold text-blue-400">
-                      {user?.kuerzel || user?.benutzername?.charAt(0).toUpperCase() || 'A'}
-                    </span>
-                  </div>
+                  {user?.profilbild ? (
+                    <img 
+                      src={user.profilbild} 
+                      alt="Profilbild" 
+                      className="h-10 w-10 rounded-full object-cover cursor-pointer"
+                    />
+                  ) : (
+                    <div className="h-10 w-10 rounded-full bg-blue-500/20 flex items-center justify-center cursor-pointer">
+                      <span className="text-sm font-semibold text-blue-400">
+                        {user?.kuerzel || user?.benutzername?.charAt(0).toUpperCase() || 'A'}
+                      </span>
+                    </div>
+                  )}
                 </TooltipTrigger>
                 <TooltipContent side="right" className="bg-slate-800 text-white border-slate-700">
                   <p>{user?.vorname || 'System Administrator'}</p>
