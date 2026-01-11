@@ -286,9 +286,12 @@ export function ApiConfigWizard({ open, onClose, onSuccess, editingApi }: Props)
     setConfig(prev => ({ ...prev, ...updates }));
   };
 
-  const loadPreset = () => {
-    setConfig({ ...DEFAULT_CONFIG, ...ZOLLTARIF_PRESET } as ApiConfig);
-    toast.info('Zolltarifnummern.de Preset geladen');
+  const loadPreset = (presetId: string) => {
+    const presetItem = API_PRESETS.find(p => p.id === presetId);
+    if (presetItem) {
+      setConfig({ ...DEFAULT_CONFIG, ...presetItem.preset } as ApiConfig);
+      toast.success(`Vorlage "${presetItem.label}" geladen`);
+    }
   };
 
   const handleTest = async () => {
