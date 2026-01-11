@@ -778,6 +778,7 @@ export function KontraktePage() {
           </motion.div>
         )}
       </AnimatePresence>
+      </div>
     </div>
   );
 }
