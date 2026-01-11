@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useRef, useCallback, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { ColumnDef } from '@tanstack/react-table';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -8,10 +8,9 @@ import { z } from 'zod';
 import { toast } from 'sonner';
 import { 
   Plus, MoreHorizontal, Pencil, Trash2, Package, Eye, 
-  Save, X, AlertTriangle, Zap, FileText, Scale, Globe,
-  Loader2, EyeOff, CheckCircle, Leaf, Recycle, Box
+  Save, X, AlertTriangle, FileText, Scale, Globe, GripVertical
 } from 'lucide-react';
-import { artikelApi, api } from '@/services/api/client';
+import { artikelApi } from '@/services/api/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
