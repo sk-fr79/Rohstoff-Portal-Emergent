@@ -1507,3 +1507,365 @@ async def import_file_to_reference_table(
             "total_records": total_count
         }
     }
+
+
+# ============================================================
+# FIELD BINDINGS - Verknüpfung von Referenztabellen mit Modulfeldern
+# ============================================================
+
+# Verfügbare Module und ihre Felder
+AVAILABLE_MODULES = {
+    "artikel": {
+        "label": "Artikel",
+        "fields": [
+            {"name": "zolltarifnr", "label": "Zolltarifnummer"},
+            {"name": "avv_code_eingang", "label": "AVV-Code Eingang"},
+            {"name": "avv_code_ausgang", "label": "AVV-Code Ausgang"},
+            {"name": "basel_code", "label": "Basel-Code"},
+            {"name": "oecd_code", "label": "OECD-Code"},
+            {"name": "artikelgruppe", "label": "Artikelgruppe"},
+        ]
+    },
+    "adressen": {
+        "label": "Adressen",
+        "fields": [
+            {"name": "land", "label": "Land"},
+            {"name": "branche", "label": "Branche"},
+            {"name": "adressklasse", "label": "Adressklasse"},
+        ]
+    },
+    "kontrakte": {
+        "label": "Kontrakte",
+        "fields": [
+            {"name": "lieferbedingung", "label": "Lieferbedingung (Incoterm)"},
+            {"name": "zahlungsbedingung", "label": "Zahlungsbedingung"},
+        ]
+    },
+    "fuhren": {
+        "label": "Fuhren",
+        "fields": [
+            {"name": "transportmittel", "label": "Transportmittel"},
+            {"name": "entsorgungsart", "label": "Entsorgungsart"},
+        ]
+    },
+}
+
+
+class FieldBindingCreate(BaseModel):
+    """Feld-Verknüpfung erstellen"""
+    reference_table_id: str = Field(..., description="ID der Referenztabelle")
+    module: str = Field(..., description="Modul-Name (artikel, adressen, etc.)")
+    field_name: str = Field(..., description="Feldname im Modul")
+    display_field: str = Field(..., description="Anzeigefeld aus Referenztabelle (z.B. 'bezeichnung')")
+    value_field: str = Field(..., description="Wertfeld aus Referenztabelle (z.B. 'code')")
+    additional_display_fields: List[str] = Field(default_factory=list, description="Weitere Anzeigefelder")
+    is_required: bool = Field(default=False, description="Pflichtfeld?")
+    allow_search: bool = Field(default=True, description="Durchsuchbar?")
+
+
+class FieldBindingResponse(BaseModel):
+    """Antwort für Feld-Verknüpfung"""
+    id: str
+    reference_table_id: str
+    reference_table_name: str
+    reference_table_display_name: str
+    module: str
+    module_label: str
+    field_name: str
+    field_label: str
+    display_field: str
+    value_field: str
+    additional_display_fields: List[str]
+    is_required: bool
+    allow_search: bool
+    created_at: str
+
+
+@router.get("/modules")
+async def get_available_modules(user = Depends(require_admin)):
+    """Liste der verfügbaren Module und deren Felder für Verknüpfungen"""
+    return {"success": True, "data": AVAILABLE_MODULES}
+
+
+@router.get("/field-bindings")
+async def list_field_bindings(
+    module: Optional[str] = None,
+    reference_table_id: Optional[str] = None,
+    user = Depends(get_current_user)
+):
+    """Liste aller Feld-Verknüpfungen für diesen Mandanten"""
+    db = get_db()
+    
+    query = {"mandant_id": user["mandant_id"]}
+    
+    if module:
+        query["module"] = module
+    
+    if reference_table_id:
+        query["reference_table_id"] = reference_table_id
+    
+    cursor = db.system_field_bindings.find(query).sort("module", 1)
+    
+    items = []
+    async for doc in cursor:
+        # Referenztabellen-Info laden
+        ref_table = await db.system_reference_tables.find_one({"_id": doc["reference_table_id"]})
+        
+        module_info = AVAILABLE_MODULES.get(doc["module"], {})
+        field_info = next((f for f in module_info.get("fields", []) if f["name"] == doc["field_name"]), None)
+        
+        items.append({
+            "id": doc["_id"],
+            "reference_table_id": doc["reference_table_id"],
+            "reference_table_name": ref_table["table_name"] if ref_table else "Unbekannt",
+            "reference_table_display_name": ref_table["display_name"] if ref_table else "Unbekannt",
+            "module": doc["module"],
+            "module_label": module_info.get("label", doc["module"]),
+            "field_name": doc["field_name"],
+            "field_label": field_info["label"] if field_info else doc["field_name"],
+            "display_field": doc.get("display_field", "bezeichnung"),
+            "value_field": doc.get("value_field", "code"),
+            "additional_display_fields": doc.get("additional_display_fields", []),
+            "is_required": doc.get("is_required", False),
+            "allow_search": doc.get("allow_search", True),
+            "created_at": doc.get("created_at", ""),
+        })
+    
+    return {"success": True, "data": items}
+
+
+@router.post("/field-bindings")
+async def create_field_binding(data: FieldBindingCreate, user = Depends(require_admin)):
+    """Neue Feld-Verknüpfung erstellen"""
+    db = get_db()
+    
+    # Validierung: Modul existiert
+    if data.module not in AVAILABLE_MODULES:
+        raise HTTPException(status_code=400, detail=f"Unbekanntes Modul: {data.module}")
+    
+    # Validierung: Feld existiert im Modul
+    module_fields = [f["name"] for f in AVAILABLE_MODULES[data.module]["fields"]]
+    if data.field_name not in module_fields:
+        raise HTTPException(status_code=400, detail=f"Unbekanntes Feld '{data.field_name}' in Modul '{data.module}'")
+    
+    # Validierung: Referenztabelle existiert
+    ref_table = await db.system_reference_tables.find_one({
+        "_id": data.reference_table_id,
+        "mandant_id": user["mandant_id"]
+    })
+    if not ref_table:
+        raise HTTPException(status_code=404, detail="Referenztabelle nicht gefunden")
+    
+    # Prüfen ob Verknüpfung bereits existiert
+    existing = await db.system_field_bindings.find_one({
+        "mandant_id": user["mandant_id"],
+        "module": data.module,
+        "field_name": data.field_name
+    })
+    if existing:
+        raise HTTPException(status_code=400, detail=f"Feld '{data.field_name}' in '{data.module}' ist bereits verknüpft")
+    
+    binding_id = "BIND-" + str(uuid.uuid4())[:8].upper()
+    
+    binding = {
+        "_id": binding_id,
+        "mandant_id": user["mandant_id"],
+        "reference_table_id": data.reference_table_id,
+        "module": data.module,
+        "field_name": data.field_name,
+        "display_field": data.display_field,
+        "value_field": data.value_field,
+        "additional_display_fields": data.additional_display_fields,
+        "is_required": data.is_required,
+        "allow_search": data.allow_search,
+        "created_at": datetime.utcnow().isoformat(),
+        "created_by": user["id"],
+    }
+    
+    await db.system_field_bindings.insert_one(binding)
+    
+    return {"success": True, "data": {"id": binding_id}}
+
+
+@router.delete("/field-bindings/{binding_id}")
+async def delete_field_binding(binding_id: str, user = Depends(require_admin)):
+    """Feld-Verknüpfung löschen"""
+    db = get_db()
+    
+    result = await db.system_field_bindings.delete_one({
+        "_id": binding_id,
+        "mandant_id": user["mandant_id"]
+    })
+    
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Verknüpfung nicht gefunden")
+    
+    return {"success": True}
+
+
+@router.get("/field-binding/lookup")
+async def get_field_binding_for_module(
+    module: str = Query(..., description="Modul-Name"),
+    field_name: str = Query(..., description="Feldname"),
+    user = Depends(get_current_user)
+):
+    """
+    Holt die Verknüpfung für ein bestimmtes Modul-Feld.
+    Wird vom Frontend genutzt um zu prüfen, ob ein Feld verknüpft ist.
+    """
+    db = get_db()
+    
+    binding = await db.system_field_bindings.find_one({
+        "mandant_id": user["mandant_id"],
+        "module": module,
+        "field_name": field_name
+    })
+    
+    if not binding:
+        return {"success": True, "data": None}
+    
+    # Referenztabelle laden
+    ref_table = await db.system_reference_tables.find_one({"_id": binding["reference_table_id"]})
+    
+    if not ref_table:
+        return {"success": True, "data": None}
+    
+    return {
+        "success": True,
+        "data": {
+            "binding_id": binding["_id"],
+            "reference_table_name": ref_table["table_name"],
+            "display_field": binding.get("display_field", "bezeichnung"),
+            "value_field": binding.get("value_field", "code"),
+            "additional_display_fields": binding.get("additional_display_fields", []),
+            "is_required": binding.get("is_required", False),
+            "allow_search": binding.get("allow_search", True),
+        }
+    }
+
+
+@router.get("/reference-select/{module}/{field_name}")
+async def get_reference_select_options(
+    module: str,
+    field_name: str,
+    search: Optional[str] = None,
+    limit: int = Query(100, ge=1, le=500),
+    user = Depends(get_current_user)
+):
+    """
+    Holt die Optionen für ein ReferenceSelect-Dropdown.
+    Kombiniert field-binding lookup mit reference-data fetch.
+    """
+    db = get_db()
+    
+    # Verknüpfung finden
+    binding = await db.system_field_bindings.find_one({
+        "mandant_id": user["mandant_id"],
+        "module": module,
+        "field_name": field_name
+    })
+    
+    if not binding:
+        return {"success": True, "data": {"options": [], "binding": None}}
+    
+    # Referenztabelle finden
+    ref_table = await db.system_reference_tables.find_one({"_id": binding["reference_table_id"]})
+    
+    if not ref_table:
+        return {"success": True, "data": {"options": [], "binding": None}}
+    
+    # Daten laden
+    query = {"reference_table_id": ref_table["_id"]}
+    
+    display_field = binding.get("display_field", "bezeichnung")
+    value_field = binding.get("value_field", "code")
+    additional_fields = binding.get("additional_display_fields", [])
+    
+    if search and binding.get("allow_search", True):
+        search_fields = [display_field, value_field] + additional_fields
+        query["$or"] = [
+            {f"data.{field}": {"$regex": search, "$options": "i"}}
+            for field in search_fields
+        ]
+    
+    cursor = db.system_reference_data.find(query).limit(limit).sort(f"data.{value_field}", 1)
+    
+    options = []
+    async for doc in cursor:
+        data = doc.get("data", {})
+        
+        # Label zusammenbauen
+        label_parts = []
+        if value_field in data and data[value_field]:
+            label_parts.append(str(data[value_field]))
+        if display_field in data and data[display_field]:
+            label_parts.append(str(data[display_field]))
+        
+        option = {
+            "value": str(data.get(value_field, doc.get("external_id", ""))),
+            "label": " | ".join(label_parts) if label_parts else str(data.get(value_field, "")),
+            "display": str(data.get(display_field, "")),
+            "data": data,
+        }
+        options.append(option)
+    
+    return {
+        "success": True,
+        "data": {
+            "options": options,
+            "binding": {
+                "display_field": display_field,
+                "value_field": value_field,
+                "is_required": binding.get("is_required", False),
+            }
+        }
+    }
+
+
+@router.post("/validate-reference-value")
+async def validate_reference_value(
+    module: str = Query(...),
+    field_name: str = Query(...),
+    value: str = Query(...),
+    user = Depends(get_current_user)
+):
+    """
+    Validiert ob ein Wert in der verknüpften Referenztabelle existiert.
+    Wird bei Speichern verwendet um sicherzustellen, dass nur gültige Werte verwendet werden.
+    """
+    db = get_db()
+    
+    # Verknüpfung finden
+    binding = await db.system_field_bindings.find_one({
+        "mandant_id": user["mandant_id"],
+        "module": module,
+        "field_name": field_name
+    })
+    
+    if not binding:
+        # Kein Binding = keine Validierung nötig
+        return {"success": True, "data": {"valid": True, "binding_exists": False}}
+    
+    # Referenztabelle finden
+    ref_table = await db.system_reference_tables.find_one({"_id": binding["reference_table_id"]})
+    
+    if not ref_table:
+        return {"success": True, "data": {"valid": True, "binding_exists": False}}
+    
+    value_field = binding.get("value_field", "code")
+    
+    # Wert suchen
+    existing = await db.system_reference_data.find_one({
+        "reference_table_id": ref_table["_id"],
+        f"data.{value_field}": value
+    })
+    
+    return {
+        "success": True,
+        "data": {
+            "valid": existing is not None,
+            "binding_exists": True,
+            "reference_table": ref_table["display_name"],
+            "message": None if existing else f"Wert '{value}' nicht in Referenztabelle '{ref_table['display_name']}' gefunden"
+        }
+    }
