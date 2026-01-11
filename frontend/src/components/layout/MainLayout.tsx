@@ -365,11 +365,19 @@ export function MainLayout() {
           // Expanded: Show full user info
           <>
             <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-full bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
-                <span className="text-sm font-semibold text-emerald-400">
-                  {user?.kuerzel || user?.benutzername?.charAt(0).toUpperCase() || 'A'}
-                </span>
-              </div>
+              {user?.profilbild ? (
+                <img 
+                  src={user.profilbild} 
+                  alt="Profilbild" 
+                  className="h-10 w-10 rounded-full object-cover flex-shrink-0"
+                />
+              ) : (
+                <div className="h-10 w-10 rounded-full bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
+                  <span className="text-sm font-semibold text-emerald-400">
+                    {user?.kuerzel || user?.benutzername?.charAt(0).toUpperCase() || 'A'}
+                  </span>
+                </div>
+              )}
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-white truncate">
                   {user?.vorname || 'System'} {user?.nachname || 'Administrator'}
