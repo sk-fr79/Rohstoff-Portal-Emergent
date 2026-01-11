@@ -53,14 +53,46 @@ export default function App() {
           }
         >
           <Route index element={<Navigate to="/dashboard" replace />} />
-          <Route path="dashboard" element={<DashboardPage />} />
-          <Route path="adressen" element={<AdressenPage />} />
-          <Route path="artikel" element={<ArtikelPage />} />
-          <Route path="kontrakte" element={<KontraktePage />} />
-          <Route path="wiegekarten" element={<WiegekartenPage />} />
-          <Route path="fuhren" element={<FuhrenPage />} />
-          <Route path="rechnungen" element={<RechnungenPage />} />
-          <Route path="kreditversicherungen" element={<KreditversicherungenPage />} />
+          <Route path="dashboard" element={
+            <ProtectedModule modul="dashboard">
+              <DashboardPage />
+            </ProtectedModule>
+          } />
+          <Route path="adressen" element={
+            <ProtectedModule modul="adressen">
+              <AdressenPage />
+            </ProtectedModule>
+          } />
+          <Route path="artikel" element={
+            <ProtectedModule modul="artikel">
+              <ArtikelPage />
+            </ProtectedModule>
+          } />
+          <Route path="kontrakte" element={
+            <ProtectedModule modul="kontrakte">
+              <KontraktePage />
+            </ProtectedModule>
+          } />
+          <Route path="wiegekarten" element={
+            <ProtectedModule modul="wiegekarten">
+              <WiegekartenPage />
+            </ProtectedModule>
+          } />
+          <Route path="fuhren" element={
+            <ProtectedModule modul="fuhren">
+              <FuhrenPage />
+            </ProtectedModule>
+          } />
+          <Route path="rechnungen" element={
+            <ProtectedModule modul="rechnungen">
+              <RechnungenPage />
+            </ProtectedModule>
+          } />
+          <Route path="kreditversicherungen" element={
+            <ProtectedModule modul="kreditversicherungen">
+              <KreditversicherungenPage />
+            </ProtectedModule>
+          } />
         </Route>
 
         {/* Einstellungen-Bereich - Geschützte Routen */}
