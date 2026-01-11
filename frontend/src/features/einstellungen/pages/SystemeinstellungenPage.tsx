@@ -71,12 +71,12 @@ export function SystemeinstellungenPage() {
   };
 
   useEffect(() => {
-    if (user?.ist_admin) {
+    if (user?.istAdmin) {
       fetchSettings();
     } else {
       setIsFetching(false);
     }
-  }, [user?.ist_admin]);
+  }, [user?.istAdmin]);
 
   // Nur Admins haben Zugriff (prüfe authStore direkt)
   if (!user?.istAdmin) {
