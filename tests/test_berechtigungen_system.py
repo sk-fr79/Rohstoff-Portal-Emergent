@@ -9,7 +9,7 @@ import pytest
 import requests
 import os
 
-BASE_URL = os.environ.get('base_url', 'https://demobackend.emergentagent.com')
+BASE_URL = "http://localhost:8001"
 
 # Test credentials
 ADMIN_USER = {"benutzername": "admin", "passwort": "Admin123!"}
