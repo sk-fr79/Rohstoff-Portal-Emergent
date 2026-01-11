@@ -74,7 +74,7 @@ async def get_fuhren(
     status: Optional[str] = None,
     page: int = 1,
     limit: int = 20,
-    user = Depends(get_current_user)
+    user = Depends(require_permission("fuhren", "read"))
 ):
     """Fuhren suchen"""
     db = get_db()
@@ -101,7 +101,7 @@ async def get_fuhren(
 
 
 @router.get("/fuhren/{fuhre_id}")
-async def get_fuhre_by_id(fuhre_id: str, user = Depends(get_current_user)):
+async def get_fuhre_by_id(fuhre_id: str, user = Depends(require_permission("fuhren", "read"))):
     """Fuhre nach ID"""
     db = get_db()
     fuhre = await db.fuhren.find_one({"_id": fuhre_id, "mandant_id": user["mandant_id"]})
@@ -114,7 +114,7 @@ async def get_fuhre_by_id(fuhre_id: str, user = Depends(get_current_user)):
 
 
 @router.post("/fuhren")
-async def create_fuhre(data: FuhreCreate, skip_validation: bool = False, user = Depends(get_current_user)):
+async def create_fuhre(data: FuhreCreate, skip_validation: bool = False, user = Depends(require_permission("fuhren", "write"))):
     """Neue Fuhre erstellen"""
     db = get_db()
     
@@ -141,7 +141,7 @@ async def create_fuhre(data: FuhreCreate, skip_validation: bool = False, user = 
 
 
 @router.put("/fuhren/{fuhre_id}")
-async def update_fuhre(fuhre_id: str, data: FuhreUpdate, skip_validation: bool = False, user = Depends(get_current_user)):
+async def update_fuhre(fuhre_id: str, data: FuhreUpdate, skip_validation: bool = False, user = Depends(require_permission("fuhren", "write"))):
     """Fuhre aktualisieren"""
     db = get_db()
     existing = await db.fuhren.find_one({"_id": fuhre_id, "mandant_id": user["mandant_id"]})
@@ -177,7 +177,7 @@ async def update_fuhre(fuhre_id: str, data: FuhreUpdate, skip_validation: bool =
 
 
 @router.delete("/fuhren/{fuhre_id}")
-async def delete_fuhre(fuhre_id: str, user = Depends(get_current_user)):
+async def delete_fuhre(fuhre_id: str, user = Depends(require_permission("fuhren", "full"))):
     """Fuhre löschen (Hard Delete)"""
     db = get_db()
     
@@ -203,7 +203,7 @@ async def delete_fuhre(fuhre_id: str, user = Depends(get_current_user)):
 
 
 @router.post("/fuhren/{fuhre_id}/storno")
-async def storno_fuhre(fuhre_id: str, grund: str = "", user = Depends(get_current_user)):
+async def storno_fuhre(fuhre_id: str, grund: str = "", user = Depends(require_permission("fuhren", "full"))):
     """Fuhre stornieren"""
     db = get_db()
     await db.fuhren.update_one(
@@ -219,7 +219,7 @@ async def storno_fuhre(fuhre_id: str, grund: str = "", user = Depends(get_curren
 
 
 @router.post("/fuhren/validieren")
-async def validate_fuhre(data: dict, user = Depends(get_current_user)):
+async def validate_fuhre(data: dict, user = Depends(require_permission("fuhren", "read"))):
     """Fuhre validieren"""
     db = get_db()
     result = await FuhreValidator.validate(data, db)
