@@ -1,61 +1,61 @@
 <analysis>**original_problem_statement:**
 Der Benutzer möchte eine veraltete Java/Echo2-Anwendung namens Rohstoff Portal modernisieren. Das Ziel ist eine neue Architektur mit einem FastAPI/Python-Backend, einer PostgreSQL-Datenbank (aktuell MongoDB) und einem modernen React PWA-Frontend. Die gesamte Geschäftslogik der bestehenden Anwendung muss 1:1 übernommen werden.
 
-Die jüngste und wichtigste Anforderung (P0) ist die vollständige Neugestaltung und Implementierung des **Kreditversicherungs-Moduls**. Die erste Implementierung war unzureichend. Der Benutzer hat detaillierte Anforderungen und Screenshots aus dem Altsystem bereitgestellt, die Folgendes umfassen:
--   Eine zweistufige Struktur: Ein **Generalversicherungsvertrag (Kopf)** mit einem Gesamtlimit und einer globalen Gültigkeit.
--   Darunter liegende **Kundenpositionen**, bei denen jeder Kunde ein eigenes Limit, eine eigene Unterversicherungsnummer, eine Fakturierungsfrist und eine Gültigkeitsdauer erhält.
--   Die **Auslastung** der Hauptversicherung wird in Prozent angezeigt (Summe der Kundenlimits / Gesamtlimit).
--   Die Kundenliste innerhalb einer Versicherung soll als smarte Grid-Tabelle mit Suchfunktion dargestellt werden.
--   Die Kreditlimit-Daten sollen in den Adress-Stammdaten sichtbar sein und die **Sperrlogik im Fuhren-Modul** bei Limitüberschreitung steuern.
+Die letzten Anforderungen umfassten:
+1.  **(P0) Neugestaltung des Kreditversicherungs-Moduls:** Implementierung einer hierarchischen 1:n-Struktur (Hauptvertrag zu Kundenpositionen) mit korrekter Auslastungsberechnung und Gültigkeitslogik.
+2.  **(Bug) Hard Delete-Logik:** Gelöschte Datensätze (z.B. Adressen) wurden weiterhin in Dropdowns angezeigt. Das System sollte auf Hard Delete umgestellt werden, sodass gelöschte Einträge vollständig aus der Datenbank entfernt werden.
+3.  **(Feature) Admin- & Einstellungsbereich:** Erstellung eines separaten Einstellungen-Bereichs, getrennt von der ERP-Ansicht, mit Benutzerprofil-Einstellungen und einem Admin-Bereich.
+4.  **(Feature) Umfassendes Berechtigungssystem:** Implementierung einer granularen, rollen- und abteilungsbasierten Zugriffssteuerung für alle Module der Anwendung. Nur Administratoren sollen Zugriff auf die Systemeinstellungen haben.
 
 **User's preferred language**: German
 
 **what currently exists?**
--   Ein modular aufgebautes FastAPI-Backend und ein React PWA-Frontend.
--   Alle Kernmodule (, , , , , ) sind implementiert.
--   Das **Adressformular** wurde erfolgreich überarbeitet, inklusive dynamischer Felder (Firma/Privat) und korrekter Anzeige von Länderflaggen (SVG-Icons). Die Geschäftslogik aus dem Echo2-System (z.B. Steuer-Validierung) wurde ins Backend integriert.
--   An die Adress-Detailseite wurden **Tabs für Bankverbindungen und Lieferadressen** angebunden, inklusive funktionierender Backend-Endpunkte.
--   Eine erste, einfache Version des **Kreditversicherungs-Moduls** wurde erstellt (eigener Menüpunkt, Backend-Router, Tab in der Adress-Detailansicht). Diese Version ist jedoch unzureichend und muss gemäß den neuen, detaillierten Anforderungen des Benutzers komplett überarbeitet werden.
+-   Ein FastAPI-Backend und ein React-Frontend mit den Kernmodulen (Adressen, Artikel, Fuhren etc.).
+-   Das **Kreditversicherungs-Modul** wurde erfolgreich und vollständig neugestaltet, um die geforderte Kopf/Positions-Struktur mit Auslastungsberechnung und korrekter Gültigkeitslogik abzubilden.
+-   Alle -Endpunkte im Backend wurden von Soft Delete auf **Hard Delete** umgestellt. Ein Cleanup-Skript wurde ausgeführt, um alte, soft-gelöschte Daten zu entfernen.
+-   Ein neuer, zweigeteilter Ansichtsmodus wurde implementiert: eine **ERP-Ansicht** und eine **Einstellungen-Ansicht** mit eigenem Layout und Menü.
+-   Der Admin-Bereich innerhalb der Einstellungen wurde mit **Verwaltungsseiten für Benutzer, Rollen, Abteilungen und einer Matrix für die Zugriffssteuerung** implementiert. Das Backend liefert die notwendigen Daten und die UI zur Konfiguration ist voll funktionsfähig.
+-   **WICHTIG:** Die konfigurierte Zugriffssteuerung wird **noch nicht durchgesetzt**. Die UI und die API-Endpunkte ignorieren die eingestellten Berechtigungen.
 
 **Last working item**:
--   **Last item agent was working:** Analyse der detaillierten Anforderungen für die Neugestaltung des Kreditversicherungs-Moduls, basierend auf den vom Benutzer bereitgestellten Screenshots und Beschreibungen. Die Analyse der Bilder und die Erstellung eines Migrations-Analyse-Dokuments ist abgeschlossen. Die eigentliche Implementierung der neuen Logik hat noch nicht begonnen.
+-   **Last item agent was working:** Der Agent hat begonnen, die Durchsetzung (Enforcement) des neu geschaffenen Berechtigungssystems zu implementieren. Der Benutzer hatte gemeldet, dass ein Test-User trotz fehlender Rechte weiterhin auf alle Module zugreifen konnte. Der Agent hat daraufhin die grundlegenden Dateien (, ) erstellt, um die Berechtigungsprüfung im Frontend zu starten.
 -   **Status:** IN PROGRESS
--   **Agent Testing Done:** N (für die neuen, detaillierten Anforderungen)
--   **Which testing method agent to use?** both.
-    -   **Backend testing agent:** Zum Testen der neuen, komplexen Datenmodelle (Kopf/Positionen), der CRUD-Endpunkte und der Auslastungsberechnungslogik.
-    -   **Frontend testing agent:** Zum Testen der neuen Verwaltungsseite, der Grid-Tabelle mit Suche, der Formulare zur Erstellung/Bearbeitung und der korrekten Anzeige der Auslastung.
+-   **Agent Testing Done:** N
+-   **Which testing method agent to use?** both
+    -   **Frontend testing agent:** Um zu verifizieren, dass Menüpunkte und UI-Elemente für Benutzer ohne die erforderlichen Rechte korrekt ausgeblendet oder deaktiviert werden.
+    -   **Backend testing agent:** Um sicherzustellen, dass API-Endpunkte nur bei ausreichender Berechtigung zugänglich sind und andernfalls einen Fehler zurückgeben.
 -   **User Testing Done:** N
 
 **All Pending/In progress Issue list**:
--   **Issue 1: (P0) Komplette Neugestaltung des Kreditversicherungs-Moduls**
-    -   **Attempted fixes:** Eine Basisversion wurde implementiert, die aber vom Benutzer als unzureichend eingestuft wurde, da die komplexe Kopf/Positions-Struktur und die Geschäftslogik fehlten.
+-   **Issue 1: (P0) Zugriffssteuerung in der gesamten Anwendung durchsetzen**
+    -   **Attempted fixes:** Der Agent hat die Basisdateien (, ) im Frontend erstellt, aber noch keine Logik integriert.
     -   **Next debug checklist:**
-        1.  **Backend-Modelle überarbeiten:** In  die Pydantic-Modelle anpassen, um die hierarchische Struktur ( mit einer Liste von ) abzubilden.
-        2.  **Backend-API anpassen:** CRUD-Endpunkte für den  und die untergeordneten  (z.B. ) implementieren.
-        3.  **Backend-Logik implementieren:** Eine Funktion oder einen virtuellen Getter erstellen, der die prozentuale Auslastung des Gesamtlimits berechnet.
-        4.  **Frontend-Seite () umbauen:** Die Seite muss eine Liste der Generalversicherungsverträge anzeigen und eine Detailansicht für einen ausgewählten Vertrag bieten.
-        5.  **Frontend-Grid implementieren:** In der Detailansicht eine smarte Grid-Tabelle (z.B. mit ) für die Kundenpositionen erstellen, inklusive einer Suchleiste.
-        6.  **Frontend-Formulare erstellen:** Modale Dialoge oder Sidebars zum Erstellen/Bearbeiten von Hauptverträgen und Kundenpositionen implementieren.
-        7.  **Sperrlogik integrieren:** Die Kreditlimitprüfung im -Modul implementieren.
-    -   **Why fix this issue and what will be achieved with the fix?** Dies ist eine geschäftskritische Kernfunktion zur Steuerung des Kreditrisikos und wurde vom Benutzer mit höchster Priorität angefordert.
+        1.  **Backend:** Einen Dependency-Decorator (z.B. ) erstellen, um FastAPI-Endpunkte zu schützen.
+        2.  **Backend:** Den Decorator auf alle relevanten CRUD-Endpunkte in allen Routern (, ,  etc.) anwenden.
+        3.  **Frontend:** Den  erweitern, um beim Login die Berechtigungen des Benutzers abzurufen und zu speichern.
+        4.  **Frontend:** Den  und einen  Hook fertig implementieren, um Berechtigungen abzufragen.
+        5.  **Frontend:** Die Logik in  integrieren, um die Sidebar-Navigation basierend auf den Berechtigungen des Benutzers zu filtern.
+        6.  **Frontend:** Alle Modul-Routen in  mit der -Komponente umschließen, um den direkten URL-Zugriff zu sperren.
+    -   **Why fix this issue and what will be achieved with the fix?** Dies ist ein kritisches Sicherheitsrisiko. Ohne Durchsetzung ist das gesamte Berechtigungssystem nutzlos. Die Behebung stellt sicher, dass Benutzer nur auf die Module zugreifen können, für die sie autorisiert sind.
     -   **Status:** IN PROGRESS
     -   **Is recurring issue?** N
     -   **Should Test frontend/backend/both after fix?** both
     -   **Blocked on other issue:** None
 
 **In progress Task List**:
--   **Task 1: (P0) Implementierung der detaillierten Kreditversicherungs-Verwaltung**
-    -   **Where to resume:** Die Analyse ist abgeschlossen. Der nächste Schritt ist die Implementierung der neuen Backend-Datenmodelle in  und den zugehörigen API-Endpunkten.
-    -   **What will be achieved with this?** Ein voll funktionsfähiges Modul zur Verwaltung von Kreditversicherungen gemäß den detaillierten Spezifikationen des Benutzers.
+-   **Task 1: (P0) Implementierung der Berechtigungsdurchsetzung**
+    -   **Where to resume:** Bei der Anpassung von , um die Sidebar-Navigation basierend auf den Berechtigungen aus dem neuen  zu filtern. Danach müssen die Routen in  geschützt und die Backend-Endpunkte gesichert werden.
+    -   **What will be achieved with this?** Ein voll funktionsfähiges, granulares Zugriffskontrollsystem, das die in der Admin-Oberfläche konfigurierten Regeln in der gesamten Anwendung durchsetzt.
     -   **Status:** IN PROGRESS
     -   **Should Test frontend/backend/both after fix?** both
     -   **Blocked on something:** None
 
 **Upcoming and Future Tasks**
 -   **Upcoming Tasks:**
-    -   **PDF-Export (P1):** Implementierung der PDF-Erstellung für Rechnungen und Lieferscheine.
-    -   **Sammelrechnungen (P2):** Funktion implementieren, mit der mehrere Fuhren zu einer einzigen Sammelrechnung zusammengefasst werden können.
-    -   **Integration der Kreditlimit-Sperrlogik (P2):** Prüfung des Kreditlimits bei der Erstellung von  und Anzeige von Warnungen/Blockaden.
+    -   **(P1) Einstellungs-Formulare an Backend anbinden:** Die Formulare im neuen Einstellungsbereich (z.B. Mein Profil, Systemeinstellungen) sind derzeit nur UI. Sie müssen an Backend-Endpunkte angebunden werden, um Änderungen speichern zu können.
+    -   **(P1) PDF-Export:** Implementierung der PDF-Erstellung für Rechnungen und Lieferscheine.
+    -   **(P2) Sammelrechnungen:** Funktion implementieren, mit der mehrere Fuhren zu einer einzigen Sammelrechnung zusammengefasst werden können.
+    -   **(P2) Integration der Kreditlimit-Sperrlogik:** Explizite Prüfung, ob die im Kreditversicherungsmodul definierten Limits bei der Erstellung von  berücksichtigt und ggf. Warnungen/Blockaden ausgelöst werden.
 
 -   **Future Tasks:**
     -   Datenimport aus dem Altsystem.
@@ -64,13 +64,13 @@ Die jüngste und wichtigste Anforderung (P0) ist die vollständige Neugestaltung
     -   Fertigstellung der Dokumentation.
 
 **Completed work in this session**
--   **Adressformular-Redesign (FERTIG):** Die Anzeige von Länderflaggen wurde von fehlerhaften Emojis auf SVG-Icons () umgestellt und die Funktionalität (Privat/Firma-Toggle, umbenannte Felder) wurde per Testing-Agent vollständig verifiziert.
--   **Echo2-Logik-Migration (FERTIG):** Wichtige Geschäftslogik (z.B. Steuer-Validierung, Pflichtfelder, Default-Werte für Sperren) wurde aus dem alten Java-Code analysiert und in das FastAPI-Backend ( und ) implementiert und getestet.
--   **Adressen-Erweiterung (FERTIG):** Tabs und CRUD-Funktionalität für **Bankverbindungen** und **Lieferadressen** wurden im Frontend und Backend implementiert. Eine Komponente zur Anzeige von Validierungsfehlern () wurde hinzugefügt.
--   **Kreditversicherungs-Analyse (FERTIG):** Eine detaillierte Analyse des Echo2-Codes für die Kreditversicherungs-Logik wurde durchgeführt und in  dokumentiert.
+-   **Kreditversicherungs-Modul komplett neugestaltet (FERTIG):** Backend-Modelle, API und Frontend wurden gemäß der 1:n-Anforderung (Hauptvertrag/Kundenpositionen) mit korrekter Auslastungsberechnung implementiert und getestet.
+-   **Hard Delete Bugfix (FERTIG):** Alle -Endpunkte wurden auf Hard Delete umgestellt. Ein Cleanup-Endpunkt wurde erstellt und ausgeführt, um veraltete Daten zu entfernen.
+-   **Einstellungen-Bereich implementiert (FERTIG):** Eine neue Einstellungen-Ansicht wurde mit einem separaten Layout und Menü erstellt, um sie von der Haupt-ERP-Ansicht zu trennen.
+-   **Benutzer- und Berechtigungssystem (Konfiguration) (FERTIG):** Ein vollständiges System zur Verwaltung von Benutzern, Rollen und Abteilungen sowie eine Berechtigungsmatrix-UI wurden im Backend und Frontend erstellt und getestet. Standard-Rollen/Abteilungen werden bei der Initialisierung angelegt.
 
 **Earlier issues found/mentioned but not fixed**
--   Keine.
+-   Es gibt diverse Warnungen zu ungenutzten Imports in den Frontend-Dateien (z.B. , ). Diese sind nicht kritisch, sollten aber bei Gelegenheit bereinigt werden.
 
 **Known issue recurrence from previous fork**
 -   Keine.
@@ -79,74 +79,71 @@ Die jüngste und wichtigste Anforderung (P0) ist die vollständige Neugestaltung
 
 
 **Key Technical Concepts**
--   **Backend:** FastAPI, Pydantic, MongoDB (), modulare Router-Architektur.
--   **Frontend:** React, TypeScript, Vite, TailwindCSS, shadcn/ui, Zustand, , .
--   **Neu Hinzugefügt:**  für die Flaggenanzeige im Frontend.
+-   **Backend:** FastAPI, Pydantic, MongoDB ().
+-   **Frontend:** React, TypeScript, Vite, TailwindCSS, shadcn/ui, Zustand (, ), , .
+-   **Architektur:** Strikte Trennung zwischen ERP-Ansicht () und Einstellungs-Ansicht ().
 
 **key DB schema**
--   **adressen:** Haupt-Collection für Adress-Stammdaten.
--   **bankverbindungen, lieferadressen:** Werden als eingebettete Dokumente in  oder als separate Collections mit Referenz zur  gespeichert (der Agent hat CRUD-Endpunkte unter  erstellt, was eine Referenzbeziehung impliziert).
--   **kreditversicherungen:** Neue Collection, die überarbeitet werden muss, um eine Kopf-Dokument mit einer Liste von eingebetteten Kundenpositions-Dokumenten zu speichern.
+-   **kreditversicherungen:** Speichert jetzt Dokumente mit der Kopf/Positions-Struktur ( als eingebettetes Array).
+-   **users:** (Neu) Speichert Benutzerinformationen, inkl. Passwort-Hash, Rolle und Abteilungen.
+-   **roles:** (Neu) Definiert Benutzerrollen.
+-   **departments:** (Neu) Definiert Abteilungen.
+-   **permissions:** (Neu) Speichert die Berechtigungsmatrix (Zuordnung von Rechten zu Rollen/Abteilungen/Benutzern).
 
 **changes in tech stack**
--   Frontend-Abhängigkeit  wurde via yarn install v1.22.22
-info No lockfile found.
-[1/4] Resolving packages...
-[2/4] Fetching packages...
-[3/4] Linking dependencies...
-[4/4] Building fresh packages...
-success Saved lockfile.
-Done in 0.02s. hinzugefügt.
+-    wurde als Abhängigkeit hinzugefügt.
 
 **All files of reference**
--   **/app/backend/routers/kreditversicherung.py**: Neu erstellt, muss aber grundlegend überarbeitet werden.
--   **/app/frontend/src/features/kreditversicherungen/KreditversicherungenPage.tsx**: Neu erstellt, muss grundlegend überarbeitet werden.
--   **/app/frontend/src/features/adressen/AdressenPage.tsx**: Stark modifiziert, um neue Tabs, Komponenten und Validierungslogik zu integrieren.
--   **/app/backend/routers/adressen.py**: Erweitert um neue Endpunkte für Bankverbindungen/Lieferadressen und eine stark verbesserte Validierungslogik.
--   **/app/backend/services/validation.py**: Erweitert um die Geschäftslogik aus dem Echo2-System.
--   **/app/frontend/src/features/adressen/components/**: Neue Komponenten für die Tabs und die Validierungsanzeige.
--   **/app/memory/MIGRATION_ANALYSE_KREDITVERSICHERUNG.md**: Neue Analyse-Datei mit den Details zur Implementierung.
--   **/app/memory/PRD.md**: Aktualisiert mit den abgeschlossenen und neuen Aufgaben.
+-   **/app/backend/routers/admin.py**: Neu, für das gesamte Admin-Backend.
+-   **/app/backend/routers/kreditversicherung.py**: Stark überarbeitet für neue Logik und Hard-Delete.
+-   Alle anderen Router-Dateien in **/app/backend/routers/**: Angepasst für Hard-Delete.
+-   **/app/frontend/src/components/layout/SettingsLayout.tsx**: Neues Layout für den Einstellungsbereich.
+-   **/app/frontend/src/features/einstellungen/**: Komplett neues Verzeichnis mit allen Seiten für den Admin-/Einstellungsbereich.
+-   **/app/frontend/src/features/kreditversicherungen/KreditversicherungenPage.tsx**: Stark überarbeitet.
+-   **/app/frontend/src/store/permissionsStore.ts**: Neuer Zustandsspeicher für Berechtigungen.
+-   **/app/frontend/src/components/auth/ProtectedModule.tsx**: Neue Komponente für den Routenschutz.
+-   **/app/frontend/src/App.tsx**: Angepasst, um die neuen Routen für die Einstellungen einzubinden.
 
 **Areas that need refactoring**:
--   Die Datei  ist mit über 2000 Zeilen extrem groß geworden. Auch wenn neue Tabs in Komponenten ausgelagert wurden, ist die Hauptdatei ein Kandidat für weiteres Refactoring, um die Logik (Datenabruf, Zustandsverwaltung, Formular-Handler) besser zu strukturieren.
+-   Die Datei  ist immer noch sehr groß und komplex und sollte weiter aufgeteilt werden.
+-   Die neu erstellten Seiten im Einstellungsbereich (, , etc.) enthalten derzeit nur statische UI-Elemente. Die Logik zur Datenbindung und zum Speichern muss noch implementiert werden.
 
 **key api endpoints**
--    (CRUD)
--    (CRUD)
--    (CRUD - **muss für die neue Kopf/Positions-Struktur komplett überarbeitet werden**)
+-   : Komplett überarbeitete Endpunkte für die Kopf/Positions-Struktur.
+-   : Alle Lösch-Endpunkte führen nun Hard-Deletes durch.
+-   : Einmaliger Endpunkt zur Bereinigung alter Daten.
+-   , , , : Neue CRUD-Endpunkte für das Berechtigungssystem.
+-   : Endpunkt zur Erstellung von Standard-Rollen und -Abteilungen.
 
 **Critical Info for New Agent**
--   **Ihre absolute Top-Priorität (P0) ist die vollständige Neugestaltung des Kreditversicherungs-Moduls.** Ignorieren Sie die bisherige Implementierung und richten Sie sich ausschließlich nach den neuen, detaillierten Anforderungen des Benutzers und der Analyse in .
--   Beginnen Sie mit der Überarbeitung des **Backends**: Definieren Sie zuerst die neuen Pydantic-Modelle für die Kopf/Positions-Struktur in .
--   Implementieren Sie danach die neuen API-Endpunkte für die hierarchische Verwaltung.
--   Erst wenn das Backend steht, beginnen Sie mit dem Umbau des Frontends (), um die neue Grid-Tabelle und die Formulare zu erstellen.
--    ist sehr groß; gehen Sie bei Änderungen dort behutsam vor.
+-   **Ihre absolute Top-Priorität (P0) ist die Durchsetzung des Berechtigungssystems.** Die Konfigurationsoberfläche und die Datenmodelle sind fertig, aber die Anwendung ignoriert sie vollständig.
+-   Beginnen Sie damit, die Berechtigungen beim Login abzurufen und im  zu speichern.
+-   Schützen Sie als Nächstes die Frontend-Routen in  mit der -Komponente und filtern Sie die Sidebar-Elemente in .
+-   Implementieren Sie abschließend einen Decorator im Backend, um alle API-Endpunkte abzusichern. Ohne diesen Schritt können Benutzer die Frontend-Sperren umgehen.
+-   Die Formulare im neuen Einstellungsbereich (Profil, Systemeinstellungen) sind derzeit nur Attrappen. Die Funktionalität zum Speichern von Änderungen muss noch als separate Aufgabe implementiert werden.
 
 **documents and test reports created in this job**
--   
--   
 -    (aktualisiert)
--   
--   
 -   
 -   
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **User (latest):** Beschreibt detailliert die Anforderungen an das Kreditversicherungs-Modul, einschließlich der Kopf/Kunden-Struktur, Gesamt- vs. Einzellimits, Auslastungsberechnung und UI-Elemente, und stellt Screenshots aus dem Altsystem bereit.
-2.  **Agent:** Schlägt die Implementierung der Kreditversicherungs-Verwaltung vor.
-3.  **User:** Fordert die Implementierung des Kreditversicherungs-Moduls (P2-Aufgabe).
-4.  **Agent:** Schließt die Implementierung von Bankverbindungen & Lieferadressen ab und schlägt die Implementierung des Artikel-Moduls vor.
-5.  **User:** Fordert die Implementierung von Bankverbindungen, Lieferadressen und einer besseren Validierungsanzeige.
-6.  **Agent:** Schließt die Implementierung der Echo2-Steuerlogik ab und schlägt die Implementierung des Bankverbindungen-Moduls vor.
-7.  **User:** Fordert die Implementierung der P0-Aufgaben aus der Migrationsanalyse (Steuer-Logik, Default-Werte).
-8.  **Agent:** Schließt die Analyse des Echo2 -Codes ab und präsentiert die Ergebnisse und P0-Aufgaben.
-9.  **User:** Startet die Anforderung zur Analyse der Legacy-Java-Anwendung  für die Migration fehlender Features.
-10. **Agent:** Schließt das Redesign des Adressformulars ab und schlägt als Verbesserung den PDF-Export vor.
+1.  **User (latest):** Meldet, dass die Zugriffssteuerung nicht funktioniert. Ein Test-User kann auf Module zugreifen, auf die er keinen Zugriff haben sollte.
+2.  **Agent:** Bestätigt das Problem und beginnt mit der Implementierung der Durchsetzung (Enforcement).
+3.  **User:** Fordert die Implementierung des vollständigen Berechtigungssystems (Benutzerverwaltung, Rollen, Abteilungen, Zugriffsmatrix).
+4.  **Agent:** Schließt die Implementierung des Einstellungsbereichs und des Hard-Delete-Bugfixes ab.
+5.  **User:** Fordert die Erstellung des Einstellungsbereichs (Admin-Ansicht, User-Profil etc.).
+6.  **Agent:** Fasst die Änderungen zur Hard-Delete-Logik zusammen und fragt nach, ob das Problem mit Constellium gelöst ist.
+7.  **Agent:** Stellt fest, dass die Constellium-Adresse aktiv ist und das Problem woanders liegen muss.
+8.  **Agent:** Führt das Cleanup-Skript aus und verifiziert, dass alle soft-gelöschten Daten entfernt wurden.
+9.  **Agent:** Erstellt einen Cleanup-Endpunkt, um alle soft-gelöschten Datensätze zu entfernen.
+10. **User:** Meldet, dass gelöschte Adressen und Kreditversicherungen (z.B. für Constellium) weiterhin im Frontend angezeigt werden und fordert Hard Deletes.
 
 **Project Health Check:**
--   **Broken:** Das -Modul ist funktional unvollständig und erfüllt nicht die Benutzeranforderungen. Es erfordert eine vollständige Neuentwicklung der Geschäftslogik und der Benutzeroberfläche.
--   **Mocked:** Keine.
+-   **Broken:**
+    -   **Zugriffssteuerung:** Die Berechtigungen werden nicht durchgesetzt. Jeder Benutzer kann auf jedes Modul zugreifen, was ein kritisches Sicherheitsrisiko darstellt.
+-   **Mocked:**
+    -   **Einstellungs-Formulare:** Die Seiten für Mein Profil, Systemeinstellungen etc. sind nur UI-Platzhalter. Die Formulare sind nicht an das Backend angebunden und speichern keine Änderungen.
 
 **3rd Party Integrations**
 -   **emergentintegrations:** Wird für die OCR-Funktionalität verwendet (nutzt ).
@@ -154,18 +151,17 @@ Done in 0.02s. hinzugefügt.
 -   **country-flag-icons:** Frontend-Bibliothek zur Anzeige von SVG-Länderflaggen.
 
 **Testing status**
--   **Testing agent used after significant changes:** YES. Der Testing-Agent wurde mehrfach und erfolgreich für Backend-Logik, Frontend-UI und die Behebung von Fehlern eingesetzt.
+-   **Testing agent used after significant changes:** YES. Der Agent wurde erfolgreich für die Neugestaltung des Kreditversicherungs-Moduls und für das Backend des neuen Admin-Bereichs eingesetzt.
 -   **Troubleshoot agent used after agent stuck in loop:** NO
 -   **Test files created:**
     -   
     -   
-    -   
-    -   
--   **Known regressions:** Keine. Der Testing Agent hat während der Entwicklung Regressionen gefunden und behoben (z.B. fehlendes -Präfix in einem Router).
+-   **Known regressions:** Keine. Ein vom Testing-Agent gefundener Bug im Passwort-Hashing wurde behoben.
 
 **Credentials to test flow:**
 -   **Benutzername:** 
 -   **Passwort:** 
 
 **What agent forgot to execute**
--   Der Agent hat die Implementierung des Kreditversicherungs-Moduls nicht vergessen, wurde aber durch das Ende der Sitzung unterbrochen, direkt nachdem der Benutzer die detaillierten Anforderungen spezifiziert hatte. Die Aufgabe ist also bekannt und als nächster Schritt klar definiert.</analysis>
+-   Der Agent hat nicht vergessen, sondern wurde mitten in der Implementierung der **Durchsetzung des Berechtigungssystems** unterbrochen. Die Basisdateien sind erstellt, aber die eigentliche Integrationslogik fehlt.
+-   Die Anbindung der Formulare im **Einstellungsbereich** an das Backend wurde noch nicht in Angriff genommen.</analysis>

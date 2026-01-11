@@ -20,7 +20,7 @@ import os
 import uuid
 
 # Use public URL for testing
-BASE_URL = "https://credit-module.preview.emergentagent.com"
+BASE_URL = "https://raw-materials-hub-2.preview.emergentagent.com"
 
 # Test credentials (German field names)
 TEST_USERNAME = "admin"
