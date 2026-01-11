@@ -767,7 +767,15 @@ export function ArtikelPage() {
                         <h3 className="font-semibold text-gray-900">Zolltarifnummer</h3>
                         <div className="space-y-1.5">
                           <Label>Warennummer</Label>
-                          <Input {...register('zolltarifnr')} disabled={!isEditing} className="bg-white font-mono" />
+                          <ReferenceSelect
+                            module="artikel"
+                            fieldName="zolltarifnr"
+                            value={watch('zolltarifnr')}
+                            onChange={(val) => setValue('zolltarifnr', val)}
+                            placeholder="Zolltarifnummer auswählen..."
+                            disabled={!isEditing}
+                            className="bg-white"
+                          />
                         </div>
                         <div className="space-y-1.5">
                           <Label>Warennotiz</Label>
