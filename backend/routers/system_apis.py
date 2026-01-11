@@ -522,7 +522,7 @@ async def test_api_connection(
     
     # Request ausführen
     try:
-        async with httpx.AsyncClient(timeout=30.0) as client:
+        async with httpx.AsyncClient(timeout=30.0, follow_redirects=True) as client:
             method = request_config.get("method", "GET")
             
             if method == "GET":
