@@ -1790,21 +1790,27 @@ async def get_reference_select_options(
     
     cursor = db.system_reference_data.find(query).limit(limit).sort(f"data.{value_field}", 1)
     
+    def strip_html(text: str) -> str:
+        """Entfernt HTML-Tags aus Text"""
+        import re
+        clean = re.sub(r'<[^>]+>', ' ', str(text))
+        return ' '.join(clean.split())  # Normalisiert Whitespace
+    
     options = []
     async for doc in cursor:
         data = doc.get("data", {})
         
-        # Label zusammenbauen
+        # Label zusammenbauen (mit HTML-Stripping)
         label_parts = []
         if value_field in data and data[value_field]:
-            label_parts.append(str(data[value_field]))
+            label_parts.append(strip_html(data[value_field]))
         if display_field in data and data[display_field]:
-            label_parts.append(str(data[display_field]))
+            label_parts.append(strip_html(data[display_field]))
         
         option = {
             "value": str(data.get(value_field, doc.get("external_id", ""))),
-            "label": " | ".join(label_parts) if label_parts else str(data.get(value_field, "")),
-            "display": str(data.get(display_field, "")),
+            "label": " | ".join(label_parts) if label_parts else strip_html(data.get(value_field, "")),
+            "display": strip_html(data.get(display_field, "")),
             "data": data,
         }
         options.append(option)
