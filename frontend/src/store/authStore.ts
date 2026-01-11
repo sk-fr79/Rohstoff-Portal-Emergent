@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { usePermissionsStore } from './permissionsStore';
 
 interface User {
   id: string;
@@ -44,12 +45,16 @@ export const useAuthStore = create<AuthState>()(
         refreshToken,
       }),
       
-      logout: () => set({
-        user: null,
-        accessToken: null,
-        refreshToken: null,
-        isAuthenticated: false,
-      }),
+      logout: () => {
+        // Berechtigungen auch löschen
+        usePermissionsStore.getState().clearPermissions();
+        set({
+          user: null,
+          accessToken: null,
+          refreshToken: null,
+          isAuthenticated: false,
+        });
+      },
     }),
     {
       name: 'rohstoff-auth',
