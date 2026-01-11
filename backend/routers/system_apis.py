@@ -1140,3 +1140,370 @@ async def lookup_reference_data(
         })
     
     return {"success": True, "data": items}
+
+
+# ============================================================
+# FILE UPLOAD & IMPORT ENDPOINTS (CSV/Excel)
+# ============================================================
+
+class ColumnInfo(BaseModel):
+    """Erkannte Spalteninformation"""
+    name: str
+    detected_type: str  # string, number, date, boolean
+    sample_values: List[Any]
+    null_count: int
+    unique_count: int
+
+
+class FileAnalysisResult(BaseModel):
+    """Ergebnis der Dateianalyse"""
+    filename: str
+    file_type: str  # csv, xlsx, xls
+    row_count: int
+    columns: List[ColumnInfo]
+    preview_rows: List[Dict[str, Any]]
+
+
+class ImportMapping(BaseModel):
+    """Mapping für den Import"""
+    source_column: str
+    target_field: str
+    data_type: str = "string"
+    is_primary_key: bool = False
+
+
+class FileImportRequest(BaseModel):
+    """Request für den Datei-Import"""
+    table_name: str = Field(..., min_length=1, description="Technischer Tabellenname")
+    display_name: str = Field(..., min_length=1, description="Anzeigename")
+    mappings: List[ImportMapping]
+    update_strategy: UpdateStrategy = UpdateStrategy.MERGE
+    file_data: str = Field(..., description="Base64-encoded file content")
+    file_type: str = Field(..., description="csv, xlsx, or xls")
+
+
+def detect_data_type(values: list) -> str:
+    """Erkennt den Datentyp basierend auf Beispielwerten"""
+    import re
+    from datetime import datetime
+    
+    non_null = [v for v in values if v is not None and str(v).strip() != '']
+    if not non_null:
+        return "string"
+    
+    # Boolean check
+    bool_values = {'true', 'false', 'ja', 'nein', 'yes', 'no', '1', '0', 'wahr', 'falsch'}
+    if all(str(v).lower().strip() in bool_values for v in non_null[:20]):
+        return "boolean"
+    
+    # Number check
+    number_count = 0
+    for v in non_null[:50]:
+        try:
+            # Handle German number format (1.234,56)
+            clean_val = str(v).replace('.', '').replace(',', '.').strip()
+            float(clean_val)
+            number_count += 1
+        except:
+            pass
+    
+    if number_count / len(non_null[:50]) > 0.8:
+        return "number"
+    
+    # Date check
+    date_patterns = [
+        r'^\d{4}-\d{2}-\d{2}',  # ISO format
+        r'^\d{2}\.\d{2}\.\d{4}',  # German format
+        r'^\d{2}/\d{2}/\d{4}',  # US format
+    ]
+    date_count = 0
+    for v in non_null[:30]:
+        for pattern in date_patterns:
+            if re.match(pattern, str(v).strip()):
+                date_count += 1
+                break
+    
+    if date_count / len(non_null[:30]) > 0.7:
+        return "date"
+    
+    return "string"
+
+
+def parse_file_to_dataframe(file_content: bytes, file_type: str):
+    """Parst CSV oder Excel zu pandas DataFrame"""
+    import pandas as pd
+    from io import BytesIO, StringIO
+    
+    if file_type == 'csv':
+        # Versuche verschiedene Encodings und Delimiter
+        for encoding in ['utf-8', 'latin-1', 'cp1252']:
+            for delimiter in [',', ';', '\t']:
+                try:
+                    content = file_content.decode(encoding)
+                    df = pd.read_csv(StringIO(content), delimiter=delimiter)
+                    # Prüfen ob sinnvoll geparst (mehr als 1 Spalte)
+                    if len(df.columns) > 1 or delimiter == '\t':
+                        return df
+                except:
+                    continue
+        # Fallback
+        return pd.read_csv(BytesIO(file_content))
+    
+    elif file_type == 'xlsx':
+        return pd.read_excel(BytesIO(file_content), engine='openpyxl')
+    
+    elif file_type == 'xls':
+        return pd.read_excel(BytesIO(file_content), engine='xlrd')
+    
+    else:
+        raise ValueError(f"Nicht unterstützter Dateityp: {file_type}")
+
+
+@router.post("/reference-upload/analyze")
+async def analyze_uploaded_file(
+    file: UploadFile = File(...),
+    user = Depends(require_admin)
+):
+    """
+    Analysiert eine hochgeladene CSV/Excel-Datei und erkennt Spalten und Datentypen.
+    Gibt eine Vorschau und Spalteninformationen für das Mapping zurück.
+    """
+    import pandas as pd
+    
+    # Dateityp bestimmen
+    filename = file.filename or "unknown"
+    if filename.lower().endswith('.csv'):
+        file_type = 'csv'
+    elif filename.lower().endswith('.xlsx'):
+        file_type = 'xlsx'
+    elif filename.lower().endswith('.xls'):
+        file_type = 'xls'
+    else:
+        raise HTTPException(status_code=400, detail="Nur CSV, XLS und XLSX Dateien werden unterstützt")
+    
+    # Datei lesen
+    content = await file.read()
+    if len(content) > 50 * 1024 * 1024:  # 50 MB limit
+        raise HTTPException(status_code=400, detail="Datei ist zu groß (max. 50 MB)")
+    
+    try:
+        df = parse_file_to_dataframe(content, file_type)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Fehler beim Parsen der Datei: {str(e)}")
+    
+    # Spalteninformationen sammeln
+    columns = []
+    for col in df.columns:
+        values = df[col].tolist()
+        sample_values = [v for v in values[:10] if pd.notna(v)]
+        
+        col_info = ColumnInfo(
+            name=str(col),
+            detected_type=detect_data_type(values),
+            sample_values=sample_values[:5],
+            null_count=int(df[col].isna().sum()),
+            unique_count=int(df[col].nunique())
+        )
+        columns.append(col_info)
+    
+    # Vorschau-Daten (erste 20 Zeilen)
+    preview_df = df.head(20).fillna('')
+    preview_rows = preview_df.to_dict(orient='records')
+    
+    # Dateicontent als Base64 für späteren Import
+    import base64
+    file_base64 = base64.b64encode(content).decode('utf-8')
+    
+    return {
+        "success": True,
+        "data": {
+            "filename": filename,
+            "file_type": file_type,
+            "row_count": len(df),
+            "columns": [c.model_dump() for c in columns],
+            "preview_rows": preview_rows,
+            "file_data": file_base64
+        }
+    }
+
+
+@router.post("/reference-upload/import")
+async def import_file_to_reference_table(
+    request: FileImportRequest,
+    user = Depends(require_admin)
+):
+    """
+    Importiert die analysierte Datei in eine neue oder bestehende Referenztabelle.
+    """
+    import pandas as pd
+    import base64
+    
+    db = get_db()
+    
+    # Tabellenname validieren
+    table_name = re.sub(r'[^a-z0-9_]+', '_', request.table_name.lower()).strip('_')
+    if not table_name.startswith("ref_"):
+        table_name = f"ref_{table_name}"
+    
+    # Prüfen ob Tabelle bereits existiert
+    existing_table = await db.system_reference_tables.find_one({
+        "mandant_id": user["mandant_id"],
+        "table_name": table_name
+    })
+    
+    # Datei parsen
+    try:
+        file_content = base64.b64decode(request.file_data)
+        df = parse_file_to_dataframe(file_content, request.file_type)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Fehler beim Parsen: {str(e)}")
+    
+    # Primary Key Mapping finden
+    pk_mapping = next((m for m in request.mappings if m.is_primary_key), None)
+    
+    # Referenztabelle erstellen oder aktualisieren
+    if existing_table:
+        ref_table_id = existing_table["_id"]
+        # Columns Config aktualisieren
+        columns_config = [
+            {
+                "source_path": m.source_column,
+                "target_field": m.target_field,
+                "data_type": m.data_type,
+                "is_primary_key": m.is_primary_key
+            }
+            for m in request.mappings
+        ]
+        await db.system_reference_tables.update_one(
+            {"_id": ref_table_id},
+            {"$set": {
+                "columns_config": columns_config,
+                "display_name": request.display_name,
+                "update_strategy": request.update_strategy.value,
+                "updated_at": datetime.utcnow().isoformat()
+            }}
+        )
+    else:
+        ref_table_id = "REF-" + str(uuid.uuid4())[:8].upper()
+        columns_config = [
+            {
+                "source_path": m.source_column,
+                "target_field": m.target_field,
+                "data_type": m.data_type,
+                "is_primary_key": m.is_primary_key
+            }
+            for m in request.mappings
+        ]
+        ref_table = {
+            "_id": ref_table_id,
+            "mandant_id": user["mandant_id"],
+            "api_config_id": None,  # Manuelle Tabelle
+            "table_name": table_name,
+            "display_name": request.display_name,
+            "update_strategy": request.update_strategy.value,
+            "track_history": False,
+            "columns_config": columns_config,
+            "record_count": 0,
+            "source_type": "file_upload",
+            "created_at": datetime.utcnow().isoformat(),
+            "created_by": user["id"],
+        }
+        await db.system_reference_tables.insert_one(ref_table)
+    
+    # Update-Strategie anwenden
+    strategy = request.update_strategy.value
+    
+    if strategy == "replace":
+        # Alle bestehenden Daten löschen
+        await db.system_reference_data.delete_many({"reference_table_id": ref_table_id})
+    
+    records_created = 0
+    records_updated = 0
+    
+    # Daten importieren
+    for idx, row in df.iterrows():
+        # Mapping anwenden
+        mapped_item = {}
+        for mapping in request.mappings:
+            source_col = mapping.source_column
+            target_field = mapping.target_field
+            
+            if source_col in row:
+                value = row[source_col]
+                # NaN/None handling
+                if pd.isna(value):
+                    value = None
+                elif mapping.data_type == "number":
+                    try:
+                        clean_val = str(value).replace('.', '').replace(',', '.').strip()
+                        value = float(clean_val)
+                    except:
+                        pass
+                elif mapping.data_type == "boolean":
+                    value = str(value).lower().strip() in ('true', 'ja', 'yes', '1', 'wahr')
+                else:
+                    value = str(value) if value is not None else None
+                
+                mapped_item[target_field] = value
+        
+        # External ID bestimmen
+        if pk_mapping and pk_mapping.source_column in row:
+            external_id = str(row[pk_mapping.source_column])
+        else:
+            external_id = str(idx)
+        
+        if strategy == "append":
+            # Immer neu einfügen
+            await db.system_reference_data.insert_one({
+                "_id": str(uuid.uuid4()),
+                "reference_table_id": ref_table_id,
+                "external_id": external_id,
+                "data": mapped_item,
+                "created_at": datetime.utcnow().isoformat(),
+                "created_by": user["id"],
+            })
+            records_created += 1
+        else:
+            # Merge oder Replace: Upsert
+            result = await db.system_reference_data.update_one(
+                {"reference_table_id": ref_table_id, "external_id": external_id},
+                {
+                    "$set": {
+                        "data": mapped_item,
+                        "updated_at": datetime.utcnow().isoformat(),
+                    },
+                    "$setOnInsert": {
+                        "_id": str(uuid.uuid4()),
+                        "reference_table_id": ref_table_id,
+                        "external_id": external_id,
+                        "created_at": datetime.utcnow().isoformat(),
+                        "created_by": user["id"],
+                    }
+                },
+                upsert=True
+            )
+            if result.upserted_id:
+                records_created += 1
+            elif result.modified_count > 0:
+                records_updated += 1
+    
+    # Record-Count aktualisieren
+    total_count = await db.system_reference_data.count_documents({"reference_table_id": ref_table_id})
+    await db.system_reference_tables.update_one(
+        {"_id": ref_table_id},
+        {"$set": {
+            "record_count": total_count,
+            "last_updated_at": datetime.utcnow().isoformat()
+        }}
+    )
+    
+    return {
+        "success": True,
+        "data": {
+            "table_id": ref_table_id,
+            "table_name": table_name,
+            "records_created": records_created,
+            "records_updated": records_updated,
+            "total_records": total_count
+        }
+    }
