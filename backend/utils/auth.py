@@ -79,4 +79,114 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
         "vorname": user.get("vorname", ""),
         "nachname": user.get("nachname", ""),
         "ist_admin": user.get("ist_admin", False),
+        "rolle_id": user.get("rolle_id"),
+        "abteilung_ids": user.get("abteilung_ids", []),
     }
+
+
+# Berechtigungs-Levels
+BERECHTIGUNG_LEVELS = ["read", "write", "full", "denied"]
+
+
+async def get_user_permissions(user_id: str, mandant_id: str) -> dict:
+    """
+    Ermittelt alle effektiven Berechtigungen eines Benutzers.
+    Berücksichtigt: Benutzer-spezifisch > Rolle > Abteilungen
+    """
+    db = get_db()
+    
+    benutzer = await db.benutzer.find_one({"_id": user_id})
+    if not benutzer:
+        return {}
+    
+    # Admin hat immer vollen Zugriff
+    if benutzer.get("ist_admin"):
+        return {"_ist_admin": True}
+    
+    permissions = {}
+    
+    # 1. Abteilungs-Berechtigungen (niedrigste Priorität)
+    for abt_id in benutzer.get("abteilung_ids", []):
+        cursor = db.berechtigungen.find({
+            "mandant_id": mandant_id,
+            "ziel_typ": "abteilung",
+            "ziel_id": abt_id
+        })
+        async for ber in cursor:
+            modul = ber["modul"]
+            level = ber["level"]
+            if modul not in permissions:
+                permissions[modul] = level
+            elif level != "denied" and BERECHTIGUNG_LEVELS.index(level) > BERECHTIGUNG_LEVELS.index(permissions[modul]):
+                permissions[modul] = level
+    
+    # 2. Rollen-Berechtigungen (überschreiben Abteilungen)
+    if benutzer.get("rolle_id"):
+        cursor = db.berechtigungen.find({
+            "mandant_id": mandant_id,
+            "ziel_typ": "rolle",
+            "ziel_id": benutzer["rolle_id"]
+        })
+        async for ber in cursor:
+            permissions[ber["modul"]] = ber["level"]
+    
+    # 3. Benutzer-spezifische Berechtigungen (höchste Priorität)
+    cursor = db.berechtigungen.find({
+        "mandant_id": mandant_id,
+        "ziel_typ": "benutzer",
+        "ziel_id": user_id
+    })
+    async for ber in cursor:
+        permissions[ber["modul"]] = ber["level"]
+    
+    return permissions
+
+
+def require_permission(modul: str, min_level: str = "read"):
+    """
+    Dependency-Factory für Berechtigungsprüfung.
+    Wirft HTTPException 403 wenn Berechtigung fehlt.
+    
+    Verwendung:
+        @router.get("/", dependencies=[Depends(require_permission("adressen", "read"))])
+        async def list_adressen(...):
+    
+    Oder in der Funktion:
+        async def create_adresse(user = Depends(require_permission("adressen", "write"))):
+    """
+    async def check_permission(user = Depends(get_current_user)):
+        # Admin hat immer Zugriff
+        if user.get("ist_admin"):
+            return user
+        
+        permissions = await get_user_permissions(user["id"], user["mandant_id"])
+        
+        if permissions.get("_ist_admin"):
+            return user
+        
+        user_level = permissions.get(modul)
+        
+        # Kein Zugriff wenn:
+        # 1. Keine Berechtigung definiert
+        # 2. Level ist "denied"
+        # 3. Level ist niedriger als erforderlich
+        if not user_level or user_level == "denied":
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"Keine Berechtigung für Modul '{modul}'"
+            )
+        
+        # Level-Check: read < write < full
+        level_order = {"read": 1, "write": 2, "full": 3}
+        required_order = level_order.get(min_level, 1)
+        user_order = level_order.get(user_level, 0)
+        
+        if user_order < required_order:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"Mindestens '{min_level}' Berechtigung erforderlich für '{modul}'"
+            )
+        
+        return user
+    
+    return check_permission
