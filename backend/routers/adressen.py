@@ -844,7 +844,7 @@ async def update_ansprechpartner(
     adresse_id: str,
     ap_id: str,
     data: dict,
-    user = Depends(get_current_user)
+    user = Depends(require_permission("adressen", "write"))
 ):
     """Ansprechpartner aktualisieren"""
     db = get_db()
@@ -860,7 +860,7 @@ async def update_ansprechpartner(
 async def delete_ansprechpartner(
     adresse_id: str,
     ap_id: str,
-    user = Depends(get_current_user)
+    user = Depends(require_permission("adressen", "full"))
 ):
     """Ansprechpartner löschen"""
     db = get_db()
@@ -891,7 +891,7 @@ class BankverbindungCreate(BaseModel):
 
 
 @router.get("/adressen/{adresse_id}/bankverbindungen")
-async def get_bankverbindungen(adresse_id: str, user = Depends(get_current_user)):
+async def get_bankverbindungen(adresse_id: str, user = Depends(require_permission("adressen", "read"))):
     """Bankverbindungen einer Adresse abrufen"""
     db = get_db()
     adresse = await db.adressen.find_one(
@@ -909,7 +909,7 @@ async def get_bankverbindungen(adresse_id: str, user = Depends(get_current_user)
 async def add_bankverbindung(
     adresse_id: str,
     data: BankverbindungCreate,
-    user = Depends(get_current_user)
+    user = Depends(require_permission("adressen", "write"))
 ):
     """Bankverbindung hinzufügen"""
     db = get_db()
