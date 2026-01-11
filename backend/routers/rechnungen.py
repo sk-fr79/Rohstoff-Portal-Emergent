@@ -9,7 +9,7 @@ from datetime import datetime
 import uuid
 
 from services.database import get_db
-from utils.auth import get_current_user
+from utils.auth import get_current_user, require_permission
 
 router = APIRouter(prefix="/api", tags=["Rechnungen"])
 
