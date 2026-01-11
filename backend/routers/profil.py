@@ -21,11 +21,18 @@ router = APIRouter(prefix="/api/profil", tags=["Profil"])
 class ProfilUpdate(BaseModel):
     vorname: Optional[str] = Field(None, max_length=100)
     nachname: Optional[str] = Field(None, max_length=100)
-    email: Optional[EmailStr] = None
+    email: Optional[str] = None  # Erlaube auch leere Strings, validiere später
     telefon: Optional[str] = Field(None, max_length=50)
     mobil: Optional[str] = Field(None, max_length=50)
     position: Optional[str] = Field(None, max_length=100)
     email_signatur: Optional[str] = Field(None, max_length=2000)
+    
+    # Konvertiere leere Strings zu None
+    @validator('*', pre=True)
+    def empty_str_to_none(cls, v):
+        if isinstance(v, str) and v.strip() == '':
+            return None
+        return v
 
 
 class PasswortAendern(BaseModel):
