@@ -85,7 +85,7 @@ async def get_rechnungen(
     status: Optional[str] = None,
     page: int = 1,
     limit: int = 20,
-    user = Depends(get_current_user)
+    user = Depends(require_permission("rechnungen", "read"))
 ):
     """Rechnungen suchen"""
     db = get_db()
@@ -112,7 +112,7 @@ async def get_rechnungen(
 
 
 @router.get("/rechnungen/{rechnung_id}")
-async def get_rechnung_by_id(rechnung_id: str, user = Depends(get_current_user)):
+async def get_rechnung_by_id(rechnung_id: str, user = Depends(require_permission("rechnungen", "read"))):
     """Rechnung nach ID"""
     db = get_db()
     rechnung = await db.rechnungen.find_one({"_id": rechnung_id, "mandant_id": user["mandant_id"]})
@@ -125,7 +125,7 @@ async def get_rechnung_by_id(rechnung_id: str, user = Depends(get_current_user))
 
 
 @router.post("/rechnungen")
-async def create_rechnung(data: RechnungCreate, user = Depends(get_current_user)):
+async def create_rechnung(data: RechnungCreate, user = Depends(require_permission("rechnungen", "write"))):
     """Neue Rechnung/Gutschrift erstellen"""
     db = get_db()
     
@@ -152,7 +152,7 @@ async def create_rechnung(data: RechnungCreate, user = Depends(get_current_user)
 
 
 @router.put("/rechnungen/{rechnung_id}")
-async def update_rechnung(rechnung_id: str, data: RechnungUpdate, user = Depends(get_current_user)):
+async def update_rechnung(rechnung_id: str, data: RechnungUpdate, user = Depends(require_permission("rechnungen", "write"))):
     """Rechnung aktualisieren"""
     db = get_db()
     update_data = {k: v for k, v in data.model_dump().items() if v is not None}
@@ -173,7 +173,7 @@ async def update_rechnung(rechnung_id: str, data: RechnungUpdate, user = Depends
 
 
 @router.delete("/rechnungen/{rechnung_id}")
-async def delete_rechnung(rechnung_id: str, user = Depends(get_current_user)):
+async def delete_rechnung(rechnung_id: str, user = Depends(require_permission("rechnungen", "full"))):
     """Rechnung löschen (Hard Delete)"""
     db = get_db()
     
@@ -199,7 +199,7 @@ async def delete_rechnung(rechnung_id: str, user = Depends(get_current_user)):
 
 
 @router.post("/rechnungen/{rechnung_id}/positionen")
-async def add_rechnung_position(rechnung_id: str, data: RechnungPositionCreate, user = Depends(get_current_user)):
+async def add_rechnung_position(rechnung_id: str, data: RechnungPositionCreate, user = Depends(require_permission("rechnungen", "write"))):
     """Position hinzufügen"""
     db = get_db()
     
@@ -230,7 +230,7 @@ async def add_rechnung_position(rechnung_id: str, data: RechnungPositionCreate, 
 async def create_rechnung_aus_fuhre(
     fuhre_id: str,
     vorgang_typ: str = "RECHNUNG",
-    user = Depends(get_current_user)
+    user = Depends(require_permission("rechnungen", "write"))
 ):
     """Rechnung/Gutschrift aus Fuhre erstellen"""
     db = get_db()
