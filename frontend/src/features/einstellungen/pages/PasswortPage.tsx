@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useAuthStore } from '@/store/authStore';
 import { toast } from 'sonner';
 import { Lock, Eye, EyeOff, Save, Loader2, AlertTriangle, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -7,7 +8,10 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 
+const API_URL = import.meta.env.VITE_API_URL || '/api';
+
 export function PasswortPage() {
+  const { token } = useAuthStore();
   const [isLoading, setIsLoading] = useState(false);
   const [showPasswords, setShowPasswords] = useState({
     current: false,
@@ -39,6 +43,7 @@ export function PasswortPage() {
   };
 
   const handleSave = async () => {
+    // Client-side Validierung
     if (formData.newPassword !== formData.confirmPassword) {
       toast.error('Passwörter stimmen nicht überein');
       return;
@@ -47,12 +52,39 @@ export function PasswortPage() {
       toast.error('Passwort ist zu schwach');
       return;
     }
+    if (!formData.currentPassword) {
+      toast.error('Bitte aktuelles Passwort eingeben');
+      return;
+    }
     
     setIsLoading(true);
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    setIsLoading(false);
-    toast.success('Passwort geändert');
-    setFormData({ currentPassword: '', newPassword: '', confirmPassword: '' });
+    try {
+      const res = await fetch(`${API_URL}/profil/passwort`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          aktuelles_passwort: formData.currentPassword,
+          neues_passwort: formData.newPassword
+        })
+      });
+      
+      const data = await res.json();
+      
+      if (data.success) {
+        toast.success('Passwort erfolgreich geändert');
+        setFormData({ currentPassword: '', newPassword: '', confirmPassword: '' });
+      } else {
+        toast.error(data.detail || 'Fehler beim Ändern des Passworts');
+      }
+    } catch (error) {
+      console.error('Fehler:', error);
+      toast.error('Fehler beim Ändern des Passworts');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const strength = passwordStrength(formData.newPassword);
@@ -82,6 +114,7 @@ export function PasswortPage() {
             <div className="relative">
               <Input
                 id="current"
+                data-testid="current-password"
                 type={showPasswords.current ? 'text' : 'password'}
                 value={formData.currentPassword}
                 onChange={(e) => setFormData({ ...formData, currentPassword: e.target.value })}
@@ -104,6 +137,7 @@ export function PasswortPage() {
             <div className="relative">
               <Input
                 id="new"
+                data-testid="new-password"
                 type={showPasswords.new ? 'text' : 'password'}
                 value={formData.newPassword}
                 onChange={(e) => setFormData({ ...formData, newPassword: e.target.value })}
@@ -149,6 +183,7 @@ export function PasswortPage() {
             <div className="relative">
               <Input
                 id="confirm"
+                data-testid="confirm-password"
                 type={showPasswords.confirm ? 'text' : 'password'}
                 value={formData.confirmPassword}
                 onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
@@ -203,6 +238,7 @@ export function PasswortPage() {
             <Button 
               onClick={handleSave} 
               disabled={isLoading || !formData.currentPassword || !formData.newPassword || !formData.confirmPassword}
+              data-testid="change-password-btn"
             >
               {isLoading ? (
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
