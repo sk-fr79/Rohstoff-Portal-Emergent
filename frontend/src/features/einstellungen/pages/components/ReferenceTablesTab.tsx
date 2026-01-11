@@ -316,7 +316,7 @@ export function ReferenceTablesTab() {
   // Liste View
   return (
     <div className="space-y-6">
-      {/* Search */}
+      {/* Search + Actions */}
       <div className="flex items-center gap-4">
         <div className="relative flex-1 max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -327,6 +327,13 @@ export function ReferenceTablesTab() {
             className="pl-10"
           />
         </div>
+        <Button 
+          onClick={() => setUploadWizardOpen(true)}
+          className="bg-emerald-600 hover:bg-emerald-700 gap-2"
+        >
+          <FileSpreadsheet className="h-4 w-4" />
+          CSV/Excel Import
+        </Button>
         <Button variant="outline" onClick={fetchTables}>
           <RefreshCw className="h-4 w-4 mr-2" />
           Aktualisieren
