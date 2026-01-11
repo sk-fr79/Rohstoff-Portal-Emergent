@@ -123,6 +123,7 @@ app.include_router(rechnungen.router)
 app.include_router(kreditversicherung.router)
 app.include_router(admin.router)
 app.include_router(profil.router)
+app.include_router(system_apis.router)
 
 
 @app.get("/api/health")
