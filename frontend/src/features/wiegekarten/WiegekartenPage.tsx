@@ -124,6 +124,9 @@ export function WiegekartenPage() {
   // Waage-Status
   const [waageGewicht, setWaageGewicht] = useState<number | null>(null);
   const [waageLoading, setWaageLoading] = useState(false);
+  
+  // Resizable Panel Hook
+  const { panelWidth, isDragging, containerRef, startDragging, leftPanelStyle, rightPanelStyle } = useResizablePanel();
 
   const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm<WiegekarteForm>({
     resolver: zodResolver(wiegekarteSchema),
