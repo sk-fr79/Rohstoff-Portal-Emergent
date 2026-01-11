@@ -1,9 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuthStore } from '@/store/authStore';
 import { toast } from 'sonner';
 import { 
-  Cog, Save, Loader2, Building2, Globe, Clock, Database, 
-  Shield, Mail, FileText, Palette
+  Cog, Save, Loader2, Building2, Globe, Database, 
+  Shield, Mail, Palette, RefreshCw
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,24 +14,72 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue 
 } from '@/components/ui/select';
 
+const API_URL = import.meta.env.VITE_API_URL || '/api';
+
+interface SystemSettings {
+  firmenname: string;
+  waehrung: string;
+  sprache: string;
+  zeitzone: string;
+  datumsformat: string;
+  email_host: string;
+  email_port: number;
+  email_user: string;
+  email_ssl: boolean;
+  backup_enabled: boolean;
+  backup_interval: string;
+  dark_mode_default: boolean;
+}
+
 export function SystemeinstellungenPage() {
-  const { user } = useAuthStore();
+  const { user, token } = useAuthStore();
   const [isLoading, setIsLoading] = useState(false);
-  const [settings, setSettings] = useState({
+  const [isFetching, setIsFetching] = useState(true);
+  const [settings, setSettings] = useState<SystemSettings>({
     firmenname: 'MV Rohstoff Portal GmbH',
     waehrung: 'EUR',
     sprache: 'de',
     zeitzone: 'Europe/Berlin',
     datumsformat: 'DD.MM.YYYY',
-    emailHost: 'smtp.example.com',
-    emailPort: '587',
-    backupEnabled: true,
-    backupInterval: 'daily',
-    darkMode: false,
+    email_host: '',
+    email_port: 587,
+    email_user: '',
+    email_ssl: true,
+    backup_enabled: true,
+    backup_interval: 'daily',
+    dark_mode_default: false,
   });
 
+  // Einstellungen vom Backend laden
+  const fetchSettings = async () => {
+    setIsFetching(true);
+    try {
+      const res = await fetch(`${API_URL}/admin/systemeinstellungen`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await res.json();
+      
+      if (data.success && data.data) {
+        setSettings(data.data);
+      }
+    } catch (error) {
+      console.error('Fehler beim Laden der Einstellungen:', error);
+      toast.error('Fehler beim Laden der Einstellungen');
+    } finally {
+      setIsFetching(false);
+    }
+  };
+
+  useEffect(() => {
+    if (user?.ist_admin) {
+      fetchSettings();
+    } else {
+      setIsFetching(false);
+    }
+  }, [user?.ist_admin]);
+
   // Nur Admins haben Zugriff
-  if (!user?.istAdmin) {
+  if (!user?.ist_admin) {
     return (
       <div className="p-6 flex items-center justify-center min-h-[400px]">
         <div className="text-center">
@@ -47,16 +95,50 @@ export function SystemeinstellungenPage() {
 
   const handleSave = async () => {
     setIsLoading(true);
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    setIsLoading(false);
-    toast.success('Systemeinstellungen gespeichert');
+    try {
+      const res = await fetch(`${API_URL}/admin/systemeinstellungen`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(settings)
+      });
+      
+      const data = await res.json();
+      
+      if (data.success) {
+        toast.success('Systemeinstellungen gespeichert');
+      } else {
+        toast.error(data.detail || 'Fehler beim Speichern');
+      }
+    } catch (error) {
+      console.error('Fehler:', error);
+      toast.error('Fehler beim Speichern der Einstellungen');
+    } finally {
+      setIsLoading(false);
+    }
   };
+
+  if (isFetching) {
+    return (
+      <div className="p-6 flex items-center justify-center min-h-[400px]">
+        <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 max-w-4xl mx-auto" data-testid="systemeinstellungen-page">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Systemeinstellungen</h1>
-        <p className="text-gray-500">Konfigurieren Sie die globalen Systemparameter</p>
+      <div className="mb-6 flex justify-between items-center">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Systemeinstellungen</h1>
+          <p className="text-gray-500">Konfigurieren Sie die globalen Systemparameter</p>
+        </div>
+        <Button variant="outline" size="sm" onClick={fetchSettings} disabled={isFetching}>
+          <RefreshCw className={`h-4 w-4 mr-2 ${isFetching ? 'animate-spin' : ''}`} />
+          Aktualisieren
+        </Button>
       </div>
 
       <div className="grid gap-6">
@@ -73,6 +155,7 @@ export function SystemeinstellungenPage() {
               <Label htmlFor="firmenname">Firmenname</Label>
               <Input
                 id="firmenname"
+                data-testid="settings-firmenname"
                 value={settings.firmenname}
                 onChange={(e) => setSettings({ ...settings, firmenname: e.target.value })}
               />
@@ -84,7 +167,7 @@ export function SystemeinstellungenPage() {
                   value={settings.waehrung} 
                   onValueChange={(v) => setSettings({ ...settings, waehrung: v })}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger data-testid="settings-waehrung">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -101,7 +184,7 @@ export function SystemeinstellungenPage() {
                   value={settings.sprache} 
                   onValueChange={(v) => setSettings({ ...settings, sprache: v })}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger data-testid="settings-sprache">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -131,13 +214,14 @@ export function SystemeinstellungenPage() {
                   value={settings.zeitzone} 
                   onValueChange={(v) => setSettings({ ...settings, zeitzone: v })}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger data-testid="settings-zeitzone">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="Europe/Berlin">Europe/Berlin (CET)</SelectItem>
                     <SelectItem value="Europe/London">Europe/London (GMT)</SelectItem>
                     <SelectItem value="Europe/Paris">Europe/Paris (CET)</SelectItem>
+                    <SelectItem value="Europe/Zurich">Europe/Zurich (CET)</SelectItem>
                     <SelectItem value="America/New_York">America/New_York (EST)</SelectItem>
                   </SelectContent>
                 </Select>
@@ -148,7 +232,7 @@ export function SystemeinstellungenPage() {
                   value={settings.datumsformat} 
                   onValueChange={(v) => setSettings({ ...settings, datumsformat: v })}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger data-testid="settings-datumsformat">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -176,20 +260,44 @@ export function SystemeinstellungenPage() {
           <CardContent className="grid gap-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="emailHost">SMTP Host</Label>
+                <Label htmlFor="email_host">SMTP Host</Label>
                 <Input
-                  id="emailHost"
-                  value={settings.emailHost}
-                  onChange={(e) => setSettings({ ...settings, emailHost: e.target.value })}
+                  id="email_host"
+                  data-testid="settings-email-host"
+                  value={settings.email_host}
+                  onChange={(e) => setSettings({ ...settings, email_host: e.target.value })}
+                  placeholder="smtp.example.com"
                 />
               </div>
               <div>
-                <Label htmlFor="emailPort">Port</Label>
+                <Label htmlFor="email_port">Port</Label>
                 <Input
-                  id="emailPort"
-                  value={settings.emailPort}
-                  onChange={(e) => setSettings({ ...settings, emailPort: e.target.value })}
+                  id="email_port"
+                  data-testid="settings-email-port"
+                  type="number"
+                  value={settings.email_port}
+                  onChange={(e) => setSettings({ ...settings, email_port: parseInt(e.target.value) || 587 })}
                 />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="email_user">Benutzername</Label>
+                <Input
+                  id="email_user"
+                  data-testid="settings-email-user"
+                  value={settings.email_user}
+                  onChange={(e) => setSettings({ ...settings, email_user: e.target.value })}
+                  placeholder="noreply@example.com"
+                />
+              </div>
+              <div className="flex items-center gap-4 pt-6">
+                <Switch 
+                  id="email_ssl"
+                  checked={settings.email_ssl} 
+                  onCheckedChange={(v) => setSettings({ ...settings, email_ssl: v })}
+                />
+                <Label htmlFor="email_ssl">SSL/TLS verwenden</Label>
               </div>
             </div>
           </CardContent>
@@ -210,18 +318,18 @@ export function SystemeinstellungenPage() {
                 <p className="text-sm text-gray-500">Regelmäßige Sicherung der Datenbank</p>
               </div>
               <Switch 
-                checked={settings.backupEnabled} 
-                onCheckedChange={(v) => setSettings({ ...settings, backupEnabled: v })}
+                checked={settings.backup_enabled} 
+                onCheckedChange={(v) => setSettings({ ...settings, backup_enabled: v })}
               />
             </div>
-            {settings.backupEnabled && (
+            {settings.backup_enabled && (
               <div>
                 <Label>Backup-Intervall</Label>
                 <Select 
-                  value={settings.backupInterval} 
-                  onValueChange={(v) => setSettings({ ...settings, backupInterval: v })}
+                  value={settings.backup_interval} 
+                  onValueChange={(v) => setSettings({ ...settings, backup_interval: v })}
                 >
-                  <SelectTrigger className="w-48">
+                  <SelectTrigger className="w-48" data-testid="settings-backup-interval">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -246,12 +354,12 @@ export function SystemeinstellungenPage() {
           <CardContent>
             <div className="flex items-center justify-between">
               <div>
-                <Label>Dark Mode</Label>
-                <p className="text-sm text-gray-500">Dunkles Farbschema verwenden</p>
+                <Label>Dark Mode als Standard</Label>
+                <p className="text-sm text-gray-500">Dunkles Farbschema für neue Benutzer</p>
               </div>
               <Switch 
-                checked={settings.darkMode} 
-                onCheckedChange={(v) => setSettings({ ...settings, darkMode: v })}
+                checked={settings.dark_mode_default} 
+                onCheckedChange={(v) => setSettings({ ...settings, dark_mode_default: v })}
               />
             </div>
           </CardContent>
@@ -259,7 +367,7 @@ export function SystemeinstellungenPage() {
 
         {/* Speichern */}
         <div className="flex justify-end">
-          <Button onClick={handleSave} disabled={isLoading}>
+          <Button onClick={handleSave} disabled={isLoading} data-testid="settings-save-btn">
             {isLoading ? (
               <Loader2 className="h-4 w-4 mr-2 animate-spin" />
             ) : (
