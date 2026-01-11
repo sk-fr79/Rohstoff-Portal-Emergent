@@ -83,7 +83,7 @@ async def get_kontrakte(
     status: Optional[str] = None,
     page: int = 1,
     limit: int = 20,
-    user = Depends(get_current_user)
+    user = Depends(require_permission("kontrakte", "read"))
 ):
     """Kontrakte suchen"""
     db = get_db()
@@ -114,7 +114,7 @@ async def get_kontrakte(
 
 
 @router.get("/kontrakte/{kontrakt_id}")
-async def get_kontrakt(kontrakt_id: str, user = Depends(get_current_user)):
+async def get_kontrakt(kontrakt_id: str, user = Depends(require_permission("kontrakte", "read"))):
     """Kontrakt nach ID"""
     db = get_db()
     kontrakt = await db.kontrakte.find_one({
@@ -133,7 +133,7 @@ async def get_kontrakt(kontrakt_id: str, user = Depends(get_current_user)):
 async def create_kontrakt(
     data: KontraktCreate,
     skip_validation: bool = False,
-    user = Depends(get_current_user)
+    user = Depends(require_permission("kontrakte", "write"))
 ):
     """Neuen Kontrakt erstellen"""
     db = get_db()
@@ -166,7 +166,7 @@ async def update_kontrakt(
     kontrakt_id: str,
     data: KontraktUpdate,
     skip_validation: bool = False,
-    user = Depends(get_current_user)
+    user = Depends(require_permission("kontrakte", "write"))
 ):
     """Kontrakt aktualisieren"""
     db = get_db()
@@ -197,7 +197,7 @@ async def update_kontrakt(
 
 
 @router.delete("/kontrakte/{kontrakt_id}")
-async def delete_kontrakt(kontrakt_id: str, user = Depends(get_current_user)):
+async def delete_kontrakt(kontrakt_id: str, user = Depends(require_permission("kontrakte", "full"))):
     """Kontrakt löschen (Hard Delete)"""
     db = get_db()
     
@@ -226,7 +226,7 @@ async def delete_kontrakt(kontrakt_id: str, user = Depends(get_current_user)):
 async def add_kontrakt_position(
     kontrakt_id: str,
     data: dict,
-    user = Depends(get_current_user)
+    user = Depends(require_permission("kontrakte", "write"))
 ):
     """Position zum Kontrakt hinzufügen"""
     db = get_db()
@@ -245,7 +245,7 @@ async def add_kontrakt_position(
 
 
 @router.post("/kontrakte/{kontrakt_id}/abschliessen")
-async def abschliessen_kontrakt(kontrakt_id: str, user = Depends(get_current_user)):
+async def abschliessen_kontrakt(kontrakt_id: str, user = Depends(require_permission("kontrakte", "write"))):
     """Kontrakt abschließen"""
     db = get_db()
     await db.kontrakte.update_one(
@@ -256,7 +256,7 @@ async def abschliessen_kontrakt(kontrakt_id: str, user = Depends(get_current_use
 
 
 @router.post("/kontrakte/validieren")
-async def validate_kontrakt(data: dict, user = Depends(get_current_user)):
+async def validate_kontrakt(data: dict, user = Depends(require_permission("kontrakte", "read"))):
     """Kontrakt validieren"""
     db = get_db()
     result = await KontraktValidator.validate(data, db)
