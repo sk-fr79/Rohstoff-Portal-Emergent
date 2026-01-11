@@ -452,6 +452,16 @@ export function ReferenceTablesTab() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* File Upload Wizard */}
+      <FileUploadWizard
+        open={uploadWizardOpen}
+        onClose={() => setUploadWizardOpen(false)}
+        onSuccess={() => {
+          setUploadWizardOpen(false);
+          fetchTables();
+        }}
+      />
     </div>
   );
 }
