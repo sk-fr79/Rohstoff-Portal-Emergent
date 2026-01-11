@@ -86,7 +86,19 @@ export function MainLayout() {
   const [expandedGroups, setExpandedGroups] = useState<string[]>(['Stammdaten', 'Bewegungsdaten', 'Waage']);
   const [savedExpandedGroups, setSavedExpandedGroups] = useState<string[]>([]);
   const { user, logout } = useAuthStore();
+  const { istAdmin, canRead } = usePermissionsStore();
   const navigate = useNavigate();
+
+  // Navigation basierend auf Berechtigungen filtern
+  const filteredNavGroups = navGroups.map(group => ({
+    ...group,
+    items: group.items.filter(item => {
+      // Admin hat immer Zugriff
+      if (istAdmin) return true;
+      // Prüfen ob Benutzer mindestens Lese-Berechtigung hat
+      return canRead(item.moduleKey);
+    })
+  })).filter(group => group.items.length > 0); // Gruppen ohne sichtbare Items ausblenden
 
   const handleLogout = () => {
     logout();
