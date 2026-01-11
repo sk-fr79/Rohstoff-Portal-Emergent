@@ -308,11 +308,19 @@ export function MainLayout() {
             <div className="flex flex-col items-center gap-2">
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <div className="h-10 w-10 rounded-full bg-emerald-500/20 flex items-center justify-center cursor-pointer">
-                    <span className="text-sm font-semibold text-emerald-400">
-                      {user?.kuerzel || user?.benutzername?.charAt(0).toUpperCase() || 'A'}
-                    </span>
-                  </div>
+                  {user?.profilbild ? (
+                    <img 
+                      src={user.profilbild} 
+                      alt="Profilbild" 
+                      className="h-10 w-10 rounded-full object-cover cursor-pointer"
+                    />
+                  ) : (
+                    <div className="h-10 w-10 rounded-full bg-emerald-500/20 flex items-center justify-center cursor-pointer">
+                      <span className="text-sm font-semibold text-emerald-400">
+                        {user?.kuerzel || user?.benutzername?.charAt(0).toUpperCase() || 'A'}
+                      </span>
+                    </div>
+                  )}
                 </TooltipTrigger>
                 <TooltipContent side="right" className="bg-slate-800 text-white border-slate-700">
                   <p>{user?.vorname || 'System Administrator'}</p>
