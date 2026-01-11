@@ -55,6 +55,7 @@ async def login(request: LoginRequest):
             "nachname": user.get("nachname"),
             "kuerzel": user.get("kuerzel"),
             "ist_admin": user.get("ist_admin", False),
+            "profilbild": user.get("profilbild"),
         }
     )
 
