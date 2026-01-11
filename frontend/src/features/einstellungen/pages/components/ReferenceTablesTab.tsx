@@ -62,6 +62,9 @@ export function ReferenceTablesTab() {
   // Delete Dialog
   const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; table?: ReferenceTable }>({ open: false });
   const [deleting, setDeleting] = useState(false);
+  
+  // Upload Wizard
+  const [uploadWizardOpen, setUploadWizardOpen] = useState(false);
 
   // Tabellen laden
   const fetchTables = async () => {
