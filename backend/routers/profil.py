@@ -3,7 +3,7 @@ Profil Router - Eigenes Benutzerprofil verwalten
 """
 
 from fastapi import APIRouter, HTTPException, Depends, UploadFile, File
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field, validator
 from typing import Optional
 from datetime import datetime
 import base64
