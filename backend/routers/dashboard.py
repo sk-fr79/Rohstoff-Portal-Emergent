@@ -5,13 +5,13 @@ Dashboard Router - Statistiken und Übersicht
 from fastapi import APIRouter, Depends
 
 from services.database import get_db
-from utils.auth import get_current_user
+from utils.auth import get_current_user, require_permission
 
 router = APIRouter(prefix="/api/dashboard", tags=["Dashboard"])
 
 
 @router.get("/stats")
-async def get_dashboard_stats(user = Depends(get_current_user)):
+async def get_dashboard_stats(user = Depends(require_permission("dashboard", "read"))):
     """Dashboard-Statistiken abrufen"""
     db = get_db()
     mandant_id = user["mandant_id"]
