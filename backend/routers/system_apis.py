@@ -1788,22 +1788,37 @@ async def get_field_binding_for_module(
     if not binding:
         return {"success": True, "data": None}
     
-    # Referenztabelle laden
-    ref_table = await db.system_reference_tables.find_one({"_id": binding["reference_table_id"]})
+    source_type = binding.get("source_type", "reference_table")
     
-    if not ref_table:
-        return {"success": True, "data": None}
+    # Je nach source_type unterschiedliche Infos laden
+    ref_table_name = None
+    api_name = None
+    
+    if binding.get("reference_table_id"):
+        ref_table = await db.system_reference_tables.find_one({"_id": binding["reference_table_id"]})
+        if ref_table:
+            ref_table_name = ref_table["table_name"]
+    
+    if binding.get("api_config_id"):
+        api_config = await db.system_api_configs.find_one({"_id": binding["api_config_id"]})
+        if api_config:
+            api_name = api_config["name"]
     
     return {
         "success": True,
         "data": {
             "binding_id": binding["_id"],
-            "reference_table_name": ref_table["table_name"],
+            "source_type": source_type,
+            "reference_table_name": ref_table_name,
+            "api_name": api_name,
             "display_field": binding.get("display_field", "bezeichnung"),
             "value_field": binding.get("value_field", "code"),
             "additional_display_fields": binding.get("additional_display_fields", []),
             "is_required": binding.get("is_required", False),
             "allow_search": binding.get("allow_search", True),
+            "min_search_chars": binding.get("min_search_chars", 3),
+            "cache_ttl_seconds": binding.get("cache_ttl_seconds", 300),
+            "fallback_to_reference": binding.get("fallback_to_reference", True),
         }
     }
 
