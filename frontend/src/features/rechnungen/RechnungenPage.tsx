@@ -780,8 +780,8 @@ export default function RechnungenPage() {
               )}
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }
