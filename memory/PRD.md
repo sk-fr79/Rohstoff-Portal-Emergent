@@ -679,6 +679,19 @@ Passwort: Admin123!
 -   Keine.
 
 ## CHANGELOG (2026-01-11)
+
+### CSV/Excel Upload für Referenztabellen (NEU) ✅
+1. **Backend-Endpunkte erstellt:**
+   - `POST /api/system/reference-upload/analyze` - Dateianalyse mit Spaltenerkennung
+   - `POST /api/system/reference-upload/import` - Import in Referenztabelle
+2. **Frontend FileUploadWizard implementiert:**
+   - 4-Schritte-Wizard mit modernem Drag & Drop UI
+   - Automatische Datentyperkennung (string, number, date, boolean)
+   - Flexibles Spalten-Mapping mit Primary Key Auswahl
+3. **Test-Ergebnis**: 13/13 Backend-Tests bestanden (100%)
+4. **Test-Report**: `/app/test_reports/iteration_18.json`
+5. **Neue Dependencies**: `openpyxl`, `xlrd` (für Excel-Support)
+
 ### P0 Berechtigungsdurchsetzung - VERIFIZIERT ✅
 1. **Backend-Tests**: 20/20 Tests bestanden (100%)
 2. **Frontend-Tests**: Routenschutz + Sidebar-Filterung funktionieren korrekt
