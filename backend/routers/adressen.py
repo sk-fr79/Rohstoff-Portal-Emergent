@@ -590,7 +590,7 @@ async def get_adressen(
 
 
 @router.get("/adressen/{adresse_id}")
-async def get_adresse(adresse_id: str, user = Depends(get_current_user)):
+async def get_adresse(adresse_id: str, user = Depends(require_permission("adressen", "read"))):
     """Adresse nach ID"""
     db = get_db()
     adresse = await db.adressen.find_one({
@@ -609,7 +609,7 @@ async def get_adresse(adresse_id: str, user = Depends(get_current_user)):
 async def create_adresse(
     data: AdresseCreate, 
     skip_validation: bool = False,
-    user = Depends(get_current_user)
+    user = Depends(require_permission("adressen", "write"))
 ):
     """Neue Adresse erstellen"""
     db = get_db()
