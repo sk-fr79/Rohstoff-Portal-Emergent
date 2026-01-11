@@ -165,12 +165,12 @@ class TestAdminUserFullAccess:
         assert response.status_code == 200, f"Expected 200 for rechnungen, got {response.status_code}: {response.text}"
         print("✓ Admin can read /api/rechnungen (200)")
     
-    def test_admin_can_read_kreditversicherung(self, admin_token):
-        """Admin user should be able to read /api/kreditversicherung (200)"""
+    def test_admin_can_read_kreditversicherungen(self, admin_token):
+        """Admin user should be able to read /api/kreditversicherungen (200)"""
         headers = {"Authorization": f"Bearer {admin_token}"}
-        response = requests.get(f"{BASE_URL}/api/kreditversicherung", headers=headers)
-        assert response.status_code == 200, f"Expected 200 for kreditversicherung, got {response.status_code}: {response.text}"
-        print("✓ Admin can read /api/kreditversicherung (200)")
+        response = requests.get(f"{BASE_URL}/api/kreditversicherungen", headers=headers)
+        assert response.status_code == 200, f"Expected 200 for kreditversicherungen, got {response.status_code}: {response.text}"
+        print("✓ Admin can read /api/kreditversicherungen (200)")
     
     def test_admin_can_read_artikel(self, admin_token):
         """Admin user should be able to read /api/artikel (200)"""
