@@ -269,7 +269,7 @@ async def list_kreditversicherungen(
     search: Optional[str] = None,
     skip: int = 0,
     limit: int = 100,
-    user = Depends(get_current_user)
+    user = Depends(require_permission("kreditversicherungen", "read"))
 ):
     """Liste aller Kreditversicherungen mit Auslastung"""
     db = get_db()
@@ -315,7 +315,7 @@ async def list_kreditversicherungen(
 
 
 @router.get("/kreditversicherungen/{kv_id}")
-async def get_kreditversicherung(kv_id: str, user = Depends(get_current_user)):
+async def get_kreditversicherung(kv_id: str, user = Depends(require_permission("kreditversicherungen", "read"))):
     """Einzelne Kreditversicherung mit Kundenpositionen und Auslastung abrufen"""
     db = get_db()
     
@@ -341,7 +341,7 @@ async def get_kreditversicherung(kv_id: str, user = Depends(get_current_user)):
 
 
 @router.post("/kreditversicherungen")
-async def create_kreditversicherung(data: KreditversicherungKopfCreate, user = Depends(get_current_user)):
+async def create_kreditversicherung(data: KreditversicherungKopfCreate, user = Depends(require_permission("kreditversicherungen", "write"))):
     """Neuen Hauptvertrag anlegen"""
     db = get_db()
     
@@ -371,7 +371,7 @@ async def create_kreditversicherung(data: KreditversicherungKopfCreate, user = D
 async def update_kreditversicherung(
     kv_id: str,
     data: KreditversicherungKopfUpdate,
-    user = Depends(get_current_user)
+    user = Depends(require_permission("kreditversicherungen", "write"))
 ):
     """Hauptvertrag aktualisieren"""
     db = get_db()
@@ -392,7 +392,7 @@ async def update_kreditversicherung(
 
 
 @router.delete("/kreditversicherungen/{kv_id}")
-async def delete_kreditversicherung(kv_id: str, user = Depends(get_current_user)):
+async def delete_kreditversicherung(kv_id: str, user = Depends(require_permission("kreditversicherungen", "full"))):
     """Kreditversicherung löschen (Hard Delete)"""
     db = get_db()
     
