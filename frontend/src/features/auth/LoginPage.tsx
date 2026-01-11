@@ -52,6 +52,7 @@ export function LoginPage() {
           nachname: user.nachname,
           kuerzel: user.kuerzel,
           istAdmin: user.ist_admin,
+          profilbild: user.profilbild || null,
         };
         
         setAuth(
