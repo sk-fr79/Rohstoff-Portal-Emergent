@@ -27,6 +27,8 @@ import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { useResizablePanel } from '@/hooks/useResizablePanel';
+import { ResizeHandle } from '@/components/ui/resize-handle';
 
 // ========================== SCHEMA ==========================
 const wiegekarteSchema = z.object({
