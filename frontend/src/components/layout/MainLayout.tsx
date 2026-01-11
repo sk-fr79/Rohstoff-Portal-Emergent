@@ -175,7 +175,7 @@ export function MainLayout() {
       {/* Navigation */}
       <nav className={cn("flex-1 overflow-y-auto py-4", collapsed ? "px-2" : "px-3")}>
         <TooltipProvider delayDuration={0}>
-          {navGroups.map((group, groupIndex) => (
+          {filteredNavGroups.map((group, groupIndex) => (
             <div key={groupIndex} className={collapsed ? "mb-1" : "mb-2"}>
               {group.label ? (
                 <>
