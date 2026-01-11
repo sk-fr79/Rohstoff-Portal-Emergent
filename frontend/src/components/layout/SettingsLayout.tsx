@@ -360,14 +360,25 @@ export function SettingsLayout() {
               data-testid="back-to-erp-btn"
             >
               <ArrowLeft className="h-4 w-4" />
-              <span className="hidden sm:inline">MV-Portal</span>
+              <span className="hidden sm:inline">Zurück ins ERP-Portal</span>
             </Button>
 
-            {/* User Badge */}
+            {/* User Badge with Profile Picture */}
             <div className="hidden sm:flex items-center gap-2 pl-3 border-l border-gray-200">
-              <span className="text-sm font-medium text-gray-700">
-                {user?.kuerzel || 'ADM'}
-              </span>
+              {user?.profilbild ? (
+                <img 
+                  src={user.profilbild} 
+                  alt="Profilbild" 
+                  className="h-8 w-8 rounded-full object-cover"
+                  data-testid="header-profile-image"
+                />
+              ) : (
+                <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center">
+                  <span className="text-sm font-medium text-blue-600" data-testid="header-profile-initials">
+                    {user?.kuerzel || 'ADM'}
+                  </span>
+                </div>
+              )}
             </div>
           </div>
         </header>
