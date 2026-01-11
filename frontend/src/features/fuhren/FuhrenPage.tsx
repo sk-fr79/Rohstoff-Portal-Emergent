@@ -417,37 +417,37 @@ export default function FuhrenPage() {
                     </Button>
                     <Button size="sm" onClick={handleSave} className="bg-emerald-600" disabled={saving}>
                       {saving ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Save className="h-4 w-4 mr-1" />}
-                    Speichern
+                      Speichern
+                    </Button>
+                  </>
+                ) : (
+                  <Button variant="outline" size="sm" onClick={() => setIsEditing(true)}>
+                    <Edit2 className="h-4 w-4 mr-1" />Bearbeiten
                   </Button>
-                </>
-              ) : (
-                <Button variant="outline" size="sm" onClick={() => setIsEditing(true)}>
-                  <Edit2 className="h-4 w-4 mr-1" />Bearbeiten
+                )}
+                <Button variant="ghost" size="icon" onClick={handleClose}>
+                  <X className="h-5 w-5" />
                 </Button>
-              )}
-              <Button variant="ghost" size="icon" onClick={handleClose}>
-                <X className="h-5 w-5" />
-              </Button>
+              </div>
             </div>
-          </div>
           
-          {/* Content with Sidebar */}
-          <div className="flex flex-1 overflow-hidden">
-            {/* Sidebar */}
-            <div className="w-48 border-r bg-slate-50 p-2 space-y-1">
-              {SIDEBAR_SECTIONS.map((section) => (
-                <button
-                  key={section.id}
-                  onClick={() => setActiveSection(section.id)}
-                  className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${
-                    activeSection === section.id 
-                      ? 'bg-emerald-100 text-emerald-800 font-medium' 
-                      : 'text-slate-600 hover:bg-slate-100'
-                  }`}
-                >
-                  <section.icon className="h-4 w-4" />
-                  {section.label}
-                  {activeSection === section.id && <ChevronRight className="h-4 w-4 ml-auto" />}
+            {/* Content with Sidebar */}
+            <div className="flex flex-1 overflow-hidden">
+              {/* Sidebar */}
+              <div className="w-48 border-r bg-slate-50 p-2 space-y-1">
+                {SIDEBAR_SECTIONS.map((section) => (
+                  <button
+                    key={section.id}
+                    onClick={() => setActiveSection(section.id)}
+                    className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${
+                      activeSection === section.id 
+                        ? 'bg-emerald-100 text-emerald-800 font-medium' 
+                        : 'text-slate-600 hover:bg-slate-100'
+                    }`}
+                  >
+                    <section.icon className="h-4 w-4" />
+                    {section.label}
+                    {activeSection === section.id && <ChevronRight className="h-4 w-4 ml-auto" />}
                 </button>
               ))}
             </div>
