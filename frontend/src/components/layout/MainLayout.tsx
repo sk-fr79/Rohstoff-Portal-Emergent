@@ -25,6 +25,7 @@ import {
   Shield,
 } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
+import { usePermissionsStore, ModuleKey } from '@/store/permissionsStore';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
