@@ -396,17 +396,13 @@ export function KontraktePage() {
   ], [deleteMutation]);
 
   return (
-    <div className="flex h-full">
-      {/* Hauptbereich - Liste */}
-      <div className={cn(
-        "flex-1 p-6 overflow-auto transition-all duration-300",
-        selectedKontrakt ? "mr-[600px]" : ""
-      )}>
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6">
+    <div className="h-full flex flex-col">
+      {/* Header */}
+      <div className="bg-white border-b border-gray-200 px-6 py-4">
+        <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Kontrakte</h1>
-            <p className="text-sm text-gray-500 mt-1">Einkaufs- und Verkaufskontrakte verwalten</p>
+            <h1 className="text-xl font-semibold text-gray-900">Kontrakte</h1>
+            <p className="text-sm text-gray-500 mt-0.5">Einkaufs- und Verkaufskontrakte verwalten</p>
           </div>
           <div className="flex items-center gap-3">
             <Select value={filterTyp || "ALL"} onValueChange={(v) => setFilterTyp(v === "ALL" ? "" : v)}>
@@ -425,29 +421,42 @@ export function KontraktePage() {
             </Button>
           </div>
         </div>
-
-        {/* Tabelle */}
-        <div className="bg-white rounded-xl shadow-sm border">
-          <DataTable
-            columns={columns}
-            data={filteredData}
-            searchKey="name1"
-            searchPlaceholder="Vertragspartner suchen..."
-            onRowDoubleClick={openDetail}
-          />
-        </div>
       </div>
 
-      {/* Detail-Panel (Slide-In) */}
-      <AnimatePresence>
+      {/* Content Area */}
+      <div ref={containerRef} className="flex-1 flex overflow-hidden">
+        {/* Main Table */}
+        <div 
+          className="p-6 overflow-auto transition-none"
+          style={selectedKontrakt ? leftPanelStyle : { width: '100%' }}
+        >
+          <div className="bg-white rounded-xl shadow-sm border">
+            <DataTable
+              columns={columns}
+              data={filteredData}
+              searchKey="name1"
+              searchPlaceholder="Vertragspartner suchen..."
+              onRowDoubleClick={openDetail}
+            />
+          </div>
+        </div>
+
+        {/* Resizable Handle */}
         {selectedKontrakt && (
-          <motion.div
-            initial={{ x: 600 }}
-            animate={{ x: 0 }}
-            exit={{ x: 600 }}
-            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-            className="fixed right-0 top-0 h-full w-[600px] bg-white border-l shadow-xl z-40 flex flex-col"
-          >
+          <ResizeHandle isDragging={isDragging} onMouseDown={startDragging} />
+        )}
+
+        {/* Detail-Panel */}
+        <AnimatePresence>
+          {selectedKontrakt && (
+            <motion.div
+              initial={{ x: '100%', opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              exit={{ x: '100%', opacity: 0 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              className="border-l border-gray-200 bg-white flex flex-col overflow-hidden"
+              style={rightPanelStyle}
+            >
             {/* Header */}
             <div className="flex items-center justify-between p-4 border-b bg-gray-50">
               <div className="flex items-center gap-3">
