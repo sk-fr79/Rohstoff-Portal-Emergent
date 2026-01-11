@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuthStore } from '@/store/authStore';
-import { Check, ChevronsUpDown, Loader2, Search, X, Link2 } from 'lucide-react';
+import { Check, ChevronsUpDown, Loader2, Search, X, Link2, Globe, Database, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,7 +8,6 @@ import {
   Command,
   CommandEmpty,
   CommandGroup,
-  CommandInput,
   CommandItem,
   CommandList,
 } from '@/components/ui/command';
@@ -41,9 +40,13 @@ interface ReferenceSelectProps {
 }
 
 interface BindingInfo {
+  source_type: 'reference_table' | 'api_query';
   display_field: string;
   value_field: string;
   is_required: boolean;
+  min_search_chars: number;
+  api_name?: string;
+  reference_table_name?: string;
 }
 
 export function ReferenceSelect({
@@ -63,6 +66,9 @@ export function ReferenceSelect({
   const [binding, setBinding] = useState<BindingInfo | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [hasBinding, setHasBinding] = useState<boolean | null>(null);
+  const [message, setMessage] = useState<string | null>(null);
+  const [isLive, setIsLive] = useState(false);
+  const [isFallback, setIsFallback] = useState(false);
 
   // Prüfe ob Verknüpfung existiert beim Mount
   useEffect(() => {
@@ -77,9 +83,13 @@ export function ReferenceSelect({
         if (data.success && data.data) {
           setHasBinding(true);
           setBinding({
+            source_type: data.data.source_type || 'reference_table',
             display_field: data.data.display_field,
             value_field: data.data.value_field,
             is_required: data.data.is_required,
+            min_search_chars: data.data.min_search_chars || 3,
+            api_name: data.data.api_name,
+            reference_table_name: data.data.reference_table_name,
           });
         } else {
           setHasBinding(false);
@@ -95,9 +105,20 @@ export function ReferenceSelect({
 
   // Lade Optionen
   const loadOptions = useCallback(async (search: string = '') => {
-    if (!hasBinding) return;
+    if (!hasBinding || !binding) return;
+    
+    // Bei API-Query: Mindest-Suchzeichen prüfen
+    if (binding.source_type === 'api_query') {
+      if (search.length < binding.min_search_chars) {
+        setOptions([]);
+        setMessage(`Mindestens ${binding.min_search_chars} Zeichen eingeben`);
+        return;
+      }
+    }
     
     setIsLoading(true);
+    setMessage(null);
+    
     try {
       const params = new URLSearchParams();
       if (search) params.append('search', search);
@@ -111,31 +132,49 @@ export function ReferenceSelect({
       
       if (data.success) {
         setOptions(data.data.options || []);
-        if (data.data.binding) {
-          setBinding(data.data.binding);
+        setIsLive(data.data.live === true);
+        setIsFallback(data.data.binding?.fallback_active === true);
+        
+        if (data.data.message) {
+          setMessage(data.data.message);
+        }
+        if (data.data.error) {
+          setMessage(data.data.error);
         }
       }
     } catch (error) {
       console.error('Error loading options:', error);
+      setMessage('Fehler beim Laden der Optionen');
     } finally {
       setIsLoading(false);
     }
-  }, [module, fieldName, token, hasBinding]);
+  }, [module, fieldName, token, hasBinding, binding]);
 
-  // Lade Optionen wenn Popover öffnet
+  // Lade Optionen wenn Popover öffnet (nur für Referenztabellen)
   useEffect(() => {
-    if (open && hasBinding) {
-      loadOptions(searchValue);
+    if (open && hasBinding && binding) {
+      // Bei Referenztabelle: Sofort laden
+      if (binding.source_type === 'reference_table') {
+        loadOptions(searchValue);
+      } else {
+        // Bei API-Query: Nur laden wenn genug Zeichen
+        if (searchValue.length >= binding.min_search_chars) {
+          loadOptions(searchValue);
+        } else {
+          setMessage(`Mindestens ${binding.min_search_chars} Zeichen eingeben`);
+          setOptions([]);
+        }
+      }
     }
-  }, [open, hasBinding]);
+  }, [open, hasBinding, binding?.source_type]);
 
   // Debounced Search
   useEffect(() => {
-    if (!open || !hasBinding) return;
+    if (!open || !hasBinding || !binding) return;
     
     const timer = setTimeout(() => {
       loadOptions(searchValue);
-    }, 300);
+    }, binding.source_type === 'api_query' ? 400 : 300);
     
     return () => clearTimeout(timer);
   }, [searchValue]);
@@ -169,6 +208,10 @@ export function ReferenceSelect({
     );
   }
 
+  // Icon basierend auf source_type
+  const SourceIcon = binding?.source_type === 'api_query' ? Globe : Database;
+  const sourceColor = binding?.source_type === 'api_query' ? 'text-blue-500' : 'text-emerald-500';
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -185,7 +228,7 @@ export function ReferenceSelect({
         >
           <div className="flex items-center gap-2 truncate">
             {showBadge && (
-              <Link2 className="h-3.5 w-3.5 text-emerald-500 flex-shrink-0" />
+              <SourceIcon className={cn("h-3.5 w-3.5 flex-shrink-0", sourceColor)} />
             )}
             <span className="truncate">
               {selectedOption ? selectedOption.label : (value || placeholder)}
@@ -199,7 +242,9 @@ export function ReferenceSelect({
           <div className="flex items-center border-b px-3">
             <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
             <input
-              placeholder="Suchen..."
+              placeholder={binding?.source_type === 'api_query' 
+                ? `Mind. ${binding.min_search_chars} Zeichen...` 
+                : "Suchen..."}
               value={searchValue}
               onChange={(e) => setSearchValue(e.target.value)}
               className="flex h-10 w-full bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground"
@@ -215,10 +260,39 @@ export function ReferenceSelect({
               </Button>
             )}
           </div>
+          
+          {/* Status-Badge */}
+          {binding?.source_type === 'api_query' && (
+            <div className="px-3 py-1.5 border-b bg-gray-50 flex items-center justify-between">
+              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                <Globe className="h-3 w-3" />
+                <span>Live API: {binding.api_name || 'Unbekannt'}</span>
+              </div>
+              {isLive && (
+                <Badge variant="outline" className="text-[10px] h-5 bg-blue-50 text-blue-600 border-blue-200">
+                  Live
+                </Badge>
+              )}
+              {isFallback && (
+                <Badge variant="outline" className="text-[10px] h-5 bg-amber-50 text-amber-600 border-amber-200">
+                  Fallback
+                </Badge>
+              )}
+            </div>
+          )}
+          
           <CommandList>
             {isLoading ? (
-              <div className="flex items-center justify-center py-6">
+              <div className="flex items-center justify-center py-6 gap-2">
                 <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                <span className="text-sm text-muted-foreground">
+                  {binding?.source_type === 'api_query' ? 'API wird abgefragt...' : 'Lade Daten...'}
+                </span>
+              </div>
+            ) : message && options.length === 0 ? (
+              <div className="py-6 text-center">
+                <AlertCircle className="h-5 w-5 mx-auto mb-2 text-muted-foreground" />
+                <p className="text-sm text-muted-foreground">{message}</p>
               </div>
             ) : options.length === 0 ? (
               <CommandEmpty>
@@ -302,9 +376,11 @@ export function useReferenceBinding(module: string, fieldName: string) {
         if (data.success && data.data) {
           setHasBinding(true);
           setBindingInfo({
+            source_type: data.data.source_type || 'reference_table',
             display_field: data.data.display_field,
             value_field: data.data.value_field,
             is_required: data.data.is_required,
+            min_search_chars: data.data.min_search_chars || 3,
           });
         } else {
           setHasBinding(false);
