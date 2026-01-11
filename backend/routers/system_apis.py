@@ -1818,8 +1818,11 @@ async def get_reference_select_options(
 ):
     """
     Holt die Optionen für ein ReferenceSelect-Dropdown.
-    Kombiniert field-binding lookup mit reference-data fetch.
+    Unterstützt sowohl Referenztabellen (lokale Daten) als auch Live API-Abfragen.
     """
+    import httpx
+    import time
+    
     db = get_db()
     
     # Verknüpfung finden
@@ -1832,64 +1835,246 @@ async def get_reference_select_options(
     if not binding:
         return {"success": True, "data": {"options": [], "binding": None}}
     
-    # Referenztabelle finden
-    ref_table = await db.system_reference_tables.find_one({"_id": binding["reference_table_id"]})
-    
-    if not ref_table:
-        return {"success": True, "data": {"options": [], "binding": None}}
-    
-    # Daten laden
-    query = {"reference_table_id": ref_table["_id"]}
-    
+    source_type = binding.get("source_type", "reference_table")
     display_field = binding.get("display_field", "bezeichnung")
     value_field = binding.get("value_field", "code")
     additional_fields = binding.get("additional_display_fields", [])
-    
-    if search and binding.get("allow_search", True):
-        search_fields = [display_field, value_field] + additional_fields
-        query["$or"] = [
-            {f"data.{field}": {"$regex": search, "$options": "i"}}
-            for field in search_fields
-        ]
-    
-    cursor = db.system_reference_data.find(query).limit(limit).sort(f"data.{value_field}", 1)
+    min_search_chars = binding.get("min_search_chars", 3)
+    cache_ttl = binding.get("cache_ttl_seconds", 300)
+    fallback_to_reference = binding.get("fallback_to_reference", True)
     
     def strip_html(text: str) -> str:
         """Entfernt HTML-Tags aus Text"""
         import re
         clean = re.sub(r'<[^>]+>', ' ', str(text))
-        return ' '.join(clean.split())  # Normalisiert Whitespace
+        return ' '.join(clean.split())
     
-    options = []
-    async for doc in cursor:
-        data = doc.get("data", {})
-        
-        # Label zusammenbauen (mit HTML-Stripping)
-        label_parts = []
-        if value_field in data and data[value_field]:
-            label_parts.append(strip_html(data[value_field]))
-        if display_field in data and data[display_field]:
-            label_parts.append(strip_html(data[display_field]))
-        
-        option = {
-            "value": str(data.get(value_field, doc.get("external_id", ""))),
-            "label": " | ".join(label_parts) if label_parts else strip_html(data.get(value_field, "")),
-            "display": strip_html(data.get(display_field, "")),
-            "data": data,
-        }
-        options.append(option)
+    binding_info = {
+        "source_type": source_type,
+        "display_field": display_field,
+        "value_field": value_field,
+        "is_required": binding.get("is_required", False),
+        "min_search_chars": min_search_chars,
+    }
     
-    return {
-        "success": True,
-        "data": {
-            "options": options,
-            "binding": {
-                "display_field": display_field,
-                "value_field": value_field,
-                "is_required": binding.get("is_required", False),
+    # ============================================================
+    # API-ABFRAGE (Live)
+    # ============================================================
+    if source_type == "api_query":
+        api_config_id = binding.get("api_config_id")
+        
+        # Mindest-Suchzeichen prüfen
+        if not search or len(search) < min_search_chars:
+            return {
+                "success": True,
+                "data": {
+                    "options": [],
+                    "binding": binding_info,
+                    "message": f"Mindestens {min_search_chars} Zeichen eingeben"
+                }
+            }
+        
+        # API-Konfiguration laden
+        api_config = await db.system_api_configs.find_one({"_id": api_config_id})
+        if not api_config:
+            # Fallback auf Referenztabelle wenn aktiviert
+            if fallback_to_reference and binding.get("reference_table_id"):
+                source_type = "reference_table"  # Fallback aktivieren
+            else:
+                return {"success": True, "data": {"options": [], "binding": binding_info, "error": "API nicht gefunden"}}
+        
+        if source_type == "api_query":
+            # Cache prüfen
+            cache_key = f"api_select:{api_config_id}:{search}"
+            cached = await db.system_api_cache.find_one({
+                "cache_key": cache_key,
+                "expires_at": {"$gt": datetime.utcnow().isoformat()}
+            })
+            
+            if cached:
+                return {
+                    "success": True,
+                    "data": {
+                        "options": cached["options"],
+                        "binding": binding_info,
+                        "cached": True
+                    }
+                }
+            
+            # Live API-Abfrage durchführen
+            try:
+                # URL mit Such-Parameter aufbauen
+                base_url = api_config.get("base_url", "").rstrip("/")
+                endpoint = api_config.get("endpoint", "").lstrip("/")
+                
+                # Query-Parameter mit Suchbegriff
+                params = {}
+                for p in api_config.get("query_params", []):
+                    key = p.get("key", "")
+                    value = p.get("value", "")
+                    # Platzhalter ersetzen
+                    if "{search}" in value or "{query}" in value:
+                        value = value.replace("{search}", search).replace("{query}", search)
+                    elif key.lower() in ["q", "query", "search", "s", "term"]:
+                        value = search
+                    params[key] = value
+                
+                # Falls kein Such-Parameter gefunden, füge Standard hinzu
+                if not any(k.lower() in ["q", "query", "search", "s", "term"] for k in params.keys()):
+                    # Versuche Standard-Parameter zu finden
+                    if "query" not in params:
+                        params["query"] = search
+                
+                url = f"{base_url}/{endpoint}" if endpoint else base_url
+                
+                # Headers aufbauen
+                headers = {"Accept": "application/json"}
+                auth_type = api_config.get("auth_type", "none")
+                
+                if auth_type == "api_key":
+                    api_key = decrypt_credential(api_config.get("api_key", ""))
+                    key_location = api_config.get("api_key_location", "header")
+                    key_name = api_config.get("api_key_name", "X-API-Key")
+                    if key_location == "header":
+                        headers[key_name] = api_key
+                    else:
+                        params[key_name] = api_key
+                elif auth_type == "bearer":
+                    token = decrypt_credential(api_config.get("bearer_token", ""))
+                    headers["Authorization"] = f"Bearer {token}"
+                
+                # Anfrage senden
+                async with httpx.AsyncClient(timeout=10.0, follow_redirects=True) as client:
+                    response = await client.get(url, params=params, headers=headers)
+                    response.raise_for_status()
+                    api_data = response.json()
+                
+                # Response-Mapping anwenden
+                response_mapping = api_config.get("response_mapping", {})
+                data_path = response_mapping.get("data_path", "$")
+                
+                from jsonpath_ng import parse as jsonpath_parse
+                jsonpath_expr = jsonpath_parse(data_path)
+                matches = jsonpath_expr.find(api_data)
+                items = matches[0].value if matches else []
+                
+                if not isinstance(items, list):
+                    items = [items] if items else []
+                
+                # Feld-Mapping
+                field_mapping = response_mapping.get("field_mapping", [])
+                
+                options = []
+                for item in items[:limit]:
+                    mapped_data = {}
+                    for fm in field_mapping:
+                        source = fm.get("source_path", "")
+                        target = fm.get("target_field", "")
+                        if source.startswith("$."):
+                            source = source[2:]
+                        value = item.get(source, "")
+                        mapped_data[target] = value
+                    
+                    # Label zusammenbauen
+                    label_parts = []
+                    val = mapped_data.get(value_field, "")
+                    disp = mapped_data.get(display_field, "")
+                    
+                    if val:
+                        label_parts.append(strip_html(str(val)))
+                    if disp:
+                        label_parts.append(strip_html(str(disp)))
+                    
+                    options.append({
+                        "value": strip_html(str(val)) if val else "",
+                        "label": " | ".join(label_parts) if label_parts else "",
+                        "display": strip_html(str(disp)) if disp else "",
+                        "data": mapped_data,
+                    })
+                
+                # Cache speichern
+                await db.system_api_cache.update_one(
+                    {"cache_key": cache_key},
+                    {"$set": {
+                        "cache_key": cache_key,
+                        "options": options,
+                        "expires_at": (datetime.utcnow() + timedelta(seconds=cache_ttl)).isoformat(),
+                        "created_at": datetime.utcnow().isoformat()
+                    }},
+                    upsert=True
+                )
+                
+                return {
+                    "success": True,
+                    "data": {
+                        "options": options,
+                        "binding": binding_info,
+                        "live": True
+                    }
+                }
+                
+            except Exception as e:
+                # Bei Fehler: Fallback auf Referenztabelle
+                if fallback_to_reference and binding.get("reference_table_id"):
+                    source_type = "reference_table"
+                    binding_info["fallback_active"] = True
+                    binding_info["fallback_reason"] = str(e)
+                else:
+                    return {
+                        "success": True,
+                        "data": {
+                            "options": [],
+                            "binding": binding_info,
+                            "error": f"API-Fehler: {str(e)}"
+                        }
+                    }
+    
+    # ============================================================
+    # REFERENZTABELLE (Lokal)
+    # ============================================================
+    if source_type == "reference_table":
+        ref_table = await db.system_reference_tables.find_one({"_id": binding.get("reference_table_id")})
+        
+        if not ref_table:
+            return {"success": True, "data": {"options": [], "binding": binding_info}}
+        
+        # Daten laden
+        query = {"reference_table_id": ref_table["_id"]}
+        
+        if search and binding.get("allow_search", True):
+            search_fields = [display_field, value_field] + additional_fields
+            query["$or"] = [
+                {f"data.{field}": {"$regex": search, "$options": "i"}}
+                for field in search_fields
+            ]
+        
+        cursor = db.system_reference_data.find(query).limit(limit).sort(f"data.{value_field}", 1)
+        
+        options = []
+        async for doc in cursor:
+            data = doc.get("data", {})
+            
+            label_parts = []
+            if value_field in data and data[value_field]:
+                label_parts.append(strip_html(data[value_field]))
+            if display_field in data and data[display_field]:
+                label_parts.append(strip_html(data[display_field]))
+            
+            option = {
+                "value": str(data.get(value_field, doc.get("external_id", ""))),
+                "label": " | ".join(label_parts) if label_parts else strip_html(data.get(value_field, "")),
+                "display": strip_html(data.get(display_field, "")),
+                "data": data,
+            }
+            options.append(option)
+        
+        return {
+            "success": True,
+            "data": {
+                "options": options,
+                "binding": binding_info
             }
         }
-    }
 
 
 @router.post("/validate-reference-value")
