@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { rechnungenApi, adressenApi } from '@/services/api/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,10 +8,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
 import { 
   Search, Plus, X, FileText, Building2, Calendar, 
   CreditCard, ChevronRight, Save, Edit2, 
-  ArrowUpRight, ArrowDownLeft, Package, Loader2
+  ArrowUpRight, ArrowDownLeft, Package, Loader2, GripVertical
 } from 'lucide-react';
 
 interface Rechnung {
