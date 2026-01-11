@@ -131,6 +131,9 @@ export function KontraktePage() {
   const [isNewRecord, setIsNewRecord] = useState(false);
   const [activeSection, setActiveSection] = useState('kopf');
   const [filterTyp, setFilterTyp] = useState<string>('');
+  
+  // Resizable Panel Hook
+  const { panelWidth, isDragging, containerRef, startDragging, leftPanelStyle, rightPanelStyle } = useResizablePanel();
 
   const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm<KontraktForm>({
     resolver: zodResolver(kontraktSchema),
