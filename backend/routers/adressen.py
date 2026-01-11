@@ -673,7 +673,7 @@ async def update_adresse(
     adresse_id: str, 
     data: AdresseUpdate, 
     skip_validation: bool = False,
-    user = Depends(get_current_user)
+    user = Depends(require_permission("adressen", "write"))
 ):
     """Adresse aktualisieren"""
     db = get_db()
@@ -739,7 +739,7 @@ async def update_adresse(
 
 
 @router.delete("/adressen/{adresse_id}")
-async def delete_adresse(adresse_id: str, user = Depends(get_current_user)):
+async def delete_adresse(adresse_id: str, user = Depends(require_permission("adressen", "full"))):
     """Adresse löschen (Hard-Delete) - löscht auch verknüpfte Daten"""
     db = get_db()
     
