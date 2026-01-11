@@ -149,11 +149,7 @@ export default function App() {
           <Route path="berechtigungen" element={<BerechtigungenPage />} />
           <Route path="mandanten" element={<SystemeinstellungenPage />} />
           <Route path="sicherheit" element={<SystemeinstellungenPage />} />
-          <Route path="datenbank" element={
-            <ProtectedModule modul="admin">
-              <SystemeinstellungenPage />
-            </ProtectedModule>
-          } />
+          <Route path="datenbank" element={<SystemeinstellungenPage />} />
         </Route>
         
         {/* Fallback */}
