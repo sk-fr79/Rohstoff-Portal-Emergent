@@ -33,7 +33,7 @@ def verify_password(password: str, stored_hash: str) -> bool:
         salt, hash_value = stored_hash.split('$')
         hash_obj = hashlib.sha256((password + salt).encode())
         return hash_obj.hexdigest() == hash_value
-    except:
+    except (ValueError, AttributeError):
         return False
 
 
