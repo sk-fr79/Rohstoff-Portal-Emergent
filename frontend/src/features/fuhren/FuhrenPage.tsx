@@ -276,108 +276,147 @@ export default function FuhrenPage() {
   return (
     <div className="h-full flex flex-col" data-testid="fuhren-page">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-800">Fuhren</h1>
-          <p className="text-slate-500">Transportverwaltung</p>
-        </div>
-        <div className="flex items-center gap-3">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-            <Input
-              placeholder="Suchen..."
-              className="pl-10 w-[250px]"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              data-testid="fuhren-search"
-            />
+      <div className="bg-white border-b border-gray-200 px-6 py-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-xl font-semibold text-gray-900">Fuhren</h1>
+            <p className="text-sm text-gray-500 mt-0.5">Transportverwaltung</p>
           </div>
-          <Select value={filterStatus || "ALL"} onValueChange={(v) => setFilterStatus(v === "ALL" ? "" : v)}>
-            <SelectTrigger className="w-[150px]">
-              <SelectValue placeholder="Alle Status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="ALL">Alle Status</SelectItem>
-              {Object.entries(STATUS_CONFIG).map(([key, { label }]) => (
-                <SelectItem key={key} value={key}>{label}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Button onClick={handleNewFuhre} className="bg-emerald-600 hover:bg-emerald-700" data-testid="new-fuhre-btn">
-            <Plus className="h-4 w-4 mr-2" />
-            Neue Fuhre
-          </Button>
+          <div className="flex items-center gap-3">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+              <Input
+                placeholder="Suchen..."
+                className="pl-10 w-[250px]"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                data-testid="fuhren-search"
+              />
+            </div>
+            <Select value={filterStatus || "ALL"} onValueChange={(v) => setFilterStatus(v === "ALL" ? "" : v)}>
+              <SelectTrigger className="w-[150px]">
+                <SelectValue placeholder="Alle Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ALL">Alle Status</SelectItem>
+                {Object.entries(STATUS_CONFIG).map(([key, { label }]) => (
+                  <SelectItem key={key} value={key}>{label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Button onClick={handleNewFuhre} className="bg-emerald-600 hover:bg-emerald-700" data-testid="new-fuhre-btn">
+              <Plus className="h-4 w-4 mr-2" />
+              Neue Fuhre
+            </Button>
+          </div>
         </div>
       </div>
 
-      {/* Table */}
-      <div className="bg-white rounded-xl shadow-sm border flex-1 overflow-hidden">
-        <Table>
-          <TableHeader>
-            <TableRow className="bg-slate-50">
-              <TableHead className="w-[100px]">Nr.</TableHead>
-              <TableHead>Abholdatum</TableHead>
-              <TableHead>Lieferant</TableHead>
-              <TableHead>Abnehmer</TableHead>
-              <TableHead>Artikel</TableHead>
-              <TableHead className="text-right">Menge</TableHead>
-              <TableHead>Kennzeichen</TableHead>
-              <TableHead>Status</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {loading ? (
-              <TableRow><TableCell colSpan={8} className="text-center py-8">Laden...</TableCell></TableRow>
-            ) : fuhren.length === 0 ? (
-              <TableRow><TableCell colSpan={8} className="text-center py-8 text-slate-500">Keine Fuhren gefunden</TableCell></TableRow>
-            ) : (
-              fuhren.map((fuhre) => (
-                <TableRow 
-                  key={fuhre.id} 
-                  className="cursor-pointer hover:bg-slate-50"
-                  onDoubleClick={() => handleRowDoubleClick(fuhre)}
-                  data-testid={`fuhre-row-${fuhre.id}`}
-                >
-                  <TableCell className="font-medium">{fuhre.fuhren_nr}</TableCell>
-                  <TableCell>{formatDate(fuhre.datum_abholung)}</TableCell>
-                  <TableCell>{fuhre.name_lieferant || '-'}</TableCell>
-                  <TableCell>{fuhre.name_abnehmer || '-'}</TableCell>
-                  <TableCell>{fuhre.artbez1_ek || '-'}</TableCell>
-                  <TableCell className="text-right">{formatMenge(fuhre.menge_abladen || fuhre.menge_aufladen, fuhre.einheit)}</TableCell>
-                  <TableCell>{fuhre.transportkennzeichen || '-'}</TableCell>
-                  <TableCell>
-                    <Badge className={STATUS_CONFIG[fuhre.status]?.color || 'bg-slate-100'}>
-                      {STATUS_CONFIG[fuhre.status]?.label || fuhre.status}
-                    </Badge>
-                  </TableCell>
+      {/* Content Area */}
+      <div ref={containerRef} className="flex-1 flex overflow-hidden">
+        {/* Table */}
+        <div 
+          className="p-6 overflow-auto transition-none"
+          style={{ width: selectedFuhre ? `${panelWidth}%` : '100%' }}
+        >
+          <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-slate-50">
+                  <TableHead className="w-[100px]">Nr.</TableHead>
+                  <TableHead>Abholdatum</TableHead>
+                  <TableHead>Lieferant</TableHead>
+                  <TableHead>Abnehmer</TableHead>
+                  <TableHead>Artikel</TableHead>
+                  <TableHead className="text-right">Menge</TableHead>
+                  <TableHead>Kennzeichen</TableHead>
+                  <TableHead>Status</TableHead>
                 </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </div>
+              </TableHeader>
+              <TableBody>
+                {loading ? (
+                  <TableRow><TableCell colSpan={8} className="text-center py-8">Laden...</TableCell></TableRow>
+                ) : fuhren.length === 0 ? (
+                  <TableRow><TableCell colSpan={8} className="text-center py-8 text-slate-500">Keine Fuhren gefunden</TableCell></TableRow>
+                ) : (
+                  fuhren.map((fuhre) => (
+                    <TableRow 
+                      key={fuhre.id} 
+                      className="cursor-pointer hover:bg-slate-50"
+                      onDoubleClick={() => handleRowDoubleClick(fuhre)}
+                      data-testid={`fuhre-row-${fuhre.id}`}
+                    >
+                      <TableCell className="font-medium">{fuhre.fuhren_nr}</TableCell>
+                      <TableCell>{formatDate(fuhre.datum_abholung)}</TableCell>
+                      <TableCell>{fuhre.name_lieferant || '-'}</TableCell>
+                      <TableCell>{fuhre.name_abnehmer || '-'}</TableCell>
+                      <TableCell>{fuhre.artbez1_ek || '-'}</TableCell>
+                      <TableCell className="text-right">{formatMenge(fuhre.menge_abladen || fuhre.menge_aufladen, fuhre.einheit)}</TableCell>
+                      <TableCell>{fuhre.transportkennzeichen || '-'}</TableCell>
+                      <TableCell>
+                        <Badge className={STATUS_CONFIG[fuhre.status]?.color || 'bg-slate-100'}>
+                          {STATUS_CONFIG[fuhre.status]?.label || fuhre.status}
+                        </Badge>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </div>
 
-      {/* Detail Slide-In Panel */}
-      {selectedFuhre && (
-        <div className="fixed inset-y-0 right-0 w-[600px] bg-white shadow-2xl border-l z-50 flex flex-col" data-testid="fuhre-detail-panel">
-          {/* Header */}
-          <div className="flex items-center justify-between p-4 border-b bg-slate-50">
-            <div>
-              <h2 className="text-lg font-semibold">
-                {isNewRecord ? 'Neue Fuhre' : selectedFuhre.fuhren_nr}
-              </h2>
-              <Badge className={STATUS_CONFIG[selectedFuhre.status]?.color}>
-                {STATUS_CONFIG[selectedFuhre.status]?.label}
-              </Badge>
+        {/* Resizable Handle */}
+        {selectedFuhre && (
+          <div
+            className={cn(
+              "relative flex w-1.5 items-center justify-center bg-gray-100 transition-colors cursor-col-resize select-none",
+              "hover:bg-emerald-200 active:bg-emerald-300",
+              isDragging && "bg-emerald-400"
+            )}
+            onMouseDown={(e) => {
+              e.preventDefault();
+              setIsDragging(true);
+            }}
+            data-testid="resize-handle"
+          >
+            <div className={cn(
+              "absolute flex h-10 w-5 items-center justify-center rounded-sm",
+              "bg-gray-200/80 backdrop-blur-sm opacity-0 transition-opacity",
+              "hover:opacity-100",
+              isDragging && "opacity-100 bg-emerald-400"
+            )}>
+              <GripVertical className="h-4 w-4 text-gray-500" />
             </div>
-            <div className="flex items-center gap-2">
-              {isEditing ? (
-                <>
-                  <Button variant="outline" size="sm" onClick={handleCancel} disabled={saving}>
-                    Abbrechen
-                  </Button>
-                  <Button size="sm" onClick={handleSave} className="bg-emerald-600" disabled={saving}>
-                    {saving ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Save className="h-4 w-4 mr-1" />}
+            <div className="absolute inset-y-0 -left-2 -right-2" />
+          </div>
+        )}
+
+        {/* Detail Panel */}
+        {selectedFuhre && (
+          <div 
+            className="bg-white border-l border-gray-200 flex flex-col overflow-hidden" 
+            style={{ width: `${100 - panelWidth}%` }}
+            data-testid="fuhre-detail-panel"
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between p-4 border-b bg-slate-50">
+              <div>
+                <h2 className="text-lg font-semibold">
+                  {isNewRecord ? 'Neue Fuhre' : selectedFuhre.fuhren_nr}
+                </h2>
+                <Badge className={STATUS_CONFIG[selectedFuhre.status]?.color}>
+                  {STATUS_CONFIG[selectedFuhre.status]?.label}
+                </Badge>
+              </div>
+              <div className="flex items-center gap-2">
+                {isEditing ? (
+                  <>
+                    <Button variant="outline" size="sm" onClick={handleCancel} disabled={saving}>
+                      Abbrechen
+                    </Button>
+                    <Button size="sm" onClick={handleSave} className="bg-emerald-600" disabled={saving}>
+                      {saving ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Save className="h-4 w-4 mr-1" />}
                     Speichern
                   </Button>
                 </>
