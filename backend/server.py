@@ -33,7 +33,7 @@ from services.database import init_db, close_db, get_db
 from utils.auth import hash_password
 
 # Router importieren
-from routers import auth, dashboard, adressen, artikel, kontrakte, wiegekarten, fuhren, rechnungen, kreditversicherung, admin, profil
+from routers import auth, dashboard, adressen, artikel, kontrakte, wiegekarten, fuhren, rechnungen, kreditversicherung, admin, profil, system_apis
 
 
 @asynccontextmanager
