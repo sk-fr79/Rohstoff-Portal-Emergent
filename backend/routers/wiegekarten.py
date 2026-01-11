@@ -60,7 +60,7 @@ async def get_wiegekarten(
     nur_offene: bool = False,
     page: int = 1,
     limit: int = 20,
-    user = Depends(get_current_user)
+    user = Depends(require_permission("wiegekarten", "read"))
 ):
     """Wiegekarten suchen"""
     db = get_db()
@@ -91,7 +91,7 @@ async def get_wiegekarten(
 
 
 @router.get("/wiegekarten/{wiegekarte_id}")
-async def get_wiegekarte(wiegekarte_id: str, user = Depends(get_current_user)):
+async def get_wiegekarte(wiegekarte_id: str, user = Depends(require_permission("wiegekarten", "read"))):
     """Wiegekarte nach ID"""
     db = get_db()
     wk = await db.wiegekarten.find_one({"_id": wiegekarte_id, "mandant_id": user["mandant_id"]})
@@ -104,7 +104,7 @@ async def get_wiegekarte(wiegekarte_id: str, user = Depends(get_current_user)):
 
 
 @router.post("/wiegekarten")
-async def create_wiegekarte(data: WiegekarteCreate, user = Depends(get_current_user)):
+async def create_wiegekarte(data: WiegekarteCreate, user = Depends(require_permission("wiegekarten", "write"))):
     """Neue Wiegekarte erstellen"""
     db = get_db()
     
@@ -130,7 +130,7 @@ async def create_wiegekarte(data: WiegekarteCreate, user = Depends(get_current_u
 
 
 @router.put("/wiegekarten/{wiegekarte_id}")
-async def update_wiegekarte(wiegekarte_id: str, data: WiegekarteUpdate, user = Depends(get_current_user)):
+async def update_wiegekarte(wiegekarte_id: str, data: WiegekarteUpdate, user = Depends(require_permission("wiegekarten", "write"))):
     """Wiegekarte aktualisieren"""
     db = get_db()
     update_data = {k: v for k, v in data.model_dump().items() if v is not None}
@@ -151,7 +151,7 @@ async def update_wiegekarte(wiegekarte_id: str, data: WiegekarteUpdate, user = D
 
 
 @router.post("/wiegekarten/{wiegekarte_id}/waegung/{waegung_nr}")
-async def speichere_waegung(wiegekarte_id: str, waegung_nr: int, data: dict, user = Depends(get_current_user)):
+async def speichere_waegung(wiegekarte_id: str, waegung_nr: int, data: dict, user = Depends(require_permission("wiegekarten", "write"))):
     """Wägung speichern"""
     db = get_db()
     
@@ -191,7 +191,7 @@ async def speichere_waegung(wiegekarte_id: str, waegung_nr: int, data: dict, use
 
 
 @router.post("/wiegekarten/{wiegekarte_id}/storno")
-async def storniere_wiegekarte(wiegekarte_id: str, user = Depends(get_current_user)):
+async def storniere_wiegekarte(wiegekarte_id: str, user = Depends(require_permission("wiegekarten", "full"))):
     """Wiegekarte stornieren"""
     db = get_db()
     await db.wiegekarten.update_one(
@@ -202,7 +202,7 @@ async def storniere_wiegekarte(wiegekarte_id: str, user = Depends(get_current_us
 
 
 @router.delete("/wiegekarten/{wiegekarte_id}")
-async def delete_wiegekarte(wiegekarte_id: str, user = Depends(get_current_user)):
+async def delete_wiegekarte(wiegekarte_id: str, user = Depends(require_permission("wiegekarten", "full"))):
     """Wiegekarte löschen"""
     db = get_db()
     result = await db.wiegekarten.delete_one({"_id": wiegekarte_id, "mandant_id": user["mandant_id"]})
@@ -215,20 +215,20 @@ async def delete_wiegekarte(wiegekarte_id: str, user = Depends(get_current_user)
 
 # Waage-Endpunkte
 @router.get("/waage/status")
-async def get_waage_status(user = Depends(get_current_user)):
+async def get_waage_status(user = Depends(require_permission("wiegekarten", "read"))):
     """Waage-Status (Demo)"""
     return {"success": True, "data": {"connected": True, "model": "Systec IT 4000", "mode": "demo"}}
 
 
 @router.post("/waage/lesen")
-async def lese_waage(user = Depends(get_current_user)):
+async def lese_waage(user = Depends(require_permission("wiegekarten", "read"))):
     """Waage auslesen (Demo: Zufallsgewicht)"""
     gewicht = random.randint(5000, 35000)
     return {"success": True, "data": {"gewicht_kg": gewicht, "stabil": True}}
 
 
 @router.get("/waage/config")
-async def get_waage_config(user = Depends(get_current_user)):
+async def get_waage_config(user = Depends(require_permission("wiegekarten", "read"))):
     """Waage-Konfiguration"""
     return {
         "success": True,
@@ -242,7 +242,7 @@ async def get_waage_config(user = Depends(get_current_user)):
 
 
 @router.get("/wiegekarten/statistik")
-async def get_wiegekarten_statistik(user = Depends(get_current_user)):
+async def get_wiegekarten_statistik(user = Depends(require_permission("wiegekarten", "read"))):
     """Wiegekarten-Statistik"""
     db = get_db()
     heute = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
