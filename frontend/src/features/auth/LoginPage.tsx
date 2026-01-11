@@ -7,6 +7,7 @@ import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 import { Building2, Loader2, Eye, EyeOff } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
+import { usePermissionsStore } from '@/store/permissionsStore';
 import { authApi } from '@/services/api/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -24,6 +25,7 @@ export function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { setAuth } = useAuthStore();
+  const { fetchPermissions } = usePermissionsStore();
 
   const {
     register,
@@ -57,6 +59,10 @@ export function LoginPage() {
           response.data.access_token,
           response.data.refresh_token || ''
         );
+        
+        // Berechtigungen nach Login abrufen
+        await fetchPermissions();
+        
         toast.success('Erfolgreich angemeldet');
         navigate('/dashboard');
       }
