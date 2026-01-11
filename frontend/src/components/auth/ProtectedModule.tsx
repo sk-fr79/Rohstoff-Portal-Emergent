@@ -15,7 +15,7 @@ interface ProtectedModuleProps {
  * Zeigt eine "Kein Zugriff" Seite wenn der Benutzer keine Berechtigung hat.
  */
 export function ProtectedModule({ children, modul, requiredLevel = 'read' }: ProtectedModuleProps) {
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, user } = useAuthStore();
   const { 
     permissions, 
     istAdmin, 
@@ -50,8 +50,7 @@ export function ProtectedModule({ children, modul, requiredLevel = 'read' }: Pro
     );
   }
 
-  // Admin hat immer Zugriff (prüfe auch authStore als Fallback)
-  const { user } = useAuthStore.getState();
+  // Admin hat immer Zugriff (prüfe permissionsStore UND authStore)
   if (istAdmin || user?.istAdmin) {
     return <>{children}</>;
   }
