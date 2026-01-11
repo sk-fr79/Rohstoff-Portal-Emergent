@@ -1187,7 +1187,7 @@ async def validate_ustid(
 @router.get("/ustid/protokoll/{adresse_id}")
 async def get_ustid_protokoll(
     adresse_id: str,
-    user = Depends(get_current_user)
+    user = Depends(require_permission("adressen", "read"))
 ):
     """UST-ID Validierungsprotokoll für eine bestimmte Adresse abrufen"""
     db = get_db()
