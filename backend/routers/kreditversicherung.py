@@ -608,7 +608,7 @@ async def get_adresse_kreditlimits(adresse_id: str, user = Depends(require_permi
 
 
 @router.get("/adressen/{adresse_id}/kreditstatus")
-async def get_adresse_kreditstatus(adresse_id: str, user = Depends(get_current_user)):
+async def get_adresse_kreditstatus(adresse_id: str, user = Depends(require_permission("kreditversicherungen", "read"))):
     """
     Aktueller Kreditstatus einer Adresse.
     Berechnet verfügbares Limit abzüglich offener Forderungen.
@@ -685,7 +685,7 @@ class KreditpruefungResponse(BaseModel):
 @router.post("/kreditpruefung")
 async def pruefe_kreditlimit(
     data: KreditpruefungRequest,
-    user = Depends(get_current_user)
+    user = Depends(require_permission("kreditversicherungen", "read"))
 ):
     """
     Prüft ob ein neuer Betrag das Kreditlimit überschreiten würde.
@@ -773,7 +773,7 @@ async def pruefe_kreditlimit(
 
 
 @router.post("/fuhren/{fuhre_id}/kreditpruefung")
-async def pruefe_fuhre_kreditlimit(fuhre_id: str, user = Depends(get_current_user)):
+async def pruefe_fuhre_kreditlimit(fuhre_id: str, user = Depends(require_permission("kreditversicherungen", "read"))):
     """
     Prüft eine Fuhre gegen Kreditlimits aller beteiligten Adressen.
     """
@@ -810,7 +810,7 @@ async def pruefe_fuhre_kreditlimit(fuhre_id: str, user = Depends(get_current_use
 # ============================================================
 
 @router.delete("/cleanup/soft-deleted")
-async def cleanup_soft_deleted_records(user = Depends(get_current_user)):
+async def cleanup_soft_deleted_records(user = Depends(require_permission("admin", "full"))):
     """
     Bereinigt alle Soft-Deleted Datensätze (Hard Delete).
     Entfernt:
