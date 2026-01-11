@@ -22,7 +22,8 @@ import {
   BenutzerPage,
   RollenPage,
   AbteilungenPage,
-  BerechtigungenPage
+  BerechtigungenPage,
+  ApisPage
 } from '@/features/einstellungen';
 
 // Protected Route Wrapper
