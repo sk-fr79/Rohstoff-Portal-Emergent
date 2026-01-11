@@ -3,18 +3,18 @@ import { useAuthStore } from '@/store/authStore';
 import { toast } from 'sonner';
 import { 
   Upload, FileSpreadsheet, FileText, Check, ArrowRight, ArrowLeft,
-  Loader2, AlertTriangle, CheckCircle, Table2, Settings2, Database,
-  X, Sparkles, Key, Hash, Calendar, ToggleLeft, Type, Trash2,
+  Loader2, CheckCircle, Settings2, Database,
+  Sparkles, Key, Hash, Calendar, ToggleLeft, Type,
   Eye, ChevronDown, ChevronUp
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { 
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue 
+  Select, SelectContent, SelectItem, SelectTrigger 
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import {
