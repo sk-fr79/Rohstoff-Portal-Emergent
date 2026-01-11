@@ -80,22 +80,46 @@ export function ProfilPage() {
   const handleSave = async () => {
     setIsLoading(true);
     try {
+      // Nur nicht-leere Felder senden
+      const dataToSend: Record<string, string> = {};
+      Object.entries(formData).forEach(([key, value]) => {
+        if (value && value.trim() !== '') {
+          dataToSend[key] = value;
+        }
+      });
+      
+      if (Object.keys(dataToSend).length === 0) {
+        toast.error('Keine Änderungen zum Speichern');
+        setIsLoading(false);
+        return;
+      }
+      
       const res = await fetch(`${API_URL}/profil`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(dataToSend)
       });
       
       const data = await res.json();
       
-      if (data.success) {
+      if (res.ok && data.success) {
         toast.success('Profil gespeichert');
         fetchProfil(); // Neu laden
       } else {
-        toast.error(data.detail || 'Fehler beim Speichern');
+        // Fehlerbehandlung für Pydantic Validierungsfehler
+        let errorMessage = 'Fehler beim Speichern';
+        if (data.detail) {
+          if (typeof data.detail === 'string') {
+            errorMessage = data.detail;
+          } else if (Array.isArray(data.detail)) {
+            // Pydantic Validierungsfehler
+            errorMessage = data.detail.map((err: { msg?: string }) => err.msg || 'Validierungsfehler').join(', ');
+          }
+        }
+        toast.error(errorMessage);
       }
     } catch (error) {
       console.error('Fehler beim Speichern:', error);
