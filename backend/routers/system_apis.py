@@ -1687,13 +1687,33 @@ async def create_field_binding(data: FieldBindingCreate, user = Depends(require_
     if data.field_name not in module_fields:
         raise HTTPException(status_code=400, detail=f"Unbekanntes Feld '{data.field_name}' in Modul '{data.module}'")
     
-    # Validierung: Referenztabelle existiert
-    ref_table = await db.system_reference_tables.find_one({
-        "_id": data.reference_table_id,
-        "mandant_id": user["mandant_id"]
-    })
-    if not ref_table:
-        raise HTTPException(status_code=404, detail="Referenztabelle nicht gefunden")
+    # Validierung: source_type
+    if data.source_type not in ["reference_table", "api_query"]:
+        raise HTTPException(status_code=400, detail="source_type muss 'reference_table' oder 'api_query' sein")
+    
+    # Validierung je nach source_type
+    ref_table = None
+    api_config = None
+    
+    if data.source_type == "reference_table":
+        if not data.reference_table_id:
+            raise HTTPException(status_code=400, detail="reference_table_id erforderlich für source_type 'reference_table'")
+        ref_table = await db.system_reference_tables.find_one({
+            "_id": data.reference_table_id,
+            "mandant_id": user["mandant_id"]
+        })
+        if not ref_table:
+            raise HTTPException(status_code=404, detail="Referenztabelle nicht gefunden")
+    
+    elif data.source_type == "api_query":
+        if not data.api_config_id:
+            raise HTTPException(status_code=400, detail="api_config_id erforderlich für source_type 'api_query'")
+        api_config = await db.system_api_configs.find_one({
+            "_id": data.api_config_id,
+            "mandant_id": user["mandant_id"]
+        })
+        if not api_config:
+            raise HTTPException(status_code=404, detail="API-Konfiguration nicht gefunden")
     
     # Prüfen ob Verknüpfung bereits existiert
     existing = await db.system_field_bindings.find_one({
@@ -1709,7 +1729,9 @@ async def create_field_binding(data: FieldBindingCreate, user = Depends(require_
     binding = {
         "_id": binding_id,
         "mandant_id": user["mandant_id"],
+        "source_type": data.source_type,
         "reference_table_id": data.reference_table_id,
+        "api_config_id": data.api_config_id,
         "module": data.module,
         "field_name": data.field_name,
         "display_field": data.display_field,
@@ -1717,6 +1739,9 @@ async def create_field_binding(data: FieldBindingCreate, user = Depends(require_
         "additional_display_fields": data.additional_display_fields,
         "is_required": data.is_required,
         "allow_search": data.allow_search,
+        "min_search_chars": data.min_search_chars,
+        "cache_ttl_seconds": data.cache_ttl_seconds,
+        "fallback_to_reference": data.fallback_to_reference,
         "created_at": datetime.utcnow().isoformat(),
         "created_by": user["id"],
     }
