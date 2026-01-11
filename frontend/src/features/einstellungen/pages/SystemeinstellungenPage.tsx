@@ -32,7 +32,7 @@ interface SystemSettings {
 }
 
 export function SystemeinstellungenPage() {
-  const { user, token } = useAuthStore();
+  const { user, accessToken: token } = useAuthStore();
   const [isLoading, setIsLoading] = useState(false);
   const [isFetching, setIsFetching] = useState(true);
   const [settings, setSettings] = useState<SystemSettings>({

@@ -30,7 +30,7 @@ interface ProfilData {
 }
 
 export function ProfilPage() {
-  const { user, token } = useAuthStore();
+  const { user, accessToken: token } = useAuthStore();
   const [isLoading, setIsLoading] = useState(false);
   const [isFetching, setIsFetching] = useState(true);
   const [profilData, setProfilData] = useState<ProfilData | null>(null);
