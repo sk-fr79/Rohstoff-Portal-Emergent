@@ -1920,11 +1920,14 @@ async def get_reference_select_options(
             try:
                 # URL mit Such-Parameter aufbauen
                 base_url = api_config.get("base_url", "").rstrip("/")
-                endpoint = api_config.get("endpoint", "").lstrip("/")
+                endpoint = api_config.get("endpoint", "") or ""
+                endpoint = endpoint.lstrip("/") if endpoint else ""
                 
                 # Query-Parameter mit Suchbegriff
                 params = {}
-                for p in api_config.get("query_params", []):
+                query_params = api_config.get("query_params") or []
+                
+                for p in query_params:
                     key = p.get("key", "")
                     value = p.get("value", "")
                     # Platzhalter ersetzen
@@ -1934,11 +1937,9 @@ async def get_reference_select_options(
                         value = search
                     params[key] = value
                 
-                # Falls kein Such-Parameter gefunden, füge Standard hinzu
-                if not any(k.lower() in ["q", "query", "search", "s", "term"] for k in params.keys()):
-                    # Versuche Standard-Parameter zu finden
-                    if "query" not in params:
-                        params["query"] = search
+                # Falls keine Such-Parameter konfiguriert, Standard hinzufügen
+                if not params:
+                    params["query"] = search
                 
                 url = f"{base_url}/{endpoint}" if endpoint else base_url
                 
