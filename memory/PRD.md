@@ -15,7 +15,34 @@ Die gesamte Geschäftslogik der bestehenden Anwendung soll 1:1 übernommen werde
 
 ## Implementiert (Stand: 11.01.2026)
 
-### ✅ Resizable Sidebar-Panel (NEU - 11.01.2026)
+### ✅ API-Konfigurations- & Referenztabellen-System (NEU - 11.01.2026)
+Umfassendes System zur Verwaltung externer APIs und Referenzdaten:
+
+**Backend-Features:**
+- **CRUD für API-Konfigurationen:** `/api/system/apis` (GET/POST/PUT/DELETE)
+- **AES-256 Verschlüsselung:** Alle Credentials werden sicher verschlüsselt gespeichert
+- **Authentifizierungstypen:** None, API-Key, Bearer Token, Basic Auth, OAuth2
+- **Response-Mapping:** JSON-Pfad-Extraktion mit Feld-Mapping
+- **Referenztabellen:** Automatische Erstellung und Sync mit Update-Strategien (Replace/Append/Merge)
+- **Sync-Historie:** Detailliertes Logging aller Synchronisierungen
+
+**Frontend-Features:**
+- **6-Schritte-Wizard:** Grundlagen → Authentifizierung → Request → Response-Mapping → Referenztabelle → Testen
+- **Zolltarifnummern.de Preset:** Vorkonfigurierte Vorlage für deutsche Zolltarifnummern-API
+- **3 Tabs:** Übersicht (API-Karten), Referenztabellen, Sync-Historie
+- **Admin-only Zugriff:** Nur Administratoren haben Zugriff (403 für andere)
+
+**Dateien:**
+- Backend Router: `/app/backend/routers/system_apis.py`
+- Frontend Page: `/app/frontend/src/features/einstellungen/pages/ApisPage.tsx`
+- Wizard: `/app/frontend/src/features/einstellungen/pages/components/ApiConfigWizard.tsx`
+- Collections: `system_api_configs`, `system_reference_tables`, `system_reference_data`, `system_api_sync_log`
+
+**Tests:** 27/27 Backend-Tests bestanden (100%), Frontend vollständig getestet
+
+---
+
+### ✅ Resizable Sidebar-Panel (11.01.2026)
 Benutzer können die Breite der Detail-Sidebar per Drag & Drop anpassen:
 
 **Features:**
