@@ -426,7 +426,7 @@ async def get_kv_positionen(
     kv_id: str, 
     search: Optional[str] = None,
     aktiv: Optional[bool] = None,
-    user = Depends(get_current_user)
+    user = Depends(require_permission("kreditversicherungen", "read"))
 ):
     """Kundenpositionen einer Kreditversicherung abrufen"""
     db = get_db()
@@ -466,7 +466,7 @@ async def get_kv_positionen(
 async def add_kv_position(
     kv_id: str,
     data: KundenPositionCreate,
-    user = Depends(get_current_user)
+    user = Depends(require_permission("kreditversicherungen", "write"))
 ):
     """Kundenposition zum Hauptvertrag hinzufügen"""
     db = get_db()
@@ -525,7 +525,7 @@ async def update_kv_position(
     kv_id: str,
     position_id: str,
     data: KundenPositionUpdate,
-    user = Depends(get_current_user)
+    user = Depends(require_permission("kreditversicherungen", "write"))
 ):
     """Kundenposition aktualisieren"""
     db = get_db()
@@ -561,7 +561,7 @@ async def update_kv_position(
 async def delete_kv_position(
     kv_id: str,
     position_id: str,
-    user = Depends(get_current_user)
+    user = Depends(require_permission("kreditversicherungen", "full"))
 ):
     """Kundenposition entfernen"""
     db = get_db()
@@ -585,7 +585,7 @@ async def delete_kv_position(
 # ============================================================
 
 @router.get("/adressen/{adresse_id}/kreditlimits")
-async def get_adresse_kreditlimits(adresse_id: str, user = Depends(get_current_user)):
+async def get_adresse_kreditlimits(adresse_id: str, user = Depends(require_permission("kreditversicherungen", "read"))):
     """
     Alle Kreditlimits einer Adresse abrufen.
     """
