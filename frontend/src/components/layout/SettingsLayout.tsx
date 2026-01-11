@@ -19,6 +19,7 @@ import {
   Users,
   Cog,
   ArrowLeft,
+  Globe,
 } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { usePermissionsStore } from '@/store/permissionsStore';
