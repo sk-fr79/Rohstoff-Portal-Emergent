@@ -704,8 +704,8 @@ export default function FuhrenPage() {
               )}
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }
