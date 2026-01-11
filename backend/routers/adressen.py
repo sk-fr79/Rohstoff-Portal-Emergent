@@ -1061,7 +1061,7 @@ async def update_lieferadresse(
     adresse_id: str,
     liefer_id: str,
     data: dict,
-    user = Depends(get_current_user)
+    user = Depends(require_permission("adressen", "write"))
 ):
     """Lieferadresse aktualisieren"""
     db = get_db()
@@ -1085,7 +1085,7 @@ async def update_lieferadresse(
 async def delete_lieferadresse(
     adresse_id: str,
     liefer_id: str,
-    user = Depends(get_current_user)
+    user = Depends(require_permission("adressen", "full"))
 ):
     """Lieferadresse löschen"""
     db = get_db()
@@ -1116,7 +1116,7 @@ class UstIdValidationRequest(BaseModel):
 @router.post("/ustid/validate")
 async def validate_ustid(
     request: UstIdValidationRequest,
-    user = Depends(get_current_user)
+    user = Depends(require_permission("adressen", "read"))
 ):
     """UST-ID via EU VIES validieren"""
     db = get_db()
