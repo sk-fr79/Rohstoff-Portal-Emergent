@@ -86,6 +86,48 @@ export function ArtikelPage() {
   const [isNewRecord, setIsNewRecord] = useState(false);
   const [activeSection, setActiveSection] = useState('stamm');
   const [showInactive, setShowInactive] = useState(false);
+  
+  // State für resizable Sidebar
+  const [panelWidth, setPanelWidth] = useState(50); // Standard 50%
+  const [isDragging, setIsDragging] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  
+  // Resizable Panel Logik
+  const handleMouseMove = useCallback((e: MouseEvent) => {
+    if (!isDragging || !containerRef.current) return;
+    
+    const container = containerRef.current;
+    const rect = container.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const percentage = (x / rect.width) * 100;
+    
+    // Grenzen: Min 30%, Max 70%
+    const clampedPercentage = Math.min(Math.max(percentage, 30), 70);
+    setPanelWidth(clampedPercentage);
+  }, [isDragging]);
+  
+  const handleMouseUp = useCallback(() => {
+    setIsDragging(false);
+  }, []);
+  
+  useEffect(() => {
+    if (isDragging) {
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+      document.body.style.userSelect = 'none';
+      document.body.style.cursor = 'col-resize';
+    } else {
+      document.body.style.userSelect = '';
+      document.body.style.cursor = '';
+    }
+    
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+      document.body.style.userSelect = '';
+      document.body.style.cursor = '';
+    };
+  }, [isDragging, handleMouseMove, handleMouseUp]);
 
   const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm<ArtikelForm>({
     resolver: zodResolver(artikelSchema),
