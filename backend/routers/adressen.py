@@ -777,7 +777,7 @@ async def delete_adresse(adresse_id: str, user = Depends(require_permission("adr
 
 
 @router.post("/adressen/validieren")
-async def validiere_adresse(data: AdresseCreate, user = Depends(get_current_user)):
+async def validiere_adresse(data: AdresseCreate, user = Depends(require_permission("adressen", "read"))):
     """Adresse validieren ohne zu speichern"""
     validierung = validate_adresse_geschaeftslogik(
         ist_firma=data.ist_firma,
@@ -799,7 +799,7 @@ async def validiere_adresse(data: AdresseCreate, user = Depends(get_current_user
 
 
 @router.get("/laender")
-async def get_laender(user = Depends(get_current_user)):
+async def get_laender(user = Depends(require_permission("adressen", "read"))):
     """Liste der konfigurierten Länder"""
     laender = []
     for name, info in EU_LAENDER.items():
@@ -820,7 +820,7 @@ async def get_laender(user = Depends(get_current_user)):
 async def add_ansprechpartner(
     adresse_id: str,
     data: dict,
-    user = Depends(get_current_user)
+    user = Depends(require_permission("adressen", "write"))
 ):
     """Ansprechpartner hinzufügen"""
     db = get_db()
