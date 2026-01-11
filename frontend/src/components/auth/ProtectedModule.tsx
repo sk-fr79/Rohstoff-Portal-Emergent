@@ -41,8 +41,8 @@ export function ProtectedModule({ children, modul, requiredLevel = 'read' }: Pro
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  // Laden
-  if (isLoading && !lastFetched) {
+  // Laden - Warte auf Berechtigungen wenn sie noch nicht abgerufen wurden
+  if (isLoading || !lastFetched) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
@@ -50,8 +50,9 @@ export function ProtectedModule({ children, modul, requiredLevel = 'read' }: Pro
     );
   }
 
-  // Admin hat immer Zugriff
-  if (istAdmin) {
+  // Admin hat immer Zugriff (prüfe auch authStore als Fallback)
+  const { user } = useAuthStore.getState();
+  if (istAdmin || user?.istAdmin) {
     return <>{children}</>;
   }
 
