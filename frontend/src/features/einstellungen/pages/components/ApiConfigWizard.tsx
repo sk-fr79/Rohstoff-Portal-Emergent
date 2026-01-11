@@ -487,15 +487,21 @@ export function ApiConfigWizard({ open, onClose, onSuccess, editingApi }: Props)
         return (
           <div className="space-y-6">
             {!editingApi && (
-              <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-amber-800">Vorlage verfügbar</p>
-                    <p className="text-xs text-amber-600">Zolltarifnummern.de API schnell einrichten</p>
-                  </div>
-                  <Button size="sm" variant="outline" onClick={loadPreset}>
-                    Vorlage laden
-                  </Button>
+              <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-lg">
+                <p className="text-sm font-medium text-emerald-800 mb-3">Vorlagen verfügbar</p>
+                <div className="grid grid-cols-2 gap-2">
+                  {API_PRESETS.map((preset) => (
+                    <Button 
+                      key={preset.id}
+                      size="sm" 
+                      variant="outline"
+                      className="justify-start text-left h-auto py-2 hover:bg-emerald-100 hover:border-emerald-300"
+                      onClick={() => loadPreset(preset.id)}
+                    >
+                      <span className="mr-2">{preset.icon}</span>
+                      <span className="text-xs">{preset.label}</span>
+                    </Button>
+                  ))}
                 </div>
               </div>
             )}
