@@ -141,42 +141,14 @@ export default function App() {
               <UnterschriftPage />
             </ProtectedModule>
           } />
-          {/* Admin-Einstellungen - Nur Admins */}
-          <Route path="system" element={
-            <ProtectedModule modul="admin">
-              <SystemeinstellungenPage />
-            </ProtectedModule>
-          } />
-          <Route path="benutzer" element={
-            <ProtectedModule modul="admin">
-              <BenutzerPage />
-            </ProtectedModule>
-          } />
-          <Route path="rollen" element={
-            <ProtectedModule modul="admin">
-              <RollenPage />
-            </ProtectedModule>
-          } />
-          <Route path="abteilungen" element={
-            <ProtectedModule modul="admin">
-              <AbteilungenPage />
-            </ProtectedModule>
-          } />
-          <Route path="berechtigungen" element={
-            <ProtectedModule modul="admin">
-              <BerechtigungenPage />
-            </ProtectedModule>
-          } />
-          <Route path="mandanten" element={
-            <ProtectedModule modul="admin">
-              <SystemeinstellungenPage />
-            </ProtectedModule>
-          } />
-          <Route path="sicherheit" element={
-            <ProtectedModule modul="admin">
-              <SystemeinstellungenPage />
-            </ProtectedModule>
-          } />
+          {/* Admin-Einstellungen - Nur Admins (haben eigenen Admin-Check) */}
+          <Route path="system" element={<SystemeinstellungenPage />} />
+          <Route path="benutzer" element={<BenutzerPage />} />
+          <Route path="rollen" element={<RollenPage />} />
+          <Route path="abteilungen" element={<AbteilungenPage />} />
+          <Route path="berechtigungen" element={<BerechtigungenPage />} />
+          <Route path="mandanten" element={<SystemeinstellungenPage />} />
+          <Route path="sicherheit" element={<SystemeinstellungenPage />} />
           <Route path="datenbank" element={
             <ProtectedModule modul="admin">
               <SystemeinstellungenPage />
