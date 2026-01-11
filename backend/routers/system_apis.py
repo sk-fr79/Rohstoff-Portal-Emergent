@@ -647,7 +647,7 @@ async def sync_api_data(api_id: str, user = Depends(require_admin)):
         elif auth_type == "bearer" and auth_config.get("bearer_token"):
             headers["Authorization"] = f"Bearer {auth_config['bearer_token']}"
         
-        async with httpx.AsyncClient(timeout=60.0) as client:
+        async with httpx.AsyncClient(timeout=60.0, follow_redirects=True) as client:
             response = await client.get(url, headers=headers, params=params)
             response.raise_for_status()
             response_data = response.json()
