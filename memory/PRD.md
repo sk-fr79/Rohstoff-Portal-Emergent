@@ -15,6 +15,36 @@ Die gesamte Geschäftslogik der bestehenden Anwendung soll 1:1 übernommen werde
 
 ## Implementiert (Stand: 11.01.2026)
 
+### ✅ CSV/Excel Upload für Referenztabellen (NEU - 11.01.2026)
+Intelligentes Upload-System zur manuellen Erstellung von Referenztabellen aus CSV/Excel-Dateien:
+
+**Backend-Features:**
+- **POST `/api/system/reference-upload/analyze`:** Analysiert hochgeladene CSV/XLS/XLSX-Dateien
+  - Automatische Spaltenerkennung
+  - Datentyp-Erkennung: string, number (deutsches Format), boolean (ja/nein), date
+  - Unterstützung für verschiedene CSV-Delimiter (`;`, `,`, Tab)
+  - Mehrere Encodings (UTF-8, Latin-1, CP1252)
+- **POST `/api/system/reference-upload/import`:** Importiert analysierte Daten
+  - Update-Strategien: Merge (Upsert), Replace (Alles ersetzen), Append (Nur hinzufügen)
+  - Flexibles Spalten-Mapping mit Primärschlüssel-Auswahl
+  - Deutsche Zahlenformate werden korrekt konvertiert (8500,50 → 8500.5)
+
+**Frontend-Features (FileUploadWizard):**
+- **4-Schritte-Wizard:** Datei hochladen → Spalten zuordnen → Konfiguration → Import
+- **Modernes Drag & Drop UI:** Mit Fortschrittsanzeige und Animationen
+- **Intelligente Spalten-Erkennung:** Datentyp-Icons und Badges
+- **Flexibles Mapping:** Spalten umbenennen, Typen ändern, Primärschlüssel setzen
+- **Sofortige Integration:** Importierte Tabellen erscheinen in der Referenztabellen-Übersicht
+
+**Dateien:**
+- Backend: `/app/backend/routers/system_apis.py` (Zeilen 1143-1509)
+- Frontend: `/app/frontend/src/features/einstellungen/pages/components/FileUploadWizard.tsx`
+- Integration: `/app/frontend/src/features/einstellungen/pages/components/ReferenceTablesTab.tsx`
+
+**Tests:** 13/13 Backend-Tests bestanden (100%), Frontend vollständig getestet
+
+---
+
 ### ✅ API-Konfigurations- & Referenztabellen-System (NEU - 11.01.2026)
 Umfassendes System zur Verwaltung externer APIs und Referenzdaten:
 
