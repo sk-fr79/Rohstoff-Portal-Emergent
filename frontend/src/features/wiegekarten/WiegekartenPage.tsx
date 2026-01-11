@@ -913,6 +913,7 @@ export function WiegekartenPage() {
           </motion.div>
         )}
       </AnimatePresence>
+      </div>
     </div>
   );
 }
