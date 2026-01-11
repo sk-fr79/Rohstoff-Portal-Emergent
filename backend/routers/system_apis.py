@@ -1626,26 +1626,47 @@ async def list_field_bindings(
     
     items = []
     async for doc in cursor:
-        # Referenztabellen-Info laden
-        ref_table = await db.system_reference_tables.find_one({"_id": doc["reference_table_id"]})
+        source_type = doc.get("source_type", "reference_table")
+        
+        # Referenztabellen-Info laden (wenn vorhanden)
+        ref_table = None
+        if doc.get("reference_table_id"):
+            ref_table = await db.system_reference_tables.find_one({"_id": doc["reference_table_id"]})
+        
+        # API-Info laden (wenn vorhanden)
+        api_config = None
+        if doc.get("api_config_id"):
+            api_config = await db.system_api_configs.find_one({"_id": doc["api_config_id"]})
         
         module_info = AVAILABLE_MODULES.get(doc["module"], {})
         field_info = next((f for f in module_info.get("fields", []) if f["name"] == doc["field_name"]), None)
         
         items.append({
             "id": doc["_id"],
-            "reference_table_id": doc["reference_table_id"],
-            "reference_table_name": ref_table["table_name"] if ref_table else "Unbekannt",
-            "reference_table_display_name": ref_table["display_name"] if ref_table else "Unbekannt",
+            "source_type": source_type,
+            # Referenztabelle
+            "reference_table_id": doc.get("reference_table_id"),
+            "reference_table_name": ref_table["table_name"] if ref_table else None,
+            "reference_table_display_name": ref_table["display_name"] if ref_table else None,
+            # API
+            "api_config_id": doc.get("api_config_id"),
+            "api_name": api_config["name"] if api_config else None,
+            # Modul/Feld
             "module": doc["module"],
             "module_label": module_info.get("label", doc["module"]),
             "field_name": doc["field_name"],
             "field_label": field_info["label"] if field_info else doc["field_name"],
+            # Mapping
             "display_field": doc.get("display_field", "bezeichnung"),
             "value_field": doc.get("value_field", "code"),
             "additional_display_fields": doc.get("additional_display_fields", []),
+            # Optionen
             "is_required": doc.get("is_required", False),
             "allow_search": doc.get("allow_search", True),
+            # API-Optionen
+            "min_search_chars": doc.get("min_search_chars", 3),
+            "cache_ttl_seconds": doc.get("cache_ttl_seconds", 300),
+            "fallback_to_reference": doc.get("fallback_to_reference", True),
             "created_at": doc.get("created_at", ""),
         })
     
