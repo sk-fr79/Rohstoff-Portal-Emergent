@@ -11,7 +11,7 @@ import { cn } from '@/lib/utils';
 const API_URL = import.meta.env.VITE_API_URL || '/api';
 
 export function PasswortPage() {
-  const { token } = useAuthStore();
+  const { accessToken: token } = useAuthStore();
   const [isLoading, setIsLoading] = useState(false);
   const [showPasswords, setShowPasswords] = useState({
     current: false,
