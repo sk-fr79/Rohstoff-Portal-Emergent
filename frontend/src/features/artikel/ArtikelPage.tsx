@@ -851,6 +851,7 @@ export function ArtikelPage() {
           </motion.div>
         )}
       </AnimatePresence>
+      </div>
     </div>
   );
 }
