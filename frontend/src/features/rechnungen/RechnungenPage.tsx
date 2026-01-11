@@ -295,119 +295,158 @@ export default function RechnungenPage() {
   return (
     <div className="h-full flex flex-col" data-testid="rechnungen-page">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-800">Rechnungen & Gutschriften</h1>
-          <p className="text-slate-500">Fakturierung</p>
-        </div>
-        <div className="flex items-center gap-3">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-            <Input
-              placeholder="Suchen..."
-              className="pl-10 w-[250px]"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              data-testid="rechnungen-search"
-            />
+      <div className="bg-white border-b border-gray-200 px-6 py-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-xl font-semibold text-gray-900">Rechnungen & Gutschriften</h1>
+            <p className="text-sm text-gray-500 mt-0.5">Fakturierung</p>
           </div>
-          <Select value={filterTyp || "ALL"} onValueChange={(v) => setFilterTyp(v === "ALL" ? "" : v)}>
-            <SelectTrigger className="w-[140px]">
-              <SelectValue placeholder="Alle Typen" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="ALL">Alle Typen</SelectItem>
-              <SelectItem value="RECHNUNG">Rechnungen</SelectItem>
-              <SelectItem value="GUTSCHRIFT">Gutschriften</SelectItem>
-            </SelectContent>
-          </Select>
-          <Select value={filterStatus || "ALL"} onValueChange={(v) => setFilterStatus(v === "ALL" ? "" : v)}>
-            <SelectTrigger className="w-[130px]">
-              <SelectValue placeholder="Alle Status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="ALL">Alle Status</SelectItem>
-              {Object.entries(STATUS_CONFIG).map(([key, { label }]) => (
-                <SelectItem key={key} value={key}>{label}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Button onClick={handleNewRechnung} className="bg-emerald-600 hover:bg-emerald-700" data-testid="new-rechnung-btn">
-            <Plus className="h-4 w-4 mr-2" />
-            Neue Rechnung
-          </Button>
+          <div className="flex items-center gap-3">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+              <Input
+                placeholder="Suchen..."
+                className="pl-10 w-[250px]"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                data-testid="rechnungen-search"
+              />
+            </div>
+            <Select value={filterTyp || "ALL"} onValueChange={(v) => setFilterTyp(v === "ALL" ? "" : v)}>
+              <SelectTrigger className="w-[140px]">
+                <SelectValue placeholder="Alle Typen" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ALL">Alle Typen</SelectItem>
+                <SelectItem value="RECHNUNG">Rechnungen</SelectItem>
+                <SelectItem value="GUTSCHRIFT">Gutschriften</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={filterStatus || "ALL"} onValueChange={(v) => setFilterStatus(v === "ALL" ? "" : v)}>
+              <SelectTrigger className="w-[130px]">
+                <SelectValue placeholder="Alle Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ALL">Alle Status</SelectItem>
+                {Object.entries(STATUS_CONFIG).map(([key, { label }]) => (
+                  <SelectItem key={key} value={key}>{label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Button onClick={handleNewRechnung} className="bg-emerald-600 hover:bg-emerald-700" data-testid="new-rechnung-btn">
+              <Plus className="h-4 w-4 mr-2" />
+              Neue Rechnung
+            </Button>
+          </div>
         </div>
       </div>
 
-      {/* Table */}
-      <div className="bg-white rounded-xl shadow-sm border flex-1 overflow-hidden">
-        <Table>
-          <TableHeader>
-            <TableRow className="bg-slate-50">
-              <TableHead className="w-[100px]">Nr.</TableHead>
-              <TableHead className="w-[80px]">Typ</TableHead>
-              <TableHead>Adressat</TableHead>
-              <TableHead>Datum</TableHead>
-              <TableHead className="text-right">Netto</TableHead>
-              <TableHead className="text-right">Brutto</TableHead>
-              <TableHead>Status</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {loading ? (
-              <TableRow><TableCell colSpan={7} className="text-center py-8">Laden...</TableCell></TableRow>
-            ) : rechnungen.length === 0 ? (
-              <TableRow><TableCell colSpan={7} className="text-center py-8 text-slate-500">Keine Rechnungen gefunden</TableCell></TableRow>
-            ) : (
-              rechnungen.map((rechnung) => {
-                const TypConfig = VORGANG_TYP_CONFIG[rechnung.vorgang_typ] || VORGANG_TYP_CONFIG.RECHNUNG;
-                const TypIcon = TypConfig.icon;
-                return (
-                  <TableRow 
-                    key={rechnung.id} 
-                    className="cursor-pointer hover:bg-slate-50"
-                    onDoubleClick={() => handleRowDoubleClick(rechnung)}
-                    data-testid={`rechnung-row-${rechnung.id}`}
-                  >
-                    <TableCell className="font-medium">{rechnung.rechnungs_nr}</TableCell>
-                    <TableCell>
-                      <div className={`flex items-center gap-1 ${TypConfig.color}`}>
-                        <TypIcon className="h-4 w-4" />
-                        <span className="text-xs">{TypConfig.label.substring(0, 2)}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell>{rechnung.name1}</TableCell>
-                    <TableCell>{formatDate(rechnung.erstellungsdatum)}</TableCell>
-                    <TableCell className="text-right">{formatCurrency(rechnung.summe_netto)}</TableCell>
-                    <TableCell className="text-right font-medium">{formatCurrency(rechnung.summe_brutto)}</TableCell>
-                    <TableCell>
-                      <Badge className={STATUS_CONFIG[rechnung.status]?.color || 'bg-slate-100'}>
-                        {STATUS_CONFIG[rechnung.status]?.label || rechnung.status}
-                      </Badge>
-                    </TableCell>
-                  </TableRow>
-                );
-              })
-            )}
-          </TableBody>
-        </Table>
-      </div>
+      {/* Content Area */}
+      <div ref={containerRef} className="flex-1 flex overflow-hidden">
+        {/* Table */}
+        <div 
+          className="p-6 overflow-auto transition-none"
+          style={{ width: selectedRechnung ? `${panelWidth}%` : '100%' }}
+        >
+          <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-slate-50">
+                  <TableHead className="w-[100px]">Nr.</TableHead>
+                  <TableHead className="w-[80px]">Typ</TableHead>
+                  <TableHead>Adressat</TableHead>
+                  <TableHead>Datum</TableHead>
+                  <TableHead className="text-right">Netto</TableHead>
+                  <TableHead className="text-right">Brutto</TableHead>
+                  <TableHead>Status</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {loading ? (
+                  <TableRow><TableCell colSpan={7} className="text-center py-8">Laden...</TableCell></TableRow>
+                ) : rechnungen.length === 0 ? (
+                  <TableRow><TableCell colSpan={7} className="text-center py-8 text-slate-500">Keine Rechnungen gefunden</TableCell></TableRow>
+                ) : (
+                  rechnungen.map((rechnung) => {
+                    const TypConfig = VORGANG_TYP_CONFIG[rechnung.vorgang_typ] || VORGANG_TYP_CONFIG.RECHNUNG;
+                    const TypIcon = TypConfig.icon;
+                    return (
+                      <TableRow 
+                        key={rechnung.id} 
+                        className="cursor-pointer hover:bg-slate-50"
+                        onDoubleClick={() => handleRowDoubleClick(rechnung)}
+                        data-testid={`rechnung-row-${rechnung.id}`}
+                      >
+                        <TableCell className="font-medium">{rechnung.rechnungs_nr}</TableCell>
+                        <TableCell>
+                          <div className={`flex items-center gap-1 ${TypConfig.color}`}>
+                            <TypIcon className="h-4 w-4" />
+                            <span className="text-xs">{TypConfig.label.substring(0, 2)}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell>{rechnung.name1}</TableCell>
+                        <TableCell>{formatDate(rechnung.erstellungsdatum)}</TableCell>
+                        <TableCell className="text-right">{formatCurrency(rechnung.summe_netto)}</TableCell>
+                        <TableCell className="text-right font-medium">{formatCurrency(rechnung.summe_brutto)}</TableCell>
+                        <TableCell>
+                          <Badge className={STATUS_CONFIG[rechnung.status]?.color || 'bg-slate-100'}>
+                            {STATUS_CONFIG[rechnung.status]?.label || rechnung.status}
+                          </Badge>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </div>
 
-      {/* Detail Slide-In Panel */}
-      {selectedRechnung && (
-        <div className="fixed inset-y-0 right-0 w-[600px] bg-white shadow-2xl border-l z-50 flex flex-col" data-testid="rechnung-detail-panel">
-          {/* Header */}
-          <div className="flex items-center justify-between p-4 border-b bg-slate-50">
-            <div>
-              <div className="flex items-center gap-2">
-                <h2 className="text-lg font-semibold">
-                  {isNewRecord ? 'Neue Rechnung' : selectedRechnung.rechnungs_nr}
-                </h2>
-                <Badge className={VORGANG_TYP_CONFIG[selectedRechnung.vorgang_typ]?.color}>
-                  {VORGANG_TYP_CONFIG[selectedRechnung.vorgang_typ]?.label}
-                </Badge>
-              </div>
-              <Badge className={STATUS_CONFIG[selectedRechnung.status]?.color}>
+        {/* Resizable Handle */}
+        {selectedRechnung && (
+          <div
+            className={cn(
+              "relative flex w-1.5 items-center justify-center bg-gray-100 transition-colors cursor-col-resize select-none",
+              "hover:bg-emerald-200 active:bg-emerald-300",
+              isDragging && "bg-emerald-400"
+            )}
+            onMouseDown={(e) => {
+              e.preventDefault();
+              setIsDragging(true);
+            }}
+            data-testid="resize-handle"
+          >
+            <div className={cn(
+              "absolute flex h-10 w-5 items-center justify-center rounded-sm",
+              "bg-gray-200/80 backdrop-blur-sm opacity-0 transition-opacity",
+              "hover:opacity-100",
+              isDragging && "opacity-100 bg-emerald-400"
+            )}>
+              <GripVertical className="h-4 w-4 text-gray-500" />
+            </div>
+            <div className="absolute inset-y-0 -left-2 -right-2" />
+          </div>
+        )}
+
+        {/* Detail Panel */}
+        {selectedRechnung && (
+          <div 
+            className="bg-white border-l border-gray-200 flex flex-col overflow-hidden" 
+            style={{ width: `${100 - panelWidth}%` }}
+            data-testid="rechnung-detail-panel"
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between p-4 border-b bg-slate-50">
+              <div>
+                <div className="flex items-center gap-2">
+                  <h2 className="text-lg font-semibold">
+                    {isNewRecord ? 'Neue Rechnung' : selectedRechnung.rechnungs_nr}
+                  </h2>
+                  <Badge className={VORGANG_TYP_CONFIG[selectedRechnung.vorgang_typ]?.color}>
+                    {VORGANG_TYP_CONFIG[selectedRechnung.vorgang_typ]?.label}
+                  </Badge>
+                </div>
+                <Badge className={STATUS_CONFIG[selectedRechnung.status]?.color}>
                 {STATUS_CONFIG[selectedRechnung.status]?.label}
               </Badge>
             </div>
