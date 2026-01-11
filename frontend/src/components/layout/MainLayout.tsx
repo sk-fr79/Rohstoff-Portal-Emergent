@@ -31,50 +31,51 @@ import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 // Navigation Items with grouping like the reference design
+// Each item has a moduleKey for permission checking
 const navGroups = [
   {
     items: [
-      { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+      { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, moduleKey: 'dashboard' as ModuleKey },
     ]
   },
   {
     label: 'Stammdaten',
     icon: Database,
     items: [
-      { path: '/adressen', label: 'Adressen', icon: Users },
-      { path: '/artikel', label: 'Artikel', icon: Package },
-      { path: '/kreditversicherungen', label: 'Kreditversicherung', icon: Shield },
+      { path: '/adressen', label: 'Adressen', icon: Users, moduleKey: 'adressen' as ModuleKey },
+      { path: '/artikel', label: 'Artikel', icon: Package, moduleKey: 'artikel' as ModuleKey },
+      { path: '/kreditversicherungen', label: 'Kreditversicherung', icon: Shield, moduleKey: 'kreditversicherungen' as ModuleKey },
     ]
   },
   {
     label: 'Bewegungsdaten',
     icon: FileText,
     items: [
-      { path: '/kontrakte', label: 'Kontrakte', icon: FileText },
+      { path: '/kontrakte', label: 'Kontrakte', icon: FileText, moduleKey: 'kontrakte' as ModuleKey },
     ]
   },
   {
     items: [
-      { path: '/rechnungen', label: 'Rechnungen', icon: Receipt },
+      { path: '/rechnungen', label: 'Rechnungen', icon: Receipt, moduleKey: 'rechnungen' as ModuleKey },
     ]
   },
   {
     label: 'Lager',
     icon: Warehouse,
     items: [
-      { path: '/fuhren', label: 'Fuhren', icon: Truck },
+      { path: '/fuhren', label: 'Fuhren', icon: Truck, moduleKey: 'fuhren' as ModuleKey },
     ]
   },
   {
     label: 'Waage',
     icon: Scale,
     items: [
-      { path: '/wiegekarten', label: 'Wiegekarten', icon: Scale },
+      { path: '/wiegekarten', label: 'Wiegekarten', icon: Scale, moduleKey: 'wiegekarten' as ModuleKey },
     ]
   },
   {
     items: [
-      { path: '/berichte', label: 'Berichte', icon: BarChart3 },
+      { path: '/berichte', label: 'Berichte', icon: BarChart3, moduleKey: 'berichte' as ModuleKey },
     ]
   },
 ];
