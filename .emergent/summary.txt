@@ -6,51 +6,46 @@ Die letzten Anforderungen umfassten:
 2.  **(Bug) Hard Delete-Logik:** Gelöschte Datensätze (z.B. Adressen) wurden weiterhin in Dropdowns angezeigt. Das System sollte auf Hard Delete umgestellt werden, sodass gelöschte Einträge vollständig aus der Datenbank entfernt werden.
 3.  **(Feature) Admin- & Einstellungsbereich:** Erstellung eines separaten Einstellungen-Bereichs, getrennt von der ERP-Ansicht, mit Benutzerprofil-Einstellungen und einem Admin-Bereich.
 4.  **(Feature) Umfassendes Berechtigungssystem:** Implementierung einer granularen, rollen- und abteilungsbasierten Zugriffssteuerung für alle Module der Anwendung. Nur Administratoren sollen Zugriff auf die Systemeinstellungen haben.
+5.  **(UX-Verbesserung)** Anzeige von Profilbildern anstelle von Kürzeln im Header und Verbesserung der Navigation im Einstellungsbereich.
+6.  **(Bug)** Behebung eines -Fehlers beim Speichern von Profilinformationen.
 
 **User's preferred language**: German
 
 **what currently exists?**
--   Ein FastAPI-Backend und ein React-Frontend mit den Kernmodulen (Adressen, Artikel, Fuhren etc.).
--   Ein konfigurierbares Berechtigungssystem (Benutzer, Rollen, Abteilungen, Zugriffsmatrix) ist im Admin-Bereich implementiert.
--   **Die Durchsetzung dieser Berechtigungen wurde soeben im Frontend und Backend implementiert.** Dies umfasst:
-    -   **Backend:** Alle API-Endpunkte sind jetzt durch eine  Dependency geschützt, die den Zugriff basierend auf den Rechten des Benutzers steuert.
-    -   **Frontend:**
-        -   Routen sind durch eine -Komponente geschützt, um direkten URL-Zugriff zu verhindern.
-        -   Die Navigationsleisten (Haupt-Sidebar und Einstellungsmenü) werden dynamisch gefiltert und zeigen nur die Module an, für die der Benutzer Leserechte hat.
-        -   Berechtigungen werden beim Login abgerufen und im Zustand (-Store) gespeichert.
+- Ein voll funktionsfähiges, rollenbasiertes Zugriffskontrollsystem (RBAC) wurde implementiert und verifiziert. APIs und UI-Komponenten (Navigation, Routen) erzwingen Berechtigungen korrekt.
+- Der Einstellungen-Bereich ist vollständig funktionsfähig. Die Formulare Mein Profil, Passwort ändern und Systemeinstellungen (nur für Admins) sind an Backend-Endpunkte angebunden und speichern Daten.
+- Die Benutzeroberfläche wurde verbessert:
+    - Der Header und die Seitenleiste zeigen das Profilbild des Benutzers an, wenn eines verfügbar ist, andernfalls die Initialen.
+    - Der Einstellungsbereich verfügt über klare Zurück ins ERP-Portal-Navigationslinks.
+- Ein kritischer Bug, der das Speichern von Profilinformationen verhinderte, wurde behoben.
 
 **Last working item**:
--   **Last item agent was working:** Der Agent hat die Implementierung der **Durchsetzung des Berechtigungssystems** abgeschlossen und mit den ersten manuellen Tests per  begonnen. Es wurde verifiziert, dass ein Admin vollen Zugriff hat und ein Benutzer mit eingeschränkten Rechten () auf erlaubte Endpunkte zugreifen kann. Die letzte Aktion des Agenten war die Vorbereitung eines Tests, um zu verifizieren, dass der Zugriff auf einen **nicht erlaubten** Endpunkt für den -Benutzer blockiert wird.
+-   **Last item agent was working:** Behebung eines Bugs, der beim Speichern von Änderungen auf der Profil-Einstellungsseite auftrat. Der Fehler ( und ein folgender React-Render-Fehler) wurde durch zwei Ursachen ausgelöst:
+    1.  **Backend:** Leere Zeichenketten aus dem Frontend wurden von Pydantic nicht korrekt als optionale Felder behandelt.
+    2.  **Frontend:** Die Toast-Benachrichtigung versuchte, das rohe Fehlerobjekt anstelle einer formatierten Nachricht zu rendern.
+    Der Agent hat beide Probleme behoben und einen erfolgreichen Test per  und Screenshot durchgeführt.
 -   **Status:** USER VERIFICATION PENDING
--   **Agent Testing Done:** N
--   **Which testing method agent to use?** both
-    -   **Frontend testing agent:** Um zu verifizieren, dass UI-Elemente (Menüpunkte) für Benutzer ohne die erforderlichen Rechte korrekt ausgeblendet werden und der direkte URL-Zugriff auf gesperrte Routen verhindert wird.
-    -   **Backend testing agent:** Um sicherzustellen, dass alle API-Endpunkte bei fehlender Berechtigung einen -Fehler zurückgeben.
+-   **Agent Testing Done:** Y
+-   **Which testing method agent to use?** Die nächste Aktion sollte eine -Interaktion sein, um den Benutzer zu bitten, die Korrektur zu überprüfen, indem er versucht, sein Profil erneut zu speichern.
 -   **User Testing Done:** N
 
 **All Pending/In progress Issue list**:
--   **Issue 1: (P0) Vollständige Verifizierung der Zugriffssteuerung**
-    -   **Attempted fixes:** Die vollständige Implementierungslogik für die Durchsetzung wurde im Frontend und Backend hinzugefügt. Erste -Tests waren erfolgreich.
-    -   **Next debug checklist:**
-        1.  Führen Sie den letzten manuellen -Test als Benutzer  gegen einen Endpunkt aus, für den keine Berechtigung besteht (z. B. ), und stellen Sie sicher, dass ein -Fehler zurückgegeben wird.
-        2.  Führen Sie den  aus, um eine umfassende Überprüfung sowohl für das Frontend als auch für das Backend durchzuführen. Stellen Sie sicher, dass alle Aspekte der Zugriffssteuerung (API-Blockierung, UI-Filterung, Routenschutz) für verschiedene Benutzerrollen korrekt funktionieren.
-    -   **Why fix this issue and what will be achieved with the fix?** Dies ist die finale Verifizierung, um ein kritisches Sicherheitsrisiko zu schließen. Die Behebung stellt sicher, dass das gesamte Berechtigungssystem wie entworfen funktioniert.
+-   **Issue 1: (P0) Verifizierung des Bugfixes für die Profilspeicherung**
+    -   **Attempted fixes:**
+        -   **Backend:** Ein  wurde dem  Pydantic-Modell in  hinzugefügt, um leere Strings in  zu konvertieren.
+        -   **Frontend:** Die Fehlerbehandlung in  wurde angepasst, um die -Nachricht aus der 422-Antwort zu extrahieren und sie dem  als String zu übergeben.
+    -   **Next debug checklist:** Bitten Sie den Benutzer, zu bestätigen, dass das Speichern von Profiländerungen jetzt ohne Fehler funktioniert.
+    -   **Why fix this issue and what will be achieved with the fix?** Dies schließt einen vom Benutzer gemeldeten kritischen Fehler und stellt eine Kernfunktionalität (Benutzerprofilverwaltung) wieder her.
     -   **Status:** USER VERIFICATION PENDING
     -   **Is recurring issue?** N
-    -   **Should Test frontend/backend/both after fix?** both
+    -   **Should Test frontend/backend/both after fix?** N/A (Warten auf Benutzerverifizierung)
     -   **Blocked on other issue:** None
 
 **In progress Task List**:
--   **Task 1: (P0) Implementierung der Berechtigungsdurchsetzung**
-    -   **Where to resume:** Bei der finalen Verifizierung. Beginnen Sie mit dem -Test für einen verbotenen Endpunkt, gefolgt von einem vollständigen Testlauf mit dem .
-    -   **What will be achieved with this?** Ein voll funktionsfähiges und verifiziertes, granulares Zugriffskontrollsystem.
-    -   **Status:** IN PROGRESS
-    -   **Should Test frontend/backend/both after fix?** both
-    -   **Blocked on something:** None
+- Keine.
 
 **Upcoming and Future Tasks**
 -   **Upcoming Tasks:**
-    -   **(P1) Einstellungs-Formulare an Backend anbinden:** Die Formulare im neuen Einstellungsbereich (z.B. Mein Profil, Systemeinstellungen) sind derzeit nur UI. Sie müssen an Backend-Endpunkte angebunden werden, um Änderungen speichern zu können.
     -   **(P1) PDF-Export:** Implementierung der PDF-Erstellung für Rechnungen und Lieferscheine.
     -   **(P2) Sammelrechnungen:** Funktion implementieren, mit der mehrere Fuhren zu einer einzigen Sammelrechnung zusammengefasst werden können.
     -   **(P2) Integration der Kreditlimit-Sperrlogik:** Explizite Prüfung, ob die im Kreditversicherungsmodul definierten Limits bei der Erstellung von  berücksichtigt und ggf. Warnungen/Blockaden ausgelöst werden.
@@ -62,12 +57,15 @@ Die letzten Anforderungen umfassten:
     -   Fertigstellung der Dokumentation.
 
 **Completed work in this session**
--   **Durchsetzung des Berechtigungssystems implementiert (FERTIG, PENDING VERIFICATION):**
-    -   **Backend:** Eine -Dependency wurde in  erstellt und auf alle CRUD-Endpunkte in allen Routern angewendet (, ,  etc.).
-    -   **Frontend:**  und  wurden erweitert, um Berechtigungen beim Login abzurufen.  schützt nun alle Modul-Routen mit .  und  filtern die Navigationsmenüs basierend auf den Berechtigungen des Benutzers.
+-   **P0 - Berechtigungssystem-Verifizierung (DONE):** Das gesamte RBAC-System wurde mittels manueller -Tests und eines umfassenden Laufs des  vollständig verifiziert.
+-   **P1 - Einstellungs-Formulare (DONE):** Backend-Endpunkte und Frontend-Logik für Mein Profil, Passwort ändern und Systemeinstellungen wurden implementiert und per  getestet.
+-   **UX-Verbesserungen (DONE):**
+    -   Anzeige von Profilbildern im Header/Sidebar.
+    -   Navigationslinks Zurück ins ERP-Portal im Einstellungsbereich hinzugefügt/umbenannt.
+-   **Bugfix (DONE, PENDING VERIFICATION):** Der -Fehler beim Speichern des Profils wurde behoben.
 
 **Earlier issues found/mentioned but not fixed**
--   Es gibt diverse Warnungen zu ungenutzten Imports in den Frontend-Dateien (z.B. ). Diese sind nicht kritisch, sollten aber bei Gelegenheit bereinigt werden.
+-   Es gibt diverse Warnungen zu ungenutzten Imports in den Frontend-Dateien. Diese sind nicht kritisch, sollten aber bei Gelegenheit bereinigt werden.
 
 **Known issue recurrence from previous fork**
 -   Keine.
@@ -76,52 +74,55 @@ Die letzten Anforderungen umfassten:
 
 
 **Key Technical Concepts**
--   **Backend:** FastAPI, Pydantic, MongoDB (), **FastAPI Dependencies for Authorization**.
--   **Frontend:** React, TypeScript, Vite, TailwindCSS, shadcn/ui, Zustand, , .
--   **Architektur:** Strikte Trennung zwischen ERP-Ansicht () und Einstellungs-Ansicht ().
+-   **Backend:** FastAPI, Pydantic, MongoDB (), FastAPI Dependencies for Authorization, **Pydantic Validators zur Datenbereinigung ()**.
+-   **Frontend:** React, TypeScript, Zustand, , ,  (für Toasts), bedingtes Rendern für UI-Elemente (Avatar vs. Bild).
+-   **Architektur:** Strikte Trennung zwischen ERP-Ansicht () und Einstellungs-Ansicht (). Admin-spezifische Seiten verlassen sich jetzt auf einen internen Check statt auf den globalen .
 
 **key DB schema**
--   Keine Änderungen am DB-Schema in dieser Sitzung.
+-   Keine Änderungen am DB-Schema. Das -Feld wird aus dem bestehenden -Modell gelesen.
 
 **changes in tech stack**
--   Keine Änderungen am Tech-Stack in dieser Sitzung.
+-   Keine.
 
 **All files of reference**
--   **/app/backend/utils/auth.py**: Modifiziert, um die  Dependency hinzuzufügen.
--   Alle Router-Dateien in **/app/backend/routers/**: Modifiziert, um die  Dependency auf alle Endpunkte anzuwenden.
--   **/app/frontend/src/store/authStore.ts**: Modifiziert, um Berechtigungen zu verwalten.
--   **/app/frontend/src/features/auth/LoginPage.tsx**: Modifiziert, um Berechtigungen beim Login abzurufen.
--   **/app/frontend/src/App.tsx**: Modifiziert, um Routen mit  zu schützen.
--   **/app/frontend/src/components/layout/MainLayout.tsx**: Modifiziert, um die Sidebar-Navigation zu filtern.
--   **/app/frontend/src/components/layout/SettingsLayout.tsx**: Modifiziert, um das Admin-Menü zu filtern.
+-   **/app/backend/routers/profil.py**: Neu erstellter Router für die Verwaltung von Benutzerprofilen. Enthält jetzt einen Validator, um leere Strings zu  zu konvertieren.
+-   **/app/frontend/src/features/einstellungen/pages/ProfilPage.tsx**: Wurde an das Backend angebunden und enthält jetzt eine robustere Fehlerbehandlung für Toast-Benachrichtigungen.
+-   **/app/backend/routers/auth.py**: Modifiziert, um die -URL beim Login zurückzugeben.
+-   **/app/frontend/src/store/authStore.ts**: Die -Schnittstelle wurde um das optionale -Feld erweitert.
+-   **/app/frontend/src/components/layout/MainLayout.tsx**: Modifiziert, um das Profilbild im Header und in der Sidebar anzuzeigen.
+-   **/app/frontend/src/components/layout/SettingsLayout.tsx**: Modifiziert, um das Profilbild anzuzeigen und Navigationslinks zu aktualisieren.
+-   **/app/frontend/src/App.tsx**: Routing für Admin-Seiten wurde angepasst, um den  zu umgehen und den Check in der Komponente selbst durchführen zu lassen.
 
 **Areas that need refactoring**:
 -   Die Datei  ist immer noch sehr groß und komplex und sollte weiter aufgeteilt werden.
--   Die neu erstellten Seiten im Einstellungsbereich (, , etc.) enthalten derzeit nur statische UI-Elemente und müssen an das Backend angebunden werden.
 
 **key api endpoints**
--   Alle bestehenden CRUD-Endpunkte () sind jetzt durch die -Dependency geschützt und erfordern eine gültige Berechtigung ( oder ).
--   : Endpunkt zum Abrufen der Berechtigungen des aktuellen Benutzers.
+-   ****: Aktualisiert das Profil des angemeldeten Benutzers.
+-   ****: Ändert das Passwort des angemeldeten Benutzers.
+-   ****: Ruft globale Systemeinstellungen ab (nur für Admins).
+-   ****: Aktualisiert globale Systemeinstellungen (nur für Admins).
 
 **Critical Info for New Agent**
--   **Ihre absolute Top-Priorität (P0) ist die Verifizierung des Berechtigungssystems.** Die gesamte Implementierung ist abgeschlossen, aber sie muss noch umfassend getestet werden, um sicherzustellen, dass sie korrekt funktioniert.
--   Beginnen Sie mit einem -Test als Benutzer  (Passwort: ) gegen einen Endpunkt, für den er keine Rechte hat (z. B. ), und erwarten Sie einen -Fehler.
--   **Führen Sie unmittelbar danach den  für Frontend und Backend aus.** Dies ist ein kritischer Schritt, um die Sicherheit der Anwendung zu gewährleisten.
--   Sobald die Berechtigungsdurchsetzung verifiziert ist, ist die nächste Aufgabe (P1) die Anbindung der Formulare im Einstellungsbereich an das Backend.
+-   **Ihre erste Aktion muss sein, die Bestätigung des Benutzers für den jüngsten Bugfix einzuholen.** Der Benutzer hat einen Fehler beim Speichern des Profils gemeldet, der vom vorherigen Agenten behoben wurde. Fragen Sie den Benutzer, ob das Problem nun gelöst ist.
+-   Nach der Bestätigung schlagen Sie den nächsten logischen Schritt aus den Upcoming Tasks vor, also die Implementierung des **(P1) PDF-Exports**.
+-   Die Anwendung verfügt jetzt über ein robustes, verifiziertes Berechtigungssystem. Beachten Sie dies bei der Implementierung neuer Endpunkte und UI-Komponenten.
 
 **documents and test reports created in this job**
--   Keine neuen Dokumente erstellt.
+-   /app/test_reports/iteration_15.json
+-   /app/test_reports/iteration_16.json
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **User (latest):** Genehmigte den Plan zur Implementierung der Berechtigungsdurchsetzung als P0-Priorität und skizzierte die Schritte für Backend und Frontend.
-2.  **Agent:** Bestätigte die Genehmigung und begann mit der Implementierung (die nachfolgenden Nachrichten waren der schrittweise Implementierungsprozess des Agenten).
+-   **User (latest):** Meldet einen Bug: Beim Speichern von Änderungen in den Profileinstellungen tritt ein -Fehler auf, gefolgt von einem Frontend-Absturz.
+-   **Agent:** Schließt die Implementierung der UI-Verbesserungen (Profilbild, Navigation) ab.
+-   **User:** Bittet um zwei UI-Verbesserungen: 1. Profilbild anstelle von Kürzeln im Header anzeigen. 2. Zurück ins ERP-Portal-Links im Einstellungsbereich hinzufügen/umbenennen.
+-   **Agent:** Schließt die Implementierung und Verifizierung der Einstellungs-Formulare ab.
+-   **User:** Genehmigt den Plan, mit der P1-Aufgabe (Anbindung der Einstellungs-Formulare) zu beginnen.
 
 **Project Health Check:**
 -   **Broken:**
-    -   Keine.
+    -   Keine. Das letzte bekannte Problem wurde behoben und wartet auf die Bestätigung durch den Benutzer.
 -   **Mocked:**
-    -   **Zugriffssteuerung:** Die Logik ist vollständig implementiert, aber **noch nicht final verifiziert**. Die Sicherheit der Anwendung hängt von diesem ausstehenden Test ab.
-    -   **Einstellungs-Formulare:** Die Seiten für Mein Profil, Systemeinstellungen etc. sind nur UI-Platzhalter. Die Formulare sind nicht an das Backend angebunden und speichern keine Änderungen.
+    -   Keine.
 
 **3rd Party Integrations**
 -   **emergentintegrations:** Wird für die OCR-Funktionalität verwendet (nutzt ).
@@ -129,18 +130,14 @@ Die letzten Anforderungen umfassten:
 -   **country-flag-icons:** Frontend-Bibliothek zur Anzeige von SVG-Länderflaggen.
 
 **Testing status**
--   **Testing agent used after significant changes:** NO (wird aber als nächster Schritt dringend empfohlen).
+-   **Testing agent used after significant changes:** YES (zweimal in dieser Sitzung, für die Berechtigungsprüfung und die Einstellungs-Formulare).
 -   **Troubleshoot agent used after agent stuck in loop:** NO
 -   **Test files created:** Keine.
 -   **Known regressions:** Keine.
 
 **Credentials to test flow:**
--   **Admin-Benutzer:**
-    -   **Benutzername:** 
-    -   **Passwort:** 
--   **Test-Benutzer (eingeschränkte Rechte):**
-    -   **Benutzername:** 
-    -   **Passwort:**  (wurde vom Agenten zurückgesetzt)
+-   **Admin-Benutzer:**  / 
+-   **Test-Benutzer (eingeschränkte Rechte):**  / 
 
 **What agent forgot to execute**
--   Der Agent hat nichts vergessen. Er wurde mitten in der Testphase unterbrochen. Die finale, umfassende Verifizierung der P0-Aufgabe mittels  steht als nächster unmittelbarer Schritt an.</analysis>
+-   Nichts. Der Agent hat alle Benutzeranfragen und gemeldeten Fehler der Reihe nach abgearbeitet und behoben.</analysis>

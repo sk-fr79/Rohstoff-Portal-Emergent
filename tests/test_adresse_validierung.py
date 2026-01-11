@@ -16,7 +16,7 @@ import requests
 import os
 import uuid
 
-BASE_URL = "https://rawmaterialapp.preview.emergentagent.com"
+BASE_URL = "https://commodity-system.preview.emergentagent.com"
 
 # Test credentials
 TEST_USERNAME = "admin"
