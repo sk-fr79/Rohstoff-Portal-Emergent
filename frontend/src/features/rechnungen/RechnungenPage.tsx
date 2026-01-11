@@ -447,37 +447,37 @@ export default function RechnungenPage() {
                   </Badge>
                 </div>
                 <Badge className={STATUS_CONFIG[selectedRechnung.status]?.color}>
-                {STATUS_CONFIG[selectedRechnung.status]?.label}
-              </Badge>
-            </div>
-            <div className="flex items-center gap-2">
-              {isEditing ? (
-                <>
-                  <Button variant="outline" size="sm" onClick={handleCancel} disabled={saving}>
-                    Abbrechen
+                  {STATUS_CONFIG[selectedRechnung.status]?.label}
+                </Badge>
+              </div>
+              <div className="flex items-center gap-2">
+                {isEditing ? (
+                  <>
+                    <Button variant="outline" size="sm" onClick={handleCancel} disabled={saving}>
+                      Abbrechen
+                    </Button>
+                    <Button size="sm" onClick={handleSave} className="bg-emerald-600" disabled={saving}>
+                      {saving ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Save className="h-4 w-4 mr-1" />}
+                      Speichern
+                    </Button>
+                  </>
+                ) : (
+                  <Button variant="outline" size="sm" onClick={() => setIsEditing(true)}>
+                    <Edit2 className="h-4 w-4 mr-1" />Bearbeiten
                   </Button>
-                  <Button size="sm" onClick={handleSave} className="bg-emerald-600" disabled={saving}>
-                    {saving ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Save className="h-4 w-4 mr-1" />}
-                    Speichern
-                  </Button>
-                </>
-              ) : (
-                <Button variant="outline" size="sm" onClick={() => setIsEditing(true)}>
-                  <Edit2 className="h-4 w-4 mr-1" />Bearbeiten
+                )}
+                <Button variant="ghost" size="icon" onClick={handleClose}>
+                  <X className="h-5 w-5" />
                 </Button>
-              )}
-              <Button variant="ghost" size="icon" onClick={handleClose}>
-                <X className="h-5 w-5" />
-              </Button>
+              </div>
             </div>
-          </div>
           
-          {/* Content with Sidebar */}
-          <div className="flex flex-1 overflow-hidden">
-            {/* Sidebar */}
-            <div className="w-48 border-r bg-slate-50 p-2 space-y-1">
-              {SIDEBAR_SECTIONS.map((section) => (
-                <button
+            {/* Content with Sidebar */}
+            <div className="flex flex-1 overflow-hidden">
+              {/* Sidebar */}
+              <div className="w-48 border-r bg-slate-50 p-2 space-y-1">
+                {SIDEBAR_SECTIONS.map((section) => (
+                  <button
                   key={section.id}
                   onClick={() => setActiveSection(section.id)}
                   className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${
