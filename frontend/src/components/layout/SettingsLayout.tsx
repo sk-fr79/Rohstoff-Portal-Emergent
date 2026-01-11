@@ -43,6 +43,7 @@ const adminSettingsItems = [
   { path: '/einstellungen/rollen', label: 'Benutzerrollen', icon: Shield },
   { path: '/einstellungen/abteilungen', label: 'Abteilungen', icon: Building2 },
   { path: '/einstellungen/berechtigungen', label: 'Zugriffssteuerung', icon: Shield },
+  { path: '/einstellungen/apis', label: 'APIs & Referenztabellen', icon: Globe },
   { path: '/einstellungen/system', label: 'Systemeinstellungen', icon: Cog },
   { path: '/einstellungen/datenbank', label: 'Datenbank', icon: Database },
 ];
