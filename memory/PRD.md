@@ -13,9 +13,34 @@ Die gesamte Geschäftslogik der bestehenden Anwendung soll 1:1 übernommen werde
 
 ---
 
-## Implementiert (Stand: 09.01.2026)
+## Implementiert (Stand: 11.01.2026)
 
-### ✅ UX-Refactoring: "Neu"-Button → Sidebar (NEU - 09.01.2026)
+### ✅ Resizable Sidebar-Panel (NEU - 11.01.2026)
+Benutzer können die Breite der Detail-Sidebar per Drag & Drop anpassen:
+
+**Features:**
+- **Drag Handle:** Vertikale Linie zwischen Tabelle und Sidebar mit Grip-Icon
+- **Standard:** 50/50 Aufteilung (Tabelle : Sidebar)
+- **Grenzen:** Min 30% / Max 70% pro Seite
+- **Visuelles Feedback:** 
+  - Cursor wird zu `col-resize` beim Hover
+  - Handle wird grün während des Ziehens
+  - Grip-Icon erscheint beim Hover
+- **Bei Reload:** Zurück auf Standard 50/50 (keine Persistenz)
+
+**Implementierte Module:**
+- Adressen
+- Artikel
+- Fuhren
+- Kontrakte
+- Wiegekarten
+- Rechnungen
+
+**Wiederverwendbare Komponenten:**
+- `useResizablePanel` Hook: `/app/frontend/src/hooks/useResizablePanel.ts`
+- `ResizeHandle` Komponente: `/app/frontend/src/components/ui/resize-handle.tsx`
+
+### ✅ UX-Refactoring: "Neu"-Button → Sidebar (09.01.2026)
 Einheitliches Benutzererlebnis für das Erstellen und Bearbeiten von Datensätzen:
 - **Alle 6 Module** verwenden jetzt das gleiche Pattern: Der "Neu"-Button öffnet die Detail-Sidebar (nicht mehr ein Popup-Dialog)
 - **Module:**
