@@ -523,6 +523,11 @@ Passwort: Admin123!
   - **Vererbung**: Benutzer > Rolle > Abteilung (bei mehreren Abteilungen höchstes Recht)
   - **Admin-Only**: Nur Administratoren haben Zugriff auf /api/admin/* Endpunkte
   - Test: 23/23 Backend-Tests, 100% Frontend bestanden
+- [x] **Berechtigungsdurchsetzung VERIFIZIERT** ✅ ERLEDIGT (11.01.2026)
+  - **Backend**: `require_permission()` Dependency auf allen CRUD-Endpunkten
+  - **Frontend**: `ProtectedModule` Komponente für Routenschutz, Sidebar-Filterung
+  - **Test-Ergebnis**: 20/20 Backend-Tests, 100% Frontend-Routenschutz
+  - **Test-Datei**: `/app/tests/test_berechtigungen_system.py`
 - [ ] Positionen im Kontrakt bearbeiten (UI zum Hinzufügen/Löschen)
 - [ ] Positionen in Rechnungen bearbeiten/löschen
 - [ ] Suchfeld in der globalen Navigation funktionsfähig machen
@@ -590,6 +595,20 @@ Passwort: Admin123!
 
 **Earlier issues found/mentioned but not fixed**
 -   Keine.
+
+## CHANGELOG (2026-01-11)
+### Verifizierung abgeschlossen:
+1. **Berechtigungssystem VOLLSTÄNDIG VERIFIZIERT** ✅
+   - **Backend-Tests**: 20/20 Tests bestanden (100%)
+   - **Frontend-Tests**: Routenschutz + Sidebar-Filterung funktionieren korrekt
+   - **Getestete Szenarien:**
+     - Admin-Benutzer hat vollen Zugriff auf alle Endpunkte
+     - Waage-Benutzer wird korrekt für gesperrte Module blockiert (403)
+     - Waage-Benutzer kann nur lesen (nicht schreiben) für read-only Module
+     - Frontend zeigt "Kein Zugriff"-Seite bei direktem URL-Zugriff auf gesperrte Routen
+     - Sidebar wird basierend auf Berechtigungen gefiltert
+   - **Test-Datei**: `/app/tests/test_berechtigungen_system.py`
+   - **Test-Report**: `/app/test_reports/iteration_15.json`
 
 ## CHANGELOG (2026-01-09)
 ### Neue Features:
