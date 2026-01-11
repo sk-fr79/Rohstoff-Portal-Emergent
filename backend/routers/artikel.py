@@ -91,7 +91,7 @@ async def get_artikel(
     aktiv: Optional[bool] = None,
     page: int = 1,
     limit: int = 20,
-    user = Depends(get_current_user)
+    user = Depends(require_permission("artikel", "read"))
 ):
     """Artikel suchen mit Pagination"""
     db = get_db()
@@ -126,7 +126,7 @@ async def get_artikel(
 
 
 @router.get("/artikel/{artikel_id}")
-async def get_artikel_by_id(artikel_id: str, user = Depends(get_current_user)):
+async def get_artikel_by_id(artikel_id: str, user = Depends(require_permission("artikel", "read"))):
     """Artikel nach ID"""
     db = get_db()
     artikel = await db.artikel.find_one({
@@ -145,7 +145,7 @@ async def get_artikel_by_id(artikel_id: str, user = Depends(get_current_user)):
 async def create_artikel(
     data: ArtikelCreate, 
     skip_validation: bool = False, 
-    user = Depends(get_current_user)
+    user = Depends(require_permission("artikel", "write"))
 ):
     """Neuen Artikel erstellen"""
     db = get_db()
@@ -173,7 +173,7 @@ async def update_artikel(
     artikel_id: str,
     data: ArtikelUpdate,
     skip_validation: bool = False,
-    user = Depends(get_current_user)
+    user = Depends(require_permission("artikel", "write"))
 ):
     """Artikel aktualisieren"""
     db = get_db()
@@ -207,7 +207,7 @@ async def update_artikel(
 
 
 @router.delete("/artikel/{artikel_id}")
-async def delete_artikel(artikel_id: str, user = Depends(get_current_user)):
+async def delete_artikel(artikel_id: str, user = Depends(require_permission("artikel", "full"))):
     """Artikel löschen (Hard Delete)"""
     db = get_db()
     
@@ -233,7 +233,7 @@ async def delete_artikel(artikel_id: str, user = Depends(get_current_user)):
 
 
 @router.post("/artikel/validieren")
-async def validate_artikel(data: dict, user = Depends(get_current_user)):
+async def validate_artikel(data: dict, user = Depends(require_permission("artikel", "read"))):
     """Artikel validieren ohne zu speichern"""
     db = get_db()
     result = await ArtikelValidator.validate(data, db)
