@@ -927,3 +927,88 @@ async def init_system_data(user = Depends(require_admin)):
         "message": "System initialisiert",
         "created": created
     }
+
+
+
+# ============================================================
+# SYSTEMEINSTELLUNGEN
+# ============================================================
+
+class SystemeinstellungenUpdate(BaseModel):
+    firmenname: Optional[str] = Field(None, max_length=200)
+    waehrung: Optional[str] = Field(None, max_length=3)
+    sprache: Optional[str] = Field(None, max_length=5)
+    zeitzone: Optional[str] = Field(None, max_length=50)
+    datumsformat: Optional[str] = Field(None, max_length=20)
+    email_host: Optional[str] = Field(None, max_length=200)
+    email_port: Optional[int] = Field(None, ge=1, le=65535)
+    email_user: Optional[str] = Field(None, max_length=200)
+    email_ssl: Optional[bool] = None
+    backup_enabled: Optional[bool] = None
+    backup_interval: Optional[str] = Field(None, max_length=20)
+    dark_mode_default: Optional[bool] = None
+
+
+@router.get("/systemeinstellungen")
+async def get_systemeinstellungen(user = Depends(require_admin)):
+    """Systemeinstellungen abrufen"""
+    db = get_db()
+    
+    # Einstellungen aus der mandanten Collection oder separate Collection
+    settings = await db.systemeinstellungen.find_one({"mandant_id": user["mandant_id"]})
+    
+    # Defaults falls keine Einstellungen vorhanden
+    defaults = {
+        "firmenname": "MV Rohstoff Portal GmbH",
+        "waehrung": "EUR",
+        "sprache": "de",
+        "zeitzone": "Europe/Berlin",
+        "datumsformat": "DD.MM.YYYY",
+        "email_host": "",
+        "email_port": 587,
+        "email_user": "",
+        "email_ssl": True,
+        "backup_enabled": True,
+        "backup_interval": "daily",
+        "dark_mode_default": False,
+    }
+    
+    if settings:
+        # _id entfernen und defaults mit gespeicherten Werten mergen
+        settings.pop("_id", None)
+        settings.pop("mandant_id", None)
+        result = {**defaults, **{k: v for k, v in settings.items() if v is not None}}
+    else:
+        result = defaults
+    
+    return {"success": True, "data": result}
+
+
+@router.put("/systemeinstellungen")
+async def update_systemeinstellungen(data: SystemeinstellungenUpdate, user = Depends(require_admin)):
+    """Systemeinstellungen aktualisieren"""
+    db = get_db()
+    
+    # Nur nicht-None Felder aktualisieren
+    update_data = {}
+    for field, value in data.model_dump(exclude_unset=True).items():
+        if value is not None:
+            update_data[field] = value
+    
+    if not update_data:
+        raise HTTPException(status_code=400, detail="Keine Daten zum Aktualisieren")
+    
+    update_data["aktualisiert_am"] = datetime.utcnow().isoformat()
+    update_data["aktualisiert_von"] = user["id"]
+    
+    # Upsert: Erstellen falls nicht vorhanden, sonst aktualisieren
+    await db.systemeinstellungen.update_one(
+        {"mandant_id": user["mandant_id"]},
+        {
+            "$set": update_data,
+            "$setOnInsert": {"mandant_id": user["mandant_id"], "erstellt_am": datetime.utcnow().isoformat()}
+        },
+        upsert=True
+    )
+    
+    return {"success": True, "message": "Systemeinstellungen aktualisiert"}
