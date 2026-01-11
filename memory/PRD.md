@@ -732,6 +732,21 @@ Passwort: Admin123!
 4. **Test-Report**: `/app/test_reports/iteration_18.json`
 5. **Neue Dependencies**: `openpyxl`, `xlrd` (für Excel-Support)
 
+### Intelligente Referenztabellen-Verknüpfung (NEU) ✅
+1. **Backend-Endpoints erstellt:**
+   - `GET /api/system/modules` - Verfügbare Module und Felder
+   - `GET/POST/DELETE /api/system/field-bindings` - CRUD für Verknüpfungen
+   - `GET /api/system/field-binding/lookup` - Verknüpfungsdetails
+   - `GET /api/system/reference-select/{module}/{field_name}` - Dropdown-Optionen
+   - `POST /api/system/validate-reference-value` - Wert-Validierung
+2. **Frontend-Komponenten:**
+   - `ReferenceSelect` - Wiederverwendbares Dropdown mit automatischer Bindungs-Erkennung
+   - `FieldBindingsManager` - Admin-UI für Verknüpfungsverwaltung
+3. **Integration in Artikel-Modul:**
+   - Zolltarifnummer-Feld zeigt jetzt durchsuchbares Dropdown mit Zolltarifnummern
+4. **Test-Ergebnis**: 22/22 Backend-Tests bestanden (100%)
+5. **Test-Report**: `/app/test_reports/iteration_19.json`
+
 ### P0 Berechtigungsdurchsetzung - VERIFIZIERT ✅
 1. **Backend-Tests**: 20/20 Tests bestanden (100%)
 2. **Frontend-Tests**: Routenschutz + Sidebar-Filterung funktionieren korrekt
