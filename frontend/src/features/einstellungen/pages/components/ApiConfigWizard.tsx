@@ -97,23 +97,17 @@ const DEFAULT_CONFIG: ApiConfig = {
 };
 
 // Zolltarifnummern.de Preset (V2 API mit semantischer Suche)
-const ZOLLTARIF_PRESET: Partial<ApiConfig> = {
-  name: 'Zolltarifnummern.de',
-  description: 'Deutsche Zolltarifnummern-Datenbank V2 - Semantische Suche mit AI Embeddings',
+const ZOLLTARIF_V2_PRESET: Partial<ApiConfig> = {
+  name: 'Zolltarifnummern.de (V2 - AI)',
+  description: 'Deutsche Zolltarifnummern-Datenbank V2 - Semantische Suche mit AI Embeddings (5 req/min)',
   api_type: 'REST',
   base_url: 'https://www.zolltarifnummern.de/api/v2/cnSuggest',
-  auth_type: 'none', // Keine Auth nötig, nur Rate-Limit (5 req/min)
+  auth_type: 'none',
   auth_config: {},
   request_config: {
     method: 'GET',
-    headers: {
-      'Accept': 'application/json',
-    },
-    query_params: { 
-      term: 'Fleisch', // Standard-Suchbegriff für Test
-      year: '2026',
-      lang: 'de',
-    },
+    headers: { 'Accept': 'application/json' },
+    query_params: { term: 'Fleisch', year: '2026', lang: 'de' },
   },
   response_mapping: {
     data_path: 'suggestions',
@@ -126,12 +120,116 @@ const ZOLLTARIF_PRESET: Partial<ApiConfig> = {
   },
   reference_table: {
     enabled: true,
-    table_name: 'ref_zolltarifnummern',
-    display_name: 'Zolltarifnummern',
+    table_name: 'ref_zolltarifnummern_v2',
+    display_name: 'Zolltarifnummern (V2 AI)',
     update_strategy: 'merge',
     track_history: false,
   },
 };
+
+// Zolltarifnummern.de V1 Preset (klassische Textsuche)
+const ZOLLTARIF_V1_PRESET: Partial<ApiConfig> = {
+  name: 'Zolltarifnummern.de (V1)',
+  description: 'Deutsche Zolltarifnummern-Datenbank V1 - Klassische Textsuche (50 req/min)',
+  api_type: 'REST',
+  base_url: 'https://www.zolltarifnummern.de/api/v1/cnSuggest',
+  auth_type: 'none',
+  auth_config: {},
+  request_config: {
+    method: 'GET',
+    headers: { 'Accept': 'application/json' },
+    query_params: { term: '0201', year: '2026', lang: 'de' },
+  },
+  response_mapping: {
+    data_path: 'suggestions',
+    field_mappings: [
+      { source_path: 'code', target_field: 'code', is_primary_key: true, data_type: 'string' },
+      { source_path: 'value', target_field: 'bezeichnung', is_primary_key: false, data_type: 'string' },
+      { source_path: 'score', target_field: 'relevanz', is_primary_key: false, data_type: 'number' },
+      { source_path: 'data', target_field: 'detail_url', is_primary_key: false, data_type: 'string' },
+    ],
+  },
+  reference_table: {
+    enabled: true,
+    table_name: 'ref_zolltarifnummern_v1',
+    display_name: 'Zolltarifnummern (V1)',
+    update_strategy: 'merge',
+    track_history: false,
+  },
+};
+
+// Zollsätze API (V1)
+const ZOLLTARIF_DUTIES_PRESET: Partial<ApiConfig> = {
+  name: 'Zollsätze (Duties)',
+  description: 'Zollsätze und Handelsmaßnahmen für Zolltarifnummern (10 req/min)',
+  api_type: 'REST',
+  base_url: 'https://www.zolltarifnummern.de/api/v1/cnDuties',
+  auth_type: 'none',
+  auth_config: {},
+  request_config: {
+    method: 'GET',
+    headers: { 'Accept': 'application/json' },
+    query_params: { term: '02075110', year: '2026' },
+  },
+  response_mapping: {
+    data_path: 'duties',
+    field_mappings: [
+      { source_path: 'goods_code', target_field: 'warennummer', is_primary_key: true, data_type: 'string' },
+      { source_path: 'goods_code_cn', target_field: 'cn_code', is_primary_key: false, data_type: 'string' },
+      { source_path: 'origin', target_field: 'ursprung', is_primary_key: false, data_type: 'string' },
+      { source_path: 'measure_type', target_field: 'massnahme_typ', is_primary_key: false, data_type: 'string' },
+      { source_path: 'duty', target_field: 'zollsatz', is_primary_key: false, data_type: 'string' },
+      { source_path: 'legal_base', target_field: 'rechtsgrundlage', is_primary_key: false, data_type: 'string' },
+      { source_path: 'start_date', target_field: 'gueltig_ab', is_primary_key: false, data_type: 'date' },
+      { source_path: 'end_date', target_field: 'gueltig_bis', is_primary_key: false, data_type: 'date' },
+    ],
+  },
+  reference_table: {
+    enabled: true,
+    table_name: 'ref_zollsaetze',
+    display_name: 'Zollsätze',
+    update_strategy: 'merge',
+    track_history: false,
+  },
+};
+
+// Zollämter API (V1)
+const ZOLLAEMTER_PRESET: Partial<ApiConfig> = {
+  name: 'Zollämter (Offices)',
+  description: 'Deutsche Zollämter und Zollstellen durchsuchen (50 req/min)',
+  api_type: 'REST',
+  base_url: 'https://www.zolltarifnummern.de/api/v1/officesSuggest',
+  auth_type: 'none',
+  auth_config: {},
+  request_config: {
+    method: 'GET',
+    headers: { 'Accept': 'application/json' },
+    query_params: { term: 'Hamburg' },
+  },
+  response_mapping: {
+    data_path: 'suggestions',
+    field_mappings: [
+      { source_path: 'ref_number', target_field: 'referenznummer', is_primary_key: true, data_type: 'string' },
+      { source_path: 'value', target_field: 'bezeichnung', is_primary_key: false, data_type: 'string' },
+      { source_path: 'data', target_field: 'detail_url', is_primary_key: false, data_type: 'string' },
+    ],
+  },
+  reference_table: {
+    enabled: true,
+    table_name: 'ref_zollaemter',
+    display_name: 'Zollämter',
+    update_strategy: 'merge',
+    track_history: false,
+  },
+};
+
+// Alle Vorlagen
+const API_PRESETS = [
+  { id: 'zolltarif_v1', label: 'Zolltarifnummern V1 (Textsuche)', preset: ZOLLTARIF_V1_PRESET, icon: '📋' },
+  { id: 'zolltarif_v2', label: 'Zolltarifnummern V2 (AI)', preset: ZOLLTARIF_V2_PRESET, icon: '🤖' },
+  { id: 'zollsaetze', label: 'Zollsätze (Duties)', preset: ZOLLTARIF_DUTIES_PRESET, icon: '💰' },
+  { id: 'zollaemter', label: 'Zollämter (Offices)', preset: ZOLLAEMTER_PRESET, icon: '🏢' },
+];
 
 interface Props {
   open: boolean;
