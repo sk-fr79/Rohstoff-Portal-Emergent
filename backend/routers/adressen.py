@@ -551,7 +551,7 @@ async def get_adressen(
     aktiv: Optional[bool] = None,
     page: int = 1,
     limit: int = 20,
-    user = Depends(get_current_user)
+    user = Depends(require_permission("adressen", "read"))
 ):
     """Adressen suchen mit Pagination"""
     db = get_db()
