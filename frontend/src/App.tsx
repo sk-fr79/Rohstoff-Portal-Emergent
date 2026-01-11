@@ -3,6 +3,7 @@ import { Toaster } from 'sonner';
 import { useAuthStore } from '@/store/authStore';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { SettingsLayout } from '@/components/layout/SettingsLayout';
+import { ProtectedModule } from '@/components/auth/ProtectedModule';
 import { LoginPage } from '@/features/auth/LoginPage';
 import { DashboardPage } from '@/features/dashboard/DashboardPage';
 import { AdressenPage } from '@/features/adressen/AdressenPage';
