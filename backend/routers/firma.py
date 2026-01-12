@@ -235,3 +235,82 @@ async def delete_firma(user = Depends(require_permission("system", "write"))):
         raise HTTPException(status_code=404, detail="Keine Firmendaten gefunden")
     
     return {"success": True, "message": "Firmendaten gelöscht"}
+
+
+@router.post("/firma/sync")
+async def sync_firma_manuell(user = Depends(require_permission("system", "write"))):
+    """Firmendaten manuell aus der Quelladresse synchronisieren"""
+    db = get_db()
+    
+    # Firma laden
+    firma = await db.firma.find_one({"mandant_id": user["mandant_id"]})
+    if not firma:
+        raise HTTPException(status_code=404, detail="Keine Firmendaten gefunden")
+    
+    if not firma.get("id_adresse"):
+        raise HTTPException(status_code=400, detail="Keine Quelladresse verknüpft")
+    
+    # Quelladresse laden
+    adresse = await db.adressen.find_one({
+        "_id": firma["id_adresse"],
+        "mandant_id": user["mandant_id"]
+    })
+    
+    if not adresse:
+        raise HTTPException(status_code=404, detail="Quelladresse nicht gefunden")
+    
+    # Firmendaten synchronisieren
+    sync_data = {
+        # Stammdaten
+        "name1": adresse.get("name1"),
+        "name2": adresse.get("name2"),
+        
+        # Adresse
+        "strasse": adresse.get("strasse"),
+        "hausnummer": adresse.get("hausnummer"),
+        "plz": adresse.get("plz"),
+        "ort": adresse.get("ort"),
+        "land": adresse.get("land"),
+        "land_code": adresse.get("land_code"),
+        
+        # Kontakt
+        "telefon": adresse.get("telefon"),
+        "telefax": adresse.get("telefax"),
+        "email": adresse.get("email"),
+        "website": adresse.get("webseite"),
+        
+        # Steuer
+        "ust_id": adresse.get("umsatzsteuer_id") or adresse.get("ust_id"),
+        "steuernummer": adresse.get("steuernummer"),
+        "handelsregister": adresse.get("handelsregister"),
+        "handelsregister_gericht": adresse.get("handelsregister_gericht"),
+        
+        # Nummern
+        "debitoren_nummer": adresse.get("debitoren_nummer") or adresse.get("kundennummer"),
+        "kreditoren_nummer": adresse.get("kreditoren_nummer") or adresse.get("lieferantennummer"),
+        
+        # Dynamische Daten
+        "weitere_ustids": adresse.get("weitere_ustids", []),
+        "lieferadressen": adresse.get("lieferadressen", []),
+        "bankverbindungen": adresse.get("bankverbindungen", []),
+        
+        # Sync-Metadaten
+        "letzter_sync": datetime.utcnow().isoformat(),
+        "sync_quelle": "manuell",
+        "sync_von": user.get("benutzername", "system")
+    }
+    
+    await db.firma.update_one(
+        {"mandant_id": user["mandant_id"]},
+        {"$set": sync_data}
+    )
+    
+    # Aktualisierte Firma zurückgeben
+    firma = await db.firma.find_one({"mandant_id": user["mandant_id"]})
+    firma_data = {k: v for k, v in firma.items() if k != "_id"}
+    
+    return {
+        "success": True, 
+        "data": firma_data,
+        "message": "Firmendaten erfolgreich synchronisiert"
+    }
