@@ -1072,36 +1072,6 @@ const AKTION_FARBEN: Record<string, string> = {
   'indigo': 'bg-indigo-100 text-indigo-700 border-indigo-200',
 };
 
-function formatRelativeTime(isoString: string): string {
-  // Stelle sicher, dass der Zeitstempel als UTC interpretiert wird
-  const utcString = isoString.endsWith('Z') ? isoString : isoString + 'Z';
-  const date = new Date(utcString);
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffSecs = Math.floor(diffMs / 1000);
-  const diffMins = Math.floor(diffMs / 60000);
-  const diffHours = Math.floor(diffMs / 3600000);
-  const diffDays = Math.floor(diffMs / 86400000);
-  
-  if (diffSecs < 60) return 'Gerade eben';
-  if (diffMins < 60) return `vor ${diffMins} Min.`;
-  if (diffHours < 24) return `vor ${diffHours} Std.`;
-  if (diffDays < 7) return `vor ${diffDays} Tag${diffDays > 1 ? 'en' : ''}`;
-  return date.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
-}
-
-function formatDateTime(isoString: string): string {
-  // Stelle sicher, dass der Zeitstempel als UTC interpretiert und in lokale Zeit konvertiert wird
-  const utcString = isoString.endsWith('Z') ? isoString : isoString + 'Z';
-  return new Date(utcString).toLocaleString('de-DE', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  });
-}
-
 interface ProtokollTabProps {
   kontraktId: string;
 }
