@@ -882,6 +882,8 @@ async def get_kontrakte(
     typ: Optional[str] = None,
     status: Optional[str] = None,
     nur_fixierung: bool = False,
+    nur_strecke: bool = False,
+    ohne_strecke: bool = False,
     page: int = 1,
     limit: int = 20,
     user = Depends(require_permission("kontrakte", "read"))
@@ -902,16 +904,56 @@ async def get_kontrakte(
         query["status"] = status
     if nur_fixierung:
         query["ist_fixierung"] = True
+    if nur_strecke:
+        query["ist_strecke"] = True
+    if ohne_strecke:
+        query["$or"] = query.get("$or", []) + [{"ist_strecke": {"$ne": True}}, {"ist_strecke": {"$exists": False}}]
+        if len(query["$or"]) == 2 and not suche:  # Nur ohne_strecke, keine Suche
+            query["ist_strecke"] = {"$ne": True}
+            del query["$or"]
     
     total = await db.kontrakte.count_documents(query)
     cursor = db.kontrakte.find(query).sort("erstellt_am", -1).skip((page - 1) * limit).limit(limit)
     kontrakte = await cursor.to_list(length=limit)
+    
+    # Strecken-Infos laden falls vorhanden
+    strecken_ids = list(set([k.get("strecken_id") for k in kontrakte if k.get("strecken_id")]))
+    strecken_partner = {}
+    
+    if strecken_ids:
+        # Partner-Kontrakte für jede Strecke laden
+        partner_cursor = db.kontrakte.find({
+            "strecken_id": {"$in": strecken_ids},
+            "mandant_id": user["mandant_id"],
+            "deleted": {"$ne": True}
+        })
+        async for p in partner_cursor:
+            sid = p.get("strecken_id")
+            if sid not in strecken_partner:
+                strecken_partner[sid] = {"ek": None, "vk": None}
+            if p.get("vorgang_typ") == "EK":
+                strecken_partner[sid]["ek"] = {
+                    "id": p["_id"],
+                    "kontraktnummer": p.get("kontraktnummer"),
+                    "name1": p.get("name1"),
+                    "status": p.get("status"),
+                }
+            else:
+                strecken_partner[sid]["vk"] = {
+                    "id": p["_id"],
+                    "kontraktnummer": p.get("kontraktnummer"),
+                    "name1": p.get("name1"),
+                    "status": p.get("status"),
+                }
     
     for k in kontrakte:
         k["id"] = k.pop("_id")
         # Summen berechnen
         summen = await berechne_kontrakt_summen(k)
         k["summen"] = summen
+        # Strecken-Partner hinzufügen
+        if k.get("strecken_id") and k.get("strecken_id") in strecken_partner:
+            k["strecken_partner"] = strecken_partner[k.get("strecken_id")]
     
     return {
         "success": True,
