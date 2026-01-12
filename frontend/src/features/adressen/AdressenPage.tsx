@@ -503,7 +503,7 @@ export function AdressenPage() {
     setWeitereUstIds(weitereUstIds.map(u => {
       if (u.id === id) {
         if (field === 'land') {
-          const selected = EU_LAENDER.find(l => l.land === value);
+          const selected = ALLE_LAENDER_MIT_LKZ.find(l => l.land === value);
           return { ...u, land: value, lkz: selected?.lkz || '' };
         }
         return { ...u, [field]: value };
