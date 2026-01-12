@@ -608,9 +608,8 @@ async def create_kontrakt(
         if not result.is_valid:
             raise HTTPException(status_code=400, detail=result.to_dict())
     
-    # Buchungsnummer generieren
-    ist_einkauf = data.vorgang_typ == "EK"
-    buchungsnummer = data.buchungsnummer or await generate_buchungsnummer(user["mandant_id"], ist_einkauf, db)
+    # Kontraktnummer aus Nummernkreis generieren
+    kontraktnummer = data.kontraktnummer or await generate_kontraktnummer(user["mandant_id"], data.vorgang_typ, db)
     
     # Positionen mit IDs versehen
     positionen = []
@@ -623,8 +622,8 @@ async def create_kontrakt(
     kontrakt = {
         "_id": str(uuid.uuid4()),
         "mandant_id": user["mandant_id"],
-        "buchungsnummer": buchungsnummer,
-        **data.model_dump(exclude={"buchungsnummer", "positionen"}),
+        "kontraktnummer": kontraktnummer,
+        **data.model_dump(exclude={"kontraktnummer", "positionen"}),
         "positionen": positionen,
         "erstellt_am": datetime.utcnow(),
         "erstellt_von": user.get("username"),
