@@ -16,7 +16,7 @@ import requests
 import os
 import uuid
 
-BASE_URL = "https://rohstoff-portal-1.preview.emergentagent.com"
+BASE_URL = "https://kind-mendeleev.preview.emergentagent.com"
 
 # Test credentials
 TEST_USERNAME = "admin"

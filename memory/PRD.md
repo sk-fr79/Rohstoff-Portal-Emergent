@@ -13,7 +13,58 @@
 
 ---
 
-## ✅ Kontrakt-Positionserfassung Redesign (NEU - 12.01.2026)
+## ✅ Audit-Protokoll für Kontrakte (NEU - 12.01.2026)
+Umfassendes, manipulationssicheres Aktivitätsprotokoll für alle Kontrakt-Aktionen.
+
+### Features:
+
+**Automatische Protokollierung:**
+- Kontrakt erstellen/bearbeiten/löschen
+- Status-Änderungen (OFFEN → AKTIV → ERFUELLT etc.)
+- Alle Feldänderungen mit Alt/Neu-Werten
+- Position hinzufügen/bearbeiten/löschen
+- Lager-Änderungen
+- Abschließen/Stornieren
+
+**Protokollierte Felder (vollständig):**
+- Grunddaten: Status, Kontraktnummer, Erstellungsdatum, Gültig von/bis
+- Partner: Name, Adresse, Ansprechpartner, Sachbearbeiter
+- Läger: Abhollager/Ziellager (alle Felder inkl. Adresse)
+- Konditionen: Zahlungs-/Lieferbedingung, Währung
+- Fixierung, Texte, Bemerkungen
+
+**Frontend - "Protokoll" Tab:**
+- Moderne Timeline-Ansicht mit Datum-Gruppierung
+- Farbkodierte Aktions-Badges (Erstellt=grün, Bearbeitet=blau, Status=amber, etc.)
+- Benutzer-Avatare mit Initialen
+- Expandierbare Detailansicht mit Änderungs-Diff
+- Filter nach Aktionstyp
+- Nur im Lesemodus sichtbar (manipulationssicher)
+- Auto-Refresh nach Speichern
+
+**Backend:**
+- Neue Collection: `kontrakt_audit_log`
+- `GET /api/kontrakte/{id}/audit-log` - Protokoll abrufen
+- `POST /api/kontrakte/{id}/audit-log` - Manuelle Einträge (Druck, Export)
+- `GET /api/kontrakte/{id}/audit-log/statistik` - Statistiken
+
+### Dateien:
+- `/app/backend/routers/kontrakte.py` - Audit-Log Helper + Endpunkte
+- `/app/frontend/src/features/kontrakte/KontraktePage.tsx` - ProtokollTab Komponente
+- `/app/frontend/src/lib/dateUtils.ts` - Zentrale Datums-Utilities (UTC→Lokal)
+
+---
+
+## ✅ Zeitzonen-Korrektur (12.01.2026)
+Systemweite Korrektur der Zeitstempel-Anzeige von UTC zu lokaler Zeit (Deutschland).
+
+- Zentrale Utility-Datei: `/app/frontend/src/lib/dateUtils.ts`
+- Funktionen: `formatRelativeTime()`, `formatDateTime()`, `formatDate()`, `formatDateLong()`, `formatTime()`
+- Automatische UTC→Lokal Konvertierung durch Anhängen von 'Z' an ISO-Strings
+
+---
+
+## ✅ Kontrakt-Positionserfassung Redesign (12.01.2026)
 Komplett überarbeitete, moderne Positionserfassung im Kontrakt-Modul.
 
 ### Features:

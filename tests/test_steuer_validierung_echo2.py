@@ -20,7 +20,7 @@ import os
 import uuid
 
 # Use public URL for testing
-BASE_URL = "https://rohstoff-portal-1.preview.emergentagent.com"
+BASE_URL = "https://kind-mendeleev.preview.emergentagent.com"
 
 # Test credentials (German field names)
 TEST_USERNAME = "admin"
