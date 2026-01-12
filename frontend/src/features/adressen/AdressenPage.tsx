@@ -138,18 +138,24 @@ interface UstId {
 
 interface Ansprechpartner {
   id: string;
-  vorname: string;
-  nachname: string;
+  anrede?: string;
+  vorname?: string;
+  nachname?: string;
   funktion?: string;
+  abteilung?: string;
   sprache?: string;
   strasse?: string;
   plz?: string;
   ort?: string;
   telefon?: string;
   mobil?: string;
+  fax?: string;
   email?: string;
+  notizen?: string;
   profilbild?: string;
   visitenkarte?: string;
+  ist_hauptkontakt?: boolean;
+  aktiv?: boolean;
 }
 
 interface Adresse extends AdresseForm {
