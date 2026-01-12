@@ -112,7 +112,12 @@ def berechne_aenderungen(alt: dict, neu: dict, felder_whitelist: list = None) ->
         "formulartext_ende": "Formulartext Ende",
     }
     
+    # Nur Felder vergleichen die im neuen Dictionary vorhanden sind (d.h. geändert wurden)
     for feld in relevante_felder:
+        # Nur wenn das Feld im Update enthalten ist
+        if feld not in neu:
+            continue
+            
         alt_wert = alt.get(feld)
         neu_wert = neu.get(feld)
         
