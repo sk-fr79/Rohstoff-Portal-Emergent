@@ -1477,9 +1477,23 @@ export function AdressenPage() {
                                     <SelectTrigger className="bg-white">
                                       <SelectValue placeholder="Land wählen" />
                                     </SelectTrigger>
-                                    <SelectContent>
-                                      {EU_LAENDER.map(l => (
-                                        <SelectItem key={l.land} value={l.land}>{l.land}</SelectItem>
+                                    <SelectContent className="max-h-[300px]">
+                                      {SORTED_REGIONS.map(region => (
+                                        LAENDER_BY_REGION[region] && (
+                                          <div key={region}>
+                                            <div className="px-2 py-1.5 text-xs font-semibold text-gray-500 bg-gray-50 sticky top-0">
+                                              {region}
+                                            </div>
+                                            {LAENDER_BY_REGION[region].map(l => (
+                                              <SelectItem key={l.land} value={l.land}>
+                                                <div className="flex items-center gap-2">
+                                                  <CountryFlag country={l.land} className="w-5 h-3" />
+                                                  <span>{l.land}</span>
+                                                </div>
+                                              </SelectItem>
+                                            ))}
+                                          </div>
+                                        )
                                       ))}
                                     </SelectContent>
                                   </Select>
