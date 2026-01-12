@@ -373,6 +373,7 @@ export function ReferenceSelect({
                   <button
                     onClick={() => {
                       onChange(null);
+                      onSelectOption?.(null);
                       setOpen(false);
                     }}
                     className={cn(
@@ -402,6 +403,7 @@ export function ReferenceSelect({
                       key={option.value}
                       onClick={() => {
                         onChange(option.value);
+                        onSelectOption?.(option);
                         setOpen(false);
                       }}
                       onMouseEnter={() => setHoveredOption(option.value)}
