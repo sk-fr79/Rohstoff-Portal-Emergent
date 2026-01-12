@@ -1343,12 +1343,17 @@ export function KontraktePage() {
   const [editingPosition, setEditingPosition] = useState<Position | null>(null);
   const [selectedAdresse, setSelectedAdresse] = useState<AdresseOption | null>(null);
   const [ansprechpartnerListe, setAnsprechpartnerListe] = useState<Ansprechpartner[]>([]);
+  // Streckengeschäft-States
+  const [showStreckeDialog, setShowStreckeDialog] = useState(false);
+  const [showVerknuepfenDialog, setShowVerknuepfenDialog] = useState(false);
+  const [streckenLieferant, setStreckenLieferant] = useState<AdresseOption | null>(null);
+  const [streckenAbnehmer, setStreckenAbnehmer] = useState<AdresseOption | null>(null);
   
   const { isDragging, containerRef, startDragging, leftPanelStyle, rightPanelStyle } = useResizablePanel();
 
   const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm<KontraktForm>({
     resolver: zodResolver(kontraktSchema),
-    defaultValues: { vorgang_typ: 'EK', waehrung_kurz: 'EUR', waehrungskurs: 1, status: 'OFFEN', aktiv: true, ist_fixierung: false }
+    defaultValues: { vorgang_typ: 'EK', waehrung_kurz: 'EUR', waehrungskurs: 1, status: 'OFFEN', aktiv: true, ist_fixierung: false, ist_strecke: false }
   });
 
   const watchFields = watch();
