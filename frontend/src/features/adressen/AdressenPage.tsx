@@ -34,6 +34,7 @@ import { BankverbindungenTab } from './components/BankverbindungenTab';
 import { LieferadressenTab } from './components/LieferadressenTab';
 import { ValidationDisplay, SteuerStatusBadge } from './components/ValidationDisplay';
 import { KreditversicherungTab } from './components/KreditversicherungTab';
+import { AnsprechpartnerSection } from './components/AnsprechpartnerSection';
 
 // Dynamic flag component using country-flag-icons
 import * as Flags from 'country-flag-icons/react/3x2';
