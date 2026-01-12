@@ -2523,6 +2523,203 @@ export function KontraktePage() {
         waehrung={watchFields.waehrung_kurz || 'EUR'}
         readOnly={true}
       />
+
+      {/* Streckengeschäft erstellen Dialog */}
+      <Dialog open={showStreckeDialog} onOpenChange={setShowStreckeDialog}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <ArrowRightLeft className="h-5 w-5 text-orange-600" />
+              Neues Streckengeschäft erstellen
+            </DialogTitle>
+            <DialogDescription>
+              Ein Streckengeschäft verknüpft automatisch einen Einkaufs- und Verkaufskontrakt. 
+              Die Ware wird direkt vom Lieferanten zum Abnehmer geliefert.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="grid grid-cols-2 gap-6 py-4">
+            {/* Lieferant (EK-Partner) */}
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 pb-2 border-b">
+                <div className="h-8 w-8 rounded-lg bg-green-100 flex items-center justify-center">
+                  <ArrowDownToLine className="h-4 w-4 text-green-600" />
+                </div>
+                <div>
+                  <h4 className="font-semibold text-gray-900">Lieferant (EK)</h4>
+                  <p className="text-xs text-gray-500">Wo kaufen wir ein?</p>
+                </div>
+              </div>
+              <AdresseSelect
+                value={streckenLieferant}
+                onChange={setStreckenLieferant}
+                placeholder="Lieferant auswählen..."
+              />
+              {streckenLieferant && (
+                <div className="p-3 bg-green-50 rounded-lg border border-green-100">
+                  <div className="font-medium">{streckenLieferant.name1}</div>
+                  <div className="text-sm text-gray-500">
+                    {streckenLieferant.strasse} {streckenLieferant.hausnummer}, {streckenLieferant.plz} {streckenLieferant.ort}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Abnehmer (VK-Partner) */}
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 pb-2 border-b">
+                <div className="h-8 w-8 rounded-lg bg-blue-100 flex items-center justify-center">
+                  <ArrowUpFromLine className="h-4 w-4 text-blue-600" />
+                </div>
+                <div>
+                  <h4 className="font-semibold text-gray-900">Abnehmer (VK)</h4>
+                  <p className="text-xs text-gray-500">An wen verkaufen wir?</p>
+                </div>
+              </div>
+              <AdresseSelect
+                value={streckenAbnehmer}
+                onChange={setStreckenAbnehmer}
+                placeholder="Abnehmer auswählen..."
+              />
+              {streckenAbnehmer && (
+                <div className="p-3 bg-blue-50 rounded-lg border border-blue-100">
+                  <div className="font-medium">{streckenAbnehmer.name1}</div>
+                  <div className="text-sm text-gray-500">
+                    {streckenAbnehmer.strasse} {streckenAbnehmer.hausnummer}, {streckenAbnehmer.plz} {streckenAbnehmer.ort}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Lieferroute Visualisierung */}
+          {streckenLieferant && streckenAbnehmer && (
+            <div className="py-4 border-t">
+              <div className="flex items-center justify-center gap-4 p-4 bg-gradient-to-r from-green-50 via-orange-50 to-blue-50 rounded-lg border">
+                <div className="text-center">
+                  <Building2 className="h-6 w-6 text-green-600 mx-auto" />
+                  <div className="text-sm font-medium mt-1">{streckenLieferant.name1}</div>
+                  <div className="text-xs text-gray-500">{streckenLieferant.ort}</div>
+                </div>
+                <div className="flex-1 flex items-center justify-center">
+                  <div className="flex items-center gap-2 px-4 py-1 bg-orange-100 rounded-full">
+                    <Truck className="h-4 w-4 text-orange-600" />
+                    <ArrowRight className="h-4 w-4 text-orange-600" />
+                    <span className="text-xs font-medium text-orange-700">Direktlieferung</span>
+                  </div>
+                </div>
+                <div className="text-center">
+                  <Building2 className="h-6 w-6 text-blue-600 mx-auto" />
+                  <div className="text-sm font-medium mt-1">{streckenAbnehmer.name1}</div>
+                  <div className="text-xs text-gray-500">{streckenAbnehmer.ort}</div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowStreckeDialog(false)}>Abbrechen</Button>
+            <Button 
+              onClick={handleCreateStrecke}
+              disabled={!streckenLieferant || !streckenAbnehmer || createStreckeMutation.isPending}
+              className="bg-orange-600 hover:bg-orange-700"
+            >
+              {createStreckeMutation.isPending ? 'Wird erstellt...' : 'Streckengeschäft erstellen'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Verknüpfen Dialog */}
+      <Dialog open={showVerknuepfenDialog} onOpenChange={setShowVerknuepfenDialog}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Link2 className="h-5 w-5 text-orange-600" />
+              Kontrakt zu Streckengeschäft verknüpfen
+            </DialogTitle>
+            <DialogDescription>
+              Verknüpfen Sie diesen {selectedKontrakt?.vorgang_typ}-Kontrakt mit einem bestehenden {selectedKontrakt?.vorgang_typ === 'EK' ? 'VK' : 'EK'}-Kontrakt zu einem Streckengeschäft.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="py-4 space-y-4">
+            {/* Aktueller Kontrakt */}
+            <div className="p-3 bg-gray-50 rounded-lg border">
+              <div className="text-xs text-gray-500 mb-1">Aktueller Kontrakt</div>
+              <div className="flex items-center gap-2">
+                {selectedKontrakt?.vorgang_typ === 'EK' ? (
+                  <ArrowDownToLine className="h-4 w-4 text-green-600" />
+                ) : (
+                  <ArrowUpFromLine className="h-4 w-4 text-blue-600" />
+                )}
+                <span className="font-mono font-medium">{selectedKontrakt?.kontraktnummer}</span>
+                <span className="text-gray-500">-</span>
+                <span>{selectedKontrakt?.name1}</span>
+              </div>
+            </div>
+
+            {/* Partner-Kontrakt auswählen */}
+            <div className="space-y-2">
+              <Label>Partner-Kontrakt (optional)</Label>
+              <Select onValueChange={(v) => {
+                if (v && selectedKontrakt) {
+                  verknuepfenMutation.mutate({ 
+                    kontraktId: selectedKontrakt.id, 
+                    partnerKontraktId: v === '__none__' ? undefined : v 
+                  });
+                }
+              }}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Optional: Partner-Kontrakt wählen..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__none__">Ohne Partner (später verknüpfen)</SelectItem>
+                  {kontrakteData?.data
+                    ?.filter((k: Kontrakt) => 
+                      k.vorgang_typ !== selectedKontrakt?.vorgang_typ && 
+                      !k.ist_strecke &&
+                      k.id !== selectedKontrakt?.id
+                    )
+                    .map((k: Kontrakt) => (
+                      <SelectItem key={k.id} value={k.id}>
+                        <div className="flex items-center gap-2">
+                          {k.vorgang_typ === 'EK' ? (
+                            <ArrowDownToLine className="h-4 w-4 text-green-600" />
+                          ) : (
+                            <ArrowUpFromLine className="h-4 w-4 text-blue-600" />
+                          )}
+                          <span className="font-mono">{k.kontraktnummer}</span>
+                          <span className="text-gray-500">-</span>
+                          <span>{k.name1}</span>
+                        </div>
+                      </SelectItem>
+                    ))
+                  }
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-gray-500">
+                Ohne Partner wird ein neues Streckengeschäft erstellt, dem später ein zweiter Kontrakt hinzugefügt werden kann.
+              </p>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowVerknuepfenDialog(false)}>Abbrechen</Button>
+            <Button 
+              onClick={() => {
+                if (selectedKontrakt) {
+                  verknuepfenMutation.mutate({ kontraktId: selectedKontrakt.id });
+                }
+              }}
+              disabled={verknuepfenMutation.isPending}
+              className="bg-orange-600 hover:bg-orange-700"
+            >
+              {verknuepfenMutation.isPending ? 'Wird verknüpft...' : 'Ohne Partner verknüpfen'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
