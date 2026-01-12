@@ -791,18 +791,19 @@ export function ArtikelPage() {
                                 const description = cleanText(option.data?.value || option.display || '');
                                 const detailUrl = option.data?.detail_url || option.data?.data || '';
                                 
-                                // Formatierte Notiz erstellen
+                                // URL separat speichern für klickbaren Link
+                                setZolltarifUrl(detailUrl || null);
+                                
+                                // Formatierte Notiz erstellen (ohne URL, da diese separat angezeigt wird)
                                 let notiz = `${code}`;
                                 if (description && description !== code) {
                                   notiz += `\n${description}`;
-                                }
-                                if (detailUrl) {
-                                  notiz += `\n\n🔗 ${detailUrl}`;
                                 }
                                 
                                 setValue('zolltarifnotiz', notiz);
                               } else {
                                 setValue('zolltarifnotiz', '');
+                                setZolltarifUrl(null);
                               }
                             }}
                             placeholder="Zolltarifnummer auswählen..."
