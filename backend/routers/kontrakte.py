@@ -697,10 +697,37 @@ async def get_adressen_fuer_auswahl(
             "kundennummer": a.get("kundennummer") or a.get("kdnr"),
             "ansprechpartner": a.get("ansprechpartner", []),
             "ust_ids": ust_ids,
-            "bankverbindungen": bankverbindungen
+            "bankverbindungen": bankverbindungen,
+            "lieferadressen": a.get("lieferadressen", [])
         })
     
     return {"success": True, "data": result}
+
+
+@router.get("/kontrakte/lookup/mandant")
+async def get_mandant_adresse(user = Depends(require_permission("kontrakte", "read"))):
+    """Mandant-Adresse für Lager-Auswahl laden"""
+    db = get_db()
+    
+    mandant = await db.mandanten.find_one({"_id": user["mandant_id"]})
+    if not mandant:
+        return {"success": True, "data": None}
+    
+    return {
+        "success": True,
+        "data": {
+            "id": mandant["_id"],
+            "name1": mandant.get("firma") or mandant.get("name"),
+            "name2": mandant.get("zusatz"),
+            "strasse": mandant.get("strasse"),
+            "hausnummer": mandant.get("hausnummer"),
+            "plz": mandant.get("plz"),
+            "ort": mandant.get("ort"),
+            "land": mandant.get("land", "Deutschland"),
+            "telefon": mandant.get("telefon"),
+            "email": mandant.get("email")
+        }
+    }
 
 
 @router.get("/kontrakte/{kontrakt_id}")
