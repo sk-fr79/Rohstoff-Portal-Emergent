@@ -51,21 +51,34 @@ Zentrales System zur Verwaltung eindeutiger, sequentieller Belegnummern für ver
 - `POST /api/system/nummernkreise/initialisieren` - Standard-Kreise erstellen
 - `POST /api/system/nummernkreise/naechste-nummer` - Nächste Nummer abrufen
 
-**Kontrakt-Erweiterungen:**
-- `GET /api/kontrakte/lookup/benutzer` - Benutzer für Sachbearbeiter/Händler-Auswahl
-- `GET /api/kontrakte/lookup/adressen` - Adressen für Vertragspartner-Auswahl
-- Sachbearbeiter und Händler als Dropdown aus Benutzerliste
-- Vertragspartner aus Adress-Modul auswählbar
-- Ansprechpartner des Partners auswählbar (abhängig von gewählter Adresse)
-
 **Dateien:**
 - `/app/backend/routers/nummernkreise.py` - Backend-Logik
 - `/app/frontend/src/features/einstellungen/pages/NummernkreisePage.tsx` - Verwaltungs-UI
-- `/app/backend/routers/kontrakte.py` - Erweitert mit Lookup-APIs
-- `/app/frontend/src/features/kontrakte/KontraktePage.tsx` - BenutzerSelect, AdressenSelect Komponenten
 
 **Tests:**
 - `/app/tests/test_nummernkreise_kontrakte.py` - 20 Unit-Tests (100% bestanden)
+
+---
+
+### ✅ Vertragspartner-Integration Redesign (NEU - 12.01.2026)
+Komplett überarbeitetes, modernes Card-basiertes Design für die Vertragspartner-Sektion im Kontrakt-Formular.
+
+**Features:**
+- **Kompakte Vertragspartner-Card:** Suchfeld mit Autocomplete, bei Auswahl kompakte Anzeige der wichtigsten Daten
+- **USt-ID Auswahl:** Dropdown zur Auswahl aus mehreren USt-IDs (Haupt-ID + weitere), Standard: Haupt-USt-ID
+- **Bankverbindung mit Währung:** Dropdown zur Auswahl aus mehreren Bankverbindungen, Standard: Hauptkonto
+- **Ansprechpartner als Dropdown:** Statt scrollbarer Liste jetzt übersichtliches Dropdown mit Name + Funktion
+- **Interne Zuständigkeit:** Nur Sachbearbeiter/Händler Dropdowns, keine überflüssigen Kontaktinfos
+
+**Backend-Erweiterungen:**
+- `GET /api/kontrakte/lookup/adressen` erweitert um `ust_ids[]` und `bankverbindungen[]`
+
+**Schema-Erweiterungen:**
+- Neue Felder: `id_bankverbindung`, `bank_iban`, `bank_bic`, `bank_name`, `bank_waehrung`
+
+**Dateien:**
+- `/app/backend/routers/kontrakte.py` - Lookup-API erweitert
+- `/app/frontend/src/features/kontrakte/KontraktePage.tsx` - UI komplett überarbeitet
 
 ---
 
