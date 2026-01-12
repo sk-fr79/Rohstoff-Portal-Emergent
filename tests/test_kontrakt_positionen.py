@@ -198,13 +198,27 @@ class TestKontraktPositionen:
         assert position["gesamtpreis"] == 25050.0  # 100 * 250.50
         print(f"✓ Added position with Gesamtpreis: {position['gesamtpreis']}")
     
-    def test_add_multiple_positions(self, auth_headers, test_kontrakt):
+    def test_add_multiple_positions(self, auth_headers):
         """Test adding multiple positions and verify positionsnummer increments"""
-        # Add first position
-        response1 = requests.post(
-            f"{BASE_URL}/api/kontrakte/{test_kontrakt['id']}/positionen",
+        # Create a fresh kontrakt for this test
+        test_name = f"TEST_MultiPos_{uuid.uuid4().hex[:8]}"
+        create_response = requests.post(
+            f"{BASE_URL}/api/kontrakte",
             headers=auth_headers,
             json={
+                "vorgang_typ": "EK",
+                "name1": test_name,
+                "status": "OFFEN"
+            }
+        )
+        kontrakt_id = create_response.json()["data"]["id"]
+        
+        # Add first position
+        response1 = requests.post(
+            f"{BASE_URL}/api/kontrakte/{kontrakt_id}/positionen",
+            headers=auth_headers,
+            json={
+                "position_typ": "ARTIKEL",
                 "artbez1": "Position 1",
                 "anzahl": 50,
                 "einzelpreis": 100
@@ -216,9 +230,10 @@ class TestKontraktPositionen:
         
         # Add second position
         response2 = requests.post(
-            f"{BASE_URL}/api/kontrakte/{test_kontrakt['id']}/positionen",
+            f"{BASE_URL}/api/kontrakte/{kontrakt_id}/positionen",
             headers=auth_headers,
             json={
+                "position_typ": "ARTIKEL",
                 "artbez1": "Position 2",
                 "anzahl": 75,
                 "einzelpreis": 200
@@ -229,6 +244,9 @@ class TestKontraktPositionen:
         assert pos2["positionsnummer"] == 2
         
         print(f"✓ Multiple positions added with correct positionsnummer")
+        
+        # Cleanup
+        requests.delete(f"{BASE_URL}/api/kontrakte/{kontrakt_id}", headers=auth_headers)
     
     def test_update_position(self, auth_headers, test_kontrakt):
         """Test updating a position"""
