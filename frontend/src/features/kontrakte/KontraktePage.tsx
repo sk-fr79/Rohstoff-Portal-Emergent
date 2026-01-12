@@ -517,11 +517,23 @@ export function KontraktePage() {
     Object.entries(kontrakt).forEach(([key, value]) => { if (key in kontraktSchema.shape) setValue(key as keyof KontraktForm, value as any); });
     
     // Wenn eine Adresse verknüpft ist, lade die Adressdaten für USt-ID/Bankverbindung-Dropdowns
-    if (kontrakt.id_adresse && adressenData) {
-      const adresse = adressenData.find(a => a.id === kontrakt.id_adresse);
-      if (adresse) {
-        setSelectedAdresse(adresse);
-        setAnsprechpartnerListe(adresse.ansprechpartner || []);
+    if (kontrakt.id_adresse) {
+      try {
+        // Lade die Adresse direkt über die API
+        const response = await api.get('/kontrakte/lookup/adressen', { params: { suche: '', limit: 100 } });
+        const adressen = response.data.data as AdresseOption[];
+        const adresse = adressen.find(a => a.id === kontrakt.id_adresse);
+        if (adresse) {
+          setSelectedAdresse(adresse);
+          setAnsprechpartnerListe(adresse.ansprechpartner || []);
+        } else {
+          setSelectedAdresse(null);
+          setAnsprechpartnerListe([]);
+        }
+      } catch (error) {
+        console.error('Fehler beim Laden der Adresse:', error);
+        setSelectedAdresse(null);
+        setAnsprechpartnerListe([]);
       }
     } else {
       setSelectedAdresse(null);
