@@ -11,7 +11,7 @@ import {
   Save, Phone, Mail, Globe, CreditCard, FileText, Users, X, Upload,
   Banknote, Shield, Clock, MessageSquare, AlertTriangle, UserCircle,
   Image as ImageIcon, Camera, Scan, Loader2, EyeOff, CheckCircle, XCircle,
-  History, Search, RefreshCw, Briefcase, ClipboardList, GripVertical
+  History, Search, RefreshCw, Briefcase, ClipboardList, GripVertical, Star
 } from 'lucide-react';
 import { adressenApi, api } from '@/services/api/client';
 import { Button } from '@/components/ui/button';
