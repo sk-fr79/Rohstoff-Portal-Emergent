@@ -1225,6 +1225,10 @@ async def delete_position(
     """Position löschen"""
     db = get_db()
     
+    # Position für Audit-Log laden bevor sie gelöscht wird
+    kontrakt = await db.kontrakte.find_one({"_id": kontrakt_id, "mandant_id": user["mandant_id"]})
+    geloeschte_position = next((p for p in kontrakt.get("positionen", []) if p.get("id") == position_id), None) if kontrakt else None
+    
     # Validieren ob Löschung erlaubt
     result = await KontraktValidator.validate_position_delete(kontrakt_id, position_id, db)
     if not result.is_valid:
@@ -1233,6 +1237,22 @@ async def delete_position(
     await db.kontrakte.update_one(
         {"_id": kontrakt_id, "mandant_id": user["mandant_id"]},
         {"$pull": {"positionen": {"id": position_id}}}
+    )
+    
+    # Audit-Log: Position gelöscht
+    await audit_log_erstellen(
+        kontrakt_id=kontrakt_id,
+        mandant_id=user["mandant_id"],
+        aktion="POSITION_GELOESCHT",
+        benutzer=user,
+        details={
+            "position_id": position_id,
+            "positionsnummer": geloeschte_position.get("positionsnummer") if geloeschte_position else None,
+            "artikel": geloeschte_position.get("artbez1") if geloeschte_position else None,
+            "artikel_nr": geloeschte_position.get("anr1") if geloeschte_position else None,
+            "menge": geloeschte_position.get("anzahl") if geloeschte_position else None,
+            "gesamtpreis": geloeschte_position.get("gesamtpreis") if geloeschte_position else None
+        }
     )
     
     return {"success": True, "message": "Position gelöscht"}
