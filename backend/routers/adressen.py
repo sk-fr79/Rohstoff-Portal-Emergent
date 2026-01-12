@@ -20,6 +20,80 @@ from utils.auth import get_current_user, require_permission
 
 router = APIRouter(prefix="/api", tags=["Adressen"])
 
+
+# ============================================================
+# FIRMA-SYNC HELPER
+# ============================================================
+
+async def sync_firma_wenn_firmenadresse(adresse_id: str, mandant_id: str):
+    """
+    Synchronisiert die Firmendaten, wenn die geänderte Adresse die Firmenadresse ist.
+    Wird automatisch nach Adress-Updates aufgerufen.
+    """
+    db = get_db()
+    
+    # Prüfen ob diese Adresse die Firmenadresse ist
+    firma = await db.firma.find_one({
+        "mandant_id": mandant_id,
+        "id_adresse": adresse_id
+    })
+    
+    if not firma:
+        return None  # Diese Adresse ist nicht die Firmenadresse
+    
+    # Aktuelle Adressdaten laden
+    adresse = await db.adressen.find_one({"_id": adresse_id})
+    if not adresse:
+        return None
+    
+    # Firmendaten aus Adresse aktualisieren
+    sync_data = {
+        # Stammdaten
+        "name1": adresse.get("name1"),
+        "name2": adresse.get("name2"),
+        
+        # Adresse
+        "strasse": adresse.get("strasse"),
+        "hausnummer": adresse.get("hausnummer"),
+        "plz": adresse.get("plz"),
+        "ort": adresse.get("ort"),
+        "land": adresse.get("land"),
+        "land_code": adresse.get("land_code"),
+        
+        # Kontakt
+        "telefon": adresse.get("telefon"),
+        "telefax": adresse.get("telefax"),
+        "email": adresse.get("email"),
+        "website": adresse.get("webseite"),
+        
+        # Steuer
+        "ust_id": adresse.get("umsatzsteuer_id") or adresse.get("ust_id"),
+        "steuernummer": adresse.get("steuernummer"),
+        "handelsregister": adresse.get("handelsregister"),
+        "handelsregister_gericht": adresse.get("handelsregister_gericht"),
+        
+        # Nummern
+        "debitoren_nummer": adresse.get("debitoren_nummer") or adresse.get("kundennummer"),
+        "kreditoren_nummer": adresse.get("kreditoren_nummer") or adresse.get("lieferantennummer"),
+        
+        # Dynamische Daten (immer live aus Adresse)
+        "weitere_ustids": adresse.get("weitere_ustids", []),
+        "lieferadressen": adresse.get("lieferadressen", []),
+        "bankverbindungen": adresse.get("bankverbindungen", []),
+        
+        # Sync-Metadaten
+        "letzter_sync": datetime.utcnow().isoformat(),
+        "sync_quelle": "auto"
+    }
+    
+    await db.firma.update_one(
+        {"mandant_id": mandant_id},
+        {"$set": sync_data}
+    )
+    
+    return sync_data
+
+
 # ============================================================
 # PYDANTIC MODELS
 # ============================================================
