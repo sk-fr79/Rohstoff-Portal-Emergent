@@ -52,6 +52,22 @@ interface Ansprechpartner {
   email?: string;
 }
 
+interface UstIdOption {
+  id: string;
+  ust_id: string;
+  ist_hauptid: boolean;
+}
+
+interface BankverbindungOption {
+  id: string;
+  iban: string;
+  bic?: string;
+  bank_name?: string;
+  kontoinhaber?: string;
+  waehrung: string;
+  ist_hauptkonto: boolean;
+}
+
 interface AdresseOption {
   id: string;
   name1: string;
@@ -69,6 +85,8 @@ interface AdresseOption {
   email?: string;
   kundennummer?: string;
   ansprechpartner?: Ansprechpartner[];
+  ust_ids?: UstIdOption[];
+  bankverbindungen?: BankverbindungOption[];
 }
 
 interface Position {
