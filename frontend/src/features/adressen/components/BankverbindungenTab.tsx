@@ -275,9 +275,11 @@ export function BankverbindungenTab({ adresseId, isEditing }: BankverbindungenTa
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label className="text-sm font-medium">BIC/SWIFT</Label>
-                  <Input
+                  <DynamicInput
+                    module="adressen"
+                    fieldName="bankverbindungen.bic"
                     value={formData.bic || ''}
-                    onChange={(e) => setFormData({ ...formData, bic: e.target.value.toUpperCase() })}
+                    onChange={(val) => setFormData({ ...formData, bic: val?.toUpperCase() || '' })}
                     placeholder="COBADEFFXXX"
                     className="font-mono"
                   />
@@ -302,9 +304,11 @@ export function BankverbindungenTab({ adresseId, isEditing }: BankverbindungenTa
 
               <div>
                 <Label className="text-sm font-medium">Bank</Label>
-                <Input
+                <DynamicInput
+                  module="adressen"
+                  fieldName="bankverbindungen.bank_name"
                   value={formData.bank_name || ''}
-                  onChange={(e) => setFormData({ ...formData, bank_name: e.target.value })}
+                  onChange={(val) => setFormData({ ...formData, bank_name: val || '' })}
                   placeholder="Commerzbank"
                 />
               </div>
