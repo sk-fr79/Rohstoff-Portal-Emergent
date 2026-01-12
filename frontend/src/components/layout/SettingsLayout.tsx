@@ -20,6 +20,7 @@ import {
   Cog,
   ArrowLeft,
   Globe,
+  Hash,
 } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { usePermissionsStore } from '@/store/permissionsStore';
@@ -43,6 +44,7 @@ const adminSettingsItems = [
   { path: '/einstellungen/rollen', label: 'Benutzerrollen', icon: Shield },
   { path: '/einstellungen/abteilungen', label: 'Abteilungen', icon: Building2 },
   { path: '/einstellungen/berechtigungen', label: 'Zugriffssteuerung', icon: Shield },
+  { path: '/einstellungen/nummernkreise', label: 'Nummernkreise', icon: Hash },
   { path: '/einstellungen/apis', label: 'APIs & Referenztabellen', icon: Globe },
   { path: '/einstellungen/system', label: 'Systemeinstellungen', icon: Cog },
   { path: '/einstellungen/datenbank', label: 'Datenbank', icon: Database },
