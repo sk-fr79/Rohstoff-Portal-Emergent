@@ -582,7 +582,7 @@ async def get_benutzer_fuer_auswahl(
     """Benutzer für Sachbearbeiter/Händler-Auswahl laden"""
     db = get_db()
     
-    cursor = db.users.find(
+    cursor = db.benutzer.find(
         {"mandant_id": user["mandant_id"], "aktiv": {"$ne": False}},
         {"_id": 1, "benutzername": 1, "vorname": 1, "nachname": 1, "email": 1, "telefon": 1, "rolle_name": 1}
     ).sort("nachname", 1)
