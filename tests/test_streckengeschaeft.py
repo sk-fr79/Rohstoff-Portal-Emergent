@@ -90,10 +90,11 @@ class TestStreckengeschaeftAPI:
         print(f"Create Streckengeschäft Response: {response.status_code}")
         
         assert response.status_code == 200, f"Expected 200, got {response.status_code}: {response.text}"
-        data = response.json()
+        resp = response.json()
         
         # Verify response structure
-        assert data.get("success") == True
+        assert resp.get("success") == True
+        data = resp.get("data", resp)  # Handle both nested and flat response
         assert "strecken_id" in data
         assert "ek_kontrakt" in data
         assert "vk_kontrakt" in data
