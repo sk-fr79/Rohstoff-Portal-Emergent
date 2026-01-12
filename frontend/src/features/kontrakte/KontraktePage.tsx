@@ -1712,7 +1712,7 @@ export function KontraktePage() {
                                   land: mandantData.land
                                 });
                                 // Lieferadressen/Standorte des Mandanten
-                                (mandantData as any).lieferadressen?.forEach((la: any) => {
+                                mandantData.lieferadressen?.forEach((la) => {
                                   lagerOptionen.push({
                                     id: `mandant_liefer_${la.id || la.bezeichnung}`,
                                     typ: 'liefer',
