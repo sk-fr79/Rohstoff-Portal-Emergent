@@ -836,7 +836,7 @@ export function KontraktePage() {
                                           );
                                         }
                                         return <div className="text-sm text-gray-500 py-1">Keine Bankverbindung</div>;
-                                      )}
+                                      })()}
                                     </div>
                                   </div>
                                 )}
