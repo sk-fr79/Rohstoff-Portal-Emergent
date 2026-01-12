@@ -94,21 +94,37 @@ export function LoginPage() {
           <h1 className="text-4xl font-bold text-white leading-tight">
             Ihr modernes ERP-System für die Rohstoff-Branche
           </h1>
-          <p className="text-lg text-gray-300">
-            Verwalten Sie Adressen, Kontrakte, Fuhren und Rechnungen effizient in einer zentralen Plattform.
-          </p>
-          <div className="flex gap-8 pt-4">
-            <div>
-              <div className="text-3xl font-bold text-emerald-400">500+</div>
-              <div className="text-sm text-gray-400">Aktive Nutzer</div>
+          
+          {/* Feature Description */}
+          <div className="space-y-4">
+            <p className="text-lg text-gray-300 leading-relaxed">
+              Das Rohstoff-Portal unterstützt Sie bei der <span className="text-emerald-400 font-semibold">Automatisierung</span> und <span className="text-emerald-400 font-semibold">Rationalisierung</span>, damit Sie einen transparenten und genauen Überblick über Ihre Abläufe in Echtzeit erhalten.
+            </p>
+            
+            <p className="text-lg text-gray-300 leading-relaxed">
+              Unsere End-to-End-Software vereinfacht komplexe <span className="text-emerald-400 font-semibold">Metallrecycling-Prozesse</span>, mit schrottspezifischen Lösungen!
+            </p>
+          </div>
+          
+          {/* Feature Icons */}
+          <div className="flex gap-6 pt-4">
+            <div className="flex items-center gap-2 text-gray-400">
+              <div className="p-2 rounded-lg bg-emerald-500/10">
+                <Recycle className="h-5 w-5 text-emerald-400" />
+              </div>
+              <span className="text-sm">Recycling</span>
             </div>
-            <div>
-              <div className="text-3xl font-bold text-emerald-400">99.9%</div>
-              <div className="text-sm text-gray-400">Verfügbarkeit</div>
+            <div className="flex items-center gap-2 text-gray-400">
+              <div className="p-2 rounded-lg bg-emerald-500/10">
+                <BarChart3 className="h-5 w-5 text-emerald-400" />
+              </div>
+              <span className="text-sm">Echtzeit-Daten</span>
             </div>
-            <div>
-              <div className="text-3xl font-bold text-emerald-400">24/7</div>
-              <div className="text-sm text-gray-400">Support</div>
+            <div className="flex items-center gap-2 text-gray-400">
+              <div className="p-2 rounded-lg bg-emerald-500/10">
+                <Zap className="h-5 w-5 text-emerald-400" />
+              </div>
+              <span className="text-sm">Automatisierung</span>
             </div>
           </div>
         </div>
