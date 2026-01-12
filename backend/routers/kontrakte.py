@@ -1287,6 +1287,19 @@ async def abschliessen_kontrakt(
         }}
     )
     
+    # Audit-Log: Kontrakt abgeschlossen
+    await audit_log_erstellen(
+        kontrakt_id=kontrakt_id,
+        mandant_id=user["mandant_id"],
+        aktion="ABGESCHLOSSEN",
+        benutzer=user,
+        details={
+            "kontraktnummer": kontrakt.get("kontraktnummer"),
+            "alter_status": kontrakt.get("status"),
+            "neuer_status": "ERFUELLT"
+        }
+    )
+    
     return {"success": True, "message": "Kontrakt abgeschlossen"}
 
 
@@ -1299,6 +1312,11 @@ async def stornieren_kontrakt(
     """Kontrakt stornieren"""
     db = get_db()
     
+    kontrakt = await db.kontrakte.find_one({
+        "_id": kontrakt_id,
+        "mandant_id": user["mandant_id"]
+    })
+    
     await db.kontrakte.update_one(
         {"_id": kontrakt_id, "mandant_id": user["mandant_id"]},
         {"$set": {
@@ -1307,6 +1325,19 @@ async def stornieren_kontrakt(
             "storniert_am": datetime.utcnow(),
             "storniert_von": user.get("username")
         }}
+    )
+    
+    # Audit-Log: Kontrakt storniert
+    await audit_log_erstellen(
+        kontrakt_id=kontrakt_id,
+        mandant_id=user["mandant_id"],
+        aktion="STORNIERT",
+        benutzer=user,
+        details={
+            "kontraktnummer": kontrakt.get("kontraktnummer") if kontrakt else None,
+            "alter_status": kontrakt.get("status") if kontrakt else None,
+            "storno_grund": grund
+        }
     )
     
     return {"success": True, "message": "Kontrakt storniert"}
