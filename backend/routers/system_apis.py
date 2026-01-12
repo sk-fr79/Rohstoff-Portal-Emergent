@@ -1763,6 +1763,57 @@ async def list_field_bindings(
     return {"success": True, "data": items}
 
 
+@router.get("/field-binding/{module}/{field_name}")
+async def get_field_binding(
+    module: str,
+    field_name: str,
+    user = Depends(get_current_user)
+):
+    """
+    Einzelne Feld-Verknüpfung für ein bestimmtes Modul/Feld abrufen.
+    Wird vom Frontend verwendet, um zu prüfen, ob ein Feld dynamisch als Dropdown angezeigt werden soll.
+    """
+    db = get_db()
+    
+    # Suche nach Verknüpfung für dieses Modul/Feld
+    doc = await db.system_field_bindings.find_one({
+        "mandant_id": user["mandant_id"],
+        "module": module,
+        "field_name": field_name
+    })
+    
+    if not doc:
+        raise HTTPException(status_code=404, detail="Keine Verknüpfung gefunden")
+    
+    # Referenztabellen-Info laden
+    ref_table = None
+    if doc.get("reference_table_id"):
+        ref_table = await db.system_reference_tables.find_one({"_id": doc["reference_table_id"]})
+    
+    # API-Info laden
+    api_config = None
+    if doc.get("api_config_id"):
+        api_config = await db.system_api_configs.find_one({"_id": doc["api_config_id"]})
+    
+    return {
+        "success": True,
+        "data": {
+            "id": doc["_id"],
+            "source_type": doc.get("source_type", "reference_table"),
+            "reference_table_id": doc.get("reference_table_id"),
+            "reference_table_name": ref_table["table_name"] if ref_table else None,
+            "api_config_id": doc.get("api_config_id"),
+            "api_name": api_config["name"] if api_config else None,
+            "display_field": doc.get("display_field", "bezeichnung"),
+            "value_field": doc.get("value_field", "code"),
+            "min_search_chars": doc.get("min_search_chars", 3),
+            "cache_ttl_seconds": doc.get("cache_ttl_seconds", 300),
+            "is_required": doc.get("is_required", False),
+            "allow_search": doc.get("allow_search", True),
+        }
+    }
+
+
 @router.post("/field-bindings")
 async def create_field_binding(data: FieldBindingCreate, user = Depends(require_admin)):
     """Neue Feld-Verknüpfung erstellen"""
