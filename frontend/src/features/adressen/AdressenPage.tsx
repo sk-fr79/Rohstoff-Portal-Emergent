@@ -337,12 +337,20 @@ export function AdressenPage() {
     mutationFn: ({ id, data }: { id: string; data: any }) => adressenApi.update(id, data),
     onSuccess: (response) => {
       queryClient.invalidateQueries({ queryKey: ['adressen'] });
+      // Auch Firmendaten invalidieren, falls diese Adresse die Firmenadresse ist
+      queryClient.invalidateQueries({ queryKey: ['firma'] });
+      queryClient.invalidateQueries({ queryKey: ['mandant-lookup'] });
       setLastValidation(null);
       if (response.data?.data) {
         setSelectedAdresse(response.data.data);
       }
       setIsEditing(false);
-      toast.success('Adresse erfolgreich aktualisiert');
+      // Zeige Hinweis wenn Firmendaten synchronisiert wurden
+      if (response.data?.firma_synced) {
+        toast.success('Adresse aktualisiert & Firmendaten synchronisiert');
+      } else {
+        toast.success('Adresse erfolgreich aktualisiert');
+      }
     },
     onError: (error: any) => {
       console.error('Update error:', error);
