@@ -1767,10 +1767,34 @@ export function KontraktePage() {
       {/* Header */}
       <div className="bg-white border-b border-gray-200 px-6 py-4">
         <div className="flex items-center justify-between">
-          <div><h1 className="text-xl font-semibold text-gray-900">Kontrakte</h1><p className="text-sm text-gray-500 mt-0.5">Einkaufs- und Verkaufskontrakte verwalten</p></div>
+          <div><h1 className="text-xl font-semibold text-gray-900">Kontrakte</h1><p className="text-sm text-gray-500 mt-0.5">Einkaufs-, Verkaufs- und Streckenkontrakte verwalten</p></div>
           <div className="flex items-center gap-3">
-            <Select value={filterTyp || "ALL"} onValueChange={(v) => setFilterTyp(v === "ALL" ? "" : v)}><SelectTrigger className="w-[150px]"><SelectValue placeholder="Alle Typen" /></SelectTrigger><SelectContent><SelectItem value="ALL">Alle Typen</SelectItem><SelectItem value="EK">Einkauf</SelectItem><SelectItem value="VK">Verkauf</SelectItem></SelectContent></Select>
-            <Button onClick={handleNewKontrakt} className="bg-emerald-600 hover:bg-emerald-700" data-testid="new-kontrakt-btn"><Plus className="h-4 w-4 mr-2" />Neuer Kontrakt</Button>
+            <Select value={filterTyp || "ALL"} onValueChange={(v) => setFilterTyp(v === "ALL" ? "" : v)}>
+              <SelectTrigger className="w-[160px]"><SelectValue placeholder="Alle Typen" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ALL">Alle Typen</SelectItem>
+                <SelectItem value="EK"><span className="flex items-center gap-2"><ArrowDownToLine className="h-4 w-4 text-green-600" />Einkauf</span></SelectItem>
+                <SelectItem value="VK"><span className="flex items-center gap-2"><ArrowUpFromLine className="h-4 w-4 text-blue-600" />Verkauf</span></SelectItem>
+                <SelectItem value="STRECKE"><span className="flex items-center gap-2"><ArrowRightLeft className="h-4 w-4 text-orange-600" />Strecke</span></SelectItem>
+              </SelectContent>
+            </Select>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button className="bg-emerald-600 hover:bg-emerald-700" data-testid="new-kontrakt-btn">
+                  <Plus className="h-4 w-4 mr-2" />Neu
+                  <ChevronDown className="h-4 w-4 ml-2" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuItem onClick={handleNewKontrakt}>
+                  <FileText className="h-4 w-4 mr-2" />Einzelkontrakt
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleNewStrecke}>
+                  <ArrowRightLeft className="h-4 w-4 mr-2 text-orange-600" />
+                  <span className="text-orange-700 font-medium">Streckengeschäft</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       </div>
