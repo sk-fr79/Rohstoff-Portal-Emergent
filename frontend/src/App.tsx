@@ -1,6 +1,8 @@
+import { useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'sonner';
 import { useAuthStore } from '@/store/authStore';
+import { useFieldBindingsStore } from '@/store/fieldBindingsStore';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { SettingsLayout } from '@/components/layout/SettingsLayout';
 import { ProtectedModule } from '@/components/auth/ProtectedModule';
@@ -28,7 +30,15 @@ import {
 
 // Protected Route Wrapper
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, accessToken } = useAuthStore();
+  const { loadBindings, isLoaded } = useFieldBindingsStore();
+  
+  // Lade Feld-Verknüpfungen beim Login
+  useEffect(() => {
+    if (isAuthenticated && accessToken && !isLoaded) {
+      loadBindings(accessToken);
+    }
+  }, [isAuthenticated, accessToken, isLoaded, loadBindings]);
   
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
