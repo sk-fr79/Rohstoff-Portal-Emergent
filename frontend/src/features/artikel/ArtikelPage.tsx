@@ -772,14 +772,54 @@ export function ArtikelPage() {
                             fieldName="zolltarifnr"
                             value={watch('zolltarifnr')}
                             onChange={(val) => setValue('zolltarifnr', val)}
+                            onSelectOption={(option: ReferenceOption | null) => {
+                              // Automatisch Warennotiz mit vollständigem Text + Link füllen
+                              if (option) {
+                                // HTML-Tags entfernen für sauberen Text
+                                const cleanText = (text: string) => {
+                                  if (!text) return '';
+                                  return text
+                                    .replace(/<[^>]+>/g, '')
+                                    .replace(/&hellip;/g, '...')
+                                    .replace(/&amp;/g, '&')
+                                    .trim();
+                                };
+                                
+                                const code = option.value || '';
+                                const description = cleanText(option.data?.value || option.display || '');
+                                const detailUrl = option.data?.detail_url || option.data?.data || '';
+                                
+                                // Formatierte Notiz erstellen
+                                let notiz = `${code}`;
+                                if (description && description !== code) {
+                                  notiz += `\n${description}`;
+                                }
+                                if (detailUrl) {
+                                  notiz += `\n\n🔗 ${detailUrl}`;
+                                }
+                                
+                                setValue('zolltarifnotiz', notiz);
+                              } else {
+                                setValue('zolltarifnotiz', '');
+                              }
+                            }}
                             placeholder="Zolltarifnummer auswählen..."
                             disabled={!isEditing}
                             className="bg-white"
                           />
                         </div>
                         <div className="space-y-1.5">
-                          <Label>Warennotiz</Label>
-                          <Textarea {...register('zolltarifnotiz')} disabled={!isEditing} className="bg-white" rows={3} />
+                          <Label className="flex items-center gap-2">
+                            Warennotiz
+                            <span className="text-xs text-muted-foreground font-normal">(automatisch aus Zolltarifnummer)</span>
+                          </Label>
+                          <Textarea 
+                            {...register('zolltarifnotiz')} 
+                            readOnly
+                            className="bg-gray-50 text-gray-700 cursor-not-allowed resize-none" 
+                            rows={5}
+                            placeholder="Wählen Sie eine Zolltarifnummer aus..."
+                          />
                         </div>
                       </div>
 
