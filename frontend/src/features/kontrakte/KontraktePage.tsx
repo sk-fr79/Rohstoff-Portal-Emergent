@@ -779,79 +779,86 @@ export function KontraktePage() {
                                   )}
                                 </div>
                                 
-                                {/* USt-ID & Bankverbindung Dropdowns */}
-                                {selectedAdresse && (
-                                  <div className="grid grid-cols-2 gap-3 mt-3 pt-3 border-t border-blue-200/50">
-                                    {/* USt-ID Auswahl */}
-                                    <div className="space-y-1">
-                                      <Label className="text-xs text-gray-600">USt-ID</Label>
-                                      {(() => {
-                                        const validUstIds = selectedAdresse.ust_ids?.filter(u => u.ust_id && u.ust_id.trim() !== '') || [];
-                                        if (validUstIds.length > 1) {
-                                          return (
-                                            <Select value={watchFields.ust_id || ''} onValueChange={(v) => setValue('ust_id', v)} disabled={!isEditing}>
-                                              <SelectTrigger className="h-8 text-sm bg-white">
-                                                <SelectValue placeholder="USt-ID wählen" />
-                                              </SelectTrigger>
-                                              <SelectContent>
-                                                {validUstIds.map((u) => (
-                                                  <SelectItem key={u.id} value={u.ust_id}>
-                                                    {u.ust_id} {u.ist_hauptid && <span className="text-xs text-blue-600">(Haupt)</span>}
-                                                  </SelectItem>
-                                                ))}
-                                              </SelectContent>
-                                            </Select>
-                                          );
-                                        }
-                                        return <div className="text-sm font-medium text-gray-900 py-1">{watchFields.ust_id || '-'}</div>;
-                                      })()}
-                                    </div>
-                                    
-                                    {/* Bankverbindung Auswahl */}
-                                    <div className="space-y-1">
-                                      <Label className="text-xs text-gray-600 flex items-center gap-1">
-                                        <CreditCard className="h-3 w-3" />Bankverbindung
-                                      </Label>
-                                      {(() => {
-                                        const validBanks = selectedAdresse.bankverbindungen?.filter(b => b.id && b.id.toString().trim() !== '') || [];
-                                        if (validBanks.length > 0) {
-                                          return (
-                                            <Select 
-                                              value={watchFields.id_bankverbindung || ''} 
-                                              onValueChange={(v) => {
-                                                const bank = validBanks.find(b => b.id === v);
-                                                if (bank) {
-                                                  setValue('id_bankverbindung', v);
-                                                  setValue('bank_iban', bank.iban);
-                                                  setValue('bank_bic', bank.bic || '');
-                                                  setValue('bank_name', bank.bank_name || '');
-                                                  setValue('bank_waehrung', bank.waehrung || 'EUR');
-                                                }
-                                              }} 
-                                              disabled={!isEditing}
-                                            >
-                                              <SelectTrigger className="h-8 text-sm bg-white">
-                                                <SelectValue placeholder="Konto wählen" />
-                                              </SelectTrigger>
-                                              <SelectContent>
-                                                {validBanks.map((b) => (
-                                                  <SelectItem key={b.id} value={b.id}>
-                                                    <span className="flex items-center gap-2">
-                                                      <span className="font-mono text-xs">{b.iban.slice(-8)}</span>
-                                                      <Badge variant="outline" className="text-[10px] px-1">{b.waehrung}</Badge>
-                                                      {b.ist_hauptkonto && <span className="text-xs text-blue-600">(Haupt)</span>}
-                                                    </span>
-                                                  </SelectItem>
-                                                ))}
-                                              </SelectContent>
-                                            </Select>
-                                          );
-                                        }
-                                        return <div className="text-sm text-gray-500 py-1">Keine Bankverbindung</div>;
-                                      })()}
-                                    </div>
+                                {/* USt-ID & Bankverbindung - Anzeige immer wenn Daten vorhanden */}
+                                <div className="grid grid-cols-2 gap-3 mt-3 pt-3 border-t border-blue-200/50">
+                                  {/* USt-ID Auswahl/Anzeige */}
+                                  <div className="space-y-1">
+                                    <Label className="text-xs text-gray-600">USt-ID</Label>
+                                    {(() => {
+                                      const validUstIds = selectedAdresse?.ust_ids?.filter(u => u.ust_id && u.ust_id.trim() !== '') || [];
+                                      if (isEditing && validUstIds.length > 1) {
+                                        return (
+                                          <Select value={watchFields.ust_id || ''} onValueChange={(v) => setValue('ust_id', v)} disabled={!isEditing}>
+                                            <SelectTrigger className="h-8 text-sm bg-white">
+                                              <SelectValue placeholder="USt-ID wählen" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                              {validUstIds.map((u) => (
+                                                <SelectItem key={u.id} value={u.ust_id}>
+                                                  {u.ust_id} {u.ist_hauptid && <span className="text-xs text-blue-600">(Haupt)</span>}
+                                                </SelectItem>
+                                              ))}
+                                            </SelectContent>
+                                          </Select>
+                                        );
+                                      }
+                                      return <div className="text-sm font-medium text-gray-900 py-1">{watchFields.ust_id || '-'}</div>;
+                                    })()}
                                   </div>
-                                )}
+                                  
+                                  {/* Bankverbindung Auswahl/Anzeige */}
+                                  <div className="space-y-1">
+                                    <Label className="text-xs text-gray-600 flex items-center gap-1">
+                                      <CreditCard className="h-3 w-3" />Bankverbindung
+                                    </Label>
+                                    {(() => {
+                                      const validBanks = selectedAdresse?.bankverbindungen?.filter(b => b.id && b.id.toString().trim() !== '') || [];
+                                      if (isEditing && validBanks.length > 0) {
+                                        return (
+                                          <Select 
+                                            value={watchFields.id_bankverbindung || ''} 
+                                            onValueChange={(v) => {
+                                              const bank = validBanks.find(b => b.id === v);
+                                              if (bank) {
+                                                setValue('id_bankverbindung', v);
+                                                setValue('bank_iban', bank.iban);
+                                                setValue('bank_bic', bank.bic || '');
+                                                setValue('bank_name', bank.bank_name || '');
+                                                setValue('bank_waehrung', bank.waehrung || 'EUR');
+                                              }
+                                            }} 
+                                            disabled={!isEditing}
+                                          >
+                                            <SelectTrigger className="h-8 text-sm bg-white">
+                                              <SelectValue placeholder="Konto wählen" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                              {validBanks.map((b) => (
+                                                <SelectItem key={b.id} value={b.id}>
+                                                  <span className="flex items-center gap-2">
+                                                    <span className="font-mono text-xs">{b.iban.slice(-8)}</span>
+                                                    <Badge variant="outline" className="text-[10px] px-1">{b.waehrung}</Badge>
+                                                    {b.ist_hauptkonto && <span className="text-xs text-blue-600">(Haupt)</span>}
+                                                  </span>
+                                                </SelectItem>
+                                              ))}
+                                            </SelectContent>
+                                          </Select>
+                                        );
+                                      }
+                                      // Lesemodus: Zeige gespeicherte Bankverbindung
+                                      if (watchFields.bank_iban) {
+                                        return (
+                                          <div className="text-sm font-medium text-gray-900 py-1">
+                                            <span className="font-mono">{watchFields.bank_iban.slice(-8)}</span>
+                                            {watchFields.bank_waehrung && <Badge variant="outline" className="text-[10px] px-1 ml-2">{watchFields.bank_waehrung}</Badge>}
+                                          </div>
+                                        );
+                                      }
+                                      return <div className="text-sm text-gray-500 py-1">Keine Bankverbindung</div>;
+                                    })()}
+                                  </div>
+                                </div>
                               </div>
                             )}
                             
