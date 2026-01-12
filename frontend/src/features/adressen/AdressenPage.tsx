@@ -192,24 +192,24 @@ const detailSections = [
 ];
 
 // EU-Länder für UST-ID Dropdown
-const EU_LAENDER = [
-  { land: 'Deutschland', lkz: 'DE' },
-  { land: 'Österreich', lkz: 'AT' },
-  { land: 'Niederlande', lkz: 'NL' },
-  { land: 'Schweiz', lkz: 'CHE' },
-  { land: 'Belgien', lkz: 'BE' },
-  { land: 'Frankreich', lkz: 'FR' },
-  { land: 'Italien', lkz: 'IT' },
-  { land: 'Spanien', lkz: 'ES' },
-  { land: 'Polen', lkz: 'PL' },
-  { land: 'Tschechien', lkz: 'CZ' },
-  { land: 'Dänemark', lkz: 'DK' },
-  { land: 'Schweden', lkz: 'SE' },
-  { land: 'Ungarn', lkz: 'HU' },
-  { land: 'Rumänien', lkz: 'RO' },
-  { land: 'Slowakei', lkz: 'SK' },
-  { land: 'Großbritannien', lkz: 'GB' },
-];
+// Alle Länder aus der zentralen Datei, mit LKZ (Länderkennzeichen)
+const ALLE_LAENDER_MIT_LKZ = ALL_COUNTRIES.map(c => ({
+  land: c.name,
+  lkz: c.ustPraefix || c.iso,
+  iso: c.iso,
+  istEu: c.istEu,
+  region: c.region,
+}));
+
+// Gruppiert nach Regionen für bessere Übersicht im Dropdown
+const LAENDER_BY_REGION = ALLE_LAENDER_MIT_LKZ.reduce((acc, l) => {
+  if (!acc[l.region]) acc[l.region] = [];
+  acc[l.region].push(l);
+  return acc;
+}, {} as Record<string, typeof ALLE_LAENDER_MIT_LKZ>);
+
+// Sortierte Regionen (Europa zuerst, dann alphabetisch)
+const SORTED_REGIONS = ['Europa', 'Amerika', 'Asien', 'Afrika', 'Ozeanien'];
 
 // ========================== COMPONENT ==========================
 export function AdressenPage() {
