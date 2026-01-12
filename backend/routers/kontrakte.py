@@ -151,7 +151,8 @@ class KontraktCreate(BaseModel):
 class KontraktUpdate(BaseModel):
     """Schema für Kontrakt-Update"""
     vorgang_typ: Optional[str] = None
-    buchungsnummer: Optional[str] = None
+    kontraktnummer: Optional[str] = None
+    # Vertragspartner
     id_adresse: Optional[str] = None
     name1: Optional[str] = None
     name2: Optional[str] = None
@@ -161,13 +162,25 @@ class KontraktUpdate(BaseModel):
     ort: Optional[str] = None
     land: Optional[str] = None
     land_code: Optional[str] = None
+    ust_id: Optional[str] = None
+    steuernummer: Optional[str] = None
     telefon: Optional[str] = None
     telefax: Optional[str] = None
     email: Optional[str] = None
-    id_user: Optional[str] = None
-    name_bearbeiter_intern: Optional[str] = None
-    tel_bearbeiter_intern: Optional[str] = None
-    fax_bearbeiter_intern: Optional[str] = None
+    # Ansprechpartner
+    id_ansprechpartner: Optional[str] = None
+    ansprechpartner_name: Optional[str] = None
+    ansprechpartner_telefon: Optional[str] = None
+    ansprechpartner_email: Optional[str] = None
+    # Sachbearbeiter
+    id_sachbearbeiter: Optional[str] = None
+    sachbearbeiter_name: Optional[str] = None
+    sachbearbeiter_telefon: Optional[str] = None
+    sachbearbeiter_email: Optional[str] = None
+    # Händler
+    id_haendler: Optional[str] = None
+    haendler_name: Optional[str] = None
+    # Termine
     erstellungsdatum: Optional[str] = None
     gueltig_von: Optional[str] = None
     gueltig_bis: Optional[str] = None
