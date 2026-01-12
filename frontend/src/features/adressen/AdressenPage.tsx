@@ -629,6 +629,9 @@ export function AdressenPage() {
       size: 200,
       cell: ({ row }) => (
         <div className="flex items-center gap-2">
+          {row.original.ist_firmenadresse && (
+            <Star className="h-4 w-4 text-yellow-500 fill-yellow-500 flex-shrink-0" />
+          )}
           {row.original.firmenlogo ? (
             <img src={row.original.firmenlogo} alt="" className="h-6 w-6 rounded object-contain" />
           ) : null}
