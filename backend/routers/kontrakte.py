@@ -292,6 +292,11 @@ class KontraktCreate(BaseModel):
     vorgang_typ: str = Field("EK", max_length=2)  # EK oder VK
     kontraktnummer: Optional[str] = Field(None, max_length=30)  # Aus Nummernkreis
     
+    # === STRECKENGESCHÄFT ===
+    ist_strecke: bool = False  # Ist dies Teil eines Streckengeschäfts?
+    strecken_id: Optional[str] = None  # Verknüpfung zum Streckengeschäft-Container
+    strecken_rolle: Optional[str] = Field(None, max_length=2)  # "EK" oder "VK" im Streckengeschäft
+    
     # === VERTRAGSPARTNER (aus Adressen) ===
     id_adresse: Optional[str] = None  # Referenz zur Adresse
     name1: str = Field(..., max_length=40)
@@ -390,6 +395,70 @@ class KontraktCreate(BaseModel):
     
     # Positionen (optional beim Erstellen)
     positionen: Optional[List[Dict[str, Any]]] = None
+
+
+class StreckengeschaeftCreate(BaseModel):
+    """Schema für Streckengeschäft - erstellt automatisch EK + VK"""
+    # Lieferant (EK-Partner)
+    lieferant_id_adresse: str
+    lieferant_name1: str = Field(..., max_length=40)
+    lieferant_name2: Optional[str] = Field(None, max_length=40)
+    lieferant_strasse: Optional[str] = Field(None, max_length=45)
+    lieferant_hausnummer: Optional[str] = Field(None, max_length=10)
+    lieferant_plz: Optional[str] = Field(None, max_length=10)
+    lieferant_ort: Optional[str] = Field(None, max_length=30)
+    lieferant_land: Optional[str] = Field(None, max_length=30)
+    lieferant_land_code: Optional[str] = Field(None, max_length=3)
+    
+    # Abnehmer (VK-Partner)
+    abnehmer_id_adresse: str
+    abnehmer_name1: str = Field(..., max_length=40)
+    abnehmer_name2: Optional[str] = Field(None, max_length=40)
+    abnehmer_strasse: Optional[str] = Field(None, max_length=45)
+    abnehmer_hausnummer: Optional[str] = Field(None, max_length=10)
+    abnehmer_plz: Optional[str] = Field(None, max_length=10)
+    abnehmer_ort: Optional[str] = Field(None, max_length=30)
+    abnehmer_land: Optional[str] = Field(None, max_length=30)
+    abnehmer_land_code: Optional[str] = Field(None, max_length=3)
+    
+    # Abhollager (Lager des Lieferanten)
+    abhollager_id: Optional[str] = None
+    abhollager_name: Optional[str] = Field(None, max_length=100)
+    abhollager_strasse: Optional[str] = Field(None, max_length=100)
+    abhollager_plz: Optional[str] = Field(None, max_length=10)
+    abhollager_ort: Optional[str] = Field(None, max_length=50)
+    abhollager_land: Optional[str] = Field(None, max_length=50)
+    
+    # Ziellager (Lager des Abnehmers)
+    ziellager_id: Optional[str] = None
+    ziellager_name: Optional[str] = Field(None, max_length=100)
+    ziellager_strasse: Optional[str] = Field(None, max_length=100)
+    ziellager_plz: Optional[str] = Field(None, max_length=10)
+    ziellager_ort: Optional[str] = Field(None, max_length=50)
+    ziellager_land: Optional[str] = Field(None, max_length=50)
+    
+    # Gemeinsame Daten
+    erstellungsdatum: Optional[str] = None
+    gueltig_von: Optional[str] = None
+    gueltig_bis: Optional[str] = None
+    waehrung_kurz: str = Field("EUR", max_length=5)
+    waehrungskurs: float = 1.0
+    
+    # Optional: Sachbearbeiter
+    id_sachbearbeiter: Optional[str] = None
+    sachbearbeiter_name: Optional[str] = Field(None, max_length=80)
+    
+    # Optional: Initiale Positionen
+    positionen: Optional[List[Dict[str, Any]]] = None
+    
+    # Bemerkung
+    bemerkung_intern: Optional[str] = Field(None, max_length=2000)
+
+
+class StreckenVerknuepfung(BaseModel):
+    """Schema für nachträgliche Verknüpfung zu Streckengeschäft"""
+    kontrakt_id: str  # Bestehender Kontrakt der verknüpft werden soll
+    partner_kontrakt_id: Optional[str] = None  # Optional: Bestehender Partner-Kontrakt
 
 
 class KontraktUpdate(BaseModel):
