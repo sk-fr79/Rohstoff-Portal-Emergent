@@ -210,6 +210,21 @@ class KontraktUpdate(BaseModel):
     # Händler
     id_haendler: Optional[str] = None
     haendler_name: Optional[str] = None
+    # Läger
+    id_abhollager: Optional[str] = None
+    abhollager_typ: Optional[str] = None
+    abhollager_name: Optional[str] = None
+    abhollager_strasse: Optional[str] = None
+    abhollager_plz: Optional[str] = None
+    abhollager_ort: Optional[str] = None
+    abhollager_land: Optional[str] = None
+    id_ziellager: Optional[str] = None
+    ziellager_typ: Optional[str] = None
+    ziellager_name: Optional[str] = None
+    ziellager_strasse: Optional[str] = None
+    ziellager_plz: Optional[str] = None
+    ziellager_ort: Optional[str] = None
+    ziellager_land: Optional[str] = None
     # Termine
     erstellungsdatum: Optional[str] = None
     gueltig_von: Optional[str] = None
