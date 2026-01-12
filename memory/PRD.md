@@ -15,6 +15,27 @@ Die gesamte Geschäftslogik der bestehenden Anwendung soll 1:1 übernommen werde
 
 ## Implementiert (Stand: 12.01.2026)
 
+### ✅ Ansprechpartner-Modernisierung (NEU - 12.01.2026)
+Neue, moderne Tabellenansicht für Ansprechpartner im Adress-Modul:
+
+**Features:**
+- **Kompakte Grid-Tabelle:** Name/Funktion, Kontakt, Abteilung, Aktionen
+- **Wildcard-Suche:** Unterstützt `*` (beliebige Zeichen) und `?` (einzelnes Zeichen)
+- **Doppelklick-Details:** Öffnet Modal mit vollständigen Kontaktinformationen
+- **Klickbare Kontaktdaten:** Telefon und E-Mail sind als Links ausgeführt
+- **Avatar-System:** Zeigt Initialen oder Profilbild
+- **Hauptkontakt:** Stern-Icon für den primären Ansprechpartner
+- **Hover-Aktionen:** Details, Bearbeiten, Hauptkontakt setzen, Löschen
+
+**Dateien:**
+- `/app/frontend/src/features/adressen/components/AnsprechpartnerSection.tsx`
+
+**Code-Bereinigung:**
+- Obsolete Dateien entfernt: `dynamic-field.tsx`, `useFieldBinding.ts`
+- Diese Dateien wurden durch `SmartInput` und `fieldBindingsStore` ersetzt
+
+---
+
 ### ✅ Intelligente Referenztabellen-Verknüpfung (NEU - 11.01.2026)
 Zentrales System zur Verknüpfung von Referenztabellen **ODER Live APIs** mit Modul-Feldern:
 
