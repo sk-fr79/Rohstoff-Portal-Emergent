@@ -452,6 +452,78 @@ function AdressenSelect({
   );
 }
 
+// ========================== ADRESSE-SELECT FÜR STRECKEN-DIALOG ==========================
+function AdresseSelect({ 
+  value, 
+  onChange,
+  placeholder = "Adresse suchen..." 
+}: { 
+  value: AdresseOption | null; 
+  onChange: (adresse: AdresseOption | null) => void; 
+  placeholder?: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const { data: adressenData } = useQuery({
+    queryKey: ['adressen-lookup', searchTerm],
+    queryFn: async () => {
+      const response = await api.get('/kontrakte/lookup/adressen', { params: { suche: searchTerm, limit: 50 } });
+      return response.data.data as AdresseOption[];
+    },
+  });
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button variant="outline" role="combobox"
+          className={cn("w-full justify-between font-normal text-left h-auto min-h-[40px] py-2", !value && "text-muted-foreground")}>
+          {value ? (
+            <div className="flex flex-col items-start">
+              <span className="font-medium">{value.name1}</span>
+              <span className="text-xs text-gray-500">{value.plz} {value.ort}</span>
+            </div>
+          ) : (
+            <span className="flex items-center gap-2">
+              <Search className="h-4 w-4" />
+              {placeholder}
+            </span>
+          )}
+          <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[400px] p-0">
+        <Command shouldFilter={false}>
+          <CommandInput placeholder="Firma, Kundennr. oder Ort suchen..." 
+            value={searchTerm} onValueChange={setSearchTerm} />
+          <CommandList>
+            <CommandEmpty>Keine Adressen gefunden.</CommandEmpty>
+            <CommandGroup>
+              {adressenData?.map((a) => (
+                <CommandItem key={a.id} value={a.id}
+                  onSelect={() => { onChange(a); setOpen(false); }}>
+                  <div className="flex flex-col py-1">
+                    <div className="flex items-center gap-2">
+                      <Building2 className="h-4 w-4 text-gray-400" />
+                      <span className="font-medium">{a.name1}</span>
+                      {a.kundennummer && (
+                        <Badge variant="outline" className="text-xs">{a.kundennummer}</Badge>
+                      )}
+                    </div>
+                    <span className="text-xs text-gray-500 ml-6">
+                      {a.strasse} {a.hausnummer}, {a.plz} {a.ort}
+                    </span>
+                  </div>
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
 // ========================== ARTIKEL-AUSWAHL KOMPONENTE ==========================
 interface ArtikelOption {
   id: string;
