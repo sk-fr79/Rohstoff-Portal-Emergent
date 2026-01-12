@@ -521,7 +521,484 @@ function ArtikelSelect({
 }
 
 // ========================== POSITIONS-DIALOG NEU ==========================
-function PositionDialog({ open, onClose, onSave, position, waehrung }: { 
+interface PositionDialogProps {
+  open: boolean;
+  onClose: () => void;
+  onSave: (pos: Partial<Position>) => void;
+  position?: Position | null;
+  waehrung: string;
+  readOnly?: boolean;
+}
+
+function PositionDialog({ open, onClose, onSave, position, waehrung, readOnly = false }: PositionDialogProps) {
+  const [formData, setFormData] = useState<Partial<Position>>(
+    position || { position_typ: 'ARTIKEL', einheitkurz: 't', waehrungskurs: 1, mengen_toleranz_prozent: 10, ueberliefer_ok: true, position_abgeschlossen: false }
+  );
+  const [activeTab, setActiveTab] = useState<'artikel' | 'preise' | 'optionen'>('artikel');
+  const selectedWaehrung = getWaehrung(formData.waehrung_fremd_kurz || waehrung);
+
+  // Reset formData wenn position sich ändert
+  useMemo(() => {
+    if (position) {
+      setFormData(position);
+    } else {
+      setFormData({ position_typ: 'ARTIKEL', einheitkurz: 't', waehrungskurs: 1, mengen_toleranz_prozent: 10, ueberliefer_ok: true, position_abgeschlossen: false });
+    }
+  }, [position]);
+
+  const gesamtpreis = formData.anzahl && formData.einzelpreis 
+    ? Math.round(formData.anzahl * formData.einzelpreis * 100) / 100 
+    : 0;
+
+  const handleSave = () => {
+    if (readOnly) { onClose(); return; }
+    formData.gesamtpreis = gesamtpreis;
+    onSave(formData);
+    onClose();
+  };
+
+  const handleArtikelSelect = (id: string, artikel?: ArtikelOption) => {
+    if (artikel && !readOnly) {
+      setFormData({ 
+        ...formData, 
+        id_artikel: id, 
+        anr1: artikel.anr1 || '', 
+        artbez1: artikel.artbez1 || '',
+        einheitkurz: artikel.einheit_preis || 't'
+      });
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent className="max-w-2xl" data-testid="position-dialog">
+        <DialogHeader className="pb-0">
+          <DialogTitle className="flex items-center gap-2">
+            <div className={cn("h-8 w-8 rounded-lg flex items-center justify-center", readOnly ? "bg-blue-100" : "bg-emerald-100")}>
+              {readOnly ? <Eye className="h-4 w-4 text-blue-600" /> : <Package className="h-4 w-4 text-emerald-600" />}
+            </div>
+            <div>
+              <span>{readOnly ? 'Positionsdetails' : (position ? 'Position bearbeiten' : 'Neue Position')}</span>
+              {position?.positionsnummer && <Badge variant="outline" className="ml-2">Pos. {position.positionsnummer}</Badge>}
+            </div>
+          </DialogTitle>
+        </DialogHeader>
+        
+        {/* Smart Tabs */}
+        <div className="flex border-b mt-2">
+          {[
+            { id: 'artikel', label: 'Artikel', icon: Package },
+            { id: 'preise', label: 'Mengen & Preise', icon: DollarSign },
+            { id: 'optionen', label: 'Optionen', icon: Scale },
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => setActiveTab(tab.id as any)}
+              className={cn(
+                "flex items-center gap-1.5 px-4 py-2 text-sm font-medium border-b-2 transition-colors -mb-px",
+                activeTab === tab.id 
+                  ? "border-emerald-600 text-emerald-700" 
+                  : "border-transparent text-gray-500 hover:text-gray-700"
+              )}
+            >
+              <tab.icon className="h-3.5 w-3.5" />
+              {tab.label}
+            </button>
+          ))}
+        </div>
+        
+        <div className="py-3 min-h-[200px]">
+          {/* TAB: Artikel */}
+          {activeTab === 'artikel' && (
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label className="font-medium">Artikel auswählen</Label>
+                <ArtikelSelect 
+                  value={formData.id_artikel} 
+                  onChange={handleArtikelSelect}
+                  disabled={readOnly}
+                />
+              </div>
+              
+              {/* Gewählter Artikel - Detailansicht */}
+              {formData.artbez1 && (
+                <div className="p-4 bg-gradient-to-br from-emerald-50 to-white rounded-xl border border-emerald-200 shadow-sm">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="h-12 w-12 rounded-lg bg-emerald-100 flex items-center justify-center">
+                        <Package className="h-6 w-6 text-emerald-600" />
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-mono text-sm bg-white px-2 py-0.5 rounded border">{formData.anr1 || '-'}</span>
+                          <span className="font-semibold text-gray-900">{formData.artbez1}</span>
+                        </div>
+                        <div className="text-sm text-gray-500 mt-0.5">Einheit: {formData.einheitkurz || 't'}</div>
+                      </div>
+                    </div>
+                    {!readOnly && formData.id_artikel && (
+                      <Button variant="ghost" size="sm" className="text-gray-400 hover:text-red-500"
+                        onClick={() => setFormData({ ...formData, id_artikel: undefined, anr1: '', artbez1: '' })}>
+                        <X className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              )}
+              
+              {/* Manuelle Eingabe falls kein Artikel */}
+              {!formData.id_artikel && !readOnly && (
+                <div className="p-3 bg-gray-50 rounded-lg border border-dashed space-y-3">
+                  <p className="text-xs text-gray-500 flex items-center gap-1"><AlertTriangle className="h-3 w-3" />Oder manuell eingeben:</p>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <Label className="text-xs">Artikel-Nr.</Label>
+                      <Input value={formData.anr1 || ''} onChange={(e) => setFormData({ ...formData, anr1: e.target.value })} className="h-8" />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs">Bezeichnung</Label>
+                      <Input value={formData.artbez1 || ''} onChange={(e) => setFormData({ ...formData, artbez1: e.target.value })} className="h-8" />
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* TAB: Mengen & Preise */}
+          {activeTab === 'preise' && (
+            <div className="space-y-4">
+              {/* Hauptwerte - große Karten */}
+              <div className="grid grid-cols-3 gap-3">
+                <div className="p-4 rounded-xl border bg-white shadow-sm">
+                  <Label className="text-xs text-gray-500 uppercase tracking-wide">Menge</Label>
+                  <div className="flex items-end gap-2 mt-1">
+                    <Input 
+                      type="number" 
+                      step="0.01" 
+                      value={formData.anzahl || ''} 
+                      onChange={(e) => setFormData({ ...formData, anzahl: parseFloat(e.target.value) || undefined })}
+                      className="text-2xl font-bold h-12 border-0 p-0 focus-visible:ring-0"
+                      disabled={readOnly}
+                      data-testid="position-menge-input"
+                    />
+                    <Select value={formData.einheitkurz || 't'} onValueChange={(v) => setFormData({ ...formData, einheitkurz: v })} disabled={readOnly}>
+                      <SelectTrigger className="w-20 h-8"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="t">t</SelectItem>
+                        <SelectItem value="kg">kg</SelectItem>
+                        <SelectItem value="Stk">Stk</SelectItem>
+                        <SelectItem value="m³">m³</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                
+                <div className="p-4 rounded-xl border bg-white shadow-sm">
+                  <Label className="text-xs text-gray-500 uppercase tracking-wide">Einzelpreis</Label>
+                  <div className="flex items-end gap-1 mt-1">
+                    <Input 
+                      type="number" 
+                      step="0.01" 
+                      value={formData.einzelpreis || ''} 
+                      onChange={(e) => setFormData({ ...formData, einzelpreis: parseFloat(e.target.value) || undefined })}
+                      className="text-2xl font-bold h-12 border-0 p-0 focus-visible:ring-0"
+                      disabled={readOnly}
+                      data-testid="position-preis-input"
+                    />
+                    <span className="text-gray-400 text-lg pb-2">{selectedWaehrung.symbol}/{formData.einheitkurz || 't'}</span>
+                  </div>
+                </div>
+                
+                <div className="p-4 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 text-white shadow-lg">
+                  <Label className="text-xs text-emerald-100 uppercase tracking-wide">Gesamtpreis</Label>
+                  <div className="text-2xl font-bold mt-1">
+                    {gesamtpreis.toLocaleString('de-DE', { minimumFractionDigits: 2 })}
+                    <span className="text-lg ml-1 text-emerald-200">{selectedWaehrung.symbol}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Gültigkeit */}
+              <div className="p-3 bg-gray-50 rounded-lg border">
+                <Label className="text-xs text-gray-600 flex items-center gap-1 mb-2"><Calendar className="h-3 w-3" />Gültigkeit</Label>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <Label className="text-xs text-gray-500">Von</Label>
+                    <Input type="date" value={formData.gueltig_von || ''} onChange={(e) => setFormData({ ...formData, gueltig_von: e.target.value })} disabled={readOnly} className="h-8" />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs text-gray-500">Bis</Label>
+                    <Input type="date" value={formData.gueltig_bis || ''} onChange={(e) => setFormData({ ...formData, gueltig_bis: e.target.value })} disabled={readOnly} className="h-8" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* TAB: Optionen */}
+          {activeTab === 'optionen' && (
+            <div className="space-y-4">
+              {/* Toleranz & Überlieferung */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="p-4 rounded-xl border bg-white">
+                  <Label className="text-sm font-medium flex items-center gap-2">
+                    <Percent className="h-4 w-4 text-blue-600" />
+                    Mengentoleranz
+                  </Label>
+                  <div className="flex items-center gap-2 mt-2">
+                    <Input 
+                      type="number" 
+                      min="0" 
+                      max="100" 
+                      value={formData.mengen_toleranz_prozent || 10} 
+                      onChange={(e) => setFormData({ ...formData, mengen_toleranz_prozent: parseFloat(e.target.value) })}
+                      className="w-20 h-10 text-center text-lg font-semibold"
+                      disabled={readOnly}
+                    />
+                    <span className="text-gray-500">%</span>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-2">Erlaubte Abweichung bei der Liefermenge</p>
+                </div>
+                
+                <div className="p-4 rounded-xl border bg-white">
+                  <Label className="text-sm font-medium flex items-center gap-2">
+                    <TrendingUp className="h-4 w-4 text-orange-600" />
+                    Überlieferung
+                  </Label>
+                  <div className="flex items-center gap-3 mt-3">
+                    <Switch 
+                      checked={formData.ueberliefer_ok !== false} 
+                      onCheckedChange={(v) => setFormData({ ...formData, ueberliefer_ok: v })}
+                      disabled={readOnly}
+                    />
+                    <span className={cn("text-sm", formData.ueberliefer_ok ? "text-green-700" : "text-red-600")}>
+                      {formData.ueberliefer_ok ? 'Erlaubt' : 'Nicht erlaubt'}
+                    </span>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-2">Darf mehr als bestellt geliefert werden?</p>
+                </div>
+              </div>
+
+              {/* Status */}
+              <div className="p-4 rounded-xl border bg-white">
+                <Label className="text-sm font-medium flex items-center gap-2">
+                  <Lock className="h-4 w-4 text-gray-600" />
+                  Positionsstatus
+                </Label>
+                <div className="flex items-center gap-3 mt-3">
+                  <Switch 
+                    checked={formData.position_abgeschlossen || false} 
+                    onCheckedChange={(v) => setFormData({ ...formData, position_abgeschlossen: v })}
+                    disabled={readOnly}
+                  />
+                  <span className={cn("text-sm font-medium", formData.position_abgeschlossen ? "text-gray-700" : "text-green-600")}>
+                    {formData.position_abgeschlossen ? 'Abgeschlossen' : 'Offen'}
+                  </span>
+                </div>
+              </div>
+
+              {/* Bemerkung */}
+              <div className="space-y-1">
+                <Label className="text-sm flex items-center gap-2"><MessageSquare className="h-4 w-4 text-gray-400" />Bemerkung</Label>
+                <Textarea 
+                  value={formData.bemerkung || ''} 
+                  onChange={(e) => setFormData({ ...formData, bemerkung: e.target.value })}
+                  disabled={readOnly}
+                  rows={3}
+                  placeholder="Optionale Bemerkung zur Position..."
+                  className="resize-none"
+                />
+              </div>
+            </div>
+          )}
+        </div>
+
+        <DialogFooter className="border-t pt-4">
+          <div className="flex items-center justify-between w-full">
+            {/* Zusammenfassung links */}
+            <div className="text-sm text-gray-500">
+              {formData.artbez1 && (
+                <span className="flex items-center gap-2">
+                  <Package className="h-4 w-4" />
+                  {formData.anzahl?.toLocaleString('de-DE')} {formData.einheitkurz} × {formData.einzelpreis?.toFixed(2)} = <strong className="text-emerald-700">{gesamtpreis.toLocaleString('de-DE', { minimumFractionDigits: 2 })} {selectedWaehrung.symbol}</strong>
+                </span>
+              )}
+            </div>
+            <div className="flex gap-2">
+              <Button type="button" variant="outline" onClick={onClose}>
+                {readOnly ? 'Schließen' : 'Abbrechen'}
+              </Button>
+              {!readOnly && (
+                <Button type="button" onClick={handleSave} className="bg-emerald-600 hover:bg-emerald-700" data-testid="position-save-btn">
+                  <Save className="h-4 w-4 mr-1" />
+                  {position ? 'Speichern' : 'Hinzufügen'}
+                </Button>
+              )}
+            </div>
+          </div>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// ========================== POSITIONS-LISTE (NEU) ==========================
+interface PositionenListeProps {
+  positionen: Position[];
+  waehrung: string;
+  isEditing: boolean;
+  onEdit: (pos: Position) => void;
+  onDelete: (id: string) => void;
+  onCopy: (pos: Position) => void;
+  onView: (pos: Position) => void;
+}
+
+function PositionenListe({ positionen, waehrung, isEditing, onEdit, onDelete, onCopy, onView }: PositionenListeProps) {
+  const selectedWaehrung = getWaehrung(waehrung);
+  
+  // Summen berechnen
+  const summen = useMemo(() => {
+    return positionen.reduce((acc, pos) => ({
+      menge: acc.menge + (pos.anzahl || 0),
+      wert: acc.wert + (pos.gesamtpreis || 0)
+    }), { menge: 0, wert: 0 });
+  }, [positionen]);
+
+  if (positionen.length === 0) {
+    return (
+      <div className="text-center py-12 bg-gradient-to-br from-gray-50 to-white rounded-xl border-2 border-dashed" data-testid="positionen-empty">
+        <Package className="h-16 w-16 mx-auto mb-3 text-gray-300" />
+        <p className="text-gray-500 font-medium">Keine Positionen vorhanden</p>
+        <p className="text-sm text-gray-400 mt-1">Fügen Sie Artikel zum Kontrakt hinzu</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-3" data-testid="positionen-liste">
+      {/* Übersichts-Header */}
+      <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border">
+        <div className="flex items-center gap-4">
+          <Badge variant="secondary" className="text-sm">{positionen.length} Position{positionen.length !== 1 ? 'en' : ''}</Badge>
+          <span className="text-sm text-gray-600">Σ {summen.menge.toLocaleString('de-DE')} t</span>
+        </div>
+        <div className="text-right">
+          <span className="text-xs text-gray-500">Gesamtwert</span>
+          <div className="text-lg font-bold text-emerald-700">{summen.wert.toLocaleString('de-DE', { minimumFractionDigits: 2 })} {selectedWaehrung.symbol}</div>
+        </div>
+      </div>
+
+      {/* Positions-Karten */}
+      {positionen.map((pos, index) => (
+        <div 
+          key={pos.id} 
+          className={cn(
+            "group relative rounded-xl border bg-white shadow-sm hover:shadow-md transition-all cursor-pointer",
+            pos.position_abgeschlossen && "bg-gray-50 opacity-80"
+          )}
+          onDoubleClick={() => onView(pos)}
+          data-testid={`position-item-${index}`}
+        >
+          {/* Positions-Nummer Badge */}
+          <div className="absolute -left-2 -top-2 z-10">
+            <div className={cn(
+              "h-8 w-8 rounded-full flex items-center justify-center text-sm font-bold shadow-md",
+              pos.position_abgeschlossen ? "bg-gray-400 text-white" : "bg-emerald-500 text-white"
+            )}>
+              {pos.positionsnummer}
+            </div>
+          </div>
+
+          <div className="p-4 pl-8">
+            <div className="flex items-start justify-between">
+              {/* Linke Seite: Artikel-Info */}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="font-mono text-xs bg-gray-100 px-2 py-0.5 rounded">{pos.anr1 || '-'}</span>
+                  <span className="font-semibold text-gray-900 truncate">{pos.artbez1}</span>
+                  {pos.position_abgeschlossen && (
+                    <Badge variant="secondary" className="text-xs"><Lock className="h-3 w-3 mr-1" />Abgeschlossen</Badge>
+                  )}
+                </div>
+                
+                {/* Menge und Preis - Prominent */}
+                <div className="flex items-center gap-6 mt-2">
+                  <div className="flex items-center gap-1">
+                    <span className="text-2xl font-bold text-gray-900">{pos.anzahl?.toLocaleString('de-DE')}</span>
+                    <span className="text-sm text-gray-500">{pos.einheitkurz}</span>
+                  </div>
+                  <div className="text-gray-400">×</div>
+                  <div className="flex items-center gap-1">
+                    <span className="text-lg font-medium text-gray-700">{pos.einzelpreis?.toFixed(2)}</span>
+                    <span className="text-sm text-gray-500">{selectedWaehrung.symbol}/{pos.einheitkurz}</span>
+                  </div>
+                </div>
+
+                {/* Status-Tags */}
+                <div className="flex items-center gap-2 mt-2">
+                  {!pos.ueberliefer_ok && (
+                    <Badge variant="outline" className="text-xs text-orange-600 border-orange-300">
+                      <AlertTriangle className="h-3 w-3 mr-1" />Keine Überlieferung
+                    </Badge>
+                  )}
+                  {pos.mengen_toleranz_prozent !== 10 && (
+                    <Badge variant="outline" className="text-xs">Toleranz: {pos.mengen_toleranz_prozent}%</Badge>
+                  )}
+                  {pos.lieferort_name && (
+                    <Badge variant="outline" className="text-xs text-gray-500">
+                      <Truck className="h-3 w-3 mr-1" />{pos.lieferort_name}
+                    </Badge>
+                  )}
+                </div>
+              </div>
+
+              {/* Rechte Seite: Gesamtpreis & Aktionen */}
+              <div className="flex flex-col items-end gap-2">
+                <div className="text-right">
+                  <div className="text-xs text-gray-500">Gesamt</div>
+                  <div className="text-xl font-bold text-emerald-700">
+                    {pos.gesamtpreis?.toLocaleString('de-DE', { minimumFractionDigits: 2 })}
+                    <span className="text-sm ml-1 font-normal text-gray-500">{selectedWaehrung.symbol}</span>
+                  </div>
+                </div>
+                
+                {/* Action Buttons */}
+                <div className={cn("flex gap-1", !isEditing && "opacity-0 group-hover:opacity-100 transition-opacity")}>
+                  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={(e) => { e.stopPropagation(); onView(pos); }} title="Details anzeigen">
+                    <Eye className="h-3.5 w-3.5 text-gray-500" />
+                  </Button>
+                  {isEditing && (
+                    <>
+                      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={(e) => { e.stopPropagation(); onCopy(pos); }} title="Position kopieren" data-testid={`copy-position-${index}`}>
+                        <Plus className="h-3.5 w-3.5 text-blue-600" />
+                      </Button>
+                      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={(e) => { e.stopPropagation(); onEdit(pos); }} title="Bearbeiten">
+                        <Pencil className="h-3.5 w-3.5 text-gray-600" />
+                      </Button>
+                      <Button variant="ghost" size="icon" className="h-7 w-7 text-red-600 hover:bg-red-50" onClick={(e) => { e.stopPropagation(); onDelete(pos.id); }} title="Löschen">
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          {/* Doppelklick-Hinweis */}
+          <div className="absolute bottom-1 right-2 text-[10px] text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity">
+            Doppelklick für Details
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// Legacy PositionDialog wrapper for backwards compatibility
+function LegacyPositionDialogWrapper({ open, onClose, onSave, position, waehrung }: { 
   open: boolean; onClose: () => void; onSave: (pos: Partial<Position>) => void;
   position?: Position | null; waehrung: string;
 }) {
