@@ -781,6 +781,28 @@ export function KontraktePage() {
                           <div className="space-y-1.5"><Label>Status</Label><Select value={watchFields.status || 'OFFEN'} onValueChange={(v) => setValue('status', v)} disabled={!isEditing}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="OFFEN">Offen</SelectItem><SelectItem value="AKTIV">Aktiv</SelectItem><SelectItem value="TEILERFUELLT">Teilerfüllt</SelectItem><SelectItem value="ERFUELLT">Erfüllt</SelectItem><SelectItem value="STORNO">Storniert</SelectItem></SelectContent></Select></div>
                           <div className="flex items-end pb-2 gap-4"><div className="flex items-center gap-2"><Switch checked={watchFields.ist_fixierung || false} onCheckedChange={(v) => setValue('ist_fixierung', v)} disabled={!isEditing} /><Label className="text-sm">Fixierungskontrakt</Label></div></div>
                         </div>
+                        
+                        {/* Termine */}
+                        <div className="pt-4 border-t">
+                          <h4 className="font-semibold text-gray-900 flex items-center gap-2 mb-3">
+                            <Calendar className="h-4 w-4 text-blue-600" />
+                            Termine
+                          </h4>
+                          <div className="grid grid-cols-3 gap-4">
+                            <div className="space-y-1.5">
+                              <Label>Erstellungsdatum</Label>
+                              <Input type="date" {...register('erstellungsdatum')} disabled={!isEditing} />
+                            </div>
+                            <div className="space-y-1.5">
+                              <Label>Gültig von</Label>
+                              <Input type="date" {...register('gueltig_von')} disabled={!isEditing} />
+                            </div>
+                            <div className="space-y-1.5">
+                              <Label>Gültig bis</Label>
+                              <Input type="date" {...register('gueltig_bis')} disabled={!isEditing} />
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     )}
 
