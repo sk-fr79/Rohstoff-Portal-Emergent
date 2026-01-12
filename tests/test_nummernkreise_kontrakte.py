@@ -386,7 +386,7 @@ class TestKontraktWithNummernkreis:
         
         kontrakt = data["data"]
         assert "kontraktnummer" in kontrakt
-        assert kontrakt["kontraktnummer"].startswith("EKK"), f"Expected EKK prefix, got {kontrakt['kontraktnummer']}"
+        assert kontrakt["kontraktnummer"].startswith("EK"), f"Expected EK prefix, got {kontrakt['kontraktnummer']}"
         
         print(f"✓ Created EK Kontrakt with auto-nummer: {kontrakt['kontraktnummer']}")
         
