@@ -15,7 +15,7 @@ import { toast } from 'sonner';
 
 const API_URL = import.meta.env.VITE_API_URL || '/api';
 
-interface ReferenceOption {
+export interface ReferenceOption {
   value: string;
   label: string;
   display: string;
