@@ -129,6 +129,79 @@ async def get_artikel(
     }
 
 
+@router.get("/artikel/lookup")
+async def artikel_lookup(
+    suche: Optional[str] = None,
+    artikelgruppe: Optional[str] = None,
+    gefahrgut: Optional[bool] = None,
+    ist_produkt: Optional[bool] = None,
+    dienstleistung: Optional[bool] = None,
+    limit: int = 50,
+    user = Depends(require_permission("artikel", "read"))
+):
+    """Artikel-Lookup für Kontrakte mit Filtern nach Artikelgruppe und Klassifizierungen"""
+    db = get_db()
+    
+    query = {
+        "mandant_id": user["mandant_id"],
+        "aktiv": True
+    }
+    
+    if suche:
+        query["$or"] = [
+            {"artbez1": {"$regex": suche, "$options": "i"}},
+            {"anr1": {"$regex": suche, "$options": "i"}},
+        ]
+    
+    if artikelgruppe:
+        query["artikelgruppe"] = artikelgruppe
+    
+    if gefahrgut is not None:
+        query["gefahrgut"] = gefahrgut
+    
+    if ist_produkt is not None:
+        query["ist_produkt"] = ist_produkt
+    
+    if dienstleistung is not None:
+        query["dienstleistung"] = dienstleistung
+    
+    cursor = db.artikel.find(query).sort("artbez1", 1).limit(limit)
+    artikel = await cursor.to_list(length=limit)
+    
+    result = []
+    for a in artikel:
+        result.append({
+            "id": a["_id"],
+            "anr1": a.get("anr1"),
+            "artbez1": a.get("artbez1"),
+            "artbez2": a.get("artbez2"),
+            "einheit": a.get("einheit", "kg"),
+            "einheit_preis": a.get("einheit_preis", "t"),
+            "artikelgruppe": a.get("artikelgruppe"),
+            "gefahrgut": a.get("gefahrgut", False),
+            "ist_produkt": a.get("ist_produkt", False),
+            "dienstleistung": a.get("dienstleistung", False),
+            "avv_code_eingang": a.get("avv_code_eingang"),
+            "zolltarifnr": a.get("zolltarifnr"),
+        })
+    
+    return {"success": True, "data": result}
+
+
+@router.get("/artikel/gruppen")
+async def get_artikelgruppen(user = Depends(require_permission("artikel", "read"))):
+    """Alle Artikelgruppen für Filter-Dropdown laden"""
+    db = get_db()
+    
+    # Distinct Artikelgruppen abfragen
+    gruppen = await db.artikel.distinct(
+        "artikelgruppe",
+        {"mandant_id": user["mandant_id"], "aktiv": True, "artikelgruppe": {"$ne": None, "$ne": ""}}
+    )
+    
+    return {"success": True, "data": sorted([g for g in gruppen if g])}
+
+
 @router.get("/artikel/{artikel_id}")
 async def get_artikel_by_id(artikel_id: str, user = Depends(require_permission("artikel", "read"))):
     """Artikel nach ID"""
