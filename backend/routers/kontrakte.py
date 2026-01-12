@@ -90,6 +90,13 @@ class KontraktCreate(BaseModel):
     telefax: Optional[str] = Field(None, max_length=30)
     email: Optional[str] = Field(None, max_length=100)
     
+    # === BANKVERBINDUNG (aus Vertragspartner) ===
+    id_bankverbindung: Optional[str] = None
+    bank_iban: Optional[str] = Field(None, max_length=34)
+    bank_bic: Optional[str] = Field(None, max_length=11)
+    bank_name: Optional[str] = Field(None, max_length=100)
+    bank_waehrung: Optional[str] = Field(None, max_length=3)
+    
     # === ANSPRECHPARTNER beim Partner ===
     id_ansprechpartner: Optional[str] = None  # Referenz zum Ansprechpartner
     ansprechpartner_name: Optional[str] = Field(None, max_length=80)
