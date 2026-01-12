@@ -72,8 +72,28 @@ interface ApiConfig {
 
 interface ModuleInfo {
   label: string;
-  fields: Array<{ name: string; label: string }>;
+  fields: Array<{ 
+    name: string; 
+    label: string; 
+    category?: string;
+    is_subfield?: boolean;
+  }>;
 }
+
+// Kategorie-Icons und Labels
+const CATEGORY_CONFIG: Record<string, { label: string; icon: any }> = {
+  stamm: { label: 'Stammdaten', icon: Package },
+  adresse: { label: 'Adresse', icon: MapPin },
+  kontakt: { label: 'Kontakt', icon: Settings2 },
+  steuer: { label: 'Steuer & UST', icon: FileText },
+  bank: { label: 'Bankverbindungen', icon: Settings2 },
+  zahlung: { label: 'Zahlungsbedingungen', icon: Settings2 },
+  zoll: { label: 'Zoll & Export', icon: Globe },
+  transport: { label: 'Transport', icon: Truck },
+  betreuer: { label: 'Betreuer', icon: Settings2 },
+  position: { label: 'Positionen', icon: Settings2 },
+  sonstiges: { label: 'Sonstige', icon: Settings2 },
+};
 
 const MODULE_ICONS: Record<string, any> = {
   artikel: Package,
