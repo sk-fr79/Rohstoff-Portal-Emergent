@@ -12,6 +12,7 @@ import uuid
 
 from services.database import get_db
 from utils.auth import get_current_user, require_permission
+from routers.nummernkreise import get_naechste_nummer
 
 router = APIRouter(prefix="/api", tags=["Kontrakte"])
 
