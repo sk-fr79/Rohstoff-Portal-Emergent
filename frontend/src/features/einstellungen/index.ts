@@ -9,3 +9,4 @@ export { AbteilungenPage } from './pages/AbteilungenPage';
 export { BerechtigungenPage } from './pages/BerechtigungenPage';
 export { ApisPage } from './pages/ApisPage';
 export { NummernkreisePage } from './pages/NummernkreisePage';
+export { FirmeneinstellungenPage } from './pages/FirmeneinstellungenPage';
