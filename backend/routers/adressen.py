@@ -918,14 +918,23 @@ async def update_adresse(
         {"$set": update_data}
     )
     
+    # Auto-Sync: Falls diese Adresse die Firmenadresse ist, Firmendaten aktualisieren
+    firma_synced = await sync_firma_wenn_firmenadresse(adresse_id, user["mandant_id"])
+    
     updated = await db.adressen.find_one({"_id": adresse_id})
     updated["id"] = updated.pop("_id")
     
-    return {
+    response = {
         "success": True, 
         "data": updated,
         "warnungen": warnungen if warnungen else None
     }
+    
+    if firma_synced:
+        response["firma_synced"] = True
+        response["sync_message"] = "Firmendaten wurden automatisch aktualisiert"
+    
+    return response
 
 
 @router.delete("/adressen/{adresse_id}")
