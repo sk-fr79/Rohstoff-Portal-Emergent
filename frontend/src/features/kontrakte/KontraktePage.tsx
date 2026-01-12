@@ -875,6 +875,7 @@ export function KontraktePage() {
                             </h4>
                           </div>
                           <div className="p-3">
+                            {/* Dropdown nur anzeigen wenn Liste vorhanden ODER im Bearbeitungsmodus */}
                             {ansprechpartnerListe.length > 0 ? (
                               <Select 
                                 value={watchFields.id_ansprechpartner || ''} 
@@ -898,14 +899,22 @@ export function KontraktePage() {
                                   ))}
                                 </SelectContent>
                               </Select>
+                            ) : watchFields.ansprechpartner_name ? (
+                              // Ansprechpartner ist gesetzt aber Liste nicht geladen - zeige die gespeicherten Daten
+                              <div className="p-2 bg-emerald-50/50 rounded text-sm">
+                                <span className="font-medium">{watchFields.ansprechpartner_name}</span>
+                                {watchFields.ansprechpartner_telefon && (
+                                  <span className="text-gray-500 ml-3">📞 {watchFields.ansprechpartner_telefon}</span>
+                                )}
+                              </div>
                             ) : (
                               <div className="text-sm text-gray-500 bg-gray-50 p-3 rounded-lg text-center">
                                 {watchFields.id_adresse ? 'Keine Ansprechpartner hinterlegt' : 'Bitte zuerst Vertragspartner wählen'}
                               </div>
                             )}
                             
-                            {/* Gewählter Ansprechpartner Info */}
-                            {watchFields.ansprechpartner_name && (
+                            {/* Gewählter Ansprechpartner Info - nur wenn Liste vorhanden UND ausgewählt */}
+                            {ansprechpartnerListe.length > 0 && watchFields.ansprechpartner_name && (
                               <div className="mt-2 p-2 bg-emerald-50/50 rounded text-sm flex items-center gap-3">
                                 <span className="font-medium">{watchFields.ansprechpartner_name}</span>
                                 {watchFields.ansprechpartner_telefon && (
