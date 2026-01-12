@@ -465,6 +465,10 @@ class KontraktUpdate(BaseModel):
     """Schema für Kontrakt-Update"""
     vorgang_typ: Optional[str] = None
     kontraktnummer: Optional[str] = None
+    # Streckengeschäft
+    ist_strecke: Optional[bool] = None
+    strecken_id: Optional[str] = None
+    strecken_rolle: Optional[str] = None
     # Vertragspartner
     id_adresse: Optional[str] = None
     name1: Optional[str] = None
