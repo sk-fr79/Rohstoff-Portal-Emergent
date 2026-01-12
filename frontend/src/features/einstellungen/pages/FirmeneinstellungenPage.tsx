@@ -124,13 +124,15 @@ export function FirmeneinstellungenPage() {
   const [adressePopoverOpen, setAdressePopoverOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
 
-  // Firmendaten laden
-  const { data: firmaData, isLoading: isLoadingFirma } = useQuery({
+  // Firmendaten laden - mit automatischem Refresh
+  const { data: firmaData, isLoading: isLoadingFirma, refetch: refetchFirma } = useQuery({
     queryKey: ['firma'],
     queryFn: async () => {
       const response = await api.get('/system/firma');
       return response.data.data as FirmaDaten | null;
-    }
+    },
+    refetchOnWindowFocus: true,  // Neu laden wenn Fenster wieder fokussiert wird
+    refetchInterval: 30000,      // Alle 30 Sekunden automatisch aktualisieren
   });
 
   // Adressen für Auswahl laden
