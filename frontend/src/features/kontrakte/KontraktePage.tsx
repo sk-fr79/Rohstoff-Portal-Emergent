@@ -1072,7 +1072,9 @@ const AKTION_FARBEN: Record<string, string> = {
 };
 
 function formatRelativeTime(isoString: string): string {
-  const date = new Date(isoString);
+  // Stelle sicher, dass der Zeitstempel als UTC interpretiert wird
+  const utcString = isoString.endsWith('Z') ? isoString : isoString + 'Z';
+  const date = new Date(utcString);
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
   const diffSecs = Math.floor(diffMs / 1000);
@@ -1088,7 +1090,9 @@ function formatRelativeTime(isoString: string): string {
 }
 
 function formatDateTime(isoString: string): string {
-  return new Date(isoString).toLocaleString('de-DE', {
+  // Stelle sicher, dass der Zeitstempel als UTC interpretiert und in lokale Zeit konvertiert wird
+  const utcString = isoString.endsWith('Z') ? isoString : isoString + 'Z';
+  return new Date(utcString).toLocaleString('de-DE', {
     day: '2-digit',
     month: '2-digit',
     year: 'numeric',
