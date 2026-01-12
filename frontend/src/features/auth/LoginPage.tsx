@@ -5,7 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
-import { Building2, Loader2, Eye, EyeOff } from 'lucide-react';
+import { Building2, Loader2, Eye, EyeOff, Recycle, BarChart3, Zap } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { usePermissionsStore } from '@/store/permissionsStore';
 import { authApi } from '@/services/api/client';
