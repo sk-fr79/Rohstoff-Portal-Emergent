@@ -275,7 +275,7 @@ export function BankverbindungenTab({ adresseId, isEditing }: BankverbindungenTa
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label className="text-sm font-medium">BIC/SWIFT</Label>
-                  <DynamicInput
+                  <SmartInput
                     module="adressen"
                     fieldName="bankverbindungen.bic"
                     value={formData.bic || ''}
@@ -304,7 +304,7 @@ export function BankverbindungenTab({ adresseId, isEditing }: BankverbindungenTa
 
               <div>
                 <Label className="text-sm font-medium">Bank</Label>
-                <DynamicInput
+                <SmartInput
                   module="adressen"
                   fieldName="bankverbindungen.bank_name"
                   value={formData.bank_name || ''}
