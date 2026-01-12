@@ -213,7 +213,52 @@ export function FirmeneinstellungenPage() {
             Definieren Sie eine Adresse aus den Stammdaten als Firmenmandant
           </p>
         </div>
+        {firmaData && (
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => syncMutation.mutate()}
+            disabled={syncMutation.isPending}
+            className="gap-2"
+          >
+            <RefreshCw className={cn("h-4 w-4", syncMutation.isPending && "animate-spin")} />
+            Jetzt synchronisieren
+          </Button>
+        )}
       </div>
+
+      {/* Auto-Sync Info Banner */}
+      {firmaData && (
+        <div className="rounded-lg border bg-gradient-to-r from-emerald-50 to-blue-50 p-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-full bg-emerald-100 flex items-center justify-center">
+                <Zap className="h-5 w-5 text-emerald-600" />
+              </div>
+              <div>
+                <div className="font-medium text-gray-900 flex items-center gap-2">
+                  Auto-Sync aktiviert
+                  <Badge variant="outline" className="text-xs bg-white">
+                    {firmaData.sync_quelle === 'auto' ? 'Automatisch' : firmaData.sync_quelle === 'manuell' ? 'Manuell' : 'Initial'}
+                  </Badge>
+                </div>
+                <p className="text-sm text-gray-600">
+                  Änderungen an der Quelladresse werden automatisch übernommen
+                </p>
+              </div>
+            </div>
+            <div className="text-right">
+              <div className="flex items-center gap-1.5 text-sm text-gray-500">
+                <Clock className="h-3.5 w-3.5" />
+                Letzter Sync: {formatRelativeTime(firmaData.letzter_sync)}
+              </div>
+              {firmaData.sync_von && (
+                <div className="text-xs text-gray-400">von {firmaData.sync_von}</div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Adresse auswählen */}
       <Card>
