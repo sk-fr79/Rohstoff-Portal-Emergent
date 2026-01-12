@@ -101,10 +101,12 @@ interface FirmaDaten {
   sync_von?: string;
 }
 
-// Helper für relative Zeitanzeige
+// Helper für relative Zeitanzeige (mit UTC-Konvertierung)
 function formatRelativeTime(isoString?: string): string {
   if (!isoString) return 'Nie';
-  const date = new Date(isoString);
+  // Stelle sicher, dass der Zeitstempel als UTC interpretiert wird
+  const utcString = isoString.endsWith('Z') ? isoString : isoString + 'Z';
+  const date = new Date(utcString);
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
   const diffMins = Math.floor(diffMs / 60000);
