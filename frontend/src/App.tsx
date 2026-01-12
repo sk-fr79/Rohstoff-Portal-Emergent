@@ -25,7 +25,8 @@ import {
   RollenPage,
   AbteilungenPage,
   BerechtigungenPage,
-  ApisPage
+  ApisPage,
+  NummernkreisePage
 } from '@/features/einstellungen';
 
 // Protected Route Wrapper
@@ -159,6 +160,7 @@ export default function App() {
           <Route path="rollen" element={<RollenPage />} />
           <Route path="abteilungen" element={<AbteilungenPage />} />
           <Route path="berechtigungen" element={<BerechtigungenPage />} />
+          <Route path="nummernkreise" element={<NummernkreisePage />} />
           <Route path="mandanten" element={<SystemeinstellungenPage />} />
           <Route path="sicherheit" element={<SystemeinstellungenPage />} />
           <Route path="datenbank" element={<SystemeinstellungenPage />} />
