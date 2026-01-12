@@ -548,7 +548,7 @@ async def get_kontrakte(
     if suche:
         query["$or"] = [
             {"name1": {"$regex": suche, "$options": "i"}},
-            {"buchungsnummer": {"$regex": suche, "$options": "i"}},
+            {"kontraktnummer": {"$regex": suche, "$options": "i"}},
             {"ort": {"$regex": suche, "$options": "i"}},
         ]
     if typ:
@@ -573,6 +573,86 @@ async def get_kontrakte(
         "data": kontrakte,
         "pagination": {"page": page, "limit": limit, "total": total}
     }
+
+
+@router.get("/kontrakte/lookup/benutzer")
+async def get_benutzer_fuer_auswahl(
+    user = Depends(require_permission("kontrakte", "read"))
+):
+    """Benutzer für Sachbearbeiter/Händler-Auswahl laden"""
+    db = get_db()
+    
+    cursor = db.users.find(
+        {"mandant_id": user["mandant_id"], "aktiv": True},
+        {"_id": 1, "username": 1, "vorname": 1, "nachname": 1, "email": 1, "telefon": 1, "rolle": 1}
+    ).sort("nachname", 1)
+    
+    benutzer = await cursor.to_list(length=100)
+    
+    result = []
+    for b in benutzer:
+        name = f"{b.get('vorname', '')} {b.get('nachname', '')}".strip()
+        if not name:
+            name = b.get("username", "")
+        result.append({
+            "id": b["_id"],
+            "name": name,
+            "email": b.get("email"),
+            "telefon": b.get("telefon"),
+            "rolle": b.get("rolle")
+        })
+    
+    return {"success": True, "data": result}
+
+
+@router.get("/kontrakte/lookup/adressen")
+async def get_adressen_fuer_auswahl(
+    suche: Optional[str] = None,
+    limit: int = 50,
+    user = Depends(require_permission("kontrakte", "read"))
+):
+    """Aktive Adressen für Vertragspartner-Auswahl laden"""
+    db = get_db()
+    
+    query = {
+        "mandant_id": user["mandant_id"],
+        "aktiv": True,
+        "deleted": {"$ne": True}
+    }
+    
+    if suche:
+        query["$or"] = [
+            {"name1": {"$regex": suche, "$options": "i"}},
+            {"name2": {"$regex": suche, "$options": "i"}},
+            {"kundennummer": {"$regex": suche, "$options": "i"}},
+            {"ort": {"$regex": suche, "$options": "i"}},
+        ]
+    
+    cursor = db.adressen.find(query).sort("name1", 1).limit(limit)
+    adressen = await cursor.to_list(length=limit)
+    
+    result = []
+    for a in adressen:
+        result.append({
+            "id": a["_id"],
+            "name1": a.get("name1"),
+            "name2": a.get("name2"),
+            "strasse": a.get("strasse"),
+            "hausnummer": a.get("hausnummer"),
+            "plz": a.get("plz"),
+            "ort": a.get("ort"),
+            "land": a.get("land"),
+            "land_code": a.get("land_code"),
+            "ust_id": a.get("ust_id"),
+            "steuernummer": a.get("steuernummer"),
+            "telefon": a.get("telefon"),
+            "telefax": a.get("telefax"),
+            "email": a.get("email"),
+            "kundennummer": a.get("kundennummer"),
+            "ansprechpartner": a.get("ansprechpartner", [])
+        })
+    
+    return {"success": True, "data": result}
 
 
 @router.get("/kontrakte/{kontrakt_id}")
