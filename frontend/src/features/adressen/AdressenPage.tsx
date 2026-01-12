@@ -34,84 +34,28 @@ import { LieferadressenTab } from './components/LieferadressenTab';
 import { ValidationDisplay, SteuerStatusBadge } from './components/ValidationDisplay';
 import { KreditversicherungTab } from './components/KreditversicherungTab';
 
-// Import SVG Flags from country-flag-icons
-import DE from 'country-flag-icons/react/3x2/DE';
-import AT from 'country-flag-icons/react/3x2/AT';
-import CH from 'country-flag-icons/react/3x2/CH';
-import NL from 'country-flag-icons/react/3x2/NL';
-import BE from 'country-flag-icons/react/3x2/BE';
-import FR from 'country-flag-icons/react/3x2/FR';
-import IT from 'country-flag-icons/react/3x2/IT';
-import ES from 'country-flag-icons/react/3x2/ES';
-import PL from 'country-flag-icons/react/3x2/PL';
-import CZ from 'country-flag-icons/react/3x2/CZ';
-import DK from 'country-flag-icons/react/3x2/DK';
-import SE from 'country-flag-icons/react/3x2/SE';
-import FI from 'country-flag-icons/react/3x2/FI';
-import GR from 'country-flag-icons/react/3x2/GR';
-import PT from 'country-flag-icons/react/3x2/PT';
-import IE from 'country-flag-icons/react/3x2/IE';
-import LU from 'country-flag-icons/react/3x2/LU';
-import HU from 'country-flag-icons/react/3x2/HU';
-import RO from 'country-flag-icons/react/3x2/RO';
-import BG from 'country-flag-icons/react/3x2/BG';
-import HR from 'country-flag-icons/react/3x2/HR';
-import SK from 'country-flag-icons/react/3x2/SK';
-import SI from 'country-flag-icons/react/3x2/SI';
-import EE from 'country-flag-icons/react/3x2/EE';
-import LV from 'country-flag-icons/react/3x2/LV';
-import LT from 'country-flag-icons/react/3x2/LT';
-import MT from 'country-flag-icons/react/3x2/MT';
-import CY from 'country-flag-icons/react/3x2/CY';
-import GB from 'country-flag-icons/react/3x2/GB';
-import NO from 'country-flag-icons/react/3x2/NO';
+// Dynamic flag component using country-flag-icons
+import * as Flags from 'country-flag-icons/react/3x2';
+import { ALL_COUNTRIES, COUNTRY_TO_ISO } from '../../data/countries';
 
-// Country to ISO code mapping
-const COUNTRY_ISO_MAP: Record<string, string> = {
-  'Deutschland': 'DE',
-  'Österreich': 'AT',
-  'Schweiz': 'CH',
-  'Niederlande': 'NL',
-  'Belgien': 'BE',
-  'Frankreich': 'FR',
-  'Italien': 'IT',
-  'Spanien': 'ES',
-  'Polen': 'PL',
-  'Tschechien': 'CZ',
-  'Dänemark': 'DK',
-  'Schweden': 'SE',
-  'Finnland': 'FI',
-  'Griechenland': 'GR',
-  'Portugal': 'PT',
-  'Irland': 'IE',
-  'Luxemburg': 'LU',
-  'Ungarn': 'HU',
-  'Rumänien': 'RO',
-  'Bulgarien': 'BG',
-  'Kroatien': 'HR',
-  'Slowakei': 'SK',
-  'Slowenien': 'SI',
-  'Estland': 'EE',
-  'Lettland': 'LV',
-  'Litauen': 'LT',
-  'Malta': 'MT',
-  'Zypern': 'CY',
-  'Großbritannien': 'GB',
-  'Norwegen': 'NO',
-};
-
-// Flag components map
-const FLAG_COMPONENTS: Record<string, React.FC<{ className?: string }>> = {
-  DE, AT, CH, NL, BE, FR, IT, ES, PL, CZ, DK, SE, FI, GR, PT, IE, LU, HU, RO, BG, HR, SK, SI, EE, LV, LT, MT, CY, GB, NO
-};
-
-// CountryFlag component - renders SVG flag
+// CountryFlag component - renders SVG flag dynamically
 const CountryFlag = ({ country, className = "w-6 h-4" }: { country: string; className?: string }) => {
-  const isoCode = COUNTRY_ISO_MAP[country];
-  const FlagComponent = isoCode ? FLAG_COMPONENTS[isoCode] : null;
+  const isoCode = COUNTRY_TO_ISO[country];
+  
+  if (!isoCode) {
+    return <span className="inline-block w-6 h-4 bg-gray-200 rounded text-xs text-center">?</span>;
+  }
+  
+  // Dynamically get flag component
+  const FlagComponent = (Flags as Record<string, React.FC<{ className?: string }>>)[isoCode];
   
   if (!FlagComponent) {
-    return <span className="inline-block w-6 h-4 bg-gray-200 rounded text-xs text-center">?</span>;
+    // Fallback: Show ISO code
+    return (
+      <span className="inline-flex items-center justify-center w-6 h-4 bg-gray-100 border border-gray-200 rounded text-[8px] font-bold text-gray-500">
+        {isoCode}
+      </span>
+    );
   }
   
   return <FlagComponent className={cn("inline-block rounded shadow-sm", className)} />;
