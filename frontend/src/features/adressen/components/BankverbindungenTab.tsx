@@ -68,6 +68,8 @@ export function BankverbindungenTab({ adresseId, isEditing }: BankverbindungenTa
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['bankverbindungen', adresseId] });
+      queryClient.invalidateQueries({ queryKey: ['firma'] });
+      queryClient.invalidateQueries({ queryKey: ['mandant-lookup'] });
       toast.success('Bankverbindung hinzugefügt');
       setShowDialog(false);
       resetForm();
@@ -83,6 +85,8 @@ export function BankverbindungenTab({ adresseId, isEditing }: BankverbindungenTa
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['bankverbindungen', adresseId] });
+      queryClient.invalidateQueries({ queryKey: ['firma'] });
+      queryClient.invalidateQueries({ queryKey: ['mandant-lookup'] });
       toast.success('Bankverbindung aktualisiert');
       setShowDialog(false);
       resetForm();
@@ -98,6 +102,8 @@ export function BankverbindungenTab({ adresseId, isEditing }: BankverbindungenTa
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['bankverbindungen', adresseId] });
+      queryClient.invalidateQueries({ queryKey: ['firma'] });
+      queryClient.invalidateQueries({ queryKey: ['mandant-lookup'] });
       toast.success('Bankverbindung gelöscht');
     },
     onError: () => {
