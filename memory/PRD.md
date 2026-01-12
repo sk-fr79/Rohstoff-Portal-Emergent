@@ -727,6 +727,28 @@ Passwort: Admin123!
 **Earlier issues found/mentioned but not fixed**
 -   Keine.
 
+## CHANGELOG (2026-01-12)
+
+### Klickbarer Link in Warennotiz (Zolltarifnummer) ✅
+1. **Feature implementiert:**
+   - Unterhalb des "Warennotiz"-Textfeldes im Artikel-Modul wird ein ansprechender, klickbarer Link angezeigt
+   - Link öffnet die externe Seite (zolltarifnummern.de) in neuem Tab
+   - Modernes Design mit ExternalLink-Icon und Emerald-Farben
+   - Link ist nur sichtbar, wenn eine URL vorhanden ist
+   - URL wird automatisch aus der ausgewählten Zolltarifnummer extrahiert
+   - Bei bestehenden Artikeln wird die URL aus der gespeicherten Notiz extrahiert
+
+2. **Änderungen:**
+   - `ArtikelPage.tsx`: Neuer State `zolltarifUrl`, Link-Element mit Icon
+   - Warennotiz-Text enthält keine URL mehr (wird separat angezeigt)
+
+3. **UI-Element:**
+   - Button-Style mit `bg-emerald-50 hover:bg-emerald-100`
+   - Text: "Details auf zolltarifnummern.de ansehen"
+   - data-testid="zolltarif-external-link"
+
+---
+
 ## CHANGELOG (2026-01-11)
 
 ### CSV/Excel Upload für Referenztabellen (NEU) ✅
