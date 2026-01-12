@@ -393,8 +393,10 @@ class TestKontrakteListWithStrecken:
         
         response = api_client.post(f"{BASE_URL}/api/kontrakte/strecken", json=payload)
         assert response.status_code == 200
-        strecken_id = response.json()["strecken_id"]
-        ek_id = response.json()["ek_kontrakt"]["id"]
+        resp = response.json()
+        data = resp.get("data", resp)
+        strecken_id = data["strecken_id"]
+        ek_id = data["ek_kontrakt"]["id"]
         
         # Get kontrakte list
         response = api_client.get(f"{BASE_URL}/api/kontrakte?nur_strecke=true")
