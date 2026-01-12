@@ -14,7 +14,8 @@ import {
   DollarSign, FileCheck, MessageSquare, Percent, Scale,
   User, Users, Search, ChevronDown, CreditCard,
   History, Printer, Download, RefreshCw, Activity, Copy,
-  XCircle, Warehouse, ChevronRight, Filter
+  XCircle, Warehouse, ChevronRight, Filter, ArrowRightLeft,
+  Link2, Unlink, ArrowRight
 } from 'lucide-react';
 import { api } from '@/services/api/client';
 import { Button } from '@/components/ui/button';
@@ -22,7 +23,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { DataTable } from '@/components/ui/data-table';
 import { Switch } from '@/components/ui/switch';
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
