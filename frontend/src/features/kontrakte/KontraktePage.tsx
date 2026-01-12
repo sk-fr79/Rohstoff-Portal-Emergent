@@ -12,7 +12,9 @@ import {
   ArrowDownToLine, ArrowUpFromLine, CheckCircle, Clock,
   AlertTriangle, Ban, TrendingUp, Lock,
   DollarSign, FileCheck, MessageSquare, Percent, Scale,
-  User, Users, Search, ChevronDown, CreditCard
+  User, Users, Search, ChevronDown, CreditCard,
+  History, Printer, Download, RefreshCw, Activity, Copy,
+  XCircle, Warehouse, ChevronRight, Filter
 } from 'lucide-react';
 import { api } from '@/services/api/client';
 import { Button } from '@/components/ui/button';
