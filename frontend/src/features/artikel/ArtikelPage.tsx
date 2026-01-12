@@ -8,7 +8,7 @@ import { z } from 'zod';
 import { toast } from 'sonner';
 import { 
   Plus, MoreHorizontal, Pencil, Trash2, Package, Eye, 
-  Save, X, AlertTriangle, FileText, Scale, Globe, GripVertical, Recycle
+  Save, X, AlertTriangle, FileText, Scale, Globe, GripVertical, Recycle, ExternalLink
 } from 'lucide-react';
 import { artikelApi } from '@/services/api/client';
 import { Button } from '@/components/ui/button';
