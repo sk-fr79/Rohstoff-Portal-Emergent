@@ -216,51 +216,48 @@ function BenutzerSelect({
   onChange, 
   disabled, 
   placeholder = "Benutzer auswählen...",
-  benutzerListe 
+  benutzerListe,
+  showDetails = true
 }: { 
   value?: string; 
   onChange: (id: string, benutzer?: Benutzer) => void; 
   disabled?: boolean; 
   placeholder?: string;
   benutzerListe: Benutzer[];
+  showDetails?: boolean;
 }) {
-  const [open, setOpen] = useState(false);
   const selected = benutzerListe.find(b => b.id === value);
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button variant="outline" role="combobox" disabled={disabled}
-          className={cn("w-full justify-between font-normal", !value && "text-muted-foreground")}>
-          {selected ? (
+    <Select 
+      value={value || ''} 
+      onValueChange={(v) => {
+        const benutzer = benutzerListe.find(b => b.id === v);
+        onChange(v, benutzer);
+      }}
+      disabled={disabled}
+    >
+      <SelectTrigger className={cn("bg-white", !value && "text-muted-foreground")}>
+        <SelectValue placeholder={placeholder}>
+          {selected && (
             <span className="flex items-center gap-2">
-              <User className="h-4 w-4 text-gray-400" />
+              <User className="h-3.5 w-3.5 text-gray-400" />
               {selected.name}
             </span>
-          ) : placeholder}
-          <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-[300px] p-0">
-        <Command>
-          <CommandInput placeholder="Benutzer suchen..." />
-          <CommandList>
-            <CommandEmpty>Keine Benutzer gefunden.</CommandEmpty>
-            <CommandGroup>
-              {benutzerListe.map((b) => (
-                <CommandItem key={b.id} value={b.name}
-                  onSelect={() => { onChange(b.id, b); setOpen(false); }}>
-                  <div className="flex flex-col">
-                    <span className="font-medium">{b.name}</span>
-                    <span className="text-xs text-gray-500">{b.email}</span>
-                  </div>
-                </CommandItem>
-              ))}
-            </CommandGroup>
-          </CommandList>
-        </Command>
-      </PopoverContent>
-    </Popover>
+          )}
+        </SelectValue>
+      </SelectTrigger>
+      <SelectContent>
+        {benutzerListe.map((b) => (
+          <SelectItem key={b.id} value={b.id}>
+            <span className="flex items-center gap-2">
+              <span className="font-medium">{b.name}</span>
+              {showDetails && b.rolle && <Badge variant="outline" className="text-[10px] px-1">{b.rolle}</Badge>}
+            </span>
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
   );
 }
 
