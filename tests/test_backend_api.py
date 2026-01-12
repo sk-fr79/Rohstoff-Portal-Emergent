@@ -8,7 +8,7 @@ import requests
 import os
 import uuid
 
-BASE_URL = "https://material-manager-18.preview.emergentagent.com"
+BASE_URL = "https://commodityportal.preview.emergentagent.com"
 
 # Test credentials
 TEST_USERNAME = "admin"
