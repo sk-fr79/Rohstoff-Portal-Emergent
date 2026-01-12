@@ -1184,6 +1184,10 @@ async def update_position(
     if data.get("anzahl") and data.get("einzelpreis_fw"):
         data["gesamtpreis_fw"] = round(data["anzahl"] * data["einzelpreis_fw"], 2)
     
+    # Alte Position für Audit-Log laden
+    kontrakt = await db.kontrakte.find_one({"_id": kontrakt_id, "mandant_id": user["mandant_id"]})
+    alte_position = next((p for p in kontrakt.get("positionen", []) if p.get("id") == position_id), None)
+    
     # Update position in array
     update_fields = {f"positionen.$.{k}": v for k, v in data.items() if v is not None}
     
@@ -1194,6 +1198,20 @@ async def update_position(
     
     if result.modified_count == 0:
         raise HTTPException(status_code=404, detail="Position nicht gefunden")
+    
+    # Audit-Log: Position bearbeitet
+    await audit_log_erstellen(
+        kontrakt_id=kontrakt_id,
+        mandant_id=user["mandant_id"],
+        aktion="POSITION_BEARBEITET",
+        benutzer=user,
+        details={
+            "position_id": position_id,
+            "positionsnummer": alte_position.get("positionsnummer") if alte_position else None,
+            "artikel": alte_position.get("artbez1") if alte_position else data.get("artbez1")
+        },
+        aenderungen=[{"feld": k, "alt": alte_position.get(k) if alte_position else None, "neu": v} for k, v in data.items() if alte_position and alte_position.get(k) != v]
+    )
     
     return {"success": True, "message": "Position aktualisiert"}
 
