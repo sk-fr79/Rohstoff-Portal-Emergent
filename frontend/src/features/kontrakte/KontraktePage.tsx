@@ -1123,11 +1123,13 @@ function ProtokollTab({ kontraktId }: ProtokollTabProps) {
   const logs: AuditLogEintrag[] = auditData?.data || [];
   const aktionenTypen = auditData?.aktionen_typen || {};
 
-  // Gruppiere nach Datum
+  // Gruppiere nach Datum (in lokaler Zeitzone)
   const gruppierteLogs = useMemo(() => {
     const gruppen: Record<string, AuditLogEintrag[]> = {};
     logs.forEach(log => {
-      const datum = new Date(log.zeitstempel).toLocaleDateString('de-DE', {
+      // UTC zu lokaler Zeit konvertieren
+      const utcString = log.zeitstempel.endsWith('Z') ? log.zeitstempel : log.zeitstempel + 'Z';
+      const datum = new Date(utcString).toLocaleDateString('de-DE', {
         weekday: 'long',
         day: '2-digit',
         month: 'long',
