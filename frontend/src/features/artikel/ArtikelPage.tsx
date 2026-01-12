@@ -820,9 +820,22 @@ export function ArtikelPage() {
                             {...register('zolltarifnotiz')} 
                             readOnly
                             className="bg-gray-50 text-gray-700 cursor-not-allowed resize-none" 
-                            rows={5}
+                            rows={4}
                             placeholder="Wählen Sie eine Zolltarifnummer aus..."
                           />
+                          {/* Klickbarer Link zur externen Zolltarifnummer-Seite */}
+                          {zolltarifUrl && (
+                            <a
+                              href={zolltarifUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-2 px-3 py-2 mt-1 text-sm font-medium text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-lg transition-colors group"
+                              data-testid="zolltarif-external-link"
+                            >
+                              <ExternalLink className="h-4 w-4 group-hover:scale-110 transition-transform" />
+                              <span>Details auf zolltarifnummern.de ansehen</span>
+                            </a>
+                          )}
                         </div>
                       </div>
 
