@@ -184,6 +184,10 @@ interface AuditLogEintrag {
 const kontraktSchema = z.object({
   vorgang_typ: z.string().default('EK'),
   kontraktnummer: z.string().max(30).nullish(),
+  // Streckengeschäft
+  ist_strecke: z.boolean().default(false),
+  strecken_id: z.string().nullish(),
+  strecken_rolle: z.string().nullish(),
   // Vertragspartner
   id_adresse: z.string().nullish(),
   name1: z.string().min(1, 'Vertragspartner erforderlich').max(40),
@@ -221,7 +225,7 @@ const kontraktSchema = z.object({
   gueltig_bis: z.string().nullish(),
   // Läger
   id_abhollager: z.string().nullish(),
-  abhollager_typ: z.string().nullish(), // 'haupt', 'liefer', 'mandant'
+  abhollager_typ: z.string().nullish(), // 'haupt', 'liefer', 'mandant', 'lieferant', 'abnehmer'
   abhollager_name: z.string().max(100).nullish(),
   abhollager_strasse: z.string().max(100).nullish(),
   abhollager_plz: z.string().max(10).nullish(),
