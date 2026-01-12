@@ -156,6 +156,28 @@ interface Position {
   bemerkung?: string;
 }
 
+interface AuditLogEintrag {
+  id: string;
+  kontrakt_id: string;
+  aktion: string;
+  aktion_meta: {
+    icon: string;
+    farbe: string;
+    label: string;
+  };
+  benutzer_id: string;
+  benutzer_name: string;
+  benutzer_kuerzel: string;
+  zeitstempel: string;
+  details: Record<string, any>;
+  aenderungen: Array<{
+    feld: string;
+    feld_label?: string;
+    alt: any;
+    neu: any;
+  }>;
+}
+
 // ========================== SCHEMA ==========================
 const kontraktSchema = z.object({
   vorgang_typ: z.string().default('EK'),
