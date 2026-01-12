@@ -62,13 +62,17 @@ export function useFieldBinding(module: string, fieldName: string): UseFieldBind
       setError(null);
 
       try {
+        console.log(`[useFieldBinding] Fetching binding for ${module}.${fieldName}...`);
         const response = await fetch(
           `${API_URL}/system/field-binding/${module}/${fieldName}`,
           { headers: { 'Authorization': `Bearer ${token}` } }
         );
+        
+        console.log(`[useFieldBinding] Response status: ${response.status}`);
 
         if (response.ok) {
           const data = await response.json();
+          console.log(`[useFieldBinding] Data:`, data);
           if (data.success && data.data) {
             bindingsCache[cacheKey] = data.data;
             cacheTimestamps[cacheKey] = now;
@@ -80,6 +84,7 @@ export function useFieldBinding(module: string, fieldName: string): UseFieldBind
           }
         } else if (response.status === 404) {
           // Keine Verknüpfung gefunden - das ist OK
+          console.log(`[useFieldBinding] No binding found (404)`);
           bindingsCache[cacheKey] = null;
           cacheTimestamps[cacheKey] = now;
           setBinding(null);
@@ -87,6 +92,7 @@ export function useFieldBinding(module: string, fieldName: string): UseFieldBind
           throw new Error('Fehler beim Laden der Feld-Verknüpfung');
         }
       } catch (err) {
+        console.error(`[useFieldBinding] Error:`, err);
         setError(err instanceof Error ? err.message : 'Unbekannter Fehler');
         setBinding(null);
       } finally {
@@ -96,6 +102,9 @@ export function useFieldBinding(module: string, fieldName: string): UseFieldBind
 
     if (module && fieldName && token) {
       fetchBinding();
+    } else {
+      // Wenn kein Token vorhanden, Loading beenden
+      setIsLoading(false);
     }
   }, [module, fieldName, token, cacheKey]);
 
