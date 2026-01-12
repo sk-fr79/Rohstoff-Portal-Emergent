@@ -470,6 +470,11 @@ export function KontraktePage() {
     queryFn: async () => { const response = await api.get('/kontrakte/lookup/benutzer'); return response.data.data as Benutzer[]; }
   });
 
+  const { data: mandantData } = useQuery({
+    queryKey: ['mandant-lookup'],
+    queryFn: async () => { const response = await api.get('/kontrakte/lookup/mandant'); return response.data.data as LagerOption | null; }
+  });
+
   const filteredData = useMemo(() => {
     if (!kontrakteData?.data) return [];
     if (!filterTyp) return kontrakteData.data;
