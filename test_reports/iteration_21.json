@@ -1,0 +1,105 @@
+{
+  "summary": "Completed comprehensive testing of Kontrakt-Positionserfassung redesign. Backend: 15/15 tests passed (100%). Frontend: All new Position-Dialog features working correctly including Tab-Navigation, ArtikelSelect, Copy-Function, Summen-Header, and Double-click Detail View.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/tests/test_kontrakt_positionen.py",
+    "/app/test_reports/pytest/pytest_kontrakt_positionen.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "FIXED: positionsnummer default value bug in KontraktPositionCreate schema - changed from 'positionsnummer: int = 1' to 'positionsnummer: Optional[int] = None' to allow auto-increment"
+  ],
+  "updated_files": [
+    "/app/tests/test_kontrakt_positionen.py",
+    "/app/backend/routers/kontrakte.py"
+  ],
+  "success_rate": {
+    "backend": "100% (15/15 tests passed)",
+    "frontend": "100% (all UI features working)"
+  },
+  "test_credentials": {
+    "admin": {"username": "admin", "password": "Admin123!"},
+    "waage": {"username": "waage", "password": "Waage!123"}
+  },
+  "seed_data_creation": "Test Kontrakte created during testing were cleaned up. Existing Kontrakt EK202600007 has 3 positions after copy test.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Kontrakt-Positionserfassung redesign fully tested. New PositionDialog has 3 tabs (Artikel, Mengen & Preise, Optionen). ArtikelSelect uses /api/artikel/lookup with search and filter. PositionenListe shows compact card view with Summen-Header. Copy function and double-click detail view working.",
+  "features_tested": {
+    "backend_apis": {
+      "artikel_lookup": [
+        "GET /api/artikel/lookup - Basic lookup ✓",
+        "GET /api/artikel/lookup?suche=Blech - Search filter ✓",
+        "GET /api/artikel/lookup?artikelgruppe=Metalle - Artikelgruppe filter ✓",
+        "GET /api/artikel/lookup?gefahrgut=true - Gefahrgut filter ✓",
+        "GET /api/artikel/gruppen - Artikelgruppen for dropdown ✓"
+      ],
+      "kontrakt_positionen": [
+        "POST /api/kontrakte/{id}/positionen - Add position ✓",
+        "POST /api/kontrakte/{id}/positionen - Multiple positions with auto-increment ✓",
+        "PUT /api/kontrakte/{id}/positionen/{pos_id} - Update position ✓",
+        "DELETE /api/kontrakte/{id}/positionen/{pos_id} - Delete position ✓",
+        "GET /api/kontrakte/{id} - Summen calculation ✓"
+      ],
+      "kontrakt_with_positions": [
+        "POST /api/kontrakte with embedded positions ✓",
+        "PUT /api/kontrakte/{id} with modified positions ✓"
+      ],
+      "validation": [
+        "Position toleranz validation ✓",
+        "Gesamtpreis auto-calculation ✓"
+      ]
+    },
+    "frontend_components": {
+      "position_dialog": [
+        "Dialog opens with data-testid='position-dialog' ✓",
+        "Tab navigation: Artikel, Mengen & Preise, Optionen ✓",
+        "ArtikelSelect dropdown with search ✓",
+        "Manual input fields for Artikel-Nr. and Bezeichnung ✓",
+        "Menge input with data-testid='position-menge-input' ✓",
+        "Preis input with data-testid='position-preis-input' ✓",
+        "Gesamtpreis auto-calculation display ✓",
+        "Optionen tab with Mengentoleranz and Überlieferung ✓",
+        "Save button with data-testid='position-save-btn' ✓"
+      ],
+      "positionen_liste": [
+        "List with data-testid='positionen-liste' ✓",
+        "Empty state with data-testid='positionen-empty' ✓",
+        "Summen-Header showing Anzahl, Gesamtmenge, Gesamtwert ✓",
+        "Position cards with positionsnummer badge ✓",
+        "Menge × Einzelpreis = Gesamtpreis display ✓",
+        "Action buttons: view, copy, edit, delete ✓",
+        "Copy button with data-testid='copy-position-{index}' ✓",
+        "Double-click hint visible ✓"
+      ],
+      "read_mode_detail_view": [
+        "Double-click opens detail dialog ✓",
+        "Title shows 'Positionsdetails' with Pos. number ✓",
+        "Only 'Schließen' button (no Speichern) ✓",
+        "All fields are read-only ✓"
+      ],
+      "copy_function": [
+        "Copy button creates duplicate position ✓",
+        "New position gets incremented positionsnummer ✓",
+        "Bemerkung prefixed with '(Kopie)' ✓",
+        "Toast 'Position kopiert' appears ✓",
+        "Summen-Header updates correctly ✓"
+      ]
+    }
+  },
+  "bug_fixed": {
+    "file": "/app/backend/routers/kontrakte.py",
+    "line": 24,
+    "issue": "positionsnummer always defaulted to 1, preventing auto-increment",
+    "fix": "Changed 'positionsnummer: int = 1' to 'positionsnummer: Optional[int] = None'",
+    "impact": "Multiple positions now correctly get incremented positionsnummer (1, 2, 3, ...)"
+  }
+}
