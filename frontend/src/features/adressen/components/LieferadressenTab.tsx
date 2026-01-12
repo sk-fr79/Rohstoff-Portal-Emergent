@@ -90,6 +90,8 @@ export function LieferadressenTab({ adresseId, isEditing }: LieferadressenTabPro
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['lieferadressen', adresseId] });
+      queryClient.invalidateQueries({ queryKey: ['firma'] });
+      queryClient.invalidateQueries({ queryKey: ['mandant-lookup'] });
       toast.success('Lieferadresse hinzugefügt');
       setShowDialog(false);
       resetForm();
@@ -105,6 +107,8 @@ export function LieferadressenTab({ adresseId, isEditing }: LieferadressenTabPro
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['lieferadressen', adresseId] });
+      queryClient.invalidateQueries({ queryKey: ['firma'] });
+      queryClient.invalidateQueries({ queryKey: ['mandant-lookup'] });
       toast.success('Lieferadresse aktualisiert');
       setShowDialog(false);
       resetForm();
