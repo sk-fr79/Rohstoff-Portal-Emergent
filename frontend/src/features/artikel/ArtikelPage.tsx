@@ -774,6 +774,7 @@ export function ArtikelPage() {
                             module="artikel"
                             fieldName="zolltarifnr"
                             value={watch('zolltarifnr')}
+                            displayValue={watch('zolltarifnr_bezeichnung')}
                             onChange={(val) => setValue('zolltarifnr', val)}
                             onSelectOption={(option: ReferenceOption | null) => {
                               // Zolltarifnummer-Daten in separate DB-Felder speichern
