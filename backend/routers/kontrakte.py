@@ -751,9 +751,31 @@ async def get_adressen_fuer_auswahl(
 
 @router.get("/kontrakte/lookup/mandant")
 async def get_mandant_adresse(user = Depends(require_permission("kontrakte", "read"))):
-    """Mandant-Adresse für Lager-Auswahl laden"""
+    """Firmenadresse für Lager-Auswahl laden (aus Firmeneinstellungen)"""
     db = get_db()
     
+    # Firmendaten laden
+    firma = await db.firma.find_one({"mandant_id": user["mandant_id"]})
+    
+    if firma:
+        return {
+            "success": True,
+            "data": {
+                "id": firma.get("id_adresse") or firma["_id"],
+                "name1": firma.get("name1"),
+                "name2": firma.get("name2"),
+                "strasse": firma.get("strasse"),
+                "hausnummer": firma.get("hausnummer"),
+                "plz": firma.get("plz"),
+                "ort": firma.get("ort"),
+                "land": firma.get("land", "Deutschland"),
+                "telefon": firma.get("telefon"),
+                "email": firma.get("email"),
+                "lieferadressen": firma.get("lieferadressen", [])
+            }
+        }
+    
+    # Fallback auf Mandant-Tabelle
     mandant = await db.mandanten.find_one({"_id": user["mandant_id"]})
     if not mandant:
         return {"success": True, "data": None}
@@ -770,7 +792,8 @@ async def get_mandant_adresse(user = Depends(require_permission("kontrakte", "re
             "ort": mandant.get("ort"),
             "land": mandant.get("land", "Deutschland"),
             "telefon": mandant.get("telefon"),
-            "email": mandant.get("email")
+            "email": mandant.get("email"),
+            "lieferadressen": []
         }
     }
 
