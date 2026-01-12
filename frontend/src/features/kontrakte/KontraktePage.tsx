@@ -1347,6 +1347,8 @@ export function KontraktePage() {
       toast.success('Kontrakt erfolgreich erstellt');
       if (response.data?.data) {
         setSelectedKontrakt(response.data.data);
+        // Auch Audit-Log für den neuen Kontrakt invalidieren
+        queryClient.invalidateQueries({ queryKey: ['kontrakt-audit-log', response.data.data.id] });
         Object.entries(response.data.data).forEach(([key, value]) => {
           if (key in kontraktSchema.shape) setValue(key as keyof KontraktForm, value as any);
         });
