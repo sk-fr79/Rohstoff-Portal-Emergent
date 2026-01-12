@@ -1035,6 +1035,295 @@ function PositionenListe({ positionen, waehrung, isEditing, onEdit, onDelete, on
 }
 
 
+// ========================== PROTOKOLL-TAB KOMPONENTE ==========================
+
+const AKTION_ICONS: Record<string, React.ElementType> = {
+  'plus-circle': Plus,
+  'pencil': Pencil,
+  'refresh-cw': RefreshCw,
+  'package-plus': Package,
+  'package': Package,
+  'package-x': Package,
+  'printer': Printer,
+  'download': Download,
+  'eye': Eye,
+  'building': Building2,
+  'warehouse': Warehouse,
+  'copy': Copy,
+  'x-circle': XCircle,
+  'check-circle': CheckCircle,
+  'lock': Lock,
+  'activity': Activity,
+};
+
+const AKTION_FARBEN: Record<string, string> = {
+  'emerald': 'bg-emerald-100 text-emerald-700 border-emerald-200',
+  'blue': 'bg-blue-100 text-blue-700 border-blue-200',
+  'amber': 'bg-amber-100 text-amber-700 border-amber-200',
+  'green': 'bg-green-100 text-green-700 border-green-200',
+  'red': 'bg-red-100 text-red-700 border-red-200',
+  'gray': 'bg-gray-100 text-gray-700 border-gray-200',
+  'violet': 'bg-violet-100 text-violet-700 border-violet-200',
+  'slate': 'bg-slate-100 text-slate-700 border-slate-200',
+  'orange': 'bg-orange-100 text-orange-700 border-orange-200',
+  'cyan': 'bg-cyan-100 text-cyan-700 border-cyan-200',
+  'indigo': 'bg-indigo-100 text-indigo-700 border-indigo-200',
+};
+
+function formatRelativeTime(isoString: string): string {
+  const date = new Date(isoString);
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffSecs = Math.floor(diffMs / 1000);
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMs / 3600000);
+  const diffDays = Math.floor(diffMs / 86400000);
+  
+  if (diffSecs < 60) return 'Gerade eben';
+  if (diffMins < 60) return `vor ${diffMins} Min.`;
+  if (diffHours < 24) return `vor ${diffHours} Std.`;
+  if (diffDays < 7) return `vor ${diffDays} Tag${diffDays > 1 ? 'en' : ''}`;
+  return date.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
+}
+
+function formatDateTime(isoString: string): string {
+  return new Date(isoString).toLocaleString('de-DE', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+}
+
+interface ProtokollTabProps {
+  kontraktId: string;
+}
+
+function ProtokollTab({ kontraktId }: ProtokollTabProps) {
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [filterAktion, setFilterAktion] = useState<string>('__all__');
+  
+  const { data: auditData, isLoading } = useQuery({
+    queryKey: ['kontrakt-audit-log', kontraktId],
+    queryFn: async () => {
+      const params = new URLSearchParams();
+      if (filterAktion && filterAktion !== '__all__') params.append('aktion_filter', filterAktion);
+      const response = await api.get(`/kontrakte/${kontraktId}/audit-log?${params.toString()}`);
+      return response.data;
+    },
+    enabled: !!kontraktId,
+  });
+
+  const logs: AuditLogEintrag[] = auditData?.data || [];
+  const aktionenTypen = auditData?.aktionen_typen || {};
+
+  // Gruppiere nach Datum
+  const gruppierteLogs = useMemo(() => {
+    const gruppen: Record<string, AuditLogEintrag[]> = {};
+    logs.forEach(log => {
+      const datum = new Date(log.zeitstempel).toLocaleDateString('de-DE', {
+        weekday: 'long',
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric'
+      });
+      if (!gruppen[datum]) gruppen[datum] = [];
+      gruppen[datum].push(log);
+    });
+    return gruppen;
+  }, [logs]);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600"></div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4" data-testid="protokoll-tab">
+      {/* Header mit Filter */}
+      <div className="flex items-center justify-between">
+        <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+          <History className="h-5 w-5 text-violet-600" />
+          Aktivitätsprotokoll
+          <Badge variant="secondary">{logs.length} Einträge</Badge>
+        </h3>
+        
+        <Select value={filterAktion} onValueChange={setFilterAktion}>
+          <SelectTrigger className="w-[180px] h-8">
+            <Filter className="h-3.5 w-3.5 mr-2 text-gray-400" />
+            <SelectValue placeholder="Alle Aktionen" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="__all__">Alle Aktionen</SelectItem>
+            {Object.entries(aktionenTypen).map(([key, meta]: [string, any]) => (
+              <SelectItem key={key} value={key}>{meta.label}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {logs.length === 0 ? (
+        <div className="text-center py-12 bg-gradient-to-br from-gray-50 to-white rounded-xl border-2 border-dashed">
+          <History className="h-16 w-16 mx-auto mb-3 text-gray-300" />
+          <p className="text-gray-500 font-medium">Noch keine Aktivitäten</p>
+          <p className="text-sm text-gray-400 mt-1">Alle Änderungen werden hier protokolliert</p>
+        </div>
+      ) : (
+        <div className="space-y-6">
+          {Object.entries(gruppierteLogs).map(([datum, tagesLogs]) => (
+            <div key={datum}>
+              {/* Datum-Header */}
+              <div className="sticky top-0 bg-gray-50/95 backdrop-blur-sm z-10 py-2 px-3 rounded-lg mb-3">
+                <span className="text-sm font-medium text-gray-600">{datum}</span>
+              </div>
+              
+              {/* Timeline */}
+              <div className="relative">
+                {/* Vertikale Linie */}
+                <div className="absolute left-5 top-0 bottom-0 w-0.5 bg-gradient-to-b from-gray-200 via-gray-200 to-transparent"></div>
+                
+                <div className="space-y-3">
+                  {tagesLogs.map((log, index) => {
+                    const IconComponent = AKTION_ICONS[log.aktion_meta?.icon] || Activity;
+                    const farbe = AKTION_FARBEN[log.aktion_meta?.farbe] || AKTION_FARBEN['gray'];
+                    const isExpanded = expandedId === log.id;
+                    const hasDetails = (log.aenderungen && log.aenderungen.length > 0) || Object.keys(log.details || {}).length > 0;
+                    
+                    return (
+                      <div 
+                        key={log.id} 
+                        className={cn(
+                          "relative pl-12 group",
+                          hasDetails && "cursor-pointer"
+                        )}
+                        onClick={() => hasDetails && setExpandedId(isExpanded ? null : log.id)}
+                      >
+                        {/* Icon auf der Timeline */}
+                        <div className={cn(
+                          "absolute left-2 w-7 h-7 rounded-full flex items-center justify-center border-2 shadow-sm transition-transform",
+                          farbe,
+                          "group-hover:scale-110"
+                        )}>
+                          <IconComponent className="h-3.5 w-3.5" />
+                        </div>
+                        
+                        {/* Inhalt */}
+                        <div className={cn(
+                          "bg-white rounded-xl border shadow-sm p-4 transition-all",
+                          hasDetails && "hover:shadow-md hover:border-gray-300",
+                          isExpanded && "ring-2 ring-violet-200"
+                        )}>
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="flex-1 min-w-0">
+                              {/* Aktion */}
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <Badge className={cn("text-xs", farbe)}>
+                                  {log.aktion_meta?.label || log.aktion}
+                                </Badge>
+                                {hasDetails && (
+                                  <ChevronRight className={cn(
+                                    "h-4 w-4 text-gray-400 transition-transform",
+                                    isExpanded && "rotate-90"
+                                  )} />
+                                )}
+                              </div>
+                              
+                              {/* Beschreibung */}
+                              <p className="text-sm text-gray-700 mt-1">
+                                {log.aktion === 'ERSTELLT' && `Kontrakt ${log.details?.kontraktnummer || ''} erstellt`}
+                                {log.aktion === 'BEARBEITET' && `${log.aenderungen?.length || 0} Feld${log.aenderungen?.length !== 1 ? 'er' : ''} geändert`}
+                                {log.aktion === 'STATUS_GEAENDERT' && `Status: ${log.details?.alter_status} → ${log.details?.neuer_status}`}
+                                {log.aktion === 'POSITION_HINZUGEFUEGT' && `Position ${log.details?.positionsnummer}: ${log.details?.artikel || 'Artikel'} (${log.details?.menge} ${log.details?.einheit || 't'})`}
+                                {log.aktion === 'POSITION_BEARBEITET' && `Position ${log.details?.positionsnummer} bearbeitet`}
+                                {log.aktion === 'POSITION_GELOESCHT' && `Position ${log.details?.positionsnummer}: ${log.details?.artikel || 'Artikel'} entfernt`}
+                                {log.aktion === 'GEDRUCKT' && 'Kontrakt gedruckt'}
+                                {log.aktion === 'EXPORTIERT' && 'Kontrakt exportiert'}
+                                {log.aktion === 'GEOEFFNET' && 'Kontrakt angesehen'}
+                                {log.aktion === 'PARTNER_GEAENDERT' && `Partner: ${log.details?.alter_partner} → ${log.details?.neuer_partner}`}
+                                {log.aktion === 'LAGER_GEAENDERT' && 'Lager-Zuordnung geändert'}
+                                {log.aktion === 'STORNIERT' && `Storniert${log.details?.storno_grund ? `: ${log.details.storno_grund}` : ''}`}
+                                {log.aktion === 'ABGESCHLOSSEN' && 'Kontrakt abgeschlossen'}
+                              </p>
+                            </div>
+                            
+                            {/* Zeit & Benutzer */}
+                            <div className="text-right shrink-0">
+                              <div className="text-xs text-gray-500">{formatRelativeTime(log.zeitstempel)}</div>
+                              <div className="flex items-center justify-end gap-1.5 mt-1">
+                                <div className="h-5 w-5 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-[10px] font-bold text-white">
+                                  {log.benutzer_kuerzel?.substring(0, 2) || '??'}
+                                </div>
+                                <span className="text-xs text-gray-600">{log.benutzer_name}</span>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          {/* Expandierte Details */}
+                          {isExpanded && hasDetails && (
+                            <div className="mt-4 pt-4 border-t space-y-3">
+                              {/* Änderungen */}
+                              {log.aenderungen && log.aenderungen.length > 0 && (
+                                <div className="space-y-2">
+                                  <div className="text-xs font-medium text-gray-500 uppercase tracking-wide">Änderungen</div>
+                                  <div className="grid gap-2">
+                                    {log.aenderungen.map((aenderung, i) => (
+                                      <div key={i} className="flex items-start gap-3 p-2 bg-gray-50 rounded-lg text-sm">
+                                        <div className="font-medium text-gray-600 min-w-[120px]">{aenderung.feld_label || aenderung.feld}</div>
+                                        <div className="flex items-center gap-2 flex-1 min-w-0">
+                                          <span className="text-red-600 line-through truncate max-w-[200px]" title={String(aenderung.alt || '-')}>
+                                            {aenderung.alt !== null && aenderung.alt !== undefined && aenderung.alt !== '' ? String(aenderung.alt) : '-'}
+                                          </span>
+                                          <ChevronRight className="h-3 w-3 text-gray-400 shrink-0" />
+                                          <span className="text-green-600 font-medium truncate max-w-[200px]" title={String(aenderung.neu || '-')}>
+                                            {aenderung.neu !== null && aenderung.neu !== undefined && aenderung.neu !== '' ? String(aenderung.neu) : '-'}
+                                          </span>
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                              
+                              {/* Details */}
+                              {Object.keys(log.details || {}).length > 0 && (
+                                <div className="space-y-2">
+                                  <div className="text-xs font-medium text-gray-500 uppercase tracking-wide">Details</div>
+                                  <div className="grid grid-cols-2 gap-2 text-sm">
+                                    {Object.entries(log.details).filter(([k]) => !['alter_status', 'neuer_status', 'alter_partner', 'neuer_partner', 'storno_grund'].includes(k)).map(([key, value]) => (
+                                      <div key={key} className="flex items-center gap-2">
+                                        <span className="text-gray-500">{key.replace(/_/g, ' ')}:</span>
+                                        <span className="font-medium">{String(value)}</span>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                              
+                              {/* Zeitstempel */}
+                              <div className="text-xs text-gray-400 pt-2">
+                                {formatDateTime(log.zeitstempel)}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+
 // ========================== MAIN COMPONENT ==========================
 export function KontraktePage() {
   const queryClient = useQueryClient();
