@@ -1381,8 +1381,27 @@ export function KontraktePage() {
   };
 
   // Position handlers
+  const [viewPosition, setViewPosition] = useState<Position | null>(null);
+  const [showViewDialog, setShowViewDialog] = useState(false);
+  
   const handleAddPosition = () => { setEditingPosition(null); setShowPositionDialog(true); };
   const handleEditPosition = (pos: Position) => { setEditingPosition(pos); setShowPositionDialog(true); };
+  const handleViewPosition = (pos: Position) => { setViewPosition(pos); setShowViewDialog(true); };
+  const handleCopyPosition = (pos: Position) => {
+    if (!selectedKontrakt) return;
+    const newPositionen = [...(selectedKontrakt.positionen || [])];
+    const maxNr = Math.max(...newPositionen.map(p => p.positionsnummer || 0), 0);
+    const copiedPos: Position = {
+      ...pos,
+      id: `temp-${Date.now()}`,
+      positionsnummer: maxNr + 1,
+      position_abgeschlossen: false,
+      bemerkung: pos.bemerkung ? `(Kopie) ${pos.bemerkung}` : '(Kopie)'
+    };
+    newPositionen.push(copiedPos);
+    setSelectedKontrakt({ ...selectedKontrakt, positionen: newPositionen });
+    toast.success('Position kopiert');
+  };
   const handleSavePosition = (posData: Partial<Position>) => {
     if (!selectedKontrakt) return;
     let newPositionen = [...(selectedKontrakt.positionen || [])];
