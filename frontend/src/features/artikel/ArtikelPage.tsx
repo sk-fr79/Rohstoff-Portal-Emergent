@@ -88,6 +88,7 @@ export function ArtikelPage() {
   const [isNewRecord, setIsNewRecord] = useState(false);
   const [activeSection, setActiveSection] = useState('stamm');
   const [showInactive, setShowInactive] = useState(false);
+  const [zolltarifUrl, setZolltarifUrl] = useState<string | null>(null);
   
   // State für resizable Sidebar
   const [panelWidth, setPanelWidth] = useState(50); // Standard 50%
