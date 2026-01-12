@@ -1718,11 +1718,47 @@ export function KontraktePage() {
           <DropdownMenuItem onClick={() => openDetail(row.original)}><Eye className="h-4 w-4 mr-2" />Anzeigen</DropdownMenuItem>
           <DropdownMenuItem onClick={() => { openDetail(row.original); setIsEditing(true); }}><Pencil className="h-4 w-4 mr-2" />Bearbeiten</DropdownMenuItem>
           <DropdownMenuSeparator />
+          {/* Streckengeschäft-Optionen */}
+          {!row.original.ist_strecke && (
+            <DropdownMenuItem onClick={() => { setSelectedKontrakt(row.original); setShowVerknuepfenDialog(true); }}>
+              <Link2 className="h-4 w-4 mr-2" />Zu Strecke verknüpfen
+            </DropdownMenuItem>
+          )}
+          {row.original.ist_strecke && row.original.strecken_id && (
+            <>
+              {/* Partner-Kontrakt öffnen */}
+              {row.original.strecken_partner && (
+                <DropdownMenuItem onClick={() => {
+                  const partnerId = row.original.vorgang_typ === 'EK' 
+                    ? row.original.strecken_partner?.vk?.id 
+                    : row.original.strecken_partner?.ek?.id;
+                  if (partnerId) {
+                    const partner = kontrakteData?.data?.find((k: Kontrakt) => k.id === partnerId);
+                    if (partner) openDetail(partner);
+                  }
+                }}>
+                  <ArrowRightLeft className="h-4 w-4 mr-2" />
+                  {row.original.vorgang_typ === 'EK' ? 'VK-Kontrakt öffnen' : 'EK-Kontrakt öffnen'}
+                </DropdownMenuItem>
+              )}
+              <DropdownMenuItem 
+                className="text-orange-600"
+                onClick={() => { 
+                  if (confirm('Streckengeschäft wirklich auflösen? Die Kontrakte bleiben als einzelne EK/VK bestehen.')) {
+                    streckeAufloesenMutation.mutate(row.original.strecken_id!);
+                  }
+                }}
+              >
+                <Unlink className="h-4 w-4 mr-2" />Strecke auflösen
+              </DropdownMenuItem>
+            </>
+          )}
+          <DropdownMenuSeparator />
           <DropdownMenuItem className="text-red-600" onClick={() => { if (confirm('Kontrakt wirklich löschen?')) deleteMutation.mutate(row.original.id); }}><Trash2 className="h-4 w-4 mr-2" />Löschen</DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
     )}
-  ], [deleteMutation]);
+  ], [deleteMutation, streckeAufloesenMutation, kontrakteData, openDetail]);
 
   const selectedWaehrung = getWaehrung(watchFields.waehrung_kurz);
 
