@@ -1,16 +1,9 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuthStore } from '@/store/authStore';
-import { Check, ChevronsUpDown, Loader2, Search, X, Link2, Globe, Database, AlertCircle } from 'lucide-react';
+import { Check, ChevronsUpDown, Loader2, Search, X, Globe, Database, AlertCircle, ExternalLink, Copy, CheckCheck } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandItem,
-  CommandList,
-} from '@/components/ui/command';
 import {
   Popover,
   PopoverContent,
@@ -18,6 +11,7 @@ import {
 } from '@/components/ui/popover';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { toast } from 'sonner';
 
 const API_URL = import.meta.env.VITE_API_URL || '/api';
 
@@ -69,6 +63,8 @@ export function ReferenceSelect({
   const [message, setMessage] = useState<string | null>(null);
   const [isLive, setIsLive] = useState(false);
   const [isFallback, setIsFallback] = useState(false);
+  const [copiedCode, setCopiedCode] = useState<string | null>(null);
+  const [hoveredOption, setHoveredOption] = useState<string | null>(null);
 
   // Prüfe ob Verknüpfung existiert beim Mount
   useEffect(() => {
@@ -107,7 +103,6 @@ export function ReferenceSelect({
   const loadOptions = useCallback(async (search: string = '') => {
     if (!hasBinding || !binding) return;
     
-    // Bei API-Query: Mindest-Suchzeichen prüfen
     if (binding.source_type === 'api_query') {
       if (search.length < binding.min_search_chars) {
         setOptions([]);
@@ -150,14 +145,12 @@ export function ReferenceSelect({
     }
   }, [module, fieldName, token, hasBinding, binding]);
 
-  // Lade Optionen wenn Popover öffnet (nur für Referenztabellen)
+  // Lade Optionen wenn Popover öffnet
   useEffect(() => {
     if (open && hasBinding && binding) {
-      // Bei Referenztabelle: Sofort laden
       if (binding.source_type === 'reference_table') {
         loadOptions(searchValue);
       } else {
-        // Bei API-Query: Nur laden wenn genug Zeichen
         if (searchValue.length >= binding.min_search_chars) {
           loadOptions(searchValue);
         } else {
@@ -185,6 +178,55 @@ export function ReferenceSelect({
     return options.find(opt => opt.value === value);
   }, [value, options]);
 
+  // Copy Code to clipboard
+  const handleCopyCode = (code: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    navigator.clipboard.writeText(code);
+    setCopiedCode(code);
+    toast.success('Code kopiert!');
+    setTimeout(() => setCopiedCode(null), 2000);
+  };
+
+  // Strip HTML tags and decode entities
+  const cleanText = (text: string) => {
+    if (!text) return '';
+    // Remove HTML tags
+    let clean = text.replace(/<[^>]+>/g, '');
+    // Decode HTML entities
+    clean = clean.replace(/&hellip;/g, '...');
+    clean = clean.replace(/&amp;/g, '&');
+    clean = clean.replace(/&lt;/g, '<');
+    clean = clean.replace(/&gt;/g, '>');
+    clean = clean.replace(/&quot;/g, '"');
+    return clean.trim();
+  };
+
+  // Extract code and description from label
+  const parseOption = (option: ReferenceOption) => {
+    const code = option.value || '';
+    let description = '';
+    
+    // Try to extract description from label or display
+    if (option.display) {
+      description = cleanText(option.display);
+    } else if (option.label) {
+      // Label format: "CODE | DESCRIPTION"
+      const parts = option.label.split(' | ');
+      if (parts.length > 1) {
+        description = cleanText(parts.slice(1).join(' | '));
+      } else {
+        description = cleanText(option.label);
+      }
+    }
+    
+    // Remove code from beginning of description if present
+    if (description.startsWith(code)) {
+      description = description.substring(code.length).trim();
+    }
+    
+    return { code, description };
+  };
+
   // Wenn keine Verknüpfung existiert, zeige normales Input
   if (hasBinding === false) {
     return (
@@ -198,7 +240,7 @@ export function ReferenceSelect({
     );
   }
 
-  // Lade-Status während Binding geprüft wird
+  // Lade-Status
   if (hasBinding === null) {
     return (
       <div className={cn("flex items-center gap-2 h-10 px-3 border rounded-md bg-gray-50", className)}>
@@ -208,7 +250,6 @@ export function ReferenceSelect({
     );
   }
 
-  // Icon basierend auf source_type
   const SourceIcon = binding?.source_type === 'api_query' ? Globe : Database;
   const sourceColor = binding?.source_type === 'api_query' ? 'text-blue-500' : 'text-emerald-500';
 
@@ -231,23 +272,31 @@ export function ReferenceSelect({
               <SourceIcon className={cn("h-3.5 w-3.5 flex-shrink-0", sourceColor)} />
             )}
             <span className="truncate">
-              {selectedOption ? selectedOption.label : (value || placeholder)}
+              {selectedOption ? cleanText(selectedOption.label) : (value || placeholder)}
             </span>
           </div>
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[400px] p-0" align="start">
-        <Command shouldFilter={false}>
-          <div className="flex items-center border-b px-3">
-            <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
+      
+      <PopoverContent 
+        className="w-[600px] p-0" 
+        align="start"
+        side="bottom"
+        sideOffset={4}
+      >
+        <div className="flex flex-col">
+          {/* Search Header */}
+          <div className="flex items-center gap-2 p-3 border-b bg-gray-50/80">
+            <Search className="h-4 w-4 text-muted-foreground flex-shrink-0" />
             <input
               placeholder={binding?.source_type === 'api_query' 
-                ? `Mind. ${binding.min_search_chars} Zeichen...` 
+                ? `Suche (mind. ${binding.min_search_chars} Zeichen)...` 
                 : "Suchen..."}
               value={searchValue}
               onChange={(e) => setSearchValue(e.target.value)}
-              className="flex h-10 w-full bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground"
+              className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+              autoFocus
             />
             {searchValue && (
               <Button
@@ -261,15 +310,19 @@ export function ReferenceSelect({
             )}
           </div>
           
-          {/* Status-Badge */}
-          {binding?.source_type === 'api_query' && (
-            <div className="px-3 py-1.5 border-b bg-gray-50 flex items-center justify-between">
-              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                <Globe className="h-3 w-3" />
-                <span>Live API: {binding.api_name || 'Unbekannt'}</span>
-              </div>
+          {/* Source Info Bar */}
+          <div className="px-3 py-2 border-b bg-gradient-to-r from-gray-50 to-white flex items-center justify-between">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <SourceIcon className={cn("h-3.5 w-3.5", sourceColor)} />
+              <span>
+                {binding?.source_type === 'api_query' 
+                  ? `Live API: ${binding.api_name || 'Extern'}` 
+                  : `Referenztabelle: ${binding?.reference_table_name || 'Lokal'}`}
+              </span>
+            </div>
+            <div className="flex items-center gap-1">
               {isLive && (
-                <Badge variant="outline" className="text-[10px] h-5 bg-blue-50 text-blue-600 border-blue-200">
+                <Badge variant="outline" className="text-[10px] h-5 bg-blue-50 text-blue-600 border-blue-200 animate-pulse">
                   Live
                 </Badge>
               )}
@@ -278,81 +331,172 @@ export function ReferenceSelect({
                   Fallback
                 </Badge>
               )}
+              {options.length > 0 && (
+                <Badge variant="outline" className="text-[10px] h-5">
+                  {options.length} Treffer
+                </Badge>
+              )}
             </div>
-          )}
-          
-          <CommandList>
+          </div>
+
+          {/* Options List */}
+          <ScrollArea className="h-[400px]">
             {isLoading ? (
-              <div className="flex items-center justify-center py-6 gap-2">
-                <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+              <div className="flex flex-col items-center justify-center py-12 gap-3">
+                <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
                 <span className="text-sm text-muted-foreground">
                   {binding?.source_type === 'api_query' ? 'API wird abgefragt...' : 'Lade Daten...'}
                 </span>
               </div>
             ) : message && options.length === 0 ? (
-              <div className="py-6 text-center">
-                <AlertCircle className="h-5 w-5 mx-auto mb-2 text-muted-foreground" />
-                <p className="text-sm text-muted-foreground">{message}</p>
+              <div className="flex flex-col items-center justify-center py-12 gap-3">
+                <div className="h-12 w-12 rounded-full bg-gray-100 flex items-center justify-center">
+                  <AlertCircle className="h-6 w-6 text-muted-foreground" />
+                </div>
+                <p className="text-sm text-muted-foreground text-center max-w-[300px]">{message}</p>
               </div>
             ) : options.length === 0 ? (
-              <CommandEmpty>
-                <div className="py-6 text-center text-sm text-muted-foreground">
-                  {searchValue ? 'Keine Ergebnisse gefunden' : 'Keine Daten verfügbar'}
+              <div className="flex flex-col items-center justify-center py-12 gap-3">
+                <div className="h-12 w-12 rounded-full bg-gray-100 flex items-center justify-center">
+                  <Search className="h-6 w-6 text-muted-foreground" />
                 </div>
-              </CommandEmpty>
+                <p className="text-sm text-muted-foreground">
+                  {searchValue ? 'Keine Ergebnisse gefunden' : 'Suchbegriff eingeben'}
+                </p>
+              </div>
             ) : (
-              <ScrollArea className="h-[300px]">
-                <CommandGroup>
-                  {/* Leer-Option */}
-                  {!binding?.is_required && (
-                    <CommandItem
-                      value=""
-                      onSelect={() => {
-                        onChange(null);
-                        setOpen(false);
-                      }}
-                      className="text-muted-foreground"
-                    >
-                      <Check
-                        className={cn(
-                          "mr-2 h-4 w-4",
-                          !value ? "opacity-100" : "opacity-0"
-                        )}
-                      />
-                      <span className="italic">Keine Auswahl</span>
-                    </CommandItem>
-                  )}
+              <div className="p-2">
+                {/* Keine Auswahl Option */}
+                {!binding?.is_required && (
+                  <button
+                    onClick={() => {
+                      onChange(null);
+                      setOpen(false);
+                    }}
+                    className={cn(
+                      "w-full flex items-center gap-3 p-3 rounded-lg text-left transition-all",
+                      "hover:bg-gray-100 group",
+                      !value && "bg-gray-50"
+                    )}
+                  >
+                    <div className={cn(
+                      "h-5 w-5 rounded border-2 flex items-center justify-center flex-shrink-0",
+                      !value ? "border-emerald-500 bg-emerald-500" : "border-gray-300"
+                    )}>
+                      {!value && <Check className="h-3 w-3 text-white" />}
+                    </div>
+                    <span className="text-sm text-muted-foreground italic">Keine Auswahl</span>
+                  </button>
+                )}
+                
+                {/* Options */}
+                {options.map((option) => {
+                  const { code, description } = parseOption(option);
+                  const isSelected = value === option.value;
+                  const isHovered = hoveredOption === option.value;
                   
-                  {options.map((option) => (
-                    <CommandItem
+                  return (
+                    <button
                       key={option.value}
-                      value={option.value}
-                      onSelect={(currentValue) => {
-                        onChange(currentValue === value ? null : currentValue);
+                      onClick={() => {
+                        onChange(option.value);
                         setOpen(false);
                       }}
+                      onMouseEnter={() => setHoveredOption(option.value)}
+                      onMouseLeave={() => setHoveredOption(null)}
+                      className={cn(
+                        "w-full flex items-start gap-3 p-3 rounded-lg text-left transition-all mb-1",
+                        "hover:bg-gradient-to-r hover:from-emerald-50 hover:to-white",
+                        "border border-transparent",
+                        isSelected && "bg-emerald-50 border-emerald-200",
+                        isHovered && !isSelected && "border-gray-200"
+                      )}
                     >
-                      <Check
-                        className={cn(
-                          "mr-2 h-4 w-4",
-                          value === option.value ? "opacity-100" : "opacity-0"
-                        )}
-                      />
-                      <div className="flex flex-col">
-                        <span className="font-medium">{option.label}</span>
-                        {option.display && option.display !== option.label && (
-                          <span className="text-xs text-muted-foreground truncate max-w-[300px]">
-                            {option.display}
-                          </span>
-                        )}
+                      {/* Checkbox */}
+                      <div className={cn(
+                        "h-5 w-5 rounded border-2 flex items-center justify-center flex-shrink-0 mt-0.5",
+                        isSelected ? "border-emerald-500 bg-emerald-500" : "border-gray-300"
+                      )}>
+                        {isSelected && <Check className="h-3 w-3 text-white" />}
                       </div>
-                    </CommandItem>
-                  ))}
-                </CommandGroup>
-              </ScrollArea>
+                      
+                      {/* Content */}
+                      <div className="flex-1 min-w-0">
+                        {/* Code Badge Row */}
+                        <div className="flex items-center gap-2 mb-1">
+                          <Badge 
+                            variant="outline" 
+                            className={cn(
+                              "font-mono text-xs px-2 py-0.5",
+                              isSelected 
+                                ? "bg-emerald-100 text-emerald-700 border-emerald-300" 
+                                : "bg-gray-100 text-gray-700"
+                            )}
+                          >
+                            {code}
+                          </Badge>
+                          
+                          {/* Copy Button */}
+                          <button
+                            onClick={(e) => handleCopyCode(code, e)}
+                            className={cn(
+                              "p-1 rounded hover:bg-gray-200 transition-colors",
+                              "opacity-0 group-hover:opacity-100",
+                              isHovered && "opacity-100"
+                            )}
+                            title="Code kopieren"
+                          >
+                            {copiedCode === code ? (
+                              <CheckCheck className="h-3 w-3 text-emerald-500" />
+                            ) : (
+                              <Copy className="h-3 w-3 text-gray-400" />
+                            )}
+                          </button>
+                          
+                          {/* External Link (if detail_url exists) */}
+                          {option.data?.detail_url && (
+                            <a
+                              href={option.data.detail_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              onClick={(e) => e.stopPropagation()}
+                              className={cn(
+                                "p-1 rounded hover:bg-gray-200 transition-colors",
+                                "opacity-0",
+                                isHovered && "opacity-100"
+                              )}
+                              title="Details öffnen"
+                            >
+                              <ExternalLink className="h-3 w-3 text-gray-400" />
+                            </a>
+                          )}
+                        </div>
+                        
+                        {/* Description */}
+                        <p className={cn(
+                          "text-sm leading-relaxed",
+                          isSelected ? "text-gray-900" : "text-gray-600"
+                        )}>
+                          {description || code}
+                        </p>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
             )}
-          </CommandList>
-        </Command>
+          </ScrollArea>
+          
+          {/* Footer */}
+          {options.length > 0 && (
+            <div className="px-3 py-2 border-t bg-gray-50/50 text-xs text-muted-foreground flex items-center justify-between">
+              <span>↑↓ Navigieren • Enter Auswählen • Esc Schließen</span>
+              {binding?.source_type === 'api_query' && (
+                <span className="text-blue-500">Echtzeit-Suche aktiv</span>
+              )}
+            </div>
+          )}
+        </div>
       </PopoverContent>
     </Popover>
   );
