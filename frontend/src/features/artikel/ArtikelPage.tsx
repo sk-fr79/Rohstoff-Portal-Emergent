@@ -292,21 +292,6 @@ export function ArtikelPage() {
     setIsEditing(false);
     setActiveSection('stamm');
     
-    // URL aus gespeicherter Notiz extrahieren (falls vorhanden)
-    if (artikel.zolltarifnotiz) {
-      // Versuche URL aus [URL]...[/URL] Tag zu extrahieren
-      const tagMatch = artikel.zolltarifnotiz.match(/\[URL\](.*?)\[\/URL\]/);
-      if (tagMatch) {
-        setZolltarifUrl(tagMatch[1]);
-      } else {
-        // Fallback: Versuche normale URL zu finden (für alte Daten)
-        const urlMatch = artikel.zolltarifnotiz.match(/https?:\/\/[^\s]+/);
-        setZolltarifUrl(urlMatch ? urlMatch[0] : null);
-      }
-    } else {
-      setZolltarifUrl(null);
-    }
-    
     Object.entries(artikel).forEach(([key, value]) => {
       if (key in artikelSchema.shape) {
         setValue(key as keyof ArtikelForm, value as any);
