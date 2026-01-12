@@ -268,9 +268,11 @@ class TestStreckenVerknuepfung:
         print(f"Verknüpfen Response: {response.status_code}")
         
         assert response.status_code == 200, f"Expected 200, got {response.status_code}: {response.text}"
-        data = response.json()
+        resp = response.json()
         
-        assert data.get("success") == True
+        assert resp.get("success") == True
+        # Handle nested data structure
+        data = resp.get("data", resp)
         assert "strecken_id" in data
         
         pytest.linked_strecken_id = data["strecken_id"]
