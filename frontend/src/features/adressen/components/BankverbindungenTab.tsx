@@ -12,40 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Badge } from '@/components/ui/badge';
 import { SmartInput } from '@/components/ui/smart-input';
 import { cn } from '@/lib/utils';
-
-// OECD Währungen mit Symbolen - Referenzierbare Daten
-export const WAEHRUNGEN = [
-  { code: 'EUR', symbol: '€', name: 'Euro', land: 'Eurozone' },
-  { code: 'USD', symbol: '$', name: 'US-Dollar', land: 'USA' },
-  { code: 'CHF', symbol: 'CHF', name: 'Schweizer Franken', land: 'Schweiz' },
-  { code: 'GBP', symbol: '£', name: 'Britisches Pfund', land: 'Großbritannien' },
-  { code: 'JPY', symbol: '¥', name: 'Japanischer Yen', land: 'Japan' },
-  { code: 'CAD', symbol: 'C$', name: 'Kanadischer Dollar', land: 'Kanada' },
-  { code: 'AUD', symbol: 'A$', name: 'Australischer Dollar', land: 'Australien' },
-  { code: 'NZD', symbol: 'NZ$', name: 'Neuseeland-Dollar', land: 'Neuseeland' },
-  { code: 'SEK', symbol: 'kr', name: 'Schwedische Krone', land: 'Schweden' },
-  { code: 'NOK', symbol: 'kr', name: 'Norwegische Krone', land: 'Norwegen' },
-  { code: 'DKK', symbol: 'kr', name: 'Dänische Krone', land: 'Dänemark' },
-  { code: 'PLN', symbol: 'zł', name: 'Polnischer Złoty', land: 'Polen' },
-  { code: 'CZK', symbol: 'Kč', name: 'Tschechische Krone', land: 'Tschechien' },
-  { code: 'HUF', symbol: 'Ft', name: 'Ungarischer Forint', land: 'Ungarn' },
-  { code: 'TRY', symbol: '₺', name: 'Türkische Lira', land: 'Türkei' },
-  { code: 'MXN', symbol: 'Mex$', name: 'Mexikanischer Peso', land: 'Mexiko' },
-  { code: 'KRW', symbol: '₩', name: 'Südkoreanischer Won', land: 'Südkorea' },
-  { code: 'ILS', symbol: '₪', name: 'Israelischer Schekel', land: 'Israel' },
-] as const;
-
-// Export für Referenzierung aus anderen Modulen
-export type WaehrungCode = typeof WAEHRUNGEN[number]['code'];
-
-export const getWaehrung = (code: string) => {
-  return WAEHRUNGEN.find(w => w.code === code) || WAEHRUNGEN[0];
-};
-
-export const formatWaehrung = (code: string) => {
-  const w = getWaehrung(code);
-  return `${w.symbol} ${w.code}`;
-};
+import { WAEHRUNGEN, getWaehrung } from '@/data/waehrungen';
 
 interface Bankverbindung {
   id: string;
