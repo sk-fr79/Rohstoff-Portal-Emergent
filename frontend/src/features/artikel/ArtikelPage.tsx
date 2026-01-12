@@ -263,7 +263,6 @@ export function ArtikelPage() {
     setSelectedArtikel(null);
     setIsEditing(false);
     setIsNewRecord(false);
-    setZolltarifUrl(null);
     reset();
   };
 
