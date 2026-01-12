@@ -457,23 +457,23 @@ function ArtikelSelect({
             className="h-9"
           />
           <div className="flex gap-2">
-            <Select value={filterGruppe} onValueChange={setFilterGruppe}>
+            <Select value={filterGruppe || '__all__'} onValueChange={(v) => setFilterGruppe(v === '__all__' ? '' : v)}>
               <SelectTrigger className="h-8 text-xs flex-1">
                 <SelectValue placeholder="Alle Gruppen" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Alle Gruppen</SelectItem>
+                <SelectItem value="__all__">Alle Gruppen</SelectItem>
                 {gruppenData?.map(g => (
                   <SelectItem key={g} value={g}>{g}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
-            <Select value={filterTyp} onValueChange={setFilterTyp}>
+            <Select value={filterTyp || '__all__'} onValueChange={(v) => setFilterTyp(v === '__all__' ? '' : v)}>
               <SelectTrigger className="h-8 text-xs w-[140px]">
                 <SelectValue placeholder="Alle Typen" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Alle Typen</SelectItem>
+                <SelectItem value="__all__">Alle Typen</SelectItem>
                 <SelectItem value="gefahrgut">⚠️ Gefahrgut</SelectItem>
                 <SelectItem value="produkt">📦 Produkt</SelectItem>
                 <SelectItem value="dienstleistung">🔧 Dienstleistung</SelectItem>
