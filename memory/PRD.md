@@ -5,6 +5,8 @@
 ## Ausstehende Aufgaben (Priorisiert)
 
 ### P1 - Anstehend
+- **Nummernkreis-Ausrollung:** Das neue System auf andere Module (Rechnungen, Lieferscheine) anwenden
+- **Fixierungsmodul:** Dediziertes Modul zur Verwaltung von Fixierungen implementieren
 - **API-System Phase 7:** Import/Export und Audit-Logs für Referenztabellen
 - **PDF-Export:** Implementierung der PDF-Erstellung für Rechnungen und Lieferscheine
 - **Sammelrechnungen:** Funktion implementieren, mit der mehrere Fuhren zu einer einzigen Sammelrechnung zusammengefasst werden können
@@ -33,6 +35,39 @@ Die gesamte Geschäftslogik der bestehenden Anwendung soll 1:1 übernommen werde
 ---
 
 ## Implementiert (Stand: 12.01.2026)
+
+### ✅ Dynamisches Nummernkreis-System (NEU - 12.01.2026)
+Zentrales System zur Verwaltung eindeutiger, sequentieller Belegnummern für verschiedene Module.
+
+**Features:**
+- **Verwaltungs-UI:** Neue Seite unter `/einstellungen/nummernkreise`
+- **5 Standard-Nummernkreise:** EK (Einkaufskontrakte), VK (Verkaufskontrakte), FU (Fuhren), LS (Lieferscheine), RE (Rechnungen)
+- **Automatische Nummernvergabe:** Kontrakte erhalten automatisch die nächste freie Nummer aus dem konfigurierten Kreis
+- **Präfix-System:** Jeder Kreis hat eigenen Präfix (z.B. "EK", "VK")
+- **Vorschau:** Nächste verfügbare Nummer wird im Formular angezeigt ("Wird automatisch vergeben")
+
+**Backend-Endpoints:**
+- `GET/POST /api/system/nummernkreise` - CRUD für Nummernkreise
+- `POST /api/system/nummernkreise/initialisieren` - Standard-Kreise erstellen
+- `POST /api/system/nummernkreise/naechste-nummer` - Nächste Nummer abrufen
+
+**Kontrakt-Erweiterungen:**
+- `GET /api/kontrakte/lookup/benutzer` - Benutzer für Sachbearbeiter/Händler-Auswahl
+- `GET /api/kontrakte/lookup/adressen` - Adressen für Vertragspartner-Auswahl
+- Sachbearbeiter und Händler als Dropdown aus Benutzerliste
+- Vertragspartner aus Adress-Modul auswählbar
+- Ansprechpartner des Partners auswählbar (abhängig von gewählter Adresse)
+
+**Dateien:**
+- `/app/backend/routers/nummernkreise.py` - Backend-Logik
+- `/app/frontend/src/features/einstellungen/pages/NummernkreisePage.tsx` - Verwaltungs-UI
+- `/app/backend/routers/kontrakte.py` - Erweitert mit Lookup-APIs
+- `/app/frontend/src/features/kontrakte/KontraktePage.tsx` - BenutzerSelect, AdressenSelect Komponenten
+
+**Tests:**
+- `/app/tests/test_nummernkreise_kontrakte.py` - 20 Unit-Tests (100% bestanden)
+
+---
 
 ### ✅ Ansprechpartner-Modernisierung (NEU - 12.01.2026)
 Neue, moderne Tabellenansicht für Ansprechpartner im Adress-Modul:
