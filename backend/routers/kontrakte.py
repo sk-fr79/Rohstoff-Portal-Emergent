@@ -583,8 +583,8 @@ async def get_benutzer_fuer_auswahl(
     db = get_db()
     
     cursor = db.users.find(
-        {"mandant_id": user["mandant_id"], "aktiv": True},
-        {"_id": 1, "username": 1, "vorname": 1, "nachname": 1, "email": 1, "telefon": 1, "rolle": 1}
+        {"mandant_id": user["mandant_id"], "aktiv": {"$ne": False}},
+        {"_id": 1, "benutzername": 1, "vorname": 1, "nachname": 1, "email": 1, "telefon": 1, "rolle_name": 1}
     ).sort("nachname", 1)
     
     benutzer = await cursor.to_list(length=100)
@@ -593,13 +593,13 @@ async def get_benutzer_fuer_auswahl(
     for b in benutzer:
         name = f"{b.get('vorname', '')} {b.get('nachname', '')}".strip()
         if not name:
-            name = b.get("username", "")
+            name = b.get("benutzername", "")
         result.append({
             "id": b["_id"],
             "name": name,
             "email": b.get("email"),
             "telefon": b.get("telefon"),
-            "rolle": b.get("rolle")
+            "rolle": b.get("rolle_name")
         })
     
     return {"success": True, "data": result}
