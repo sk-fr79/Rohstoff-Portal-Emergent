@@ -406,8 +406,9 @@ export function KontraktePage() {
   const [showPositionDialog, setShowPositionDialog] = useState(false);
   const [editingPosition, setEditingPosition] = useState<Position | null>(null);
   const [selectedAdresse, setSelectedAdresse] = useState<AdresseOption | null>(null);
+  const [ansprechpartnerListe, setAnsprechpartnerListe] = useState<Ansprechpartner[]>([]);
   
-  const { panelWidth, isDragging, containerRef, startDragging, leftPanelStyle, rightPanelStyle } = useResizablePanel();
+  const { isDragging, containerRef, startDragging, leftPanelStyle, rightPanelStyle } = useResizablePanel();
 
   const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm<KontraktForm>({
     resolver: zodResolver(kontraktSchema),
