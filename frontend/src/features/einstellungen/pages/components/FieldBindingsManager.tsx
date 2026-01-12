@@ -611,17 +611,41 @@ export function FieldBindingsManager({
                   <SelectTrigger className="mt-1.5">
                     <SelectValue placeholder="Feld wählen..." />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="max-h-[300px]">
                     {availableFields.length === 0 ? (
                       <div className="px-2 py-3 text-sm text-muted-foreground text-center">
                         Alle Felder bereits verknüpft
                       </div>
                     ) : (
-                      availableFields.map((field) => (
-                        <SelectItem key={field.name} value={field.name}>
-                          {field.label}
-                        </SelectItem>
-                      ))
+                      // Felder nach Kategorien gruppieren
+                      (() => {
+                        const grouped = availableFields.reduce((acc, field) => {
+                          const cat = field.category || 'sonstiges';
+                          if (!acc[cat]) acc[cat] = [];
+                          acc[cat].push(field);
+                          return acc;
+                        }, {} as Record<string, typeof availableFields>);
+                        
+                        return Object.entries(grouped).map(([category, fields]) => (
+                          <div key={category}>
+                            <div className="px-2 py-1.5 text-xs font-semibold text-gray-500 bg-gray-50 sticky top-0">
+                              {CATEGORY_CONFIG[category]?.label || category}
+                            </div>
+                            {fields.map((field) => (
+                              <SelectItem key={field.name} value={field.name}>
+                                <div className="flex items-center gap-2">
+                                  <span>{field.label}</span>
+                                  {field.is_subfield && (
+                                    <Badge variant="outline" className="text-[10px] h-4 px-1 bg-purple-50 text-purple-600">
+                                      Sub
+                                    </Badge>
+                                  )}
+                                </div>
+                              </SelectItem>
+                            ))}
+                          </div>
+                        ));
+                      })()
                     )}
                   </SelectContent>
                 </Select>
