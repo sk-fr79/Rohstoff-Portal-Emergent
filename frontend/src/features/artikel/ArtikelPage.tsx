@@ -255,6 +255,7 @@ export function ArtikelPage() {
     setIsNewRecord(true);
     setIsEditing(true);
     setActiveSection('stamm');
+    setZolltarifUrl(null);
   };
 
   // Sidebar schließen
