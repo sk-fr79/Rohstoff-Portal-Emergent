@@ -1741,3 +1741,577 @@ async def get_audit_log_statistik(
             "aktionen_typen": AKTION_TYPEN
         }
     }
+
+
+
+# ========================== STRECKENGESCHÄFT ROUTES ==========================
+
+@router.get("/kontrakte/strecken")
+async def get_streckengeschaefte(
+    suche: Optional[str] = None,
+    status: Optional[str] = None,
+    page: int = 1,
+    limit: int = 20,
+    user = Depends(require_permission("kontrakte", "read"))
+):
+    """Alle Streckengeschäfte mit gruppierten EK/VK Kontrakten laden"""
+    db = get_db()
+    
+    # Alle Strecken-IDs finden
+    strecken_query = {
+        "mandant_id": user["mandant_id"],
+        "deleted": {"$ne": True},
+        "ist_strecke": True,
+        "strecken_id": {"$ne": None}
+    }
+    
+    if suche:
+        strecken_query["$or"] = [
+            {"name1": {"$regex": suche, "$options": "i"}},
+            {"kontraktnummer": {"$regex": suche, "$options": "i"}},
+        ]
+    
+    # Alle einzigartigen Strecken-IDs
+    pipeline = [
+        {"$match": strecken_query},
+        {"$group": {"_id": "$strecken_id"}},
+        {"$skip": (page - 1) * limit},
+        {"$limit": limit}
+    ]
+    strecken_ids = [doc["_id"] for doc in await db.kontrakte.aggregate(pipeline).to_list(limit)]
+    
+    # Für jede Strecken-ID die zugehörigen Kontrakte laden
+    strecken = []
+    for strecken_id in strecken_ids:
+        kontrakte = await db.kontrakte.find({
+            "strecken_id": strecken_id,
+            "mandant_id": user["mandant_id"],
+            "deleted": {"$ne": True}
+        }).to_list(10)
+        
+        ek_kontrakt = None
+        vk_kontrakt = None
+        
+        for k in kontrakte:
+            k["id"] = k.pop("_id")
+            k["summen"] = await berechne_kontrakt_summen(k)
+            if k.get("strecken_rolle") == "EK" or k.get("vorgang_typ") == "EK":
+                ek_kontrakt = k
+            elif k.get("strecken_rolle") == "VK" or k.get("vorgang_typ") == "VK":
+                vk_kontrakt = k
+        
+        # Strecken-Status berechnen
+        strecken_status = berechne_strecken_status(ek_kontrakt, vk_kontrakt)
+        
+        strecken.append({
+            "strecken_id": strecken_id,
+            "ek_kontrakt": ek_kontrakt,
+            "vk_kontrakt": vk_kontrakt,
+            "status": strecken_status,
+            "erstellt_am": ek_kontrakt.get("erstellt_am") if ek_kontrakt else None,
+        })
+    
+    # Total zählen
+    total_pipeline = [
+        {"$match": {
+            "mandant_id": user["mandant_id"],
+            "deleted": {"$ne": True},
+            "ist_strecke": True,
+            "strecken_id": {"$ne": None}
+        }},
+        {"$group": {"_id": "$strecken_id"}},
+        {"$count": "total"}
+    ]
+    total_result = await db.kontrakte.aggregate(total_pipeline).to_list(1)
+    total = total_result[0]["total"] if total_result else 0
+    
+    return {
+        "success": True,
+        "data": strecken,
+        "pagination": {"page": page, "limit": limit, "total": total}
+    }
+
+
+def berechne_strecken_status(ek: dict, vk: dict) -> dict:
+    """Berechnet den Gesamtstatus eines Streckengeschäfts"""
+    if not ek and not vk:
+        return {"code": "UNVOLLSTAENDIG", "label": "Unvollständig", "farbe": "gray"}
+    
+    ek_status = ek.get("status", "OFFEN") if ek else "FEHLT"
+    vk_status = vk.get("status", "OFFEN") if vk else "FEHLT"
+    ek_abgeschlossen = ek.get("abgeschlossen", False) if ek else False
+    vk_abgeschlossen = vk.get("abgeschlossen", False) if vk else False
+    
+    # Storniert?
+    if ek_status == "STORNO" or vk_status == "STORNO":
+        return {"code": "STORNO", "label": "Storniert", "farbe": "red"}
+    
+    # Beide abgeschlossen?
+    if ek_abgeschlossen and vk_abgeschlossen:
+        return {"code": "ABGESCHLOSSEN", "label": "Abgeschlossen", "farbe": "emerald"}
+    
+    # Beide erfüllt?
+    if ek_status == "ERFUELLT" and vk_status == "ERFUELLT":
+        return {"code": "ERFUELLT", "label": "Erfüllt", "farbe": "green"}
+    
+    # Teilweise erfüllt?
+    if ek_status in ["ERFUELLT", "TEILERFUELLT"] or vk_status in ["ERFUELLT", "TEILERFUELLT"]:
+        return {"code": "TEILERFUELLT", "label": "In Bearbeitung", "farbe": "amber"}
+    
+    # Aktiv?
+    if ek_status == "AKTIV" or vk_status == "AKTIV":
+        return {"code": "AKTIV", "label": "Aktiv", "farbe": "blue"}
+    
+    # Offen
+    return {"code": "OFFEN", "label": "Offen", "farbe": "slate"}
+
+
+@router.post("/kontrakte/strecken")
+async def create_streckengeschaeft(
+    data: StreckengeschaeftCreate,
+    user = Depends(require_permission("kontrakte", "write"))
+):
+    """Neues Streckengeschäft erstellen - erzeugt automatisch EK + VK Kontrakte"""
+    db = get_db()
+    
+    # Eindeutige Strecken-ID generieren
+    strecken_id = str(uuid.uuid4())
+    today = data.erstellungsdatum or datetime.now().strftime("%Y-%m-%d")
+    
+    # EK-Kontrakt (Einkauf vom Lieferanten)
+    ek_nummer = await generate_kontraktnummer(user["mandant_id"], "EK", db)
+    ek_kontrakt = {
+        "_id": str(uuid.uuid4()),
+        "mandant_id": user["mandant_id"],
+        "kontraktnummer": ek_nummer,
+        "vorgang_typ": "EK",
+        "ist_strecke": True,
+        "strecken_id": strecken_id,
+        "strecken_rolle": "EK",
+        # Lieferant als Partner
+        "id_adresse": data.lieferant_id_adresse,
+        "name1": data.lieferant_name1,
+        "name2": data.lieferant_name2,
+        "strasse": data.lieferant_strasse,
+        "hausnummer": data.lieferant_hausnummer,
+        "plz": data.lieferant_plz,
+        "ort": data.lieferant_ort,
+        "land": data.lieferant_land,
+        "land_code": data.lieferant_land_code,
+        # Abhollager (Lager des Lieferanten)
+        "id_abhollager": data.abhollager_id,
+        "abhollager_typ": "lieferant",
+        "abhollager_name": data.abhollager_name,
+        "abhollager_strasse": data.abhollager_strasse,
+        "abhollager_plz": data.abhollager_plz,
+        "abhollager_ort": data.abhollager_ort,
+        "abhollager_land": data.abhollager_land,
+        # Ziellager (Lager des Abnehmers) - Ware geht DIREKT dorthin
+        "id_ziellager": data.ziellager_id,
+        "ziellager_typ": "abnehmer",
+        "ziellager_name": data.ziellager_name,
+        "ziellager_strasse": data.ziellager_strasse,
+        "ziellager_plz": data.ziellager_plz,
+        "ziellager_ort": data.ziellager_ort,
+        "ziellager_land": data.ziellager_land,
+        # Sachbearbeiter
+        "id_sachbearbeiter": data.id_sachbearbeiter,
+        "sachbearbeiter_name": data.sachbearbeiter_name,
+        # Termine & Konditionen
+        "erstellungsdatum": today,
+        "gueltig_von": data.gueltig_von,
+        "gueltig_bis": data.gueltig_bis,
+        "waehrung_kurz": data.waehrung_kurz,
+        "waehrungskurs": data.waehrungskurs,
+        # Status
+        "status": "OFFEN",
+        "aktiv": True,
+        "abgeschlossen": False,
+        # Positionen (falls vorhanden)
+        "positionen": [],
+        # Meta
+        "bemerkung_intern": data.bemerkung_intern,
+        "erstellt_am": datetime.utcnow(),
+        "erstellt_von": user.get("username"),
+        "deleted": False,
+    }
+    
+    # VK-Kontrakt (Verkauf an Abnehmer)
+    vk_nummer = await generate_kontraktnummer(user["mandant_id"], "VK", db)
+    vk_kontrakt = {
+        "_id": str(uuid.uuid4()),
+        "mandant_id": user["mandant_id"],
+        "kontraktnummer": vk_nummer,
+        "vorgang_typ": "VK",
+        "ist_strecke": True,
+        "strecken_id": strecken_id,
+        "strecken_rolle": "VK",
+        # Abnehmer als Partner
+        "id_adresse": data.abnehmer_id_adresse,
+        "name1": data.abnehmer_name1,
+        "name2": data.abnehmer_name2,
+        "strasse": data.abnehmer_strasse,
+        "hausnummer": data.abnehmer_hausnummer,
+        "plz": data.abnehmer_plz,
+        "ort": data.abnehmer_ort,
+        "land": data.abnehmer_land,
+        "land_code": data.abnehmer_land_code,
+        # Abhollager (Lager des Lieferanten) - Ware kommt von dort
+        "id_abhollager": data.abhollager_id,
+        "abhollager_typ": "lieferant",
+        "abhollager_name": data.abhollager_name,
+        "abhollager_strasse": data.abhollager_strasse,
+        "abhollager_plz": data.abhollager_plz,
+        "abhollager_ort": data.abhollager_ort,
+        "abhollager_land": data.abhollager_land,
+        # Ziellager (Lager des Abnehmers)
+        "id_ziellager": data.ziellager_id,
+        "ziellager_typ": "abnehmer",
+        "ziellager_name": data.ziellager_name,
+        "ziellager_strasse": data.ziellager_strasse,
+        "ziellager_plz": data.ziellager_plz,
+        "ziellager_ort": data.ziellager_ort,
+        "ziellager_land": data.ziellager_land,
+        # Sachbearbeiter
+        "id_sachbearbeiter": data.id_sachbearbeiter,
+        "sachbearbeiter_name": data.sachbearbeiter_name,
+        # Termine & Konditionen
+        "erstellungsdatum": today,
+        "gueltig_von": data.gueltig_von,
+        "gueltig_bis": data.gueltig_bis,
+        "waehrung_kurz": data.waehrung_kurz,
+        "waehrungskurs": data.waehrungskurs,
+        # Status
+        "status": "OFFEN",
+        "aktiv": True,
+        "abgeschlossen": False,
+        # Positionen (falls vorhanden)
+        "positionen": [],
+        # Meta
+        "bemerkung_intern": data.bemerkung_intern,
+        "erstellt_am": datetime.utcnow(),
+        "erstellt_von": user.get("username"),
+        "deleted": False,
+    }
+    
+    # Positionen kopieren falls vorhanden (Spiegelung)
+    if data.positionen:
+        for i, pos in enumerate(data.positionen):
+            pos_id_ek = str(uuid.uuid4())
+            pos_id_vk = str(uuid.uuid4())
+            
+            # EK-Position
+            ek_pos = {
+                **pos,
+                "id": pos_id_ek,
+                "positionsnummer": i + 1,
+                "gespiegelt_von": None,
+                "gespiegelt_zu": pos_id_vk,
+            }
+            ek_kontrakt["positionen"].append(ek_pos)
+            
+            # VK-Position (gespiegelt, aber Preis kann abweichen)
+            vk_pos = {
+                **pos,
+                "id": pos_id_vk,
+                "positionsnummer": i + 1,
+                "gespiegelt_von": pos_id_ek,
+                "gespiegelt_zu": None,
+            }
+            vk_kontrakt["positionen"].append(vk_pos)
+    
+    # Beide Kontrakte speichern
+    await db.kontrakte.insert_many([ek_kontrakt, vk_kontrakt])
+    
+    # Audit-Log für beide
+    for kontrakt in [ek_kontrakt, vk_kontrakt]:
+        await audit_log_erstellen(
+            kontrakt_id=kontrakt["_id"],
+            mandant_id=user["mandant_id"],
+            aktion="ERSTELLT",
+            benutzer=user,
+            details={
+                "kontraktnummer": kontrakt.get("kontraktnummer"),
+                "vorgang_typ": kontrakt.get("vorgang_typ"),
+                "partner": kontrakt.get("name1"),
+                "ist_strecke": True,
+                "strecken_id": strecken_id,
+            }
+        )
+    
+    # Response vorbereiten
+    ek_kontrakt["id"] = ek_kontrakt.pop("_id")
+    vk_kontrakt["id"] = vk_kontrakt.pop("_id")
+    ek_kontrakt["summen"] = await berechne_kontrakt_summen(ek_kontrakt)
+    vk_kontrakt["summen"] = await berechne_kontrakt_summen(vk_kontrakt)
+    
+    return {
+        "success": True,
+        "data": {
+            "strecken_id": strecken_id,
+            "ek_kontrakt": ek_kontrakt,
+            "vk_kontrakt": vk_kontrakt,
+            "status": berechne_strecken_status(ek_kontrakt, vk_kontrakt)
+        }
+    }
+
+
+@router.post("/kontrakte/{kontrakt_id}/strecke/verknuepfen")
+async def verknuepfe_zu_strecke(
+    kontrakt_id: str,
+    data: StreckenVerknuepfung,
+    user = Depends(require_permission("kontrakte", "write"))
+):
+    """Verknüpft einen bestehenden Kontrakt zu einem Streckengeschäft"""
+    db = get_db()
+    
+    # Aktuellen Kontrakt laden
+    kontrakt = await db.kontrakte.find_one({
+        "_id": kontrakt_id,
+        "mandant_id": user["mandant_id"],
+        "deleted": {"$ne": True}
+    })
+    
+    if not kontrakt:
+        raise HTTPException(status_code=404, detail="Kontrakt nicht gefunden")
+    
+    if kontrakt.get("ist_strecke") and kontrakt.get("strecken_id"):
+        raise HTTPException(status_code=400, detail="Kontrakt ist bereits Teil eines Streckengeschäfts")
+    
+    strecken_id = str(uuid.uuid4())
+    partner_kontrakt = None
+    
+    # Falls ein Partner-Kontrakt angegeben wurde
+    if data.partner_kontrakt_id:
+        partner_kontrakt = await db.kontrakte.find_one({
+            "_id": data.partner_kontrakt_id,
+            "mandant_id": user["mandant_id"],
+            "deleted": {"$ne": True}
+        })
+        
+        if not partner_kontrakt:
+            raise HTTPException(status_code=404, detail="Partner-Kontrakt nicht gefunden")
+        
+        if partner_kontrakt.get("ist_strecke") and partner_kontrakt.get("strecken_id"):
+            raise HTTPException(status_code=400, detail="Partner-Kontrakt ist bereits Teil eines Streckengeschäfts")
+        
+        # Prüfen ob EK/VK-Paar
+        if kontrakt.get("vorgang_typ") == partner_kontrakt.get("vorgang_typ"):
+            raise HTTPException(
+                status_code=400, 
+                detail="Für ein Streckengeschäft benötigen Sie einen EK- und einen VK-Kontrakt"
+            )
+    
+    # Aktuellen Kontrakt aktualisieren
+    kontrakt_rolle = kontrakt.get("vorgang_typ")  # EK oder VK
+    await db.kontrakte.update_one(
+        {"_id": kontrakt_id},
+        {"$set": {
+            "ist_strecke": True,
+            "strecken_id": strecken_id,
+            "strecken_rolle": kontrakt_rolle,
+            "geaendert_am": datetime.utcnow(),
+            "geaendert_von": user.get("username"),
+        }}
+    )
+    
+    # Audit-Log
+    await audit_log_erstellen(
+        kontrakt_id=kontrakt_id,
+        mandant_id=user["mandant_id"],
+        aktion="BEARBEITET",
+        benutzer=user,
+        aenderungen=[
+            {"feld": "ist_strecke", "feld_label": "Streckengeschäft", "alt": False, "neu": True},
+            {"feld": "strecken_id", "feld_label": "Strecken-ID", "alt": None, "neu": strecken_id},
+        ],
+        details={"aktion": "Zu Streckengeschäft verknüpft"}
+    )
+    
+    # Partner-Kontrakt aktualisieren falls vorhanden
+    if partner_kontrakt:
+        partner_rolle = partner_kontrakt.get("vorgang_typ")
+        await db.kontrakte.update_one(
+            {"_id": data.partner_kontrakt_id},
+            {"$set": {
+                "ist_strecke": True,
+                "strecken_id": strecken_id,
+                "strecken_rolle": partner_rolle,
+                "geaendert_am": datetime.utcnow(),
+                "geaendert_von": user.get("username"),
+            }}
+        )
+        
+        await audit_log_erstellen(
+            kontrakt_id=data.partner_kontrakt_id,
+            mandant_id=user["mandant_id"],
+            aktion="BEARBEITET",
+            benutzer=user,
+            aenderungen=[
+                {"feld": "ist_strecke", "feld_label": "Streckengeschäft", "alt": False, "neu": True},
+                {"feld": "strecken_id", "feld_label": "Strecken-ID", "alt": None, "neu": strecken_id},
+            ],
+            details={"aktion": "Zu Streckengeschäft verknüpft"}
+        )
+    
+    return {
+        "success": True,
+        "data": {
+            "strecken_id": strecken_id,
+            "kontrakt_id": kontrakt_id,
+            "partner_kontrakt_id": data.partner_kontrakt_id,
+            "message": "Streckengeschäft erfolgreich erstellt"
+        }
+    }
+
+
+@router.delete("/kontrakte/strecken/{strecken_id}/aufloesen")
+async def strecke_aufloesen(
+    strecken_id: str,
+    user = Depends(require_permission("kontrakte", "write"))
+):
+    """Löst die Strecken-Verknüpfung auf - Kontrakte bleiben als einzelne EK/VK bestehen"""
+    db = get_db()
+    
+    # Alle Kontrakte der Strecke finden
+    kontrakte = await db.kontrakte.find({
+        "strecken_id": strecken_id,
+        "mandant_id": user["mandant_id"],
+        "deleted": {"$ne": True}
+    }).to_list(10)
+    
+    if not kontrakte:
+        raise HTTPException(status_code=404, detail="Streckengeschäft nicht gefunden")
+    
+    # Verknüpfung aufheben
+    for k in kontrakte:
+        await db.kontrakte.update_one(
+            {"_id": k["_id"]},
+            {"$set": {
+                "ist_strecke": False,
+                "strecken_id": None,
+                "strecken_rolle": None,
+                "geaendert_am": datetime.utcnow(),
+                "geaendert_von": user.get("username"),
+            }}
+        )
+        
+        await audit_log_erstellen(
+            kontrakt_id=k["_id"],
+            mandant_id=user["mandant_id"],
+            aktion="BEARBEITET",
+            benutzer=user,
+            aenderungen=[
+                {"feld": "ist_strecke", "feld_label": "Streckengeschäft", "alt": True, "neu": False},
+                {"feld": "strecken_id", "feld_label": "Strecken-ID", "alt": strecken_id, "neu": None},
+            ],
+            details={"aktion": "Streckengeschäft aufgelöst"}
+        )
+    
+    return {
+        "success": True,
+        "message": f"Streckengeschäft aufgelöst. {len(kontrakte)} Kontrakte sind jetzt einzelne EK/VK-Kontrakte."
+    }
+
+
+@router.post("/kontrakte/{kontrakt_id}/positionen/spiegeln")
+async def position_spiegeln(
+    kontrakt_id: str,
+    position_id: str = Query(..., description="ID der zu spiegelnden Position"),
+    user = Depends(require_permission("kontrakte", "write"))
+):
+    """Spiegelt eine Position vom EK zum VK oder umgekehrt"""
+    db = get_db()
+    
+    # Quell-Kontrakt laden
+    quell_kontrakt = await db.kontrakte.find_one({
+        "_id": kontrakt_id,
+        "mandant_id": user["mandant_id"],
+        "deleted": {"$ne": True}
+    })
+    
+    if not quell_kontrakt:
+        raise HTTPException(status_code=404, detail="Kontrakt nicht gefunden")
+    
+    if not quell_kontrakt.get("ist_strecke") or not quell_kontrakt.get("strecken_id"):
+        raise HTTPException(status_code=400, detail="Kontrakt ist kein Streckengeschäft")
+    
+    # Position finden
+    position = None
+    for pos in quell_kontrakt.get("positionen", []):
+        if pos.get("id") == position_id:
+            position = pos
+            break
+    
+    if not position:
+        raise HTTPException(status_code=404, detail="Position nicht gefunden")
+    
+    # Partner-Kontrakt finden
+    partner_typ = "VK" if quell_kontrakt.get("vorgang_typ") == "EK" else "EK"
+    partner_kontrakt = await db.kontrakte.find_one({
+        "strecken_id": quell_kontrakt.get("strecken_id"),
+        "vorgang_typ": partner_typ,
+        "mandant_id": user["mandant_id"],
+        "deleted": {"$ne": True}
+    })
+    
+    if not partner_kontrakt:
+        raise HTTPException(status_code=404, detail="Partner-Kontrakt nicht gefunden")
+    
+    # Neue Position für Partner erstellen
+    neue_pos_id = str(uuid.uuid4())
+    partner_positionen = partner_kontrakt.get("positionen", [])
+    max_pos_nr = max([p.get("positionsnummer", 0) for p in partner_positionen], default=0)
+    
+    neue_position = {
+        **position,
+        "id": neue_pos_id,
+        "positionsnummer": max_pos_nr + 1,
+        "gespiegelt_von": position_id,
+        "gespiegelt_zu": None,
+        # Preis auf 0 setzen - muss manuell angepasst werden
+        "einzelpreis": position.get("einzelpreis", 0),
+        "einzelpreis_fw": position.get("einzelpreis_fw", 0),
+    }
+    
+    # Quell-Position aktualisieren
+    for pos in quell_kontrakt.get("positionen", []):
+        if pos.get("id") == position_id:
+            pos["gespiegelt_zu"] = neue_pos_id
+            break
+    
+    # Updates speichern
+    await db.kontrakte.update_one(
+        {"_id": kontrakt_id},
+        {"$set": {"positionen": quell_kontrakt.get("positionen", [])}}
+    )
+    
+    partner_positionen.append(neue_position)
+    await db.kontrakte.update_one(
+        {"_id": partner_kontrakt["_id"]},
+        {"$set": {"positionen": partner_positionen}}
+    )
+    
+    # Audit-Logs
+    await audit_log_erstellen(
+        kontrakt_id=partner_kontrakt["_id"],
+        mandant_id=user["mandant_id"],
+        aktion="POSITION_HINZUGEFUEGT",
+        benutzer=user,
+        details={
+            "position_id": neue_pos_id,
+            "artikel": neue_position.get("artbez1"),
+            "menge": neue_position.get("anzahl"),
+            "gespiegelt_von": position_id,
+            "quell_kontrakt": kontrakt_id,
+        }
+    )
+    
+    return {
+        "success": True,
+        "data": {
+            "neue_position_id": neue_pos_id,
+            "partner_kontrakt_id": partner_kontrakt["_id"],
+            "message": "Position erfolgreich gespiegelt"
+        }
+    }
