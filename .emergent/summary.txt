@@ -1,61 +1,51 @@
 <analysis>**original_problem_statement:**
 Der Benutzer möchte eine veraltete Java/Echo2-Anwendung namens Rohstoff Portal modernisieren. Das Ziel ist eine neue Architektur mit einem FastAPI/Python-Backend, einer PostgreSQL-Datenbank (aktuell MongoDB) und einem modernen React PWA-Frontend.
 
-Die letzten Anforderungen des Benutzers, die in dieser Sitzung umgesetzt wurden, umfassen:
-1.  **Ansprechpartner-Modul (mehrstufige Überarbeitung):**
-    *   Die UI wurde zu einer übersichtlichen Tabelle mit verbesserter Spaltenaufteilung umgestaltet.
-    *   Das Formular wurde um Adressfelder und ein Dropdown für die Korrespondenzsprache (mit Flaggen) erweitert.
-    *   Die Detailansicht wurde auf Wunsch des Benutzers komplett neu gestaltet, um eine moderne, aufgeräumte Kartenansicht zu erhalten.
-2.  **Bankverbindungen-Modul:**
-    *   Eine Währungsauswahl (Dropdown mit Symbolen für OECD-Währungen) wurde hinzugefügt. Die Daten dafür stammen aus einer neuen, zentralen Datei (), um Wiederverwendbarkeit zu gewährleisten.
-    *   Das Layout des Formulars wurde für bessere Übersichtlichkeit angepasst.
-3.  **Analyse des Altsystems:**
-    *   Der Agent hat die alte Java/Echo2-Codebasis analysiert, um die Logik, Datenfelder und Validatoren des Kontrakt-Moduls zu extrahieren.
-4.  **Kontrakt-Modul (Major-Refactoring):**
-    *   Basierend auf der Analyse wurde das Kontrakt-Modul massiv erweitert: Hinzufügen von Feldern und Logik für Fixierungskontrakte, Währungsintegration, Toleranzen und zusätzliche Textfelder.
-    *   Wichtige Validatoren aus dem Altsystem wurden ins Python-Backend portiert.
-5.  **Dynamisches Nummernkreis-System & Vertrags-Setup (Aktuelle Aufgabe):**
-    *   **Nummernkreise:** Ein neues, backend-gesteuertes System zur dynamischen Verwaltung von Nummernkreisen (z.B. für Kontraktnummern) wurde angefordert und ist in Implementierung.
-    *   **Benutzer-Referenzen:** Felder wie Sachbearbeiter und Händler sollen als Dropdown auf die Benutzerliste aus den Einstellungen verweisen.
-    *   **Adress-Integration:** Der Vertragspartner und dessen Ansprechpartner sollen direkt aus dem Adress-Modul auswählbar sein.
+Die jüngsten Anforderungen konzentrieren sich auf die massive Erweiterung und Neugestaltung des **Kontrakt-Moduls**:
+1.  **Neugestaltung der Vertragspartner-Sektion:** Der Benutzer war mit dem Layout unzufrieden und forderte ein kompakteres, moderneres smartes Design. Dies umfasste die Auswahl von USt-IDs und Bankverbindungen direkt aus den Stammdaten des Partners.
+2.  **Lager-Logik:** Felder aus dem Termine-Reiter sollten in die Kopfdaten verschoben werden. Ein neuer Reiter Läger sollte hinzugefügt werden, um ein Abhol- und Ziellager aus den Adress-Stammdaten (inkl. Lieferadressen) des Partners auszuwählen. Die Logik sollte zwischen Einkaufs- (EK) und Verkaufskontrakten (VK) unterscheiden.
+3.  **Zentrale Firmeneinstellungen:** Eine neue Seite in der Administration, um eine Adresse aus den Stammdaten als Haupt-Mandantenadresse zu definieren. Diese Adresse soll dann als Eigenes Lager im Kontraktmodul referenziert werden.
+4.  **(Aktuell)** **Neugestaltung der Positionserfassung:** Der Benutzer fordert eine komplette Überarbeitung der Erfassung von Kontraktpositionen:
+    *   Ein neues, smartes Design für das Position hinzufügen/bearbeiten-Formular.
+    *   Eine moderne Artikelauswahl mit Filterung aus den Artikelstammdaten.
+    *   Eine Funktion zum Kopieren bestehender Positionen.
+    *   Eine verbesserte, informativere Übersicht der Positionen direkt im Kontrakt (Menge, Preis, Gesamt, etc.).
+    *   Die Möglichkeit, Positionsdetails per Doppelklick auch im Lesemodus des Kontrakts zu öffnen.
 
 **User's preferred language**: German
 
 **what currently exists?**
 *   Ein voll funktionsfähiges, rollenbasiertes Zugriffskontrollsystem (RBAC) und ein Einstellungen-Bereich.
-*   Eine -Komponentenarchitektur für dynamische Feldverknüpfungen.
-*   **Überarbeitet:** Die Ansprechpartner-Ansicht im Adressmodul wurde mehrfach überarbeitet und verfügt nun über eine saubere Tabellenansicht, ein erweitertes Formular (Adresse, Sprache) und eine moderne, kartenbasierte Detailansicht.
-*   **Überarbeitet:** Das Bankverbindungen-Modul enthält jetzt eine Währungsauswahl und ein verbessertes Formularlayout. Währungsdaten sind in  zentralisiert.
-*   **Überarbeitet:** Das Kontrakte-Modul wurde grundlegend erweitert und spiegelt nun einen Großteil der Logik des Altsystems wider, inklusive neuer Felder für Fixierungen, Konditionen und der Integration von Währungen.
-*   **Neu (In Arbeit):** Ein Backend-Router () und ein zugehöriges Pydantic-Model für ein dynamisches Nummernkreis-System wurden erstellt.
-*   **Neu (In Arbeit):** Eine Frontend-Seite zur Verwaltung der Nummernkreise () wurde erstellt.
-*   **Überarbeitet (In Arbeit):** Das Backend des Kontrakt-Moduls wurde vorbereitet, um die neue Nummernkreis-Logik und die Verknüpfungen zu Benutzern (Sachbearbeiter/Händler) und Adressen (Vertragspartner) zu nutzen.
+*   **Abgeschlossen:** Das dynamische Nummernkreis-System ist implementiert und im Kontraktmodul integriert. Die Verwaltungsseite ist in die Einstellungen eingebunden.
+*   **Abgeschlossen (Major Redesign):** Die Vertragspartner-Sektion im Kontraktmodul wurde komplett überarbeitet. Sie verwendet nun ein kompaktes, kartenbasiertes Design. Die Auswahl von USt-IDs und Bankverbindungen aus den Stammdaten des Partners ist implementiert, inklusive automatischer Vorauswahl der Haupt-ID/des Hauptkontos.
+*   **Abgeschlossen:** Die Logik für Läger (Abhol-/Ziellager) ist im Kontraktmodul implementiert. Die UI wurde entsprechend angepasst (Reiter Termine entfernt, Reiter Läger hinzugefügt).
+*   **Abgeschlossen:** Eine neue Seite Firmeneinstellungen unter Administration wurde erstellt. Hier kann eine Adresse als Haupt-Mandant definiert werden. Diese Adresse wird nun als Eigenes Lager im Kontraktmodul verwendet. Das zugehörige Backend () wurde erstellt.
+*   **In Arbeit:** Für die Neugestaltung der Positionserfassung wurde ein neuer Backend-Endpunkt  zur gefilterten Artikelsuche erstellt. Die Frontend-Implementierung hat noch nicht begonnen.
+*   Mehrere vom Benutzer gemeldete Bugs bezüglich der Datenanzeige und -speicherung im Kontraktmodul wurden behoben (z.B. Anzeige von Ansprechpartner/USt-ID/Bankverbindung nach dem Speichern und im Editiermodus).
 
 **Last working item**:
--   **Last item agent was working:** Implementierung des dynamischen Nummernkreis-Systems und der damit verbundenen Erweiterungen im Kontrakt-Modul. Der Agent hat gerade die neue Verwaltungsseite für Nummernkreise () im Frontend erstellt. Der nächste Schritt wäre, diese Seite in die Navigation der Systemeinstellungen zu integrieren.
+-   **Last item agent was working:** Beginn der Implementierung für die Neugestaltung der Kontrakt-Positionserfassung. Der Agent hat den Backend-Endpunkt  erstellt, der das Filtern von Artikeln nach Gruppe und Klassifizierung ermöglicht. Der nächste Schritt ist die Neugestaltung der Frontend-Komponenten.
 -   **Status:** IN PROGRESS
 -   **Agent Testing Done:** N
--   **Which testing method agent to use?** both. Dies ist eine große Funktion, die das Backend (neuer Router, geänderter Kontrakte-Router) und das Frontend (neue Einstellungsseite, stark geänderte Kontrakte-Seite) betrifft. Nach Abschluss der Implementierung ist ein vollständiger Test durch den Testing-Agent erforderlich.
+-   **Which testing method agent to use?** both. Dies ist eine umfassende UI/UX- und Funktionsänderung. Frontend-Tests sind entscheidend für das neue Dialog- und Listendesign. Backend-Tests müssen die neue Artikelsuche validieren.
 -   **User Testing Done:** N
 
 **All Pending/In progress Issue list**:
--   **Issue 1: (P0) Nummernkreis-System und Kontrakt-Erweiterungen fertigstellen**
-    -   **Attempted fixes:** Der Backend-Router und das Frontend-Gerüst für das Nummernkreis-System wurden erstellt. Das Kontrakt-Modul wurde im Backend und Frontend vorbereitet.
+-   **Issue 1: (P0) Neugestaltung der Kontrakt-Positionserfassung**
+    -   **Attempted fixes:** Ein Backend-Endpunkt () zur Artikelsuche wurde in  erstellt.
     -   **Next debug checklist:**
-        1.  Integrieren Sie die neue  in die Navigation der Systemeinstellungen (vermutlich in  oder einem übergeordneten Layout).
-        2.  Testen Sie den vollständigen End-to-End-Flow:
-            a. Erstellen eines neuen Nummernkreises für kontrakte in den Einstellungen.
-            b. Erstellen eines neuen Kontrakts und Überprüfen, ob die Kontraktnummer automatisch aus dem richtigen Nummernkreis generiert wird.
-            c. Überprüfen, ob die Dropdowns Sachbearbeiter und Händler mit Benutzern gefüllt sind.
-            d. Überprüfen, ob der Vertragspartner aus den Adressen ausgewählt werden kann.
-            e. Überprüfen, ob nach Auswahl des Partners der zugehörige Ansprechpartner ausgewählt werden kann.
-    -   **Why fix this issue and what will be achieved with the fix?** Dies ist eine zentrale Anforderung des Benutzers zur Standardisierung von Belegnummern, zur Verbesserung der Datenintegrität und zur nahtlosen Verknüpfung von Modulen.
+        1.  **Positionen-Übersicht neu gestalten:** Die aktuelle Tabellenansicht in  ersetzen durch eine Liste, die die geforderten Felder (Menge, Preis/Einheit, Gesamtpreis, Artikelbez., Artikel-Nr.) anzeigt.
+        2.  **Kopier-Funktion implementieren:** Einen Button zum Duplizieren einer vorhandenen Position hinzufügen.
+        3.  **Neuen Position-Dialog erstellen:** Den bestehenden  durch ein neues, smartes und modernes Formular ersetzen.
+        4.  **Artikelauswahl-Komponente integrieren:** Eine neue Komponente erstellen, die den -Endpunkt mit Filteroptionen (Artikelgruppe, Klassifizierung) nutzt.
+        5.  **Detailansicht via Doppelklick:** Implementieren, dass ein Doppelklick auf eine Position (auch im Lesemodus) den Detaildialog öffnet.
+    -   **Why fix this issue and what will be achieved with the fix?** Dies ist eine zentrale Anforderung des Benutzers zur Verbesserung der Benutzerfreundlichkeit und Effizienz bei der Erfassung von Kontrakten.
     -   **Status:** IN PROGRESS
     -   **Is recurring issue?** N
     -   **Should Test frontend/backend/both after fix?** both
     -   **Blocked on other issue:** None
 -   **Issue 2: (P2) Verifizierung des Bugfixes für die Profilspeicherung**
-    -   **Attempted fixes:** Im vorletzten Fork wurde ein -Fehler beim Speichern des Benutzerprofils behoben.
+    -   **Attempted fixes:** In einer früheren Sitzung wurde ein -Fehler beim Speichern des Benutzerprofils behoben.
     -   **Next debug checklist:** Bitten Sie den Benutzer zu bestätigen, dass das Speichern von Profiländerungen jetzt ohne Fehler funktioniert.
     -   **Why fix this issue and what will be achieved with the fix?** Dies schließt einen vom Benutzer gemeldeten kritischen Fehler ab.
     -   **Status:** USER VERIFICATION PENDING
@@ -69,9 +59,9 @@ Die letzten Anforderungen des Benutzers, die in dieser Sitzung umgesetzt wurden,
 **Upcoming and Future Tasks**
 -   **Upcoming Tasks:**
     -   **(P1) Nummernkreis-System ausrollen:** Das neue System auf andere Module (Rechnungen, Lieferscheine etc.) anwenden.
-    -   **(P1) Fixierungsmodul implementieren:** Ein dediziertes Modul zur Verwaltung von Fixierungen, wie vom Benutzer angedeutet.
+    -   **(P1) Fixierungsmodul implementieren:** Ein dediziertes Modul zur Verwaltung von Fixierungen.
     -   **(P1) API-System Phase 7:** Implementierung von Import/Export und Audit-Logs für Referenztabellen.
-    -   **(P2) PDF-Export:** Implementierung der PDF-Erstellung für Rechnungen und Lieferscheine.
+    -   **(P2) PDF-Export:** Implementierung der PDF-Erstellung für Kontrakte, Rechnungen und Lieferscheine.
     -   **(P2) Sammelrechnungen:** Funktion implementieren, mit der mehrere Fuhren zu einer einzigen Sammelrechnung zusammengefasst werden können.
 -   **Future Tasks:**
     -   Datenimport aus dem Altsystem.
@@ -79,11 +69,15 @@ Die letzten Anforderungen des Benutzers, die in dieser Sitzung umgesetzt wurden,
     -   Umfassendes Unit- und E2E-Testing für alle Module.
 
 **Completed work in this session**
--   **Ansprechpartner-Modul (mehrstufige UI/UX-Verbesserung):** Die Ansicht wurde von einer einfachen Tabelle zu einer voll funktionsfähigen Sektion mit verbesserter Tabellenansicht, erweitertem Formular (inkl. Adresse, Sprache) und einer komplett neugestalteten, modernen Detailansicht weiterentwickelt.
--   **Bankverbindungen-Modul (Währung & Layout):** Das Formular wurde um eine Währungsauswahl erweitert und das Layout verbessert. Die Währungsdaten wurden in  zentralisiert.
--   **Code-Analyse des Altsystems:** Die Kontrakt-Logik des alten Java-Systems wurde analysiert, um Felder, Beziehungen und Validatoren zu extrahieren.
--   **Kontrakt-Modul (Major Update):** Basierend auf der Analyse wurde das Modul im Frontend und Backend massiv erweitert, um Fixierungskontrakte, erweiterte Konditionen, Toleranzen und Portierungen von alten Validatoren zu unterstützen.
--   **Code-Bereinigung:** Veraltete Dateien (, ) wurden entfernt.
+-   **Nummernkreis-System Fertigstellung:** Integration der  in die Navigation und erfolgreicher E2E-Test. Ein Bug im Backend-Datenbankcheck () wurde vom Testing-Agent behoben.
+-   **Vertragspartner-Sektion Redesign:** Komplette Neugestaltung der UI im Kontrakt-Formular zu einem kompakten, kartenbasierten Layout. Inklusive Auswahl für USt-IDs und Bankverbindungen.
+-   **Lager-Logik Implementierung:** Die Termine-Felder wurden in die Kopfdaten verschoben und ein neuer Läger-Reiter wurde erstellt, um Abhol- und Ziellager basierend auf Partner- und Mandantendaten auszuwählen.
+-   **Firmeneinstellungen (Mandant):** Neue Backend-Route () und Frontend-Seite () zur Definition einer zentralen Firmenadresse, die von anderen Modulen (z.B. Kontrakte für Eigenes Lager) genutzt wird.
+-   **Bugfixes im Kontrakt-Modul:**
+    -   Behebung eines Absturzes bei der Auswahl von Partnern mit leeren USt-ID-Einträgen.
+    -   Sicherstellung, dass Partnerdaten (USt-ID, Bankverbindung) und Ansprechpartner nach dem Speichern und erneuten Öffnen eines Kontrakts korrekt angezeigt und im Editiermodus bearbeitbar sind.
+    -   Korrektur der Backend-Schemata (, ), um das Speichern von Bankverbindungs- und Lager-Informationen zu ermöglichen.
+    -   Korrektur des Backend-Lookups, um eingebettete Bankverbindungen und Lieferadressen aus der Adressen-Collection zu laden.
 
 **Earlier issues found/mentioned but not fixed**
 -   Diverse TypeScript-Warnungen in verschiedenen, nicht direkt bearbeiteten Dateien.
@@ -96,56 +90,59 @@ Die letzten Anforderungen des Benutzers, die in dieser Sitzung umgesetzt wurden,
 
 
 **Key Technical Concepts**
--   **Dynamisches Nummernkreis-System:** Ein neues, zentralisiertes Backend-System zur Verwaltung eindeutiger, sequentieller Belegnummern für verschiedene Module. Es besteht aus einem dedizierten Router (), einer neuen DB-Collection und einer Verwaltungs-UI in den Einstellungen. Die Erstellungslogik von Modulen (zuerst ) wird angepasst, um die nächste freie Nummer abzurufen.
--   **Zentralisierte Stammdaten:** Wiederverwendbare Daten wie Währungen () werden in zentralen Dateien im Verzeichnis  abgelegt, um Konsistenz über verschiedene Module hinweg zu gewährleisten.
--   **Portierung von Legacy-Logik:** Ein wesentlicher Teil der Arbeit bestand darin, Geschäftslogik und Datenmodelle aus einer alten Java-Anwendung zu analysieren und diese für die neue FastAPI/React-Architektur zu adaptieren und zu implementieren.
+-   **Dynamisches Nummernkreis-System:** Ein zentralisiertes Backend-System zur Verwaltung sequentieller Belegnummern.
+-   **Kompaktes Card-UI:** Umstellung von großen Formularbereichen auf modulare, kartenbasierte Ansichten, um die Informationsdichte zu erhöhen und das Scrollen zu reduzieren (siehe Vertragspartner, Läger).
+-   **Zentrale Firmeneinstellungen (Mandant):** Ein neues Singleton-Muster im Backend (), um eine zentrale Firmenadresse zu speichern, die von anderen Modulen referenziert werden kann. Dies entkoppelt die Mandantendaten von hartcodierten Werten.
+-   **Dynamische Lookups:** Starke Nutzung von Backend-Lookups, um Stammdaten (Benutzer, Adressen, Artikel) dynamisch in Dropdowns und Auswahlkomponenten zu laden und zu verknüpfen.
 
 **key DB schema**
--   **kontrakte:** (Collection ) **STARK MODIFIZIERT** - Wurde um zahlreiche Felder erweitert, darunter , , , ,  und viele weitere Felder für Fixierungsdetails und Konditionen.
--   **ansprechpartner:** (Teil der  Collection) Das Schema ist flexibel (), wurde aber implizit um Felder für , ,  und  erweitert.
--   **nummernkreise:** (Neue Collection) Voraussichtliches Schema: .
+-   **kontrakte:** (Collection ) **STARK MODIFIZIERT** - Erweitert um Felder für die Speicherung von ausgewählten Bankverbindungen und Lageradressen: , , , , , , , .
+-   **adressen:** (Collection ) Das Feld  wurde implizit hinzugefügt, um die als Mandant definierte Adresse zu markieren.
+-   **firma_settings:** (Neue Collection) Speichert die ID der als Firmenadresse ausgewählten Adresse. Schema: .
 
 **changes in tech stack**
 -   Keine.
 
 **All files of reference**
--   : Backend-Logik für das neue Nummernkreis-System.
--   : Frontend-Seite zur Verwaltung der Nummernkreise.
--   : Stark erweiterte Backend-Logik für Kontrakte.
--   : Stark erweiterte Frontend-Seite für Kontrakte.
--   : Mehrfach überarbeitete Komponente für Kontakte.
--   : Zentrale Datei für Währungsdaten.
+-   : Die zentrale Datei für das Kontraktmodul, die massiv überarbeitet wurde.
+-   : Das zugehörige Backend, das um Lookups und neue Felder erweitert wurde.
+-   : Neue UI zur Verwaltung der Mandanten-Adresse.
+-   : Neues Backend zur Verwaltung der Mandanten-Adresse.
+-   : Erweitert um einen  Endpunkt.
+-   : Angepasst, um ein Stern-Symbol für die Firmenadresse anzuzeigen.
 
 **Areas that need refactoring**:
 -   Das neue -System sollte nach Abschluss der Implementierung auf andere Module (z.B. Rechnungen) ausgerollt werden, um dortige Nummerierungslogiken zu ersetzen.
 -   Die bekannten TypeScript-Warnungen und das Scroll-Problem in  sind weiterhin offen.
 
 **key api endpoints**
--   : Neue CRUD-Endpunkte zur Verwaltung von Nummernkreisen.
--   : Neuer Endpunkt, um die nächste Nummer für einen bestimmten Kreis abzurufen.
--   : (Vermutlich in  oder  hinzugefügt) Endpunkt zum Laden der Benutzerliste für die Sachbearbeiter/Händler-Auswahl.
--   : Stark modifiziert, um das Nummernkreis-System und die neuen Felder zu verwenden.
+-   : Neue CRUD-Endpunkte für die Firmeneinstellungen.
+-   : Neuer Endpunkt, um die definierte Firmenadresse (Mandant) abzurufen.
+-   : Neuer Endpunkt zur gefilterten Suche von Artikeln.
+-   : Modifiziert, um nun auch  zurückzugeben.
+-   : Modifiziert, um die neuen Felder für Bankverbindungen und Läger zu speichern.
 
 **Critical Info for New Agent**
--   Ihre unmittelbare Aufgabe ist es, die Implementierung des **Nummernkreis-Systems** abzuschließen. Dies beinhaltet die Integration der neuen  in die Einstellungs-Navigation und das anschließende Testen des gesamten End-to-End-Prozesses (Nummernkreis erstellen -> Kontrakt erstellen -> Nummer prüfen).
--   Der Benutzer legt großen Wert auf UI/UX. Achten Sie auf saubere, intuitive Layouts und reagieren Sie auf Design-Feedback, wie es bei der -Detailansicht der Fall war.
--   Das -Modul ist jetzt sehr umfangreich. Machen Sie sich mit der neuen Struktur in  und dem Backend-Schema vertraut, bevor Sie weitere Änderungen vornehmen.
--   Die Architektur bewegt sich in Richtung zentralisierter, wiederverwendbarer Daten () und Systeme (). Behalten Sie diesen Ansatz für zukünftige Entwicklungen bei.
+-   Ihre unmittelbare Aufgabe ist die **vollständige Neugestaltung der Positionserfassung im Kontraktmodul**, wie in All Pending/In progress Issue list beschrieben. Beginnen Sie mit dem Frontend.
+-   Der Benutzer legt extrem hohen Wert auf **smarte, moderne und kompakte UI/UX**. Orientieren Sie sich am kürzlich umgesetzten Design der Vertragspartner- und Läger-Sektionen (kartenbasiert, wenig Scrollen, klare Informationen).
+-   Die Logik für die Artikelauswahl muss eine **Filterung nach Artikelgruppe und Klassifizierungen** unterstützen. Der Backend-Endpunkt dafür existiert bereits.
+-   Achten Sie darauf, dass alle neuen Funktionen (Kopieren, Detailansicht per Doppelklick) sowohl im **Neu- als auch im Bearbeitungs-/Lesemodus** eines Kontrakts funktionieren.
 
 **documents and test reports created in this job**
--    (wurde mehrfach aktualisiert)
+-    (mehrfach aktualisiert)
+-   
 
 **Last 10 User Messages and any pending HUMAN messages**
--   10. **(IN PROGRESS)** Fordert für das Kontrakt-Modul: 1) Sachbearbeiter/Händler-Dropdowns aus Benutzerliste, 2) Dynamisches Nummernkreis-System, 3) Vertragspartner-Auswahl aus Adressen.
--   9. **(DONE)** Beendet die Implementierung des großen Kontrakt-Updates.
--   8. **(DONE)** Bittet darum, alle vorgeschlagenen Phasen zur Erweiterung des Kontrakt-Moduls sofort umzusetzen.
--   7. **(AWAITING RESPONSE)** Der Agent schlägt einen mehrphasigen Plan zur Erweiterung des Kontrakt-Moduls vor.
--   6. **(DONE)** Bittet darum, den alten Java-Code für das Kontrakt-Modul zu analysieren.
--   5. **(DONE)** Beendet die Implementierung der Währungsauswahl für Bankverbindungen.
--   4. **(DONE)** Fordert eine Währungsauswahl und Layout-Anpassungen für das Bankverbindungen-Modul.
--   3. **(DONE)** Beendet die Neugestaltung der Ansprechpartner-Detailansicht.
--   2. **(DONE)** Bemängelt das überladene Design der Ansprechpartner-Detailansicht und fordert eine modernere, aufgeräumte Version.
--   1. **(DONE)** Beendet die erste Runde der Verbesserungen am Ansprechpartner-Modul (Spaltenlayout, neue Formularfelder).
+-   10. **(IN PROGRESS)** Fordert eine komplette Neugestaltung der Kontrakt-Positionserfassung mit 4 Kernanforderungen: neues Design, Artikelauswahl mit Filter, Positionen kopieren, verbesserte Übersicht und Detailansicht per Doppelklick.
+-   9. **(RESOLVED)** Meldet, dass Läger- und Bankverbindungs-Auswahlen nach dem Verlassen der Maske nicht gespeichert werden. Agent hat das Backend-Schema korrigiert und die Funktion verifiziert.
+-   8. **(IN PROGRESS)** Fordert die Erstellung einer zentralen Firmeneinstellungen-Seite, um eine Mandantenadresse zu definieren, die vom Kontraktmodul als Eigenes Lager verwendet wird.
+-   7. **(IN PROGRESS)** Fordert, den Termine-Reiter in Kopfdaten zu verschieben und einen neuen Läger-Reiter für Abhol-/Ziellager zu erstellen.
+-   6. **(RESOLVED)** Meldet 3 Bugs nach dem Redesign: 1) Keine Ansprechpartner wird fälschlich angezeigt, 2) USt-ID/Bankverbindung fehlen nach dem Speichern, 3) Ansprechpartner nicht änderbar. Agent hat alle 3 Bugs behoben.
+-   5. **(RESOLVED)** Meldet einen Crash bei der Auswahl des Kunden Constellium, vermutlich wegen mehrerer USt-IDs. Agent hat das Frontend-Filtering korrigiert.
+-   4. **(IN PROGRESS)** Fragt, wie mehrere USt-IDs und Bankverbindungen für Constellium ausgewählt werden können, da diese nicht angezeigt werden.
+-   3. **(IN PROGRESS)** Gibt Feedback zum Redesign der Vertragspartner-Sektion: zu unübersichtlich, Ansprechpartnerauswahl schlecht, zu viele Infos bei interner Zuständigkeit, zu viel Scrollen. Fordert ein smartes modernes design.
+-   2. **(DONE)** Schließt die Implementierung des Nummernkreis-Systems und der Vertragspartner-Erweiterungen ab.
+-   1. **(DONE)** Bestätigt den Plan des Agenten, das Nummernkreis-System fertigzustellen.
 
 **Project Health Check:**
 -   **Broken:** Keine.
@@ -159,9 +156,10 @@ Die letzten Anforderungen des Benutzers, die in dieser Sitzung umgesetzt wurden,
 -   emergentintegrations (OCR)
 
 **Testing status**
--   **Testing agent used after significant changes:** NO
+-   **Testing agent used after significant changes:** YES
 -   **Troubleshoot agent used after agent stuck in loop:** NO
--   **Test files created:** Keine
+-   **Test files created:**
+    -   Der Testing Agent hat in  neue Testfälle generiert und ausgeführt.
 -   **Known regressions:** Keine
 
 **Credentials to test flow:**
@@ -169,4 +167,4 @@ Die letzten Anforderungen des Benutzers, die in dieser Sitzung umgesetzt wurden,
 -   **Test-Benutzer (eingeschränkte Rechte):**  / 
 
 **What agent forgot to execute**
--   Der Agent befand sich mitten in einer Implementierung. Der unmittelbare nächste Schritt, die Einbindung der neu erstellten  in die Anwendungsnavigation, steht noch aus.</analysis>
+-   Der Agent war dabei, die Neugestaltung der Kontrakt-Positionen zu beginnen. Es wurde ein Backend-Endpunkt erstellt, aber die gesamte Frontend-Arbeit (neuer Dialog, neue Listenansicht, Artikelauswahl-Komponente) steht noch aus und ist die unmittelbare nächste Aufgabe.</analysis>
