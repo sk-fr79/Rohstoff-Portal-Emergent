@@ -74,6 +74,8 @@ class ArtikelUpdate(BaseModel):
     avv_code_ausgang: Optional[str] = None
     eakcode: Optional[str] = None
     zolltarifnr: Optional[str] = None
+    zolltarifnr_bezeichnung: Optional[str] = None
+    zolltarifnr_url: Optional[str] = None
     zolltarifnotiz: Optional[str] = None
     basel_code: Optional[str] = None
     basel_notiz: Optional[str] = None
