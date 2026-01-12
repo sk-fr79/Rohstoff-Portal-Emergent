@@ -49,6 +49,7 @@ export function ReferenceSelect({
   module,
   fieldName,
   value,
+  displayValue,
   onChange,
   onSelectOption,
   placeholder = 'Auswählen...',
