@@ -129,8 +129,8 @@ export function LoginPage() {
           </div>
         </div>
 
-        <div className="text-sm text-gray-500">
-          &copy; {new Date().getFullYear()} Rohstoff Portal. Alle Rechte vorbehalten.
+        <div className="text-sm text-gray-400">
+          <span className="text-emerald-400">♥</span> Made with passion in <span className="text-white font-medium">Gottenheim</span>
         </div>
       </div>
 
