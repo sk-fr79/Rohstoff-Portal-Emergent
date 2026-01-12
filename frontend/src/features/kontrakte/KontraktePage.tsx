@@ -1885,17 +1885,36 @@ export function KontraktePage() {
               {/* Panel Header */}
               <div className="flex items-center justify-between p-4 border-b bg-gray-50">
                 <div className="flex items-center gap-3">
-                  <div className={cn("h-10 w-10 rounded-lg flex items-center justify-center", watchFields.vorgang_typ === 'EK' ? "bg-green-100" : "bg-blue-100")}>
-                    {watchFields.vorgang_typ === 'EK' ? <ArrowDownToLine className="h-5 w-5 text-green-600" /> : <ArrowUpFromLine className="h-5 w-5 text-blue-600" />}
+                  <div className={cn(
+                    "h-10 w-10 rounded-lg flex items-center justify-center", 
+                    selectedKontrakt.ist_strecke ? "bg-orange-100" : (watchFields.vorgang_typ === 'EK' ? "bg-green-100" : "bg-blue-100")
+                  )}>
+                    {selectedKontrakt.ist_strecke ? (
+                      <ArrowRightLeft className="h-5 w-5 text-orange-600" />
+                    ) : watchFields.vorgang_typ === 'EK' ? (
+                      <ArrowDownToLine className="h-5 w-5 text-green-600" />
+                    ) : (
+                      <ArrowUpFromLine className="h-5 w-5 text-blue-600" />
+                    )}
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
                       <h2 className="font-bold text-lg">{isNewRecord ? 'Neuer Kontrakt' : (selectedKontrakt.kontraktnummer || 'Kontrakt')}</h2>
+                      {selectedKontrakt.ist_strecke && <Badge className="bg-orange-100 text-orange-700"><ArrowRightLeft className="h-3 w-3 mr-1" />Strecke</Badge>}
                       {watchFields.ist_fixierung && <Badge className="bg-purple-100 text-purple-700"><TrendingUp className="h-3 w-3 mr-1" />Fixierung</Badge>}
                     </div>
                     <div className="flex items-center gap-2">
                       <span className="text-sm text-gray-500">{watchFields.vorgang_typ === 'EK' ? 'Einkaufskontrakt' : 'Verkaufskontrakt'}</span>
                       <Badge className={cn(statusColors[watchFields.status || 'OFFEN']?.bg, statusColors[watchFields.status || 'OFFEN']?.text)}>{watchFields.status || 'OFFEN'}</Badge>
+                      {/* Strecken-Partner anzeigen */}
+                      {selectedKontrakt.ist_strecke && selectedKontrakt.strecken_partner && (
+                        <span className="text-xs text-orange-600 flex items-center gap-1">
+                          <ArrowRight className="h-3 w-3" />
+                          {watchFields.vorgang_typ === 'EK' 
+                            ? selectedKontrakt.strecken_partner.vk?.kontraktnummer
+                            : selectedKontrakt.strecken_partner.ek?.kontraktnummer}
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>
