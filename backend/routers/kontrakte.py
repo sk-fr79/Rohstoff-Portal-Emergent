@@ -969,6 +969,21 @@ async def create_kontrakt(
     }
     
     await db.kontrakte.insert_one(kontrakt)
+    
+    # Audit-Log: Kontrakt erstellt
+    await audit_log_erstellen(
+        kontrakt_id=kontrakt["_id"],
+        mandant_id=user["mandant_id"],
+        aktion="ERSTELLT",
+        benutzer=user,
+        details={
+            "kontraktnummer": kontrakt.get("kontraktnummer"),
+            "vorgang_typ": kontrakt.get("vorgang_typ"),
+            "partner": kontrakt.get("name1"),
+            "anzahl_positionen": len(positionen)
+        }
+    )
+    
     kontrakt["id"] = kontrakt.pop("_id")
     kontrakt["summen"] = await berechne_kontrakt_summen(kontrakt)
     
