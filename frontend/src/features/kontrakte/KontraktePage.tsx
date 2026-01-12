@@ -637,7 +637,6 @@ export function KontraktePage() {
   ], [deleteMutation]);
 
   const selectedWaehrung = getWaehrung(watchFields.waehrung_kurz);
-  const ansprechpartnerListe = selectedAdresse?.ansprechpartner || [];
 
   return (
     <div className="h-full flex flex-col">
