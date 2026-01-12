@@ -531,11 +531,34 @@ export function KontraktePage() {
       setValue('plz', adresse.plz || '');
       setValue('ort', adresse.ort || '');
       setValue('land', adresse.land || '');
-      setValue('ust_id', adresse.ust_id || '');
       setValue('telefon', adresse.telefon || '');
       setValue('telefax', adresse.telefax || '');
       setValue('email', adresse.email || '');
-      // Reset Ansprechpartner
+      
+      // Haupt-USt-ID setzen
+      const hauptUstId = adresse.ust_ids?.find(u => u.ist_hauptid) || adresse.ust_ids?.[0];
+      setValue('ust_id', hauptUstId?.ust_id || adresse.ust_id || '');
+      
+      // Haupt-Bankverbindung setzen
+      const hauptBank = adresse.bankverbindungen?.find(b => b.ist_hauptkonto) || adresse.bankverbindungen?.[0];
+      if (hauptBank) {
+        setValue('id_bankverbindung', hauptBank.id);
+        setValue('bank_iban', hauptBank.iban || '');
+        setValue('bank_bic', hauptBank.bic || '');
+        setValue('bank_name', hauptBank.bank_name || '');
+        setValue('bank_waehrung', hauptBank.waehrung || 'EUR');
+      } else {
+        setValue('id_bankverbindung', null);
+        setValue('bank_iban', '');
+        setValue('bank_bic', '');
+        setValue('bank_name', '');
+        setValue('bank_waehrung', '');
+      }
+      
+      // Ansprechpartner laden
+      setAnsprechpartnerListe(adresse.ansprechpartner || []);
+      
+      // Reset Ansprechpartner Auswahl
       setValue('id_ansprechpartner', '');
       setValue('ansprechpartner_name', '');
       setValue('ansprechpartner_telefon', '');
