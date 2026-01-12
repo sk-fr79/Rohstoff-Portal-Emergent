@@ -294,8 +294,15 @@ export function ArtikelPage() {
     
     // URL aus gespeicherter Notiz extrahieren (falls vorhanden)
     if (artikel.zolltarifnotiz) {
-      const urlMatch = artikel.zolltarifnotiz.match(/https?:\/\/[^\s]+/);
-      setZolltarifUrl(urlMatch ? urlMatch[0] : null);
+      // Versuche URL aus [URL]...[/URL] Tag zu extrahieren
+      const tagMatch = artikel.zolltarifnotiz.match(/\[URL\](.*?)\[\/URL\]/);
+      if (tagMatch) {
+        setZolltarifUrl(tagMatch[1]);
+      } else {
+        // Fallback: Versuche normale URL zu finden (für alte Daten)
+        const urlMatch = artikel.zolltarifnotiz.match(/https?:\/\/[^\s]+/);
+        setZolltarifUrl(urlMatch ? urlMatch[0] : null);
+      }
     } else {
       setZolltarifUrl(null);
     }
