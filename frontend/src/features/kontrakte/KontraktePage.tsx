@@ -264,11 +264,31 @@ const kontraktSchema = z.object({
 
 type KontraktForm = z.infer<typeof kontraktSchema>;
 
+interface StreckenPartner {
+  id: string;
+  kontraktnummer?: string;
+  name1?: string;
+  status?: string;
+}
+
 interface Kontrakt extends KontraktForm {
   id: string;
   positionen?: Position[];
   erstellt_am?: string;
   summen?: { summe_menge: number; summe_wert: number; anzahl_positionen: number };
+  // Streckengeschäft
+  ist_strecke?: boolean;
+  strecken_id?: string;
+  strecken_rolle?: string;
+  strecken_partner?: { ek?: StreckenPartner; vk?: StreckenPartner };
+}
+
+interface StreckengeschaeftData {
+  strecken_id: string;
+  ek_kontrakt: Kontrakt | null;
+  vk_kontrakt: Kontrakt | null;
+  status: { code: string; label: string; farbe: string };
+  erstellt_am?: string;
 }
 
 // ========================== SIDEBAR SECTIONS ==========================
