@@ -485,21 +485,20 @@ class KontraktValidator:
 
 # ========================== HELPER FUNCTIONS ==========================
 
-async def generate_buchungsnummer(mandant_id: str, ist_einkauf: bool, db) -> str:
-    """Generiert eine eindeutige Buchungsnummer"""
-    mandant = await db.mandanten.find_one({"_id": mandant_id})
-    prefix = "EKK" if ist_einkauf else "VKK"
-    
-    if mandant:
-        prefix = mandant.get("buchungsprefix_ekk" if ist_einkauf else "buchungsprefix_vkk", prefix)
-    
-    year = datetime.now().year
-    count = await db.kontrakte.count_documents({
-        "mandant_id": mandant_id,
-        "buchungsnummer": {"$regex": f"^{prefix}{year}"}
-    })
-    
-    return f"{prefix}{year}{count + 1:04d}"
+async def generate_kontraktnummer(mandant_id: str, vorgang_typ: str, db) -> str:
+    """Generiert eine eindeutige Kontraktnummer aus dem Nummernkreis"""
+    # Nutze den Nummernkreis
+    try:
+        return await get_naechste_nummer("kontrakte", vorgang_typ, mandant_id, db)
+    except Exception:
+        # Fallback falls Nummernkreis nicht verfügbar
+        prefix = "EKK" if vorgang_typ == "EK" else "VKK"
+        year = datetime.now().year
+        count = await db.kontrakte.count_documents({
+            "mandant_id": mandant_id,
+            "kontraktnummer": {"$regex": f"^{prefix}{year}"}
+        })
+        return f"{prefix}{year}{count + 1:04d}"
 
 
 async def berechne_kontrakt_summen(kontrakt: dict) -> dict:
