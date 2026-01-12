@@ -1139,6 +1139,9 @@ async def add_bankverbindung(
         {"$push": {"bankverbindungen": bankverbindung}}
     )
     
+    # Auto-Sync Firmendaten
+    await sync_firma_wenn_firmenadresse(adresse_id, user["mandant_id"])
+    
     return {"success": True, "data": bankverbindung}
 
 
@@ -1163,6 +1166,9 @@ async def update_bankverbindung(
         {"_id": adresse_id, "mandant_id": user["mandant_id"], "bankverbindungen.id": bank_id},
         {"$set": {f"bankverbindungen.$.{k}": v for k, v in data.items()}}
     )
+    
+    # Auto-Sync Firmendaten
+    await sync_firma_wenn_firmenadresse(adresse_id, user["mandant_id"])
     
     return {"success": True}
 
