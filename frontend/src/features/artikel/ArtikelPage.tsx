@@ -577,11 +577,25 @@ export function ArtikelPage() {
                       <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-1.5">
                           <Label>Artikelgruppe</Label>
-                          <Input {...register('artikelgruppe')} disabled={!isEditing} className="bg-white" />
+                          <SmartInput 
+                            module="artikel" 
+                            fieldName="artikelgruppe"
+                            value={watch('artikelgruppe')}
+                            onChange={(val) => setValue('artikelgruppe', val || '')}
+                            disabled={!isEditing} 
+                            className="bg-white" 
+                          />
                         </div>
                         <div className="space-y-1.5">
                           <Label>Artikelgruppe (Fibu)</Label>
-                          <Input {...register('artikelgruppe_fibu')} disabled={!isEditing} className="bg-white" />
+                          <SmartInput 
+                            module="artikel" 
+                            fieldName="artikelgruppe_fibu"
+                            value={watch('artikelgruppe_fibu')}
+                            onChange={(val) => setValue('artikelgruppe_fibu', val || '')}
+                            disabled={!isEditing} 
+                            className="bg-white" 
+                          />
                         </div>
                       </div>
                       <div className="flex items-center gap-6 pt-4">
