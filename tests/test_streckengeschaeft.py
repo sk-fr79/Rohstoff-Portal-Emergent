@@ -14,7 +14,7 @@ import requests
 import os
 import uuid
 
-BASE_URL = os.environ.get('APP_URL', 'https://977e1cf9-a7e9-4517-861d-279b68bcef80.preview.emergentagent.com')
+BASE_URL = os.environ.get('BASE_URL', 'http://localhost:8001')
 
 # Test credentials
 TEST_USER = {"benutzername": "admin", "passwort": "Admin123!"}
