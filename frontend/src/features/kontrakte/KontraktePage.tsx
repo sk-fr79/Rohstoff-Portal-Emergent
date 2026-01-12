@@ -10,7 +10,7 @@ import {
   Plus, MoreHorizontal, Pencil, Trash2, FileText, Eye, 
   Save, X, Building2, Package, Calendar, Truck,
   ArrowDownToLine, ArrowUpFromLine, CheckCircle, Clock,
-  AlertTriangle, Ban, Loader2, TrendingUp, Lock,
+  AlertTriangle, Ban, TrendingUp, Lock,
   DollarSign, FileCheck, MessageSquare, Percent, Scale,
   User, Users, Search, ChevronDown, CreditCard
 } from 'lucide-react';
