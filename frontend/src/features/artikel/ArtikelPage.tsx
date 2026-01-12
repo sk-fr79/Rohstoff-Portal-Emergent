@@ -776,7 +776,7 @@ export function ArtikelPage() {
                             value={watch('zolltarifnr')}
                             onChange={(val) => setValue('zolltarifnr', val)}
                             onSelectOption={(option: ReferenceOption | null) => {
-                              // Automatisch Warennotiz mit vollständigem Text + Link füllen
+                              // Zolltarifnummer-Daten in separate DB-Felder speichern
                               if (option) {
                                 // HTML-Tags entfernen für sauberen Text
                                 const cleanText = (text: string) => {
@@ -792,23 +792,20 @@ export function ArtikelPage() {
                                 const description = cleanText(option.data?.value || option.display || '');
                                 const detailUrl = option.data?.detail_url || option.data?.data || '';
                                 
-                                // URL separat speichern für klickbaren Link
-                                setZolltarifUrl(detailUrl || null);
+                                // Alle Felder in der DB speichern (für spätere Referenzierung)
+                                setValue('zolltarifnr_bezeichnung', description || null);
+                                setValue('zolltarifnr_url', detailUrl || null);
                                 
-                                // Formatierte Notiz erstellen MIT URL (für Persistenz nach Speichern)
+                                // Formatierte Notiz für Anzeige (reiner Text)
                                 let notiz = `${code}`;
                                 if (description && description !== code) {
                                   notiz += `\n${description}`;
                                 }
-                                // URL am Ende speichern (wird beim Laden extrahiert)
-                                if (detailUrl) {
-                                  notiz += `\n\n[URL]${detailUrl}[/URL]`;
-                                }
-                                
                                 setValue('zolltarifnotiz', notiz);
                               } else {
+                                setValue('zolltarifnr_bezeichnung', null);
+                                setValue('zolltarifnr_url', null);
                                 setValue('zolltarifnotiz', '');
-                                setZolltarifUrl(null);
                               }
                             }}
                             placeholder="Zolltarifnummer auswählen..."
@@ -822,16 +819,16 @@ export function ArtikelPage() {
                             <span className="text-xs text-muted-foreground font-normal">(automatisch aus Zolltarifnummer)</span>
                           </Label>
                           <Textarea 
-                            value={(watch('zolltarifnotiz') || '').replace(/\n\n\[URL\].*?\[\/URL\]/g, '')}
+                            value={watch('zolltarifnotiz') || ''}
                             readOnly
                             className="bg-gray-50 text-gray-700 cursor-not-allowed resize-none" 
                             rows={4}
                             placeholder="Wählen Sie eine Zolltarifnummer aus..."
                           />
-                          {/* Klickbarer Link zur externen Zolltarifnummer-Seite */}
-                          {zolltarifUrl && (
+                          {/* Klickbarer Link zur externen Zolltarifnummer-Seite - aus DB-Feld */}
+                          {watch('zolltarifnr_url') && (
                             <a
-                              href={zolltarifUrl}
+                              href={watch('zolltarifnr_url') || ''}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="inline-flex items-center gap-2 px-3 py-2 mt-1 text-sm font-medium text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-lg transition-colors group"
