@@ -1340,11 +1340,27 @@ export function AdressenPage() {
                           </div>
                           <div className="space-y-1.5">
                             <Label className="text-sm text-gray-600">Zahlungsbedingung (EK)</Label>
-                            <Input {...register('zahlungsbedingung_ek')} disabled={!isEditing} className="bg-white" placeholder="30 Tage netto" />
+                            <SmartInput 
+                              module="adressen" 
+                              fieldName="zahlungsbedingung_ek"
+                              value={watch('zahlungsbedingung_ek')}
+                              onChange={(val) => setValue('zahlungsbedingung_ek', val || '')}
+                              disabled={!isEditing} 
+                              className="bg-white" 
+                              placeholder="30 Tage netto" 
+                            />
                           </div>
                           <div className="space-y-1.5">
                             <Label className="text-sm text-gray-600">Zahlungsbedingung (VK)</Label>
-                            <Input {...register('zahlungsbedingung_vk')} disabled={!isEditing} className="bg-white" placeholder="30 Tage netto" />
+                            <SmartInput 
+                              module="adressen" 
+                              fieldName="zahlungsbedingung_vk"
+                              value={watch('zahlungsbedingung_vk')}
+                              onChange={(val) => setValue('zahlungsbedingung_vk', val || '')}
+                              disabled={!isEditing} 
+                              className="bg-white" 
+                              placeholder="30 Tage netto" 
+                            />
                           </div>
                         </div>
                       </div>
