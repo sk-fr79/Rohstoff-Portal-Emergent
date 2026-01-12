@@ -279,6 +279,7 @@ const sidebarSections = [
   { id: 'positionen', label: 'Positionen', icon: Package },
   { id: 'formulartexte', label: 'Formulartexte', icon: FileCheck },
   { id: 'bemerkungen', label: 'Bemerkungen', icon: MessageSquare },
+  { id: 'protokoll', label: 'Protokoll', icon: History },
 ];
 
 const statusColors: Record<string, { bg: string; text: string; icon: any }> = {
