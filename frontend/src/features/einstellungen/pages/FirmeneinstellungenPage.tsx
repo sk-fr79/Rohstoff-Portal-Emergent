@@ -26,7 +26,7 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
-import api from '@/lib/api';
+import { api } from '@/services/api/client';
 
 interface Lieferadresse {
   id: string;
