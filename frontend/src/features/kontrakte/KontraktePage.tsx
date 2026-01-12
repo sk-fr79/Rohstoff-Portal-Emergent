@@ -1051,13 +1051,236 @@ export function KontraktePage() {
                       </div>
                     )}
 
-                    {/* === TERMINE === */}
-                    {activeSection === 'termine' && (
+                    {/* === LÄGER === */}
+                    {activeSection === 'laeger' && (
                       <div className="space-y-4">
-                        <div className="space-y-1.5"><Label>Erstellungsdatum</Label><Input {...register('erstellungsdatum')} type="date" disabled={!isEditing} /></div>
-                        <div className="grid grid-cols-2 gap-4">
-                          <div className="space-y-1.5"><Label>Gültig von</Label><Input {...register('gueltig_von')} type="date" disabled={!isEditing} /></div>
-                          <div className="space-y-1.5"><Label>Gültig bis</Label><Input {...register('gueltig_bis')} type="date" disabled={!isEditing} /></div>
+                        {/* Info-Hinweis */}
+                        <div className="p-3 bg-blue-50 rounded-lg border border-blue-200 text-sm text-blue-700">
+                          <Truck className="h-4 w-4 inline mr-2" />
+                          {watchFields.vorgang_typ === 'EK' 
+                            ? 'Bei Einkaufskontrakten: Abhollager = Lieferant, Ziellager = Eigenes Lager'
+                            : 'Bei Verkaufskontrakten: Abhollager = Eigenes Lager, Ziellager = Kunde'
+                          }
+                        </div>
+
+                        {/* ABHOLLAGER CARD */}
+                        <div className="rounded-lg border bg-white shadow-sm">
+                          <div className="p-3 border-b bg-gray-50/50">
+                            <h4 className="font-semibold text-gray-900 flex items-center gap-2">
+                              <ArrowUpFromLine className="h-4 w-4 text-orange-600" />
+                              Abhollager
+                              <Badge variant="outline" className="ml-auto text-xs">
+                                {watchFields.vorgang_typ === 'EK' ? 'Lieferant' : 'Eigenes Lager'}
+                              </Badge>
+                            </h4>
+                          </div>
+                          <div className="p-3">
+                            {(() => {
+                              // EK: Vertragspartner-Adressen, VK: Mandant-Adresse
+                              const lagerOptionen: LagerOption[] = [];
+                              if (watchFields.vorgang_typ === 'EK' && selectedAdresse) {
+                                // Hauptadresse des Vertragspartners
+                                lagerOptionen.push({
+                                  id: `haupt_${selectedAdresse.id}`,
+                                  typ: 'haupt',
+                                  bezeichnung: 'Hauptadresse',
+                                  name1: selectedAdresse.name1,
+                                  strasse: selectedAdresse.strasse,
+                                  hausnummer: selectedAdresse.hausnummer,
+                                  plz: selectedAdresse.plz,
+                                  ort: selectedAdresse.ort,
+                                  land: selectedAdresse.land
+                                });
+                                // Lieferadressen
+                                selectedAdresse.lieferadressen?.forEach(la => {
+                                  lagerOptionen.push({
+                                    id: `liefer_${la.id}`,
+                                    typ: 'liefer',
+                                    bezeichnung: la.bezeichnung || la.name1 || 'Lieferadresse',
+                                    name1: la.name1,
+                                    strasse: la.strasse,
+                                    hausnummer: la.hausnummer,
+                                    plz: la.plz,
+                                    ort: la.ort,
+                                    land: la.land
+                                  });
+                                });
+                              } else if (watchFields.vorgang_typ === 'VK' && mandantData) {
+                                lagerOptionen.push({
+                                  id: `mandant_${mandantData.id}`,
+                                  typ: 'mandant',
+                                  bezeichnung: 'Eigenes Lager',
+                                  name1: mandantData.name1,
+                                  strasse: mandantData.strasse,
+                                  hausnummer: mandantData.hausnummer,
+                                  plz: mandantData.plz,
+                                  ort: mandantData.ort,
+                                  land: mandantData.land
+                                });
+                              }
+
+                              if (lagerOptionen.length > 0) {
+                                return (
+                                  <>
+                                    <Select 
+                                      value={watchFields.id_abhollager || ''} 
+                                      onValueChange={(v) => {
+                                        const lager = lagerOptionen.find(l => l.id === v);
+                                        if (lager) {
+                                          setValue('id_abhollager', v);
+                                          setValue('abhollager_typ', lager.typ);
+                                          setValue('abhollager_name', lager.bezeichnung || lager.name1 || '');
+                                          setValue('abhollager_strasse', `${lager.strasse || ''} ${lager.hausnummer || ''}`.trim());
+                                          setValue('abhollager_plz', lager.plz || '');
+                                          setValue('abhollager_ort', lager.ort || '');
+                                          setValue('abhollager_land', lager.land || '');
+                                        }
+                                      }}
+                                      disabled={!isEditing}
+                                    >
+                                      <SelectTrigger className="bg-white">
+                                        <SelectValue placeholder="Abhollager wählen..." />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        {lagerOptionen.map((l) => (
+                                          <SelectItem key={l.id} value={l.id}>
+                                            <div className="flex flex-col">
+                                              <span className="font-medium">{l.bezeichnung}</span>
+                                              <span className="text-xs text-gray-500">{l.strasse} {l.hausnummer}, {l.plz} {l.ort}</span>
+                                            </div>
+                                          </SelectItem>
+                                        ))}
+                                      </SelectContent>
+                                    </Select>
+                                    {watchFields.abhollager_name && (
+                                      <div className="mt-2 p-3 bg-orange-50/50 rounded-lg border border-orange-100">
+                                        <div className="font-medium text-gray-900">{watchFields.abhollager_name}</div>
+                                        <div className="text-sm text-gray-500">{watchFields.abhollager_strasse}, {watchFields.abhollager_plz} {watchFields.abhollager_ort}</div>
+                                      </div>
+                                    )}
+                                  </>
+                                );
+                              }
+                              return (
+                                <div className="text-sm text-gray-500 bg-gray-50 p-3 rounded-lg text-center">
+                                  {watchFields.vorgang_typ === 'EK' 
+                                    ? 'Bitte zuerst Vertragspartner wählen' 
+                                    : 'Mandant-Adresse nicht konfiguriert'
+                                  }
+                                </div>
+                              );
+                            })()}
+                          </div>
+                        </div>
+
+                        {/* ZIELLAGER CARD */}
+                        <div className="rounded-lg border bg-white shadow-sm">
+                          <div className="p-3 border-b bg-gray-50/50">
+                            <h4 className="font-semibold text-gray-900 flex items-center gap-2">
+                              <ArrowDownToLine className="h-4 w-4 text-green-600" />
+                              Ziellager
+                              <Badge variant="outline" className="ml-auto text-xs">
+                                {watchFields.vorgang_typ === 'EK' ? 'Eigenes Lager' : 'Kunde'}
+                              </Badge>
+                            </h4>
+                          </div>
+                          <div className="p-3">
+                            {(() => {
+                              // EK: Mandant-Adresse, VK: Vertragspartner-Adressen
+                              const lagerOptionen: LagerOption[] = [];
+                              if (watchFields.vorgang_typ === 'VK' && selectedAdresse) {
+                                // Hauptadresse des Vertragspartners (Kunde)
+                                lagerOptionen.push({
+                                  id: `haupt_${selectedAdresse.id}`,
+                                  typ: 'haupt',
+                                  bezeichnung: 'Hauptadresse',
+                                  name1: selectedAdresse.name1,
+                                  strasse: selectedAdresse.strasse,
+                                  hausnummer: selectedAdresse.hausnummer,
+                                  plz: selectedAdresse.plz,
+                                  ort: selectedAdresse.ort,
+                                  land: selectedAdresse.land
+                                });
+                                // Lieferadressen des Kunden
+                                selectedAdresse.lieferadressen?.forEach(la => {
+                                  lagerOptionen.push({
+                                    id: `liefer_${la.id}`,
+                                    typ: 'liefer',
+                                    bezeichnung: la.bezeichnung || la.name1 || 'Lieferadresse',
+                                    name1: la.name1,
+                                    strasse: la.strasse,
+                                    hausnummer: la.hausnummer,
+                                    plz: la.plz,
+                                    ort: la.ort,
+                                    land: la.land
+                                  });
+                                });
+                              } else if (watchFields.vorgang_typ === 'EK' && mandantData) {
+                                lagerOptionen.push({
+                                  id: `mandant_${mandantData.id}`,
+                                  typ: 'mandant',
+                                  bezeichnung: 'Eigenes Lager',
+                                  name1: mandantData.name1,
+                                  strasse: mandantData.strasse,
+                                  hausnummer: mandantData.hausnummer,
+                                  plz: mandantData.plz,
+                                  ort: mandantData.ort,
+                                  land: mandantData.land
+                                });
+                              }
+
+                              if (lagerOptionen.length > 0) {
+                                return (
+                                  <>
+                                    <Select 
+                                      value={watchFields.id_ziellager || ''} 
+                                      onValueChange={(v) => {
+                                        const lager = lagerOptionen.find(l => l.id === v);
+                                        if (lager) {
+                                          setValue('id_ziellager', v);
+                                          setValue('ziellager_typ', lager.typ);
+                                          setValue('ziellager_name', lager.bezeichnung || lager.name1 || '');
+                                          setValue('ziellager_strasse', `${lager.strasse || ''} ${lager.hausnummer || ''}`.trim());
+                                          setValue('ziellager_plz', lager.plz || '');
+                                          setValue('ziellager_ort', lager.ort || '');
+                                          setValue('ziellager_land', lager.land || '');
+                                        }
+                                      }}
+                                      disabled={!isEditing}
+                                    >
+                                      <SelectTrigger className="bg-white">
+                                        <SelectValue placeholder="Ziellager wählen..." />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        {lagerOptionen.map((l) => (
+                                          <SelectItem key={l.id} value={l.id}>
+                                            <div className="flex flex-col">
+                                              <span className="font-medium">{l.bezeichnung}</span>
+                                              <span className="text-xs text-gray-500">{l.strasse} {l.hausnummer}, {l.plz} {l.ort}</span>
+                                            </div>
+                                          </SelectItem>
+                                        ))}
+                                      </SelectContent>
+                                    </Select>
+                                    {watchFields.ziellager_name && (
+                                      <div className="mt-2 p-3 bg-green-50/50 rounded-lg border border-green-100">
+                                        <div className="font-medium text-gray-900">{watchFields.ziellager_name}</div>
+                                        <div className="text-sm text-gray-500">{watchFields.ziellager_strasse}, {watchFields.ziellager_plz} {watchFields.ziellager_ort}</div>
+                                      </div>
+                                    )}
+                                  </>
+                                );
+                              }
+                              return (
+                                <div className="text-sm text-gray-500 bg-gray-50 p-3 rounded-lg text-center">
+                                  {watchFields.vorgang_typ === 'VK' 
+                                    ? 'Bitte zuerst Vertragspartner wählen' 
+                                    : 'Mandant-Adresse nicht konfiguriert'
+                                  }
+                                </div>
+                              );
+                            })()}
+                          </div>
                         </div>
                       </div>
                     )}
