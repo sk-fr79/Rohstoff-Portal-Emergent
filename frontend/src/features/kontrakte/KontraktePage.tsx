@@ -1363,8 +1363,10 @@ export function KontraktePage() {
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data }: { id: string; data: any }) => api.put(`/kontrakte/${id}`, data),
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['kontrakte'] });
+      // Auch Audit-Log invalidieren für sofortige Aktualisierung
+      queryClient.invalidateQueries({ queryKey: ['kontrakt-audit-log', variables.id] });
       toast.success('Kontrakt erfolgreich aktualisiert');
       setIsEditing(false);
     },
