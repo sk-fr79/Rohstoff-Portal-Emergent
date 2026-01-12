@@ -21,7 +21,7 @@ router = APIRouter(prefix="/api", tags=["Kontrakte"])
 
 class KontraktPositionCreate(BaseModel):
     """Schema für Kontraktposition"""
-    positionsnummer: int = 1
+    positionsnummer: Optional[int] = None  # Auto-increment if not provided
     position_typ: str = "ARTIKEL"  # ARTIKEL, DIENSTLEISTUNG, TEXT
     
     # Artikel-Referenz
