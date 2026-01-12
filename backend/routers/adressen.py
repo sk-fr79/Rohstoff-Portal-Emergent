@@ -1180,6 +1180,9 @@ async def delete_bankverbindung(
         {"$pull": {"bankverbindungen": {"id": bank_id}}}
     )
     
+    # Auto-Sync Firmendaten
+    await sync_firma_wenn_firmenadresse(adresse_id, user["mandant_id"])
+    
     return {"success": True}
 
 
