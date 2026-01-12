@@ -40,6 +40,7 @@ const userSettingsItems = [
 ];
 
 const adminSettingsItems = [
+  { path: '/einstellungen/firma', label: 'Firmeneinstellungen', icon: Building2 },
   { path: '/einstellungen/benutzer', label: 'Benutzerverwaltung', icon: Users },
   { path: '/einstellungen/rollen', label: 'Benutzerrollen', icon: Shield },
   { path: '/einstellungen/abteilungen', label: 'Abteilungen', icon: Building2 },
