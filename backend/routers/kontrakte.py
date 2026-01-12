@@ -1272,3 +1272,155 @@ async def get_lieferstatus(
         })
     
     return {"success": True, "data": positionen_status}
+
+
+# ========================== AUDIT LOG ENDPOINTS ==========================
+
+@router.get("/kontrakte/{kontrakt_id}/audit-log")
+async def get_kontrakt_audit_log(
+    kontrakt_id: str,
+    limit: int = Query(100, ge=1, le=500),
+    skip: int = Query(0, ge=0),
+    aktion_filter: Optional[str] = Query(None, description="Filter nach Aktionstyp"),
+    user = Depends(require_permission("kontrakte", "read"))
+):
+    """Audit-Log für einen Kontrakt abrufen"""
+    db = get_db()
+    
+    # Prüfen ob Kontrakt existiert und Zugriff erlaubt
+    kontrakt = await db.kontrakte.find_one({
+        "_id": kontrakt_id,
+        "mandant_id": user["mandant_id"]
+    })
+    
+    if not kontrakt:
+        raise HTTPException(status_code=404, detail="Kontrakt nicht gefunden")
+    
+    # Query aufbauen
+    query = {
+        "kontrakt_id": kontrakt_id,
+        "mandant_id": user["mandant_id"]
+    }
+    
+    if aktion_filter:
+        query["aktion"] = aktion_filter
+    
+    # Audit-Logs laden (neueste zuerst)
+    cursor = db.kontrakt_audit_log.find(query).sort("zeitstempel", -1).skip(skip).limit(limit)
+    logs = await cursor.to_list(limit)
+    
+    # Gesamtanzahl für Pagination
+    total = await db.kontrakt_audit_log.count_documents(query)
+    
+    # _id in id umwandeln
+    for log in logs:
+        log["id"] = log.pop("_id")
+    
+    return {
+        "success": True,
+        "data": logs,
+        "total": total,
+        "limit": limit,
+        "skip": skip,
+        "aktionen_typen": AKTION_TYPEN
+    }
+
+
+@router.post("/kontrakte/{kontrakt_id}/audit-log")
+async def add_audit_log_entry(
+    kontrakt_id: str,
+    aktion: str = Query(..., description="Aktionstyp"),
+    details: Optional[Dict[str, Any]] = None,
+    user = Depends(require_permission("kontrakte", "read"))
+):
+    """Manuellen Audit-Log Eintrag hinzufügen (z.B. für Druck, Export, Ansicht)"""
+    db = get_db()
+    
+    # Prüfen ob Kontrakt existiert
+    kontrakt = await db.kontrakte.find_one({
+        "_id": kontrakt_id,
+        "mandant_id": user["mandant_id"]
+    })
+    
+    if not kontrakt:
+        raise HTTPException(status_code=404, detail="Kontrakt nicht gefunden")
+    
+    # Nur bestimmte Aktionen erlauben (keine Manipulation von Bearbeitungs-Logs)
+    erlaubte_aktionen = ["GEDRUCKT", "EXPORTIERT", "GEOEFFNET"]
+    if aktion not in erlaubte_aktionen:
+        raise HTTPException(status_code=400, detail=f"Aktion '{aktion}' nicht erlaubt. Erlaubt: {erlaubte_aktionen}")
+    
+    log = await audit_log_erstellen(
+        kontrakt_id=kontrakt_id,
+        mandant_id=user["mandant_id"],
+        aktion=aktion,
+        benutzer=user,
+        details=details or {}
+    )
+    
+    log["id"] = log.pop("_id")
+    
+    return {"success": True, "data": log}
+
+
+@router.get("/kontrakte/{kontrakt_id}/audit-log/statistik")
+async def get_audit_log_statistik(
+    kontrakt_id: str,
+    user = Depends(require_permission("kontrakte", "read"))
+):
+    """Statistik über Audit-Log Einträge"""
+    db = get_db()
+    
+    # Prüfen ob Kontrakt existiert
+    kontrakt = await db.kontrakte.find_one({
+        "_id": kontrakt_id,
+        "mandant_id": user["mandant_id"]
+    })
+    
+    if not kontrakt:
+        raise HTTPException(status_code=404, detail="Kontrakt nicht gefunden")
+    
+    # Aggregation für Statistiken
+    pipeline = [
+        {"$match": {"kontrakt_id": kontrakt_id, "mandant_id": user["mandant_id"]}},
+        {"$group": {
+            "_id": "$aktion",
+            "anzahl": {"$sum": 1},
+            "letzter": {"$max": "$zeitstempel"}
+        }},
+        {"$sort": {"anzahl": -1}}
+    ]
+    
+    stats = await db.kontrakt_audit_log.aggregate(pipeline).to_list(100)
+    
+    # Beteiligte Benutzer
+    benutzer_pipeline = [
+        {"$match": {"kontrakt_id": kontrakt_id, "mandant_id": user["mandant_id"]}},
+        {"$group": {
+            "_id": "$benutzer_id",
+            "name": {"$first": "$benutzer_name"},
+            "kuerzel": {"$first": "$benutzer_kuerzel"},
+            "aktionen": {"$sum": 1},
+            "erste_aktion": {"$min": "$zeitstempel"},
+            "letzte_aktion": {"$max": "$zeitstempel"}
+        }},
+        {"$sort": {"aktionen": -1}}
+    ]
+    
+    benutzer = await db.kontrakt_audit_log.aggregate(benutzer_pipeline).to_list(50)
+    
+    # Gesamtanzahl
+    total = await db.kontrakt_audit_log.count_documents({
+        "kontrakt_id": kontrakt_id,
+        "mandant_id": user["mandant_id"]
+    })
+    
+    return {
+        "success": True,
+        "data": {
+            "total_eintraege": total,
+            "nach_aktion": stats,
+            "beteiligte_benutzer": benutzer,
+            "aktionen_typen": AKTION_TYPEN
+        }
+    }
