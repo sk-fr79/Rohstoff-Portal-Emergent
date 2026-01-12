@@ -1046,7 +1046,7 @@ export function KontraktePage() {
 
   const { data: mandantData } = useQuery({
     queryKey: ['mandant-lookup'],
-    queryFn: async () => { const response = await api.get('/kontrakte/lookup/mandant'); return response.data.data as LagerOption | null; }
+    queryFn: async () => { const response = await api.get('/kontrakte/lookup/mandant'); return response.data.data as MandantData | null; }
   });
 
   const filteredData = useMemo(() => {
