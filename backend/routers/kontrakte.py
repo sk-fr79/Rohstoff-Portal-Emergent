@@ -69,10 +69,10 @@ class KontraktCreate(BaseModel):
     """Schema für Kontrakt-Kopf"""
     # Typ & Nummer
     vorgang_typ: str = Field("EK", max_length=2)  # EK oder VK
-    buchungsnummer: Optional[str] = Field(None, max_length=30)
+    kontraktnummer: Optional[str] = Field(None, max_length=30)  # Aus Nummernkreis
     
-    # Adresse/Partner
-    id_adresse: Optional[str] = None
+    # === VERTRAGSPARTNER (aus Adressen) ===
+    id_adresse: Optional[str] = None  # Referenz zur Adresse
     name1: str = Field(..., max_length=40)
     name2: Optional[str] = Field(None, max_length=40)
     strasse: Optional[str] = Field(None, max_length=45)
@@ -81,17 +81,29 @@ class KontraktCreate(BaseModel):
     ort: Optional[str] = Field(None, max_length=30)
     land: Optional[str] = Field(None, max_length=30)
     land_code: Optional[str] = Field(None, max_length=3)
+    ust_id: Optional[str] = Field(None, max_length=20)  # USt-ID
+    steuernummer: Optional[str] = Field(None, max_length=20)
     
-    # Kontaktdaten
+    # Kontaktdaten Partner
     telefon: Optional[str] = Field(None, max_length=30)
     telefax: Optional[str] = Field(None, max_length=30)
     email: Optional[str] = Field(None, max_length=100)
     
-    # Interner Bearbeiter
-    id_user: Optional[str] = None
-    name_bearbeiter_intern: Optional[str] = Field(None, max_length=80)
-    tel_bearbeiter_intern: Optional[str] = Field(None, max_length=30)
-    fax_bearbeiter_intern: Optional[str] = Field(None, max_length=30)
+    # === ANSPRECHPARTNER beim Partner ===
+    id_ansprechpartner: Optional[str] = None  # Referenz zum Ansprechpartner
+    ansprechpartner_name: Optional[str] = Field(None, max_length=80)
+    ansprechpartner_telefon: Optional[str] = Field(None, max_length=30)
+    ansprechpartner_email: Optional[str] = Field(None, max_length=100)
+    
+    # === SACHBEARBEITER (aus Benutzerliste) ===
+    id_sachbearbeiter: Optional[str] = None  # Referenz zum Benutzer
+    sachbearbeiter_name: Optional[str] = Field(None, max_length=80)
+    sachbearbeiter_telefon: Optional[str] = Field(None, max_length=30)
+    sachbearbeiter_email: Optional[str] = Field(None, max_length=100)
+    
+    # === HÄNDLER (aus Benutzerliste) ===
+    id_haendler: Optional[str] = None  # Referenz zum Benutzer
+    haendler_name: Optional[str] = Field(None, max_length=80)
     
     # Termine
     erstellungsdatum: Optional[str] = None
