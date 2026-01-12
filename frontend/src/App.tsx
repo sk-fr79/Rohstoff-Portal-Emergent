@@ -156,6 +156,7 @@ export default function App() {
           } />
           {/* Admin-Einstellungen - Nur Admins (haben eigenen Admin-Check) */}
           <Route path="system" element={<SystemeinstellungenPage />} />
+          <Route path="firma" element={<FirmeneinstellungenPage />} />
           <Route path="apis" element={<ApisPage />} />
           <Route path="benutzer" element={<BenutzerPage />} />
           <Route path="rollen" element={<RollenPage />} />
