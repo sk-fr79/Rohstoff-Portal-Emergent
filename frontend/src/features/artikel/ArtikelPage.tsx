@@ -805,10 +805,14 @@ export function ArtikelPage() {
                                 // URL separat speichern für klickbaren Link
                                 setZolltarifUrl(detailUrl || null);
                                 
-                                // Formatierte Notiz erstellen (ohne URL, da diese separat angezeigt wird)
+                                // Formatierte Notiz erstellen MIT URL (für Persistenz nach Speichern)
                                 let notiz = `${code}`;
                                 if (description && description !== code) {
                                   notiz += `\n${description}`;
+                                }
+                                // URL am Ende speichern (wird beim Laden extrahiert)
+                                if (detailUrl) {
+                                  notiz += `\n\n[URL]${detailUrl}[/URL]`;
                                 }
                                 
                                 setValue('zolltarifnotiz', notiz);
