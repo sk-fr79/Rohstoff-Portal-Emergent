@@ -1254,6 +1254,9 @@ async def add_lieferadresse(
         {"$push": {"lieferadressen": lieferadresse}}
     )
     
+    # Auto-Sync Firmendaten
+    await sync_firma_wenn_firmenadresse(adresse_id, user["mandant_id"])
+    
     return {"success": True, "data": lieferadresse}
 
 
@@ -1279,6 +1282,9 @@ async def update_lieferadresse(
         {"$set": {f"lieferadressen.$.{k}": v for k, v in data.items()}}
     )
     
+    # Auto-Sync Firmendaten
+    await sync_firma_wenn_firmenadresse(adresse_id, user["mandant_id"])
+    
     return {"success": True}
 
 
@@ -1294,6 +1300,9 @@ async def delete_lieferadresse(
         {"_id": adresse_id, "mandant_id": user["mandant_id"]},
         {"$pull": {"lieferadressen": {"id": liefer_id}}}
     )
+    
+    # Auto-Sync Firmendaten
+    await sync_firma_wenn_firmenadresse(adresse_id, user["mandant_id"])
     
     return {"success": True}
 
