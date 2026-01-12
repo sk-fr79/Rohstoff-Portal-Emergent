@@ -509,12 +509,24 @@ export function KontraktePage() {
     }
   };
 
-  const openDetail = (kontrakt: Kontrakt) => {
+  const openDetail = async (kontrakt: Kontrakt) => {
     setSelectedKontrakt(kontrakt);
     setIsNewRecord(false);
     setIsEditing(false);
     setActiveSection('kopf');
     Object.entries(kontrakt).forEach(([key, value]) => { if (key in kontraktSchema.shape) setValue(key as keyof KontraktForm, value as any); });
+    
+    // Wenn eine Adresse verknüpft ist, lade die Adressdaten für USt-ID/Bankverbindung-Dropdowns
+    if (kontrakt.id_adresse && adressenData) {
+      const adresse = adressenData.find(a => a.id === kontrakt.id_adresse);
+      if (adresse) {
+        setSelectedAdresse(adresse);
+        setAnsprechpartnerListe(adresse.ansprechpartner || []);
+      }
+    } else {
+      setSelectedAdresse(null);
+      setAnsprechpartnerListe([]);
+    }
   };
 
   // Adresse auswählen Handler
