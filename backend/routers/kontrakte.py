@@ -70,60 +70,67 @@ def berechne_aenderungen(alt: dict, neu: dict, felder_whitelist: list = None) ->
     """Vergleicht zwei Dictionaries und gibt eine Liste der Änderungen zurück"""
     aenderungen = []
     
-    # Felder die verglichen werden sollen - ALLE relevanten Kontrakt-Felder
+    # ALLE relevanten Kontrakt-Felder - vollständige Liste
     relevante_felder = felder_whitelist or [
-        # Status & Nummern
-        "status", "kontraktnummer", "referenz_kunde", "referenz_lieferant",
+        # Status & Grunddaten
+        "status", "kontraktnummer", "vorgang_typ", "aktiv", "abgeschlossen", "deleted",
+        "erstellungsdatum", "gueltig_von", "gueltig_bis",
         
-        # Partner-Daten
-        "id_adresse", "name1", "name2", "strasse", "hausnummer", "plz", "ort", "land", "land_code",
-        "telefon", "telefax", "email",
-        "id_ansprechpartner", "ansprechpartner_name",
-        "id_zustaendiger", "zustaendiger_name",
+        # Partner-Stammdaten
+        "id_adresse", "name1", "name2", 
+        "strasse", "hausnummer", "plz", "ort", "land", "land_code",
+        "telefon", "telefax", "email", "steuernummer", "ust_id",
         
-        # USt-ID & Bankverbindung
-        "id_ustid", "ustid_text", "ust_id",
-        "id_bankverbindung", "bankverbindung_text",
+        # Ansprechpartner
+        "id_ansprechpartner", "ansprechpartner_name", "ansprechpartner_email", "ansprechpartner_telefon",
         
-        # Termine & Lieferung
-        "datum_kontrakt", "datum_lieferung_von", "datum_lieferung_bis",
-        "lieferzeit_typ", "lieferzeit_wert",
+        # Sachbearbeiter (interner Zuständiger)
+        "id_sachbearbeiter", "sachbearbeiter_name", "sachbearbeiter_email", "sachbearbeiter_telefon",
+        
+        # Händler
+        "id_haendler", "haendler_name",
+        
+        # Bankverbindung
+        "id_bankverbindung", "bank_name", "bank_iban", "bank_bic", "bank_waehrung",
+        
+        # Abhollager - ALLE Felder
+        "id_abhollager", "abhollager_typ", "abhollager_name",
+        "abhollager_strasse", "abhollager_plz", "abhollager_ort", "abhollager_land",
+        
+        # Ziellager - ALLE Felder  
+        "id_ziellager", "ziellager_typ", "ziellager_name",
+        "ziellager_strasse", "ziellager_plz", "ziellager_ort", "ziellager_land",
         
         # Konditionen
-        "zahlungsbedingung", "zahlungsbedingung_kurz", "zahlungsziel_tage",
-        "lieferbedingung", "lieferbedingung_kurz", "lieferbedingung_ort",
-        "skonto_prozent", "skonto_tage",
+        "zahlungsbedingung", "lieferbedingung",
+        "waehrung_kurz", "waehrungskurs", "id_waehrung_fremd",
         
-        # Währung
-        "waehrung_kurz", "waehrung_fremd_kurz", "waehrungskurs",
-        
-        # Läger
-        "id_abhollager", "abhollager_name", "abhollager_typ",
-        "id_ziellager", "ziellager_name", "ziellager_typ",
+        # Fixierung
+        "ist_fixierung", "fix_von", "fix_bis", 
+        "fix_id_artikel", "fix_id_artbez", "fix_einheit", "fix_menge_gesamt",
+        "boerse_diff_abs", "boerse_diff_proz",
         
         # Texte & Bemerkungen
         "formulartext_anfang", "formulartext_ende",
-        "bemerkung_extern", "bemerkung_intern",
+        "bemerkung_extern", "bemerkung_intern", "bemerkung_fix1",
         "kopie_bemerkung_auf_pos",
-        
-        # Fixierung
-        "ist_fixierung", "fixierung_typ", "fixierung_basis",
-        "fixierung_von", "fixierung_bis",
-        
-        # Flags
-        "abgeschlossen", "aktiv", "deleted",
-        "vorgang_typ",
     ]
     
+    # Feldbezeichnungen für bessere Lesbarkeit
     feld_labels = {
-        # Status & Nummern
+        # Status & Grunddaten
         "status": "Status",
         "kontraktnummer": "Kontraktnummer",
-        "referenz_kunde": "Kundenreferenz",
-        "referenz_lieferant": "Lieferantenreferenz",
+        "vorgang_typ": "Vorgangsart",
+        "aktiv": "Aktiv",
+        "abgeschlossen": "Abgeschlossen",
+        "deleted": "Gelöscht",
+        "erstellungsdatum": "Erstellungsdatum",
+        "gueltig_von": "Gültig von",
+        "gueltig_bis": "Gültig bis",
         
-        # Partner-Daten
-        "id_adresse": "Vertragspartner-ID",
+        # Partner
+        "id_adresse": "Partner-ID",
         "name1": "Firmenname",
         "name2": "Zusatz",
         "strasse": "Straße",
@@ -135,72 +142,79 @@ def berechne_aenderungen(alt: dict, neu: dict, felder_whitelist: list = None) ->
         "telefon": "Telefon",
         "telefax": "Telefax",
         "email": "E-Mail",
+        "steuernummer": "Steuernummer",
+        "ust_id": "USt-ID",
+        
+        # Ansprechpartner
         "id_ansprechpartner": "Ansprechpartner-ID",
         "ansprechpartner_name": "Ansprechpartner",
-        "id_zustaendiger": "Zuständiger-ID",
-        "zustaendiger_name": "Interner Zuständiger",
+        "ansprechpartner_email": "Ansprechpartner E-Mail",
+        "ansprechpartner_telefon": "Ansprechpartner Telefon",
         
-        # USt-ID & Bankverbindung
-        "id_ustid": "USt-ID Auswahl",
-        "ustid_text": "USt-ID",
-        "ust_id": "USt-ID",
+        # Sachbearbeiter
+        "id_sachbearbeiter": "Sachbearbeiter-ID",
+        "sachbearbeiter_name": "Sachbearbeiter",
+        "sachbearbeiter_email": "Sachbearbeiter E-Mail",
+        "sachbearbeiter_telefon": "Sachbearbeiter Telefon",
+        
+        # Händler
+        "id_haendler": "Händler-ID",
+        "haendler_name": "Händler",
+        
+        # Bankverbindung
         "id_bankverbindung": "Bankverbindung-ID",
-        "bankverbindung_text": "Bankverbindung",
+        "bank_name": "Bank",
+        "bank_iban": "IBAN",
+        "bank_bic": "BIC",
+        "bank_waehrung": "Bank-Währung",
         
-        # Termine
-        "datum_kontrakt": "Kontraktdatum",
-        "datum_lieferung_von": "Lieferzeitraum von",
-        "datum_lieferung_bis": "Lieferzeitraum bis",
-        "lieferzeit_typ": "Lieferzeit-Typ",
-        "lieferzeit_wert": "Lieferzeit",
+        # Abhollager
+        "id_abhollager": "Abhollager-ID",
+        "abhollager_typ": "Abhollager-Typ",
+        "abhollager_name": "Abhollager",
+        "abhollager_strasse": "Abhollager Straße",
+        "abhollager_plz": "Abhollager PLZ",
+        "abhollager_ort": "Abhollager Ort",
+        "abhollager_land": "Abhollager Land",
+        
+        # Ziellager
+        "id_ziellager": "Ziellager-ID",
+        "ziellager_typ": "Ziellager-Typ",
+        "ziellager_name": "Ziellager",
+        "ziellager_strasse": "Ziellager Straße",
+        "ziellager_plz": "Ziellager PLZ",
+        "ziellager_ort": "Ziellager Ort",
+        "ziellager_land": "Ziellager Land",
         
         # Konditionen
         "zahlungsbedingung": "Zahlungsbedingung",
-        "zahlungsbedingung_kurz": "Zahlungsbedingung (kurz)",
-        "zahlungsziel_tage": "Zahlungsziel (Tage)",
         "lieferbedingung": "Lieferbedingung",
-        "lieferbedingung_kurz": "Lieferbedingung (kurz)",
-        "lieferbedingung_ort": "Lieferbedingung Ort",
-        "skonto_prozent": "Skonto %",
-        "skonto_tage": "Skonto-Tage",
-        
-        # Währung
         "waehrung_kurz": "Währung",
-        "waehrung_fremd_kurz": "Fremdwährung",
         "waehrungskurs": "Wechselkurs",
+        "id_waehrung_fremd": "Fremdwährungs-ID",
         
-        # Läger
-        "id_abhollager": "Abhollager-ID",
-        "abhollager_name": "Abhollager",
-        "abhollager_typ": "Abhollager-Typ",
-        "id_ziellager": "Ziellager-ID",
-        "ziellager_name": "Ziellager",
-        "ziellager_typ": "Ziellager-Typ",
+        # Fixierung
+        "ist_fixierung": "Ist Fixierung",
+        "fix_von": "Fixierung von",
+        "fix_bis": "Fixierung bis",
+        "fix_id_artikel": "Fix-Artikel-ID",
+        "fix_id_artbez": "Fix-Artikelbezeichnung",
+        "fix_einheit": "Fix-Einheit",
+        "fix_menge_gesamt": "Fix-Gesamtmenge",
+        "boerse_diff_abs": "Börsendifferenz absolut",
+        "boerse_diff_proz": "Börsendifferenz %",
         
         # Texte
         "formulartext_anfang": "Formulartext Anfang",
         "formulartext_ende": "Formulartext Ende",
         "bemerkung_extern": "Externe Bemerkung",
         "bemerkung_intern": "Interne Bemerkung",
+        "bemerkung_fix1": "Fixierungs-Bemerkung",
         "kopie_bemerkung_auf_pos": "Bemerkung auf Positionen",
-        
-        # Fixierung
-        "ist_fixierung": "Ist Fixierung",
-        "fixierung_typ": "Fixierungstyp",
-        "fixierung_basis": "Fixierungsbasis",
-        "fixierung_von": "Fixierung von",
-        "fixierung_bis": "Fixierung bis",
-        
-        # Flags
-        "abgeschlossen": "Abgeschlossen",
-        "aktiv": "Aktiv",
-        "deleted": "Gelöscht",
-        "vorgang_typ": "Vorgangsart",
     }
     
-    # Nur Felder vergleichen die im neuen Dictionary vorhanden sind (d.h. geändert wurden)
+    # Vergleiche nur Felder die im Update enthalten sind
     for feld in relevante_felder:
-        # Nur wenn das Feld im Update enthalten ist
         if feld not in neu:
             continue
             
@@ -209,7 +223,7 @@ def berechne_aenderungen(alt: dict, neu: dict, felder_whitelist: list = None) ->
         
         # Nur wenn sich wirklich etwas geändert hat
         if alt_wert != neu_wert:
-            # Leere Strings und None als gleich behandeln
+            # Leere Werte als gleich behandeln
             if (alt_wert in [None, "", []] and neu_wert in [None, "", []]):
                 continue
                 
