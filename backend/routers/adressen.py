@@ -457,7 +457,7 @@ def validate_adresse_geschaeftslogik(
             betroffene_felder=["ort"]
         ))
     
-    land_info = EU_LAENDER.get(land, {"ust_praefix": None, "ist_eu": False, "ist_homeland": False})
+    land_info = ALLE_LAENDER.get(land, {"ust_praefix": None, "ist_eu": False, "ist_homeland": False})
     ist_homeland = land_info.get("ist_homeland", False)
     ist_eu = land_info.get("ist_eu", False)
     ust_praefix = land_info.get("ust_praefix")
