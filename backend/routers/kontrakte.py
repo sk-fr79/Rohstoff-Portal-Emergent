@@ -1142,6 +1142,24 @@ async def add_position(
         {"$push": {"positionen": position}}
     )
     
+    # Audit-Log: Position hinzugefügt
+    await audit_log_erstellen(
+        kontrakt_id=kontrakt_id,
+        mandant_id=user["mandant_id"],
+        aktion="POSITION_HINZUGEFUEGT",
+        benutzer=user,
+        details={
+            "position_id": position["id"],
+            "positionsnummer": position.get("positionsnummer"),
+            "artikel": position.get("artbez1"),
+            "artikel_nr": position.get("anr1"),
+            "menge": position.get("anzahl"),
+            "einheit": position.get("einheitkurz"),
+            "einzelpreis": position.get("einzelpreis"),
+            "gesamtpreis": position.get("gesamtpreis")
+        }
+    )
+    
     return {"success": True, "data": position}
 
 
