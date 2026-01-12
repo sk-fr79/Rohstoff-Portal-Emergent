@@ -76,6 +76,9 @@ def berechne_aenderungen(alt: dict, neu: dict, felder_whitelist: list = None) ->
         "status", "kontraktnummer", "vorgang_typ", "aktiv", "abgeschlossen", "deleted",
         "erstellungsdatum", "gueltig_von", "gueltig_bis",
         
+        # Streckengeschäft
+        "ist_strecke", "strecken_id", "strecken_rolle",
+        
         # Partner-Stammdaten
         "id_adresse", "name1", "name2", 
         "strasse", "hausnummer", "plz", "ort", "land", "land_code",
@@ -128,6 +131,10 @@ def berechne_aenderungen(alt: dict, neu: dict, felder_whitelist: list = None) ->
         "erstellungsdatum": "Erstellungsdatum",
         "gueltig_von": "Gültig von",
         "gueltig_bis": "Gültig bis",
+        # Streckengeschäft
+        "ist_strecke": "Streckengeschäft",
+        "strecken_id": "Strecken-ID",
+        "strecken_rolle": "Strecken-Rolle",
         
         # Partner
         "id_adresse": "Partner-ID",
