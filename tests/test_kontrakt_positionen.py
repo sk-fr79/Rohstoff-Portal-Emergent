@@ -373,12 +373,14 @@ class TestKontraktWithPositions:
                 "status": "OFFEN",
                 "positionen": [
                     {
+                        "position_typ": "ARTIKEL",
                         "artbez1": "Artikel 1",
                         "anzahl": 100,
                         "einzelpreis": 150,
                         "einheitkurz": "t"
                     },
                     {
+                        "position_typ": "ARTIKEL",
                         "artbez1": "Artikel 2",
                         "anzahl": 200,
                         "einzelpreis": 75,
