@@ -611,7 +611,7 @@ async def get_adressen_fuer_auswahl(
     limit: int = 50,
     user = Depends(require_permission("kontrakte", "read"))
 ):
-    """Aktive Adressen für Vertragspartner-Auswahl laden"""
+    """Aktive Adressen für Vertragspartner-Auswahl laden (inkl. Bankverbindungen & USt-IDs)"""
     db = get_db()
     
     query = {
@@ -633,6 +633,45 @@ async def get_adressen_fuer_auswahl(
     
     result = []
     for a in adressen:
+        # USt-IDs sammeln: Haupt-ID + weitere
+        ust_ids = []
+        haupt_ust_id = a.get("umsatzsteuer_id") or a.get("ust_id")
+        haupt_ust_lkz = a.get("umsatzsteuer_lkz", "")
+        if haupt_ust_id:
+            ust_ids.append({
+                "id": "main",
+                "ust_id": f"{haupt_ust_lkz}{haupt_ust_id}" if haupt_ust_lkz and not haupt_ust_id.startswith(haupt_ust_lkz) else haupt_ust_id,
+                "ist_hauptid": True
+            })
+        for idx, weitere in enumerate(a.get("weitere_ustids", [])):
+            if isinstance(weitere, dict):
+                ust_ids.append({
+                    "id": weitere.get("id", f"extra_{idx}"),
+                    "ust_id": weitere.get("ust_id", ""),
+                    "ist_hauptid": False
+                })
+            elif isinstance(weitere, str) and weitere:
+                ust_ids.append({
+                    "id": f"extra_{idx}",
+                    "ust_id": weitere,
+                    "ist_hauptid": False
+                })
+        
+        # Bankverbindungen laden
+        bank_cursor = db.bankverbindungen.find({"adresse_id": a["_id"], "aktiv": {"$ne": False}})
+        bankverbindungen_raw = await bank_cursor.to_list(length=20)
+        bankverbindungen = []
+        for bv in bankverbindungen_raw:
+            bankverbindungen.append({
+                "id": bv.get("_id") or bv.get("id"),
+                "iban": bv.get("iban", ""),
+                "bic": bv.get("bic", ""),
+                "bank_name": bv.get("bank_name", ""),
+                "kontoinhaber": bv.get("kontoinhaber", ""),
+                "waehrung": bv.get("waehrung", "EUR"),
+                "ist_hauptkonto": bv.get("ist_hauptkonto", False)
+            })
+        
         result.append({
             "id": a["_id"],
             "name1": a.get("name1"),
@@ -643,13 +682,15 @@ async def get_adressen_fuer_auswahl(
             "ort": a.get("ort"),
             "land": a.get("land"),
             "land_code": a.get("land_code"),
-            "ust_id": a.get("ust_id"),
+            "ust_id": f"{haupt_ust_lkz}{haupt_ust_id}" if haupt_ust_lkz and haupt_ust_id and not haupt_ust_id.startswith(haupt_ust_lkz) else haupt_ust_id,
             "steuernummer": a.get("steuernummer"),
             "telefon": a.get("telefon"),
             "telefax": a.get("telefax"),
             "email": a.get("email"),
-            "kundennummer": a.get("kundennummer"),
-            "ansprechpartner": a.get("ansprechpartner", [])
+            "kundennummer": a.get("kundennummer") or a.get("kdnr"),
+            "ansprechpartner": a.get("ansprechpartner", []),
+            "ust_ids": ust_ids,
+            "bankverbindungen": bankverbindungen
         })
     
     return {"success": True, "data": result}
