@@ -1,0 +1,59 @@
+{
+  "summary": "Streckengeschäft-Feature vollständig getestet. Backend-APIs (13/13 Tests bestanden) und Frontend-UI funktionieren korrekt. KRITISCHER FIX: Route-Reihenfolge in kontrakte.py korrigiert - /kontrakte/strecken muss vor /kontrakte/{kontrakt_id} definiert sein.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [],
+    "fixed": [
+      {
+        "endpoint": "GET /api/kontrakte/strecken",
+        "issue": "Route wurde von /kontrakte/{kontrakt_id} abgefangen (404 Fehler)",
+        "fix": "Strecken-Routes vor {kontrakt_id} Route verschoben in kontrakte.py",
+        "priority": "CRITICAL"
+      }
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/tests/test_streckengeschaeft.py",
+    "/app/test_reports/pytest/pytest_streckengeschaeft.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "FastAPI Route-Reihenfolge ist kritisch: Spezifische Routen wie /kontrakte/strecken müssen VOR parametrisierten Routen wie /kontrakte/{kontrakt_id} definiert werden"
+  ],
+  "updated_files": [
+    "/app/backend/routers/kontrakte.py",
+    "/app/tests/test_streckengeschaeft.py"
+  ],
+  "success_rate": {
+    "backend": "100% (13/13 tests passed)",
+    "frontend": "100% (all features verified)"
+  },
+  "test_credentials": {
+    "admin_user": "admin / Admin123!"
+  },
+  "seed_data_creation": "Test-Streckengeschäfte werden automatisch erstellt und nach Tests aufgeräumt",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "features_tested": {
+    "backend_apis": [
+      "POST /api/kontrakte/strecken - Neues Streckengeschäft erstellen (EK+VK automatisch)",
+      "GET /api/kontrakte/strecken - Alle Streckengeschäfte laden",
+      "GET /api/kontrakte?nur_strecke=true - Strecken-Filter",
+      "POST /api/kontrakte/{id}/strecke/verknuepfen - Bestehende Kontrakte verknüpfen",
+      "DELETE /api/kontrakte/strecken/{id}/aufloesen - Strecke auflösen"
+    ],
+    "frontend_ui": [
+      "STRECKE Badge in Kontrakt-Liste (grün mit ≡ Symbol)",
+      "Partner-Anzeige mit Pfeil (→ Partner-Name) in Vertragspartner-Spalte",
+      "+ Neu Dropdown mit 'Einzelkontrakt' und 'Streckengeschäft' Optionen",
+      "Streckengeschäft-Dialog mit Lieferant/Abnehmer Auswahl",
+      "Kontextmenü: Anzeigen, Bearbeiten, EK/VK-Kontrakt öffnen, Strecke auflösen, Löschen"
+    ]
+  },
+  "context_for_next_testing_agent": "Streckengeschäft-Feature ist vollständig implementiert und getestet. Backend-Route-Reihenfolge wurde korrigiert. Alle 13 Backend-Tests bestehen. Frontend zeigt STRECKE-Badges, Partner-Verknüpfungen und Kontextmenü-Optionen korrekt an."
+}
