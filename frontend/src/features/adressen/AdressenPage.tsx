@@ -1108,14 +1108,26 @@ export function AdressenPage() {
                                   <span>{watchFields.land || "Deutschland"}</span>
                                 </div>
                               </SelectTrigger>
-                              <SelectContent>
-                                {EU_LAENDER.map(l => (
-                                  <SelectItem key={l.land} value={l.land}>
-                                    <div className="flex items-center gap-2">
-                                      <CountryFlag country={l.land} className="w-6 h-4" />
-                                      <span>{l.land}</span>
+                              <SelectContent className="max-h-[300px]">
+                                {SORTED_REGIONS.map(region => (
+                                  LAENDER_BY_REGION[region] && (
+                                    <div key={region}>
+                                      <div className="px-2 py-1.5 text-xs font-semibold text-gray-500 bg-gray-50 sticky top-0">
+                                        {region}
+                                      </div>
+                                      {LAENDER_BY_REGION[region].map(l => (
+                                        <SelectItem key={l.land} value={l.land}>
+                                          <div className="flex items-center gap-2">
+                                            <CountryFlag country={l.land} className="w-6 h-4" />
+                                            <span>{l.land}</span>
+                                            {l.istEu && (
+                                              <span className="text-[10px] px-1 py-0.5 bg-blue-100 text-blue-700 rounded">EU</span>
+                                            )}
+                                          </div>
+                                        </SelectItem>
+                                      ))}
                                     </div>
-                                  </SelectItem>
+                                  )
                                 ))}
                               </SelectContent>
                             </Select>
