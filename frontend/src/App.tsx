@@ -26,7 +26,8 @@ import {
   AbteilungenPage,
   BerechtigungenPage,
   ApisPage,
-  NummernkreisePage
+  NummernkreisePage,
+  FirmeneinstellungenPage
 } from '@/features/einstellungen';
 
 // Protected Route Wrapper
