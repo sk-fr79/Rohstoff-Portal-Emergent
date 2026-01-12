@@ -1683,6 +1683,7 @@ export function KontraktePage() {
       <div className="flex items-center gap-2">
         <span className="font-mono text-sm font-semibold">{row.original.kontraktnummer || '-'}</span>
         {row.original.ist_fixierung && <Badge variant="outline" className="text-xs bg-purple-50 text-purple-700 border-purple-200"><TrendingUp className="h-3 w-3 mr-1" />FIX</Badge>}
+        {row.original.ist_strecke && <Badge variant="outline" className="text-xs bg-orange-50 text-orange-700 border-orange-200"><ArrowRightLeft className="h-3 w-3 mr-1" />STRECKE</Badge>}
       </div>
     )},
     { accessorKey: 'vorgang_typ', header: 'Typ', cell: ({ row }) => (
@@ -1690,7 +1691,23 @@ export function KontraktePage() {
         {row.original.vorgang_typ === 'EK' ? (<><ArrowDownToLine className="h-4 w-4 text-green-600" /><span className="text-sm font-medium text-green-700">EK</span></>) : (<><ArrowUpFromLine className="h-4 w-4 text-blue-600" /><span className="text-sm font-medium text-blue-700">VK</span></>)}
       </div>
     )},
-    { accessorKey: 'name1', header: 'Vertragspartner', cell: ({ row }) => (<div><div className="font-medium">{row.original.name1}</div><div className="text-xs text-gray-500">{[row.original.plz, row.original.ort].filter(Boolean).join(' ')}</div></div>) },
+    { accessorKey: 'name1', header: 'Vertragspartner', cell: ({ row }) => (
+      <div>
+        <div className="font-medium">{row.original.name1}</div>
+        <div className="text-xs text-gray-500">{[row.original.plz, row.original.ort].filter(Boolean).join(' ')}</div>
+        {/* Strecken-Partner anzeigen */}
+        {row.original.ist_strecke && row.original.strecken_partner && (
+          <div className="flex items-center gap-1 mt-1">
+            <ArrowRight className="h-3 w-3 text-gray-400" />
+            <span className="text-xs text-orange-600">
+              {row.original.vorgang_typ === 'EK' 
+                ? row.original.strecken_partner.vk?.name1 
+                : row.original.strecken_partner.ek?.name1}
+            </span>
+          </div>
+        )}
+      </div>
+    )},
     { accessorKey: 'sachbearbeiter_name', header: 'Sachbearbeiter', cell: ({ row }) => <span className="text-sm">{row.original.sachbearbeiter_name || '-'}</span> },
     { accessorKey: 'gueltig_bis', header: 'Gültig bis', cell: ({ row }) => <span className="text-sm">{row.original.gueltig_bis ? new Date(row.original.gueltig_bis).toLocaleDateString('de-DE') : '-'}</span> },
     { accessorKey: 'waehrung_kurz', header: 'Währung', cell: ({ row }) => { const w = getWaehrung(row.original.waehrung_kurz); return <Badge variant="secondary" className="font-mono">{w.symbol} {w.code}</Badge>; }},
