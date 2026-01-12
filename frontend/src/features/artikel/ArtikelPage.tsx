@@ -839,7 +839,7 @@ export function ArtikelPage() {
                             <span className="text-xs text-muted-foreground font-normal">(automatisch aus Zolltarifnummer)</span>
                           </Label>
                           <Textarea 
-                            {...register('zolltarifnotiz')} 
+                            value={(watch('zolltarifnotiz') || '').replace(/\n\n\[URL\].*?\[\/URL\]/g, '')}
                             readOnly
                             className="bg-gray-50 text-gray-700 cursor-not-allowed resize-none" 
                             rows={4}
