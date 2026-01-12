@@ -26,6 +26,7 @@ interface ReferenceSelectProps {
   module: string;
   fieldName: string;
   value?: string | null;
+  displayValue?: string | null;  // Gespeicherte Bezeichnung aus der DB für Anzeige
   onChange: (value: string | null) => void;
   onSelectOption?: (option: ReferenceOption | null) => void;  // Callback mit vollständigen Daten
   placeholder?: string;
