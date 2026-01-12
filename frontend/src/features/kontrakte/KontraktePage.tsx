@@ -2066,35 +2066,34 @@ export function KontraktePage() {
 
                     {/* === POSITIONEN === */}
                     {activeSection === 'positionen' && (
-                      <div className="space-y-4">
-                        <div className="flex items-center justify-between"><h3 className="font-semibold text-gray-900">Kontraktpositionen</h3>{isEditing && <Button type="button" size="sm" variant="outline" onClick={handleAddPosition}><Plus className="h-4 w-4 mr-1" />Position hinzufügen</Button>}</div>
-                        {selectedKontrakt.positionen && selectedKontrakt.positionen.length > 0 ? (
-                          <div className="space-y-3">
-                            {selectedKontrakt.positionen.map((pos) => (
-                              <div key={pos.id} className={cn("p-4 rounded-lg border bg-white hover:shadow-sm transition-shadow", pos.position_abgeschlossen && "bg-gray-50 opacity-75")}>
-                                <div className="flex items-start justify-between">
-                                  <div className="flex-1">
-                                    <div className="flex items-center gap-2 mb-1">
-                                      <span className="font-semibold text-emerald-600">Pos. {pos.positionsnummer}</span>
-                                      <span className="text-sm text-gray-500 font-mono">{pos.anr1}</span>
-                                      {pos.position_abgeschlossen && <Badge variant="secondary" className="text-xs"><Lock className="h-3 w-3 mr-1" />Abgeschlossen</Badge>}
-                                      {!pos.ueberliefer_ok && <Badge variant="outline" className="text-xs text-orange-600 border-orange-300"><AlertTriangle className="h-3 w-3 mr-1" />Keine Überlieferung</Badge>}
-                                    </div>
-                                    <div className="text-sm font-medium">{pos.artbez1}</div>
-                                    <div className="flex items-center gap-4 mt-2 text-sm text-gray-600">
-                                      <span className="font-medium">{pos.anzahl?.toLocaleString('de-DE')} {pos.einheitkurz}</span>
-                                      <span>{pos.einzelpreis?.toFixed(2)} {selectedWaehrung.symbol}/{pos.einheitkurz}</span>
-                                      <span className="font-semibold text-gray-900">= {pos.gesamtpreis?.toLocaleString('de-DE', { minimumFractionDigits: 2 })} {selectedWaehrung.symbol}</span>
-                                    </div>
-                                    {pos.lieferort_name && <div className="text-xs text-gray-500 mt-1"><Truck className="h-3 w-3 inline mr-1" />Lieferort: {pos.lieferort_name}</div>}
-                                  </div>
-                                  {isEditing && (<div className="flex gap-1"><Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleEditPosition(pos)}><Pencil className="h-4 w-4" /></Button><Button variant="ghost" size="icon" className="h-8 w-8 text-red-600" onClick={() => handleDeletePosition(pos.id)}><Trash2 className="h-4 w-4" /></Button></div>)}
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        ) : (
-                          <div className="text-center py-8 text-gray-500 bg-gray-50 rounded-lg border-2 border-dashed"><Package className="h-12 w-12 mx-auto mb-2 text-gray-300" /><p>Keine Positionen vorhanden</p>{isEditing && <Button variant="link" size="sm" className="mt-2" onClick={handleAddPosition}>Erste Position hinzufügen</Button>}</div>
+                      <div className="space-y-4" data-testid="positionen-section">
+                        <div className="flex items-center justify-between">
+                          <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+                            <Package className="h-5 w-5 text-emerald-600" />
+                            Kontraktpositionen
+                          </h3>
+                          {isEditing && (
+                            <Button type="button" size="sm" onClick={handleAddPosition} className="bg-emerald-600 hover:bg-emerald-700" data-testid="add-position-btn">
+                              <Plus className="h-4 w-4 mr-1" />Neue Position
+                            </Button>
+                          )}
+                        </div>
+                        
+                        <PositionenListe
+                          positionen={selectedKontrakt.positionen || []}
+                          waehrung={watchFields.waehrung_kurz || 'EUR'}
+                          isEditing={isEditing}
+                          onEdit={handleEditPosition}
+                          onDelete={handleDeletePosition}
+                          onCopy={handleCopyPosition}
+                          onView={handleViewPosition}
+                        />
+                        
+                        {/* Hinweis für Lesemodus */}
+                        {!isEditing && selectedKontrakt.positionen && selectedKontrakt.positionen.length > 0 && (
+                          <p className="text-xs text-center text-gray-400 pt-2">
+                            Doppelklick auf eine Position für Detailansicht
+                          </p>
                         )}
                       </div>
                     )}
@@ -2124,7 +2123,24 @@ export function KontraktePage() {
         </AnimatePresence>
       </div>
 
-      <PositionDialog open={showPositionDialog} onClose={() => { setShowPositionDialog(false); setEditingPosition(null); }} onSave={handleSavePosition} position={editingPosition} waehrung={watchFields.waehrung_kurz || 'EUR'} />
+      {/* Position Dialog - Bearbeiten/Hinzufügen */}
+      <PositionDialog 
+        open={showPositionDialog} 
+        onClose={() => { setShowPositionDialog(false); setEditingPosition(null); }} 
+        onSave={handleSavePosition} 
+        position={editingPosition} 
+        waehrung={watchFields.waehrung_kurz || 'EUR'} 
+      />
+      
+      {/* Position Dialog - Nur Ansicht (Doppelklick) */}
+      <PositionDialog 
+        open={showViewDialog} 
+        onClose={() => { setShowViewDialog(false); setViewPosition(null); }} 
+        onSave={() => {}} 
+        position={viewPosition} 
+        waehrung={watchFields.waehrung_kurz || 'EUR'}
+        readOnly={true}
+      />
     </div>
   );
 }
