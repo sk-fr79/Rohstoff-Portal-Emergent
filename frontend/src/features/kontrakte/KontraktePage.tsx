@@ -2312,6 +2312,21 @@ export function KontraktePage() {
                       </div>
                     )}
 
+                    {/* === PROTOKOLL (nur im Lesemodus) === */}
+                    {activeSection === 'protokoll' && selectedKontrakt?.id && (
+                      <div className="space-y-4">
+                        {isEditing ? (
+                          <div className="text-center py-12 bg-gradient-to-br from-amber-50 to-white rounded-xl border-2 border-dashed border-amber-200">
+                            <Lock className="h-12 w-12 mx-auto mb-3 text-amber-400" />
+                            <p className="text-amber-700 font-medium">Protokoll im Bearbeitungsmodus nicht verfügbar</p>
+                            <p className="text-sm text-amber-600 mt-1">Speichern Sie Ihre Änderungen, um das Protokoll einzusehen</p>
+                          </div>
+                        ) : (
+                          <ProtokollTab kontraktId={selectedKontrakt.id} />
+                        )}
+                      </div>
+                    )}
+
                   </form>
                 </ScrollArea>
               </div>
