@@ -334,7 +334,7 @@ class KontraktValidator:
                     result.add_error(f"Position {pos_nr}: Währungskurs muss größer 0 sein!")
         
         # === DUBLETTEN-PRÜFUNG (nur bei Neuanlage) ===
-        if not kontrakt_id and db:
+        if not kontrakt_id and db is not None:
             await KontraktValidator._check_dubletten(kontrakt, db, result)
         
         return result
