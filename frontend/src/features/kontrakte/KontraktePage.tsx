@@ -194,7 +194,7 @@ interface Kontrakt extends KontraktForm {
 const sidebarSections = [
   { id: 'kopf', label: 'Kopfdaten', icon: FileText },
   { id: 'partner', label: 'Vertragspartner', icon: Building2 },
-  { id: 'termine', label: 'Termine', icon: Calendar },
+  { id: 'laeger', label: 'Läger', icon: Truck },
   { id: 'konditionen', label: 'Konditionen', icon: DollarSign },
   { id: 'fixierung', label: 'Fixierung', icon: TrendingUp },
   { id: 'positionen', label: 'Positionen', icon: Package },
