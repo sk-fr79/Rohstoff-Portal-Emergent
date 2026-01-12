@@ -695,79 +695,221 @@ export function KontraktePage() {
 
                     {/* === VERTRAGSPARTNER === */}
                     {activeSection === 'partner' && (
-                      <div className="space-y-5">
-                        {/* Adresse auswählen */}
-                        <div className="p-4 bg-blue-50 rounded-lg border border-blue-200 space-y-3">
-                          <h4 className="font-semibold text-blue-800 flex items-center gap-2"><Building2 className="h-4 w-4" />Vertragspartner aus Adressen</h4>
-                          <AdressenSelect value={watchFields.id_adresse || undefined} onChange={handleAdresseSelect} disabled={!isEditing} />
-                        </div>
-
-                        {/* Adressdaten (readonly nach Auswahl) */}
-                        <div className="space-y-3">
-                          <div className="space-y-1.5"><Label>Firma/Name *</Label><Input {...register('name1')} disabled={!isEditing} />{errors.name1 && <p className="text-xs text-red-500">{errors.name1.message}</p>}</div>
-                          <div className="space-y-1.5"><Label>Name 2 / Abteilung</Label><Input {...register('name2')} disabled={!isEditing} /></div>
-                          <div className="grid grid-cols-3 gap-4">
-                            <div className="col-span-2 space-y-1.5"><Label>Straße</Label><Input {...register('strasse')} disabled={!isEditing} /></div>
-                            <div className="space-y-1.5"><Label>Hausnummer</Label><Input {...register('hausnummer')} disabled={!isEditing} /></div>
+                      <div className="space-y-4">
+                        {/* VERTRAGSPARTNER CARD */}
+                        <div className="rounded-lg border bg-white shadow-sm">
+                          <div className="p-3 border-b bg-gray-50/50">
+                            <h4 className="font-semibold text-gray-900 flex items-center gap-2">
+                              <Building2 className="h-4 w-4 text-blue-600" />
+                              Vertragspartner
+                            </h4>
                           </div>
-                          <div className="grid grid-cols-3 gap-4">
-                            <div className="space-y-1.5"><Label>PLZ</Label><Input {...register('plz')} disabled={!isEditing} /></div>
-                            <div className="space-y-1.5"><Label>Ort</Label><Input {...register('ort')} disabled={!isEditing} /></div>
-                            <div className="space-y-1.5"><Label>Land</Label><Input {...register('land')} disabled={!isEditing} /></div>
-                          </div>
-                          <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-1.5"><Label>USt-ID</Label><Input {...register('ust_id')} disabled={!isEditing} /></div>
-                            <div className="space-y-1.5"><Label>Telefon</Label><Input {...register('telefon')} disabled={!isEditing} /></div>
-                          </div>
-                          <div className="space-y-1.5"><Label>E-Mail</Label><Input {...register('email')} type="email" disabled={!isEditing} /></div>
-                        </div>
-
-                        {/* Ansprechpartner beim Partner */}
-                        <div className="pt-4 border-t space-y-3">
-                          <h4 className="font-semibold text-gray-900 flex items-center gap-2"><Users className="h-4 w-4" />Ansprechpartner beim Partner</h4>
-                          {ansprechpartnerListe.length > 0 ? (
-                            <div className="space-y-2">
-                              {ansprechpartnerListe.map((ap) => (
-                                <div key={ap.id} onClick={() => isEditing && handleAnsprechpartnerSelect(ap)}
-                                  className={cn("p-3 rounded-lg border cursor-pointer transition-colors", watchFields.id_ansprechpartner === ap.id ? "bg-emerald-50 border-emerald-300" : "bg-white hover:bg-gray-50", !isEditing && "cursor-default")}>
-                                  <div className="font-medium">{ap.vorname} {ap.nachname}</div>
-                                  <div className="text-xs text-gray-500">{ap.funktion}</div>
-                                  <div className="text-xs text-gray-500">{ap.telefon} • {ap.email}</div>
+                          <div className="p-3 space-y-3">
+                            {/* Adresse auswählen */}
+                            <AdressenSelect 
+                              value={watchFields.id_adresse || undefined} 
+                              onChange={handleAdresseSelect} 
+                              disabled={!isEditing} 
+                            />
+                            
+                            {/* Gewählte Adresse anzeigen */}
+                            {watchFields.id_adresse && watchFields.name1 && (
+                              <div className="p-3 bg-blue-50/50 rounded-lg border border-blue-100">
+                                <div className="flex items-start justify-between">
+                                  <div>
+                                    <div className="font-semibold text-gray-900">{watchFields.name1}</div>
+                                    {watchFields.name2 && <div className="text-sm text-gray-600">{watchFields.name2}</div>}
+                                    <div className="text-sm text-gray-500 mt-1">
+                                      {watchFields.strasse} {watchFields.hausnummer}, {watchFields.plz} {watchFields.ort}
+                                    </div>
+                                  </div>
+                                  {isEditing && (
+                                    <Button variant="ghost" size="sm" className="text-gray-400 hover:text-red-500 -mt-1 -mr-1"
+                                      onClick={() => {
+                                        setValue('id_adresse', null);
+                                        setValue('name1', '');
+                                        setValue('name2', '');
+                                        setValue('strasse', '');
+                                        setValue('hausnummer', '');
+                                        setValue('plz', '');
+                                        setValue('ort', '');
+                                        setValue('land', '');
+                                        setValue('ust_id', '');
+                                        setValue('id_bankverbindung', null);
+                                        setValue('bank_iban', '');
+                                        setValue('id_ansprechpartner', null);
+                                        setValue('ansprechpartner_name', '');
+                                        setAnsprechpartnerListe([]);
+                                        setSelectedAdresse(null);
+                                      }}>
+                                      <X className="h-4 w-4" />
+                                    </Button>
+                                  )}
                                 </div>
-                              ))}
-                            </div>
-                          ) : (
-                            <div className="text-sm text-gray-500 bg-gray-50 p-3 rounded-lg">
-                              {watchFields.id_adresse ? 'Keine Ansprechpartner bei dieser Adresse hinterlegt' : 'Bitte zuerst eine Adresse auswählen'}
-                            </div>
-                          )}
-                          {watchFields.ansprechpartner_name && (
-                            <div className="grid grid-cols-2 gap-3 pt-2">
-                              <div className="space-y-1.5"><Label className="text-xs">Ausgewählter Ansprechpartner</Label><Input value={watchFields.ansprechpartner_name || ''} disabled className="bg-gray-50" /></div>
-                              <div className="space-y-1.5"><Label className="text-xs">Telefon</Label><Input value={watchFields.ansprechpartner_telefon || ''} disabled className="bg-gray-50" /></div>
-                            </div>
-                          )}
+                                
+                                {/* USt-ID & Bankverbindung Dropdowns */}
+                                {selectedAdresse && (
+                                  <div className="grid grid-cols-2 gap-3 mt-3 pt-3 border-t border-blue-200/50">
+                                    {/* USt-ID Auswahl */}
+                                    <div className="space-y-1">
+                                      <Label className="text-xs text-gray-600">USt-ID</Label>
+                                      {(selectedAdresse.ust_ids?.length || 0) > 1 ? (
+                                        <Select value={watchFields.ust_id || ''} onValueChange={(v) => setValue('ust_id', v)} disabled={!isEditing}>
+                                          <SelectTrigger className="h-8 text-sm bg-white">
+                                            <SelectValue placeholder="USt-ID wählen" />
+                                          </SelectTrigger>
+                                          <SelectContent>
+                                            {selectedAdresse.ust_ids?.map((u) => (
+                                              <SelectItem key={u.id} value={u.ust_id}>
+                                                {u.ust_id} {u.ist_hauptid && <span className="text-xs text-blue-600">(Haupt)</span>}
+                                              </SelectItem>
+                                            ))}
+                                          </SelectContent>
+                                        </Select>
+                                      ) : (
+                                        <div className="text-sm font-medium text-gray-900 py-1">{watchFields.ust_id || '-'}</div>
+                                      )}
+                                    </div>
+                                    
+                                    {/* Bankverbindung Auswahl */}
+                                    <div className="space-y-1">
+                                      <Label className="text-xs text-gray-600 flex items-center gap-1">
+                                        <CreditCard className="h-3 w-3" />Bankverbindung
+                                      </Label>
+                                      {(selectedAdresse.bankverbindungen?.length || 0) > 0 ? (
+                                        <Select 
+                                          value={watchFields.id_bankverbindung || ''} 
+                                          onValueChange={(v) => {
+                                            const bank = selectedAdresse.bankverbindungen?.find(b => b.id === v);
+                                            if (bank) {
+                                              setValue('id_bankverbindung', v);
+                                              setValue('bank_iban', bank.iban);
+                                              setValue('bank_bic', bank.bic || '');
+                                              setValue('bank_name', bank.bank_name || '');
+                                              setValue('bank_waehrung', bank.waehrung || 'EUR');
+                                            }
+                                          }} 
+                                          disabled={!isEditing}
+                                        >
+                                          <SelectTrigger className="h-8 text-sm bg-white">
+                                            <SelectValue placeholder="Konto wählen" />
+                                          </SelectTrigger>
+                                          <SelectContent>
+                                            {selectedAdresse.bankverbindungen?.map((b) => (
+                                              <SelectItem key={b.id} value={b.id}>
+                                                <span className="flex items-center gap-2">
+                                                  <span className="font-mono text-xs">{b.iban.slice(-8)}</span>
+                                                  <Badge variant="outline" className="text-[10px] px-1">{b.waehrung}</Badge>
+                                                  {b.ist_hauptkonto && <span className="text-xs text-blue-600">(Haupt)</span>}
+                                                </span>
+                                              </SelectItem>
+                                            ))}
+                                          </SelectContent>
+                                        </Select>
+                                      ) : (
+                                        <div className="text-sm text-gray-500 py-1">Keine Bankverbindung</div>
+                                      )}
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                            
+                            {/* Manueller Eintrag falls keine Adresse gewählt */}
+                            {!watchFields.id_adresse && (
+                              <div className="space-y-1.5">
+                                <Label className="text-xs">Firma/Name *</Label>
+                                <Input {...register('name1')} disabled={!isEditing} placeholder="Vertragspartner eingeben..." />
+                                {errors.name1 && <p className="text-xs text-red-500">{errors.name1.message}</p>}
+                              </div>
+                            )}
+                          </div>
                         </div>
 
-                        {/* Sachbearbeiter & Händler */}
-                        <div className="pt-4 border-t space-y-3">
-                          <h4 className="font-semibold text-gray-900 flex items-center gap-2"><User className="h-4 w-4" />Interne Zuständigkeit</h4>
-                          <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-1.5">
-                              <Label>Sachbearbeiter</Label>
-                              <BenutzerSelect value={watchFields.id_sachbearbeiter || undefined} onChange={handleSachbearbeiterSelect} disabled={!isEditing} placeholder="Sachbearbeiter auswählen..." benutzerListe={benutzerData || []} />
-                            </div>
-                            <div className="space-y-1.5">
-                              <Label>Händler</Label>
-                              <BenutzerSelect value={watchFields.id_haendler || undefined} onChange={handleHaendlerSelect} disabled={!isEditing} placeholder="Händler auswählen..." benutzerListe={benutzerData || []} />
+                        {/* ANSPRECHPARTNER CARD */}
+                        <div className="rounded-lg border bg-white shadow-sm">
+                          <div className="p-3 border-b bg-gray-50/50">
+                            <h4 className="font-semibold text-gray-900 flex items-center gap-2">
+                              <Users className="h-4 w-4 text-emerald-600" />
+                              Ansprechpartner
+                            </h4>
+                          </div>
+                          <div className="p-3">
+                            {ansprechpartnerListe.length > 0 ? (
+                              <Select 
+                                value={watchFields.id_ansprechpartner || ''} 
+                                onValueChange={(v) => {
+                                  const ap = ansprechpartnerListe.find(a => a.id === v);
+                                  if (ap) handleAnsprechpartnerSelect(ap);
+                                }}
+                                disabled={!isEditing}
+                              >
+                                <SelectTrigger className="bg-white">
+                                  <SelectValue placeholder="Ansprechpartner wählen..." />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {ansprechpartnerListe.map((ap) => (
+                                    <SelectItem key={ap.id} value={ap.id}>
+                                      <span className="flex items-center gap-2">
+                                        <span className="font-medium">{ap.vorname} {ap.nachname}</span>
+                                        {ap.funktion && <span className="text-gray-500">({ap.funktion})</span>}
+                                      </span>
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            ) : (
+                              <div className="text-sm text-gray-500 bg-gray-50 p-3 rounded-lg text-center">
+                                {watchFields.id_adresse ? 'Keine Ansprechpartner hinterlegt' : 'Bitte zuerst Vertragspartner wählen'}
+                              </div>
+                            )}
+                            
+                            {/* Gewählter Ansprechpartner Info */}
+                            {watchFields.ansprechpartner_name && (
+                              <div className="mt-2 p-2 bg-emerald-50/50 rounded text-sm flex items-center gap-3">
+                                <span className="font-medium">{watchFields.ansprechpartner_name}</span>
+                                {watchFields.ansprechpartner_telefon && (
+                                  <span className="text-gray-500">📞 {watchFields.ansprechpartner_telefon}</span>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* INTERNE ZUSTÄNDIGKEIT CARD */}
+                        <div className="rounded-lg border bg-white shadow-sm">
+                          <div className="p-3 border-b bg-gray-50/50">
+                            <h4 className="font-semibold text-gray-900 flex items-center gap-2">
+                              <User className="h-4 w-4 text-violet-600" />
+                              Interne Zuständigkeit
+                            </h4>
+                          </div>
+                          <div className="p-3">
+                            <div className="grid grid-cols-2 gap-3">
+                              <div className="space-y-1">
+                                <Label className="text-xs text-gray-600">Sachbearbeiter</Label>
+                                <BenutzerSelect 
+                                  value={watchFields.id_sachbearbeiter || undefined} 
+                                  onChange={handleSachbearbeiterSelect} 
+                                  disabled={!isEditing} 
+                                  placeholder="Wählen..." 
+                                  benutzerListe={benutzerData || []} 
+                                  showDetails={false}
+                                />
+                              </div>
+                              <div className="space-y-1">
+                                <Label className="text-xs text-gray-600">Händler</Label>
+                                <BenutzerSelect 
+                                  value={watchFields.id_haendler || undefined} 
+                                  onChange={handleHaendlerSelect} 
+                                  disabled={!isEditing} 
+                                  placeholder="Wählen..." 
+                                  benutzerListe={benutzerData || []} 
+                                  showDetails={false}
+                                />
+                              </div>
                             </div>
                           </div>
-                          {watchFields.sachbearbeiter_name && (
-                            <div className="grid grid-cols-2 gap-3">
-                              <div className="space-y-1.5"><Label className="text-xs">Telefon Sachbearbeiter</Label><Input value={watchFields.sachbearbeiter_telefon || ''} disabled className="bg-gray-50" /></div>
-                              <div className="space-y-1.5"><Label className="text-xs">E-Mail Sachbearbeiter</Label><Input value={watchFields.sachbearbeiter_email || ''} disabled className="bg-gray-50" /></div>
-                            </div>
-                          )}
                         </div>
                       </div>
                     )}
