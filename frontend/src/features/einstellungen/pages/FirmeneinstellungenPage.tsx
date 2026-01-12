@@ -95,6 +95,27 @@ interface FirmaDaten {
   weitere_ustids?: UstId[];
   lieferadressen?: Lieferadresse[];
   bankverbindungen?: Bankverbindung[];
+  // Sync-Metadaten
+  letzter_sync?: string;
+  sync_quelle?: 'auto' | 'manuell';
+  sync_von?: string;
+}
+
+// Helper für relative Zeitanzeige
+function formatRelativeTime(isoString?: string): string {
+  if (!isoString) return 'Nie';
+  const date = new Date(isoString);
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMs / 3600000);
+  const diffDays = Math.floor(diffMs / 86400000);
+  
+  if (diffMins < 1) return 'Gerade eben';
+  if (diffMins < 60) return `vor ${diffMins} Min.`;
+  if (diffHours < 24) return `vor ${diffHours} Std.`;
+  if (diffDays < 7) return `vor ${diffDays} Tagen`;
+  return date.toLocaleDateString('de-DE');
 }
 
 export function FirmeneinstellungenPage() {
