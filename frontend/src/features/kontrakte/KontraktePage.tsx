@@ -68,6 +68,32 @@ interface BankverbindungOption {
   ist_hauptkonto: boolean;
 }
 
+interface Lieferadresse {
+  id: string;
+  bezeichnung?: string;
+  name1?: string;
+  name2?: string;
+  strasse?: string;
+  hausnummer?: string;
+  plz?: string;
+  ort?: string;
+  land?: string;
+  ist_standard?: boolean;
+}
+
+interface LagerOption {
+  id: string;
+  typ: 'haupt' | 'liefer' | 'mandant';
+  bezeichnung: string;
+  name1?: string;
+  name2?: string;
+  strasse?: string;
+  hausnummer?: string;
+  plz?: string;
+  ort?: string;
+  land?: string;
+}
+
 interface AdresseOption {
   id: string;
   name1: string;
@@ -87,6 +113,7 @@ interface AdresseOption {
   ansprechpartner?: Ansprechpartner[];
   ust_ids?: UstIdOption[];
   bankverbindungen?: BankverbindungOption[];
+  lieferadressen?: Lieferadresse[];
 }
 
 interface Position {
