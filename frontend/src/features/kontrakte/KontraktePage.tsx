@@ -94,6 +94,19 @@ interface LagerOption {
   land?: string;
 }
 
+interface MandantData extends LagerOption {
+  lieferadressen?: Array<{
+    id?: string;
+    bezeichnung?: string;
+    name1?: string;
+    strasse?: string;
+    hausnummer?: string;
+    plz?: string;
+    ort?: string;
+    land?: string;
+  }>;
+}
+
 interface AdresseOption {
   id: string;
   name1: string;
