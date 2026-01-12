@@ -377,7 +377,150 @@ function AdressenSelect({
   );
 }
 
-// ========================== POSITIONS-DIALOG ==========================
+// ========================== ARTIKEL-AUSWAHL KOMPONENTE ==========================
+interface ArtikelOption {
+  id: string;
+  anr1?: string;
+  artbez1?: string;
+  artbez2?: string;
+  einheit?: string;
+  einheit_preis?: string;
+  artikelgruppe?: string;
+  gefahrgut?: boolean;
+  ist_produkt?: boolean;
+  dienstleistung?: boolean;
+}
+
+function ArtikelSelect({ 
+  value, 
+  onChange, 
+  disabled 
+}: { 
+  value?: string; 
+  onChange: (id: string, artikel?: ArtikelOption) => void; 
+  disabled?: boolean;
+}) {
+  const [open, setOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterGruppe, setFilterGruppe] = useState<string>('');
+  const [filterTyp, setFilterTyp] = useState<string>('');
+
+  const { data: artikelData } = useQuery({
+    queryKey: ['artikel-lookup', searchTerm, filterGruppe, filterTyp],
+    queryFn: async () => {
+      const params: any = { suche: searchTerm, limit: 50 };
+      if (filterGruppe) params.artikelgruppe = filterGruppe;
+      if (filterTyp === 'gefahrgut') params.gefahrgut = true;
+      if (filterTyp === 'produkt') params.ist_produkt = true;
+      if (filterTyp === 'dienstleistung') params.dienstleistung = true;
+      const response = await api.get('/artikel/lookup', { params });
+      return response.data.data as ArtikelOption[];
+    },
+  });
+
+  const { data: gruppenData } = useQuery({
+    queryKey: ['artikelgruppen'],
+    queryFn: async () => {
+      const response = await api.get('/artikel/gruppen');
+      return response.data.data as string[];
+    },
+  });
+
+  const selected = artikelData?.find(a => a.id === value);
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button variant="outline" role="combobox" disabled={disabled}
+          className={cn("w-full justify-between font-normal text-left h-auto min-h-[40px] py-2", !value && "text-muted-foreground")}>
+          {selected ? (
+            <div className="flex items-center gap-2">
+              <Package className="h-4 w-4 text-emerald-600" />
+              <span className="font-mono text-sm">{selected.anr1}</span>
+              <span className="font-medium">{selected.artbez1}</span>
+            </div>
+          ) : (
+            <span className="flex items-center gap-2">
+              <Search className="h-4 w-4" />
+              Artikel auswählen...
+            </span>
+          )}
+          <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[500px] p-0" align="start">
+        <div className="p-3 border-b space-y-2">
+          <Input
+            placeholder="Artikelnummer oder Bezeichnung suchen..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="h-9"
+          />
+          <div className="flex gap-2">
+            <Select value={filterGruppe} onValueChange={setFilterGruppe}>
+              <SelectTrigger className="h-8 text-xs flex-1">
+                <SelectValue placeholder="Alle Gruppen" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">Alle Gruppen</SelectItem>
+                {gruppenData?.map(g => (
+                  <SelectItem key={g} value={g}>{g}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={filterTyp} onValueChange={setFilterTyp}>
+              <SelectTrigger className="h-8 text-xs w-[140px]">
+                <SelectValue placeholder="Alle Typen" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">Alle Typen</SelectItem>
+                <SelectItem value="gefahrgut">⚠️ Gefahrgut</SelectItem>
+                <SelectItem value="produkt">📦 Produkt</SelectItem>
+                <SelectItem value="dienstleistung">🔧 Dienstleistung</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+        <ScrollArea className="h-[300px]">
+          {artikelData && artikelData.length > 0 ? (
+            <div className="p-1">
+              {artikelData.map((a) => (
+                <div
+                  key={a.id}
+                  onClick={() => { onChange(a.id, a); setOpen(false); }}
+                  className={cn(
+                    "flex items-center gap-3 p-2 rounded cursor-pointer hover:bg-gray-100",
+                    a.id === value && "bg-emerald-50"
+                  )}
+                >
+                  <div className="flex-shrink-0">
+                    <span className="font-mono text-sm text-gray-600 bg-gray-100 px-2 py-1 rounded">{a.anr1 || '-'}</span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-medium truncate">{a.artbez1}</div>
+                    <div className="flex items-center gap-2 text-xs text-gray-500">
+                      {a.artikelgruppe && <Badge variant="outline" className="text-[10px]">{a.artikelgruppe}</Badge>}
+                      {a.gefahrgut && <span className="text-orange-600">⚠️</span>}
+                      {a.ist_produkt && <span>📦</span>}
+                    </div>
+                  </div>
+                  <div className="text-xs text-gray-400">{a.einheit_preis || 't'}</div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="p-8 text-center text-gray-500">
+              <Package className="h-8 w-8 mx-auto mb-2 text-gray-300" />
+              <p className="text-sm">Keine Artikel gefunden</p>
+            </div>
+          )}
+        </ScrollArea>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
+// ========================== POSITIONS-DIALOG NEU ==========================
 function PositionDialog({ open, onClose, onSave, position, waehrung }: { 
   open: boolean; onClose: () => void; onSave: (pos: Partial<Position>) => void;
   position?: Position | null; waehrung: string;
@@ -387,51 +530,152 @@ function PositionDialog({ open, onClose, onSave, position, waehrung }: {
   );
   const selectedWaehrung = getWaehrung(formData.waehrung_fremd_kurz || waehrung);
 
+  const gesamtpreis = formData.anzahl && formData.einzelpreis 
+    ? Math.round(formData.anzahl * formData.einzelpreis * 100) / 100 
+    : 0;
+
   const handleSave = () => {
-    if (formData.anzahl && formData.einzelpreis) {
-      formData.gesamtpreis = Math.round(formData.anzahl * formData.einzelpreis * 100) / 100;
-    }
+    formData.gesamtpreis = gesamtpreis;
     onSave(formData);
     onClose();
   };
 
+  const handleArtikelSelect = (id: string, artikel?: ArtikelOption) => {
+    if (artikel) {
+      setFormData({ 
+        ...formData, 
+        id_artikel: id, 
+        anr1: artikel.anr1 || '', 
+        artbez1: artikel.artbez1 || '',
+        einheitkurz: artikel.einheit_preis || 't'
+      });
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader><DialogTitle>{position ? 'Position bearbeiten' : 'Neue Position'}</DialogTitle></DialogHeader>
-        <div className="space-y-4 py-4">
-          <div className="space-y-3">
-            <h4 className="font-medium text-sm text-gray-700 flex items-center gap-2"><Package className="h-4 w-4" />Artikel</h4>
-            <div className="grid grid-cols-4 gap-3">
-              <div><Label className="text-xs">Pos.Nr</Label><Input type="number" value={formData.positionsnummer || 1} onChange={(e) => setFormData({ ...formData, positionsnummer: parseInt(e.target.value) })} /></div>
-              <div className="col-span-3"><Label className="text-xs">Artikel *</Label><SmartInput module="kontrakte" fieldName="positionen.id_artikel" value={formData.id_artikel || ''} onChange={(val, item) => setFormData({ ...formData, id_artikel: val || '', anr1: item?.anr1 || '', artbez1: item?.artbez1 || item?.label || '' })} placeholder="Artikel auswählen..." /></div>
-            </div>
-            <div><Label className="text-xs">Artikelbezeichnung</Label><Input value={formData.artbez1 || ''} onChange={(e) => setFormData({ ...formData, artbez1: e.target.value })} /></div>
+      <DialogContent className="max-w-xl">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <Package className="h-5 w-5 text-emerald-600" />
+            {position ? 'Position bearbeiten' : 'Neue Position'}
+          </DialogTitle>
+        </DialogHeader>
+        
+        <div className="space-y-4 py-2">
+          {/* Artikel-Auswahl */}
+          <div className="space-y-2">
+            <Label className="font-medium">Artikel *</Label>
+            <ArtikelSelect 
+              value={formData.id_artikel} 
+              onChange={handleArtikelSelect}
+            />
+            {formData.artbez1 && (
+              <div className="p-3 bg-emerald-50 rounded-lg border border-emerald-200">
+                <div className="flex items-center gap-2">
+                  <span className="font-mono text-sm bg-white px-2 py-0.5 rounded">{formData.anr1}</span>
+                  <span className="font-medium">{formData.artbez1}</span>
+                </div>
+              </div>
+            )}
           </div>
-          <div className="space-y-3">
-            <h4 className="font-medium text-sm text-gray-700 flex items-center gap-2"><Scale className="h-4 w-4" />Mengen & Preise</h4>
-            <div className="grid grid-cols-4 gap-3">
-              <div><Label className="text-xs">Menge</Label><Input type="number" step="0.01" value={formData.anzahl || ''} onChange={(e) => setFormData({ ...formData, anzahl: parseFloat(e.target.value) || undefined })} /></div>
-              <div><Label className="text-xs">Einheit</Label><SmartInput module="kontrakte" fieldName="positionen.einheitkurz" value={formData.einheitkurz || 't'} onChange={(val) => setFormData({ ...formData, einheitkurz: val || 't' })} /></div>
-              <div><Label className="text-xs">Einzelpreis ({selectedWaehrung.symbol})</Label><Input type="number" step="0.01" value={formData.einzelpreis || ''} onChange={(e) => setFormData({ ...formData, einzelpreis: parseFloat(e.target.value) || undefined })} /></div>
-              <div><Label className="text-xs">Gesamtpreis</Label><Input type="number" value={formData.anzahl && formData.einzelpreis ? (formData.anzahl * formData.einzelpreis).toFixed(2) : ''} disabled className="bg-gray-50" /></div>
+
+          {/* Mengen & Preise - kompakt in einer Zeile */}
+          <div className="grid grid-cols-4 gap-3">
+            <div className="space-y-1">
+              <Label className="text-xs text-gray-500">Menge</Label>
+              <Input 
+                type="number" 
+                step="0.01" 
+                value={formData.anzahl || ''} 
+                onChange={(e) => setFormData({ ...formData, anzahl: parseFloat(e.target.value) || undefined })}
+                className="font-medium"
+              />
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div><Label className="text-xs flex items-center gap-1"><Percent className="h-3 w-3" />Mengentoleranz (%)</Label><Input type="number" min="0" max="100" value={formData.mengen_toleranz_prozent || 10} onChange={(e) => setFormData({ ...formData, mengen_toleranz_prozent: parseFloat(e.target.value) })} /></div>
-              <div className="flex items-end pb-2"><div className="flex items-center gap-2"><Switch checked={formData.ueberliefer_ok !== false} onCheckedChange={(v) => setFormData({ ...formData, ueberliefer_ok: v })} /><Label className="text-sm">Überlieferung erlaubt</Label></div></div>
+            <div className="space-y-1">
+              <Label className="text-xs text-gray-500">Einheit</Label>
+              <Select value={formData.einheitkurz || 't'} onValueChange={(v) => setFormData({ ...formData, einheitkurz: v })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="t">Tonnen (t)</SelectItem>
+                  <SelectItem value="kg">Kilogramm (kg)</SelectItem>
+                  <SelectItem value="Stk">Stück (Stk)</SelectItem>
+                  <SelectItem value="m³">Kubikmeter (m³)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs text-gray-500">Preis/{formData.einheitkurz || 't'}</Label>
+              <div className="relative">
+                <Input 
+                  type="number" 
+                  step="0.01" 
+                  value={formData.einzelpreis || ''} 
+                  onChange={(e) => setFormData({ ...formData, einzelpreis: parseFloat(e.target.value) || undefined })}
+                  className="pr-8"
+                />
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">{selectedWaehrung.symbol}</span>
+              </div>
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs text-gray-500">Gesamtpreis</Label>
+              <div className="h-10 px-3 py-2 bg-emerald-50 border border-emerald-200 rounded-md flex items-center justify-end font-semibold text-emerald-700">
+                {gesamtpreis.toLocaleString('de-DE', { minimumFractionDigits: 2 })} {selectedWaehrung.symbol}
+              </div>
             </div>
           </div>
-          <div className="space-y-3">
-            <h4 className="font-medium text-sm text-gray-700 flex items-center gap-2"><Truck className="h-4 w-4" />Lieferung</h4>
-            <div><Label className="text-xs">Abweichender Lieferort</Label><SmartInput module="kontrakte" fieldName="positionen.lieferort" value={formData.lieferort || ''} onChange={(val, item) => setFormData({ ...formData, lieferort: val || '', lieferort_name: item?.name1 || '' })} placeholder="Adresse auswählen..." /></div>
-            <div className="grid grid-cols-2 gap-3">
-              <div><Label className="text-xs">Gültig von</Label><Input type="date" value={formData.gueltig_von || ''} onChange={(e) => setFormData({ ...formData, gueltig_von: e.target.value })} /></div>
-              <div><Label className="text-xs">Gültig bis</Label><Input type="date" value={formData.gueltig_bis || ''} onChange={(e) => setFormData({ ...formData, gueltig_bis: e.target.value })} /></div>
+
+          {/* Optionen - kompakt */}
+          <div className="flex items-center gap-6 py-2 border-y">
+            <div className="flex items-center gap-2">
+              <Label className="text-xs text-gray-500">Toleranz</Label>
+              <Input 
+                type="number" 
+                min="0" 
+                max="100" 
+                value={formData.mengen_toleranz_prozent || 10} 
+                onChange={(e) => setFormData({ ...formData, mengen_toleranz_prozent: parseFloat(e.target.value) })}
+                className="w-16 h-8 text-center"
+              />
+              <span className="text-xs text-gray-500">%</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Switch 
+                checked={formData.ueberliefer_ok !== false} 
+                onCheckedChange={(v) => setFormData({ ...formData, ueberliefer_ok: v })}
+                className="scale-90"
+              />
+              <Label className="text-xs">Überlieferung OK</Label>
+            </div>
+            <div className="flex items-center gap-2">
+              <Switch 
+                checked={formData.position_abgeschlossen || false} 
+                onCheckedChange={(v) => setFormData({ ...formData, position_abgeschlossen: v })}
+                className="scale-90"
+              />
+              <Label className="text-xs">Abgeschlossen</Label>
             </div>
           </div>
-          <div><Label className="text-xs">Bemerkung zur Position</Label><Textarea value={formData.bemerkung || ''} onChange={(e) => setFormData({ ...formData, bemerkung: e.target.value })} rows={2} /></div>
+
+          {/* Bemerkung - optional */}
+          <div className="space-y-1">
+            <Label className="text-xs text-gray-500">Bemerkung (optional)</Label>
+            <Textarea 
+              value={formData.bemerkung || ''} 
+              onChange={(e) => setFormData({ ...formData, bemerkung: e.target.value })} 
+              rows={2}
+              placeholder="Zusätzliche Informationen zur Position..."
+            />
+          </div>
         </div>
-        <DialogFooter><Button variant="outline" onClick={onClose}>Abbrechen</Button><Button onClick={handleSave}>Speichern</Button></DialogFooter>
+
+        <DialogFooter className="gap-2">
+          <Button variant="outline" onClick={onClose}>Abbrechen</Button>
+          <Button onClick={handleSave} disabled={!formData.id_artikel || !formData.anzahl || !formData.einzelpreis}>
+            <Save className="h-4 w-4 mr-2" />
+            Speichern
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );
