@@ -124,6 +124,8 @@ export function LieferadressenTab({ adresseId, isEditing }: LieferadressenTabPro
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['lieferadressen', adresseId] });
+      queryClient.invalidateQueries({ queryKey: ['firma'] });
+      queryClient.invalidateQueries({ queryKey: ['mandant-lookup'] });
       toast.success('Lieferadresse gelöscht');
     },
     onError: () => {
