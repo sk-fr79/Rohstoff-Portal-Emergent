@@ -27,6 +27,7 @@ interface ReferenceSelectProps {
   fieldName: string;
   value?: string | null;
   onChange: (value: string | null) => void;
+  onSelectOption?: (option: ReferenceOption | null) => void;  // Callback mit vollständigen Daten
   placeholder?: string;
   disabled?: boolean;
   className?: string;
