@@ -793,17 +793,21 @@ Passwort: Admin123!
 
 ### Ansprechpartner-Ansicht Modernisiert (P0) ✅
 1. **Neue Komponente `AnsprechpartnerSection.tsx` implementiert:**
-   - Kompakte Tabellenansicht mit Grid-Layout
+   - **Verbessertes Tabellenlayout:** Separate Spalten für Name/Funktion, E-Mail, Telefon, Abteilung
+   - Namen werden jetzt vollständig angezeigt (kein Abschneiden mehr)
    - Wildcard-Suche (* und ? als Platzhalter)
    - **Doppelklick öffnet Detail-Modal** mit allen Kontaktinformationen
    - Avatar mit Initialen oder Profilbild
    - Klickbare Kontaktdaten (Telefon, E-Mail)
    - Hover-Aktionen: Details, Bearbeiten, Hauptkontakt setzen, Löschen
    - Hauptkontakt wird mit Stern-Badge hervorgehoben
-2. **Code-Bereinigung:**
+2. **Neue Felder im Bearbeitungsformular:**
+   - **Adresse (falls abweichend):** Straße, PLZ, Ort
+   - **Korrespondenzsprache:** Dropdown mit OECD-Ländern und Flaggen (🇩🇪 🇬🇧 🇫🇷 🇪🇸 etc.)
+3. **Code-Bereinigung:**
    - Obsolete Dateien entfernt: `dynamic-field.tsx`, `useFieldBinding.ts`
    - Diese wurden durch `SmartInput` und `fieldBindingsStore` ersetzt
-3. **Test-Ergebnis**: Manuell per Screenshot verifiziert ✅
+4. **Test-Ergebnis**: Manuell per Screenshot verifiziert ✅
 
 ---
 
