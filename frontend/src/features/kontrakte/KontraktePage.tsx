@@ -702,11 +702,27 @@ export function KontraktePage() {
                       </div>
                       <div className="space-y-1.5">
                         <Label>Zahlungsbedingung</Label>
-                        <Input {...register('zahlungsbedingung')} disabled={!isEditing} className="bg-white" placeholder="z.B. 30 Tage netto" />
+                        <SmartInput 
+                          module="kontrakte" 
+                          fieldName="zahlungsbedingung"
+                          value={watch('zahlungsbedingung')}
+                          onChange={(val) => setValue('zahlungsbedingung', val || '')}
+                          disabled={!isEditing} 
+                          className="bg-white" 
+                          placeholder="z.B. 30 Tage netto" 
+                        />
                       </div>
                       <div className="space-y-1.5">
                         <Label>Lieferbedingung</Label>
-                        <Input {...register('lieferbedingung')} disabled={!isEditing} className="bg-white" placeholder="z.B. FCA, DAP, CIF" />
+                        <SmartInput 
+                          module="kontrakte" 
+                          fieldName="lieferbedingung"
+                          value={watch('lieferbedingung')}
+                          onChange={(val) => setValue('lieferbedingung', val || '')}
+                          disabled={!isEditing} 
+                          className="bg-white" 
+                          placeholder="z.B. FCA, DAP, CIF" 
+                        />
                       </div>
                     </div>
                   )}
