@@ -1686,16 +1686,31 @@ export function KontraktePage() {
                                   });
                                 });
                               } else if (watchFields.vorgang_typ === 'VK' && mandantData) {
+                                // Hauptadresse des Mandanten
                                 lagerOptionen.push({
                                   id: `mandant_${mandantData.id}`,
                                   typ: 'mandant',
-                                  bezeichnung: 'Eigenes Lager',
+                                  bezeichnung: 'Eigenes Lager (Hauptstandort)',
                                   name1: mandantData.name1,
                                   strasse: mandantData.strasse,
                                   hausnummer: mandantData.hausnummer,
                                   plz: mandantData.plz,
                                   ort: mandantData.ort,
                                   land: mandantData.land
+                                });
+                                // Lieferadressen/Standorte des Mandanten
+                                (mandantData as any).lieferadressen?.forEach((la: any) => {
+                                  lagerOptionen.push({
+                                    id: `mandant_liefer_${la.id || la.bezeichnung}`,
+                                    typ: 'liefer',
+                                    bezeichnung: la.bezeichnung || la.name1 || 'Standort',
+                                    name1: la.name1,
+                                    strasse: la.strasse,
+                                    hausnummer: la.hausnummer,
+                                    plz: la.plz,
+                                    ort: la.ort,
+                                    land: la.land
+                                  });
                                 });
                               }
 
