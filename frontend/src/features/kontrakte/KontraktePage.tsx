@@ -1426,6 +1426,46 @@ export function KontraktePage() {
     }
   });
 
+  // Streckengeschäft Mutations
+  const createStreckeMutation = useMutation({
+    mutationFn: (data: any) => api.post('/kontrakte/strecken', data),
+    onSuccess: (response) => {
+      queryClient.invalidateQueries({ queryKey: ['kontrakte'] });
+      toast.success('Streckengeschäft erfolgreich erstellt');
+      setShowStreckeDialog(false);
+      setStreckenLieferant(null);
+      setStreckenAbnehmer(null);
+      // EK-Kontrakt öffnen
+      if (response.data?.data?.ek_kontrakt) {
+        openDetail(response.data.data.ek_kontrakt);
+      }
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.detail || 'Fehler beim Erstellen des Streckengeschäfts');
+    }
+  });
+
+  const verknuepfenMutation = useMutation({
+    mutationFn: ({ kontraktId, partnerKontraktId }: { kontraktId: string; partnerKontraktId?: string }) => 
+      api.post(`/kontrakte/${kontraktId}/strecke/verknuepfen`, { kontrakt_id: kontraktId, partner_kontrakt_id: partnerKontraktId }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['kontrakte'] });
+      toast.success('Kontrakt erfolgreich zu Streckengeschäft verknüpft');
+      setShowVerknuepfenDialog(false);
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.detail || 'Fehler beim Verknüpfen');
+    }
+  });
+
+  const streckeAufloesenMutation = useMutation({
+    mutationFn: (streckenId: string) => api.delete(`/kontrakte/strecken/${streckenId}/aufloesen`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['kontrakte'] });
+      toast.success('Streckengeschäft aufgelöst');
+    }
+  });
+
   // Handlers
   const onSubmit = async (data: KontraktForm) => {
     const submitData = { ...data, positionen: selectedKontrakt?.positionen || [] };
@@ -1441,13 +1481,50 @@ export function KontraktePage() {
 
   const handleNewKontrakt = () => {
     const today = new Date().toISOString().split('T')[0];
-    const emptyKontrakt: Kontrakt = { id: 'NEU', vorgang_typ: 'EK', name1: '', waehrung_kurz: 'EUR', waehrungskurs: 1, status: 'OFFEN', aktiv: true, erstellungsdatum: today, ist_fixierung: false, positionen: [] };
+    const emptyKontrakt: Kontrakt = { id: 'NEU', vorgang_typ: 'EK', name1: '', waehrung_kurz: 'EUR', waehrungskurs: 1, status: 'OFFEN', aktiv: true, erstellungsdatum: today, ist_fixierung: false, ist_strecke: false, positionen: [] };
     setSelectedKontrakt(emptyKontrakt);
     setSelectedAdresse(null);
     reset(emptyKontrakt);
     setIsNewRecord(true);
     setIsEditing(true);
     setActiveSection('kopf');
+  };
+
+  const handleNewStrecke = () => {
+    setStreckenLieferant(null);
+    setStreckenAbnehmer(null);
+    setShowStreckeDialog(true);
+  };
+
+  const handleCreateStrecke = () => {
+    if (!streckenLieferant || !streckenAbnehmer) {
+      toast.error('Bitte wählen Sie Lieferant und Abnehmer aus');
+      return;
+    }
+    const today = new Date().toISOString().split('T')[0];
+    createStreckeMutation.mutate({
+      lieferant_id_adresse: streckenLieferant.id,
+      lieferant_name1: streckenLieferant.name1,
+      lieferant_name2: streckenLieferant.name2,
+      lieferant_strasse: streckenLieferant.strasse,
+      lieferant_hausnummer: streckenLieferant.hausnummer,
+      lieferant_plz: streckenLieferant.plz,
+      lieferant_ort: streckenLieferant.ort,
+      lieferant_land: streckenLieferant.land,
+      lieferant_land_code: streckenLieferant.land_code,
+      abnehmer_id_adresse: streckenAbnehmer.id,
+      abnehmer_name1: streckenAbnehmer.name1,
+      abnehmer_name2: streckenAbnehmer.name2,
+      abnehmer_strasse: streckenAbnehmer.strasse,
+      abnehmer_hausnummer: streckenAbnehmer.hausnummer,
+      abnehmer_plz: streckenAbnehmer.plz,
+      abnehmer_ort: streckenAbnehmer.ort,
+      abnehmer_land: streckenAbnehmer.land,
+      abnehmer_land_code: streckenAbnehmer.land_code,
+      erstellungsdatum: today,
+      waehrung_kurz: 'EUR',
+      waehrungskurs: 1,
+    });
   };
 
   const handleClose = () => { setSelectedKontrakt(null); setIsEditing(false); setIsNewRecord(false); setSelectedAdresse(null); reset(); };
