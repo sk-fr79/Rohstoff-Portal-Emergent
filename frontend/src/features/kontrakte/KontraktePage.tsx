@@ -176,10 +176,25 @@ const kontraktSchema = z.object({
   sachbearbeiter_email: z.string().max(100).nullish(),
   id_haendler: z.string().nullish(),
   haendler_name: z.string().max(80).nullish(),
-  // Termine
+  // Termine (jetzt in Kopfdaten)
   erstellungsdatum: z.string().nullish(),
   gueltig_von: z.string().nullish(),
   gueltig_bis: z.string().nullish(),
+  // Läger
+  id_abhollager: z.string().nullish(),
+  abhollager_typ: z.string().nullish(), // 'haupt', 'liefer', 'mandant'
+  abhollager_name: z.string().max(100).nullish(),
+  abhollager_strasse: z.string().max(100).nullish(),
+  abhollager_plz: z.string().max(10).nullish(),
+  abhollager_ort: z.string().max(50).nullish(),
+  abhollager_land: z.string().max(50).nullish(),
+  id_ziellager: z.string().nullish(),
+  ziellager_typ: z.string().nullish(),
+  ziellager_name: z.string().max(100).nullish(),
+  ziellager_strasse: z.string().max(100).nullish(),
+  ziellager_plz: z.string().max(10).nullish(),
+  ziellager_ort: z.string().max(50).nullish(),
+  ziellager_land: z.string().max(50).nullish(),
   // Währung
   waehrung_kurz: z.string().max(5).default('EUR'),
   waehrungskurs: z.number().default(1),
