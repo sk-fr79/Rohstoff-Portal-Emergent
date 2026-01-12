@@ -67,6 +67,7 @@ interface Artikel extends ArtikelForm {
   id: string;
   erstellt_am?: string;
   letzte_aenderung?: string;
+  zolltarifnotiz_url?: string;
 }
 
 // ========================== SIDEBAR SECTIONS ==========================
