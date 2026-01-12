@@ -638,18 +638,25 @@ async def get_adressen_fuer_auswahl(
         haupt_ust_id = a.get("umsatzsteuer_id") or a.get("ust_id")
         haupt_ust_lkz = a.get("umsatzsteuer_lkz", "")
         if haupt_ust_id:
+            full_haupt_id = f"{haupt_ust_lkz}{haupt_ust_id}" if haupt_ust_lkz and not haupt_ust_id.startswith(haupt_ust_lkz) else haupt_ust_id
             ust_ids.append({
                 "id": "main",
-                "ust_id": f"{haupt_ust_lkz}{haupt_ust_id}" if haupt_ust_lkz and not haupt_ust_id.startswith(haupt_ust_lkz) else haupt_ust_id,
+                "ust_id": full_haupt_id,
                 "ist_hauptid": True
             })
+        # Weitere USt-IDs aus dem Array
         for idx, weitere in enumerate(a.get("weitere_ustids", [])):
             if isinstance(weitere, dict):
-                ust_ids.append({
-                    "id": weitere.get("id", f"extra_{idx}"),
-                    "ust_id": weitere.get("ust_id", ""),
-                    "ist_hauptid": False
-                })
+                # Kombiniere lkz + ustid
+                lkz = weitere.get("lkz", "")
+                ustid_val = weitere.get("ustid", "") or weitere.get("ust_id", "")
+                if ustid_val:
+                    full_id = f"{lkz}{ustid_val}" if lkz and not ustid_val.startswith(lkz) else ustid_val
+                    ust_ids.append({
+                        "id": weitere.get("id", f"extra_{idx}"),
+                        "ust_id": full_id,
+                        "ist_hauptid": False
+                    })
             elif isinstance(weitere, str) and weitere:
                 ust_ids.append({
                     "id": f"extra_{idx}",
@@ -657,20 +664,20 @@ async def get_adressen_fuer_auswahl(
                     "ist_hauptid": False
                 })
         
-        # Bankverbindungen laden
-        bank_cursor = db.bankverbindungen.find({"adresse_id": a["_id"], "aktiv": {"$ne": False}})
-        bankverbindungen_raw = await bank_cursor.to_list(length=20)
+        # Bankverbindungen aus dem eingebetteten Array der Adresse laden
+        bankverbindungen_raw = a.get("bankverbindungen", [])
         bankverbindungen = []
         for bv in bankverbindungen_raw:
-            bankverbindungen.append({
-                "id": bv.get("_id") or bv.get("id"),
-                "iban": bv.get("iban", ""),
-                "bic": bv.get("bic", ""),
-                "bank_name": bv.get("bank_name", ""),
-                "kontoinhaber": bv.get("kontoinhaber", ""),
-                "waehrung": bv.get("waehrung", "EUR"),
-                "ist_hauptkonto": bv.get("ist_hauptkonto", False)
-            })
+            if isinstance(bv, dict) and bv.get("aktiv", True):
+                bankverbindungen.append({
+                    "id": bv.get("id", ""),
+                    "iban": bv.get("iban", ""),
+                    "bic": bv.get("bic", ""),
+                    "bank_name": bv.get("bank_name", ""),
+                    "kontoinhaber": bv.get("kontoinhaber", ""),
+                    "waehrung": bv.get("waehrung", "EUR"),
+                    "ist_hauptkonto": bv.get("ist_hauptkonto", False)
+                })
         
         result.append({
             "id": a["_id"],
@@ -682,7 +689,7 @@ async def get_adressen_fuer_auswahl(
             "ort": a.get("ort"),
             "land": a.get("land"),
             "land_code": a.get("land_code"),
-            "ust_id": f"{haupt_ust_lkz}{haupt_ust_id}" if haupt_ust_lkz and haupt_ust_id and not haupt_ust_id.startswith(haupt_ust_lkz) else haupt_ust_id,
+            "ust_id": ust_ids[0]["ust_id"] if ust_ids else None,
             "steuernummer": a.get("steuernummer"),
             "telefon": a.get("telefon"),
             "telefax": a.get("telefax"),
