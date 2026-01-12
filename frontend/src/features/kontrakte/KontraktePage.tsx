@@ -35,6 +35,7 @@ import { ResizeHandle } from '@/components/ui/resize-handle';
 import { WAEHRUNGEN, getWaehrung } from '@/data/waehrungen';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+import { formatRelativeTime, formatDateTime, formatDateLong } from '@/lib/dateUtils';
 
 // ========================== TYPES ==========================
 interface Benutzer {
