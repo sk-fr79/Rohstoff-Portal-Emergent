@@ -131,13 +131,18 @@ export function DynamicInput({
 }: Omit<DynamicFieldProps, 'label' | 'showLabel' | 'required'>) {
   const { hasBinding, binding, isLoading } = useFieldBinding(module, fieldName);
 
+  console.log(`[DynamicInput] ${module}.${fieldName}: isLoading=${isLoading}, hasBinding=${hasBinding}`, binding);
+
   if (isLoading) {
     return (
-      <div className={cn("h-10 bg-gray-100 rounded-md animate-pulse", className)} />
+      <div className={cn("h-10 bg-gray-100 rounded-md animate-pulse flex items-center justify-center", className)}>
+        <Loader2 className="h-4 w-4 animate-spin text-gray-400" />
+      </div>
     );
   }
 
   if (hasBinding && binding) {
+    console.log(`[DynamicInput] Rendering ReferenceSelect for ${module}.${fieldName}`);
     return (
       <ReferenceSelect
         module={module}
