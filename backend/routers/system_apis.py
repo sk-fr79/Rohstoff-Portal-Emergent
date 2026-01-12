@@ -1690,7 +1690,9 @@ class FieldBindingResponse(BaseModel):
 @router.get("/modules")
 async def get_available_modules(user = Depends(require_admin)):
     """Liste der verfügbaren Module und deren Felder für Verknüpfungen"""
-    return {"success": True, "data": AVAILABLE_MODULES}
+    # Hole aktuelle Module mit dynamisch generierten Feldern
+    modules = get_module_fields()
+    return {"success": True, "data": modules, "categories": FIELD_CATEGORIES}
 
 
 @router.get("/field-bindings")
