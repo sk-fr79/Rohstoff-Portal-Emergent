@@ -791,6 +791,57 @@ Passwort: Admin123!
 
 ## CHANGELOG (2026-01-12)
 
+### Kontrakt-Modul Erweitert (Major Update) ✅
+Basierend auf Echo2-Altsystem-Analyse wurden folgende Erweiterungen implementiert:
+
+**1. Neue Felder im Kontrakt-Kopf:**
+- `ist_fixierung` - Fixierungskontrakt-Toggle
+- `fix_von`, `fix_bis` - Fixierungszeitraum
+- `fix_menge_gesamt` - Gesamt-Fixierungsmenge
+- `fix_id_artikel` - Hauptartikel für Fixierung
+- `boerse_diff_abs`, `boerse_diff_proz` - Börsendifferenz
+- `formulartext_anfang`, `formulartext_ende` - Formulartexte
+- `waehrungskurs` - Umrechnungskurs
+
+**2. Erweiterte Positions-Felder:**
+- `mengen_toleranz_prozent` - Toleranz für Über-/Unterlieferung
+- `ueberliefer_ok` - Überlieferung erlaubt?
+- `lieferort` - Abweichender Lieferort (SmartInput)
+- `gueltig_von`, `gueltig_bis` - Positions-Gültigkeit
+- `einzelpreis_fw`, `gesamtpreis_fw` - Fremdwährungspreise
+- `waehrungskurs` - Kurs für Position
+
+**3. Validatoren (aus Echo2 portiert):**
+- `VALID_KEINE_FUHREN_ZUGEORDNET` - Prüft zugeordnete Fuhren
+- `VALID_KEINE_EK_VK_ZUORDNUNG` - Prüft EK-VK-Zuordnungen
+- `VALID_KOPF_OFFEN` - Kontrakt noch bearbeitbar?
+- `VALID_MENGE_PREIS_KOMPLETT` - Artikelposition vollständig
+- `VALID_UEBERLIEFER_PRUEFUNG` - Warnung bei Überlieferung
+- `VALID_DUBLETTEN_PRUEFUNG` - Ähnliche Kontrakte warnen
+- `calculate_lieferstatus()` - Berechnet Lieferstatus
+
+**4. Neue Sektionen im Frontend:**
+- **Fixierung** - Komplett neue Sektion für Börsenpreisfixierung
+- **Formulartexte** - Texte vor/nach Positionen
+- **Währung mit OECD-Dropdown** (aus waehrungen.ts)
+
+**5. Positions-Dialog:**
+- Vollständig neuer Dialog mit allen Feldern
+- SmartInput für Artikel und Lieferort
+- Toleranz-Einstellungen pro Position
+
+**Dateien:**
+- `/app/backend/routers/kontrakte.py` - HEAVILY MODIFIED
+- `/app/frontend/src/features/kontrakte/KontraktePage.tsx` - HEAVILY MODIFIED
+
+---
+
+### Bankverbindungen mit Währung ✅
+- Währungs-Dropdown mit 18 OECD-Währungen (€, $, £, ¥, CHF...)
+- Zentrale Datei `/app/frontend/src/data/waehrungen.ts` für Referenzierung
+
+---
+
 ### Ansprechpartner-Ansicht Modernisiert (P0) ✅
 1. **Neue Komponente `AnsprechpartnerSection.tsx` implementiert:**
    - **Verbessertes Tabellenlayout:** Separate Spalten für Name/Funktion, E-Mail, Telefon, Abteilung
