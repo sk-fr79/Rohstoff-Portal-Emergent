@@ -284,11 +284,17 @@ export function FieldBindingsManager({
     setFallbackToReference(true);
   };
 
-  // Verfügbare Felder für ausgewähltes Modul
+  // Verfügbare Felder für ausgewähltes Modul (nach Kategorie sortiert)
   const availableFields = selectedModule 
-    ? modules[selectedModule]?.fields.filter(f => 
-        !bindings.some(b => b.module === selectedModule && b.field_name === f.name)
-      ) || []
+    ? (modules[selectedModule]?.fields || [])
+        .filter(f => !bindings.some(b => b.module === selectedModule && b.field_name === f.name))
+        .sort((a, b) => {
+          // Sortiere nach Kategorie, dann nach Label
+          const catA = a.category || 'sonstiges';
+          const catB = b.category || 'sonstiges';
+          if (catA !== catB) return catA.localeCompare(catB);
+          return a.label.localeCompare(b.label);
+        })
     : [];
 
   // Spalten der ausgewählten Referenztabelle oder API
