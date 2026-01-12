@@ -1029,10 +1029,40 @@ async def update_kontrakt(
         if not result.is_valid:
             raise HTTPException(status_code=400, detail=result.to_dict())
     
+    # Änderungen berechnen für Audit-Log
+    aenderungen = berechne_aenderungen(existing, update_data)
+    
+    # Spezielle Aktionen erkennen
+    aktion = "BEARBEITET"
+    details = {}
+    
+    if "status" in update_data and update_data["status"] != existing.get("status"):
+        aktion = "STATUS_GEAENDERT"
+        details["alter_status"] = existing.get("status")
+        details["neuer_status"] = update_data["status"]
+    elif "id_adresse" in update_data and update_data["id_adresse"] != existing.get("id_adresse"):
+        aktion = "PARTNER_GEAENDERT"
+        details["alter_partner"] = existing.get("name1")
+        details["neuer_partner"] = update_data.get("name1")
+    elif ("id_abhollager" in update_data or "id_ziellager" in update_data):
+        if update_data.get("id_abhollager") != existing.get("id_abhollager") or update_data.get("id_ziellager") != existing.get("id_ziellager"):
+            aktion = "LAGER_GEAENDERT"
+    
     update_data["letzte_aenderung"] = datetime.utcnow()
     update_data["geaendert_von"] = user.get("username")
     
     await db.kontrakte.update_one({"_id": kontrakt_id}, {"$set": update_data})
+    
+    # Audit-Log: Kontrakt bearbeitet (nur wenn Änderungen vorhanden)
+    if aenderungen or aktion != "BEARBEITET":
+        await audit_log_erstellen(
+            kontrakt_id=kontrakt_id,
+            mandant_id=user["mandant_id"],
+            aktion=aktion,
+            benutzer=user,
+            details=details,
+            aenderungen=aenderungen
+        )
     
     updated = await db.kontrakte.find_one({"_id": kontrakt_id})
     updated["id"] = updated.pop("_id")
