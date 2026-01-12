@@ -11,6 +11,56 @@
 - **PDF-Export:** Implementierung der PDF-Erstellung für Rechnungen und Lieferscheine
 - **Sammelrechnungen:** Funktion implementieren, mit der mehrere Fuhren zu einer einzigen Sammelrechnung zusammengefasst werden können
 
+---
+
+## ✅ Kontrakt-Positionserfassung Redesign (NEU - 12.01.2026)
+Komplett überarbeitete, moderne Positionserfassung im Kontrakt-Modul.
+
+### Features:
+
+**Neuer Position-Dialog:**
+- **Tab-Navigation:** 3 Tabs (Artikel, Mengen & Preise, Optionen)
+- **Artikel-Tab:** ArtikelSelect mit Such- und Filteroptionen, manuelle Eingabe als Fallback
+- **Mengen & Preise-Tab:** Große Eingabekarten für Menge, Einzelpreis, Gesamtpreis (automatisch berechnet), Gültigkeit
+- **Optionen-Tab:** Mengentoleranz (%), Überlieferung erlaubt/nicht erlaubt, Positionsstatus, Bemerkung
+
+**ArtikelSelect-Komponente:**
+- Durchsuchbare Dropdown-Auswahl
+- Filter nach Artikelgruppe und Typ (Gefahrgut, Produkt, Dienstleistung)
+- Nutzt `/api/artikel/lookup` Endpunkt
+- Zeigt: Artikel-Nr., Bezeichnung, Artikelgruppe, Einheit
+
+**Positionen-Übersicht (PositionenListe):**
+- **Summen-Header:** Anzahl Positionen, Gesamtmenge (Σ), Gesamtwert
+- **Positionskarten:** Moderne Kartenansicht mit Positionsnummer-Badge
+- **Detailanzeige:** Menge × Einzelpreis = Gesamtpreis prominent dargestellt
+- **Status-Tags:** Überlieferung, Toleranz, Lieferort
+
+**Kopier-Funktion:**
+- Button zum Duplizieren einer Position
+- Kopie erhält nächste Positionsnummer
+- Bemerkung wird mit "(Kopie)" markiert
+- Toast-Nachricht "Position kopiert"
+
+**Doppelklick-Detailansicht:**
+- Auch im Lesemodus des Kontrakts verfügbar
+- Zeigt Dialog mit allen Positionsdetails
+- Nur "Schließen"-Button (kein Bearbeiten im Lesemodus)
+- Hinweistext "Doppelklick auf eine Position für Detailansicht"
+
+### Backend-Erweiterungen:
+- `GET /api/artikel/lookup` - Gefilterte Artikelsuche für ArtikelSelect
+- `GET /api/artikel/gruppen` - Artikelgruppen für Filter-Dropdown
+- Schema-Fix: `positionsnummer: Optional[int] = None` für Auto-Increment
+
+### Dateien:
+- `/app/frontend/src/features/kontrakte/KontraktePage.tsx` - PositionDialog, PositionenListe
+- `/app/backend/routers/artikel.py` - `/lookup` Endpunkt (Zeile ~163)
+- `/app/backend/routers/kontrakte.py` - Position-CRUD
+
+### Tests:
+- `/app/tests/test_kontrakt_positionen.py` - 15 Unit-Tests (100% bestanden)
+
 ### P2 - Backlog
 - Datenimport aus dem Altsystem
 - Vollständige PWA-Funktionen (Offline-Fähigkeit)
