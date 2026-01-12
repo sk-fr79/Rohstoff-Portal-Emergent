@@ -131,6 +131,12 @@ const kontraktSchema = z.object({
   telefon: z.string().max(30).nullish(),
   telefax: z.string().max(30).nullish(),
   email: z.string().email().nullish().or(z.literal('')),
+  // Bankverbindung für Kontrakt
+  id_bankverbindung: z.string().nullish(),
+  bank_iban: z.string().max(34).nullish(),
+  bank_bic: z.string().max(11).nullish(),
+  bank_name: z.string().max(100).nullish(),
+  bank_waehrung: z.string().max(3).nullish(),
   // Ansprechpartner
   id_ansprechpartner: z.string().nullish(),
   ansprechpartner_name: z.string().max(80).nullish(),
