@@ -1210,83 +1210,13 @@ export function AdressenPage() {
                         </div>
                       </div>
 
-                      {/* Ansprechpartner */}
-                      <div>
-                        <div className="flex items-center justify-between mb-4">
-                          <h3 className="text-sm font-semibold text-gray-900 flex items-center gap-2">
-                            <Users className="h-4 w-4 text-emerald-500" />
-                            Ansprechpartner
-                          </h3>
-                          {isEditing && (
-                            <Button 
-                              type="button" 
-                              size="sm" 
-                              variant="outline"
-                              onClick={() => { setEditingAp(null); setShowApDialog(true); }}
-                            >
-                              <Plus className="h-4 w-4 mr-1" />Hinzufügen
-                            </Button>
-                          )}
-                        </div>
-                        
-                        <div className="space-y-3">
-                          {ansprechpartnerList.length === 0 ? (
-                            <p className="text-sm text-gray-500 text-center py-4 bg-gray-50 rounded-lg">
-                              Keine Ansprechpartner vorhanden
-                            </p>
-                          ) : (
-                            ansprechpartnerList.map((ap) => (
-                              <div 
-                                key={ap.id} 
-                                className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-                              >
-                                {ap.profilbild ? (
-                                  <img 
-                                    src={ap.profilbild} 
-                                    alt={`${ap.vorname} ${ap.nachname}`}
-                                    className="h-12 w-12 rounded-full object-cover border-2 border-white shadow"
-                                  />
-                                ) : (
-                                  <div className="h-12 w-12 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center shadow">
-                                    <UserCircle className="h-7 w-7 text-white" />
-                                  </div>
-                                )}
-                                
-                                <div className="flex-1 min-w-0">
-                                  <p className="font-medium text-gray-900">{ap.vorname} {ap.nachname}</p>
-                                  {ap.funktion && <p className="text-sm text-gray-500">{ap.funktion}</p>}
-                                  <div className="flex gap-4 mt-1 text-xs text-gray-500">
-                                    {ap.telefon && <span className="flex items-center gap-1"><Phone className="h-3 w-3" />{ap.telefon}</span>}
-                                    {ap.email && <span className="flex items-center gap-1"><Mail className="h-3 w-3" />{ap.email}</span>}
-                                  </div>
-                                </div>
-                                
-                                {isEditing && (
-                                  <div className="flex gap-1">
-                                    <Button 
-                                      type="button" 
-                                      variant="ghost" 
-                                      size="icon"
-                                      onClick={() => { setEditingAp(ap); setShowApDialog(true); }}
-                                    >
-                                      <Pencil className="h-4 w-4" />
-                                    </Button>
-                                    <Button 
-                                      type="button" 
-                                      variant="ghost" 
-                                      size="icon"
-                                      className="text-red-500 hover:text-red-700"
-                                      onClick={() => deleteAnsprechpartner(ap.id)}
-                                    >
-                                      <Trash2 className="h-4 w-4" />
-                                    </Button>
-                                  </div>
-                                )}
-                              </div>
-                            ))
-                          )}
-                        </div>
-                      </div>
+                      {/* Ansprechpartner - Moderne Section */}
+                      <AnsprechpartnerSection
+                        adresseId={selectedAdresse?.id || ''}
+                        ansprechpartner={ansprechpartnerList}
+                        isEditing={isEditing}
+                        onUpdate={setAnsprechpartnerList}
+                      />
                     </div>
                   )}
 
