@@ -13,7 +13,57 @@
 
 ---
 
-## ✅ Audit-Protokoll für Kontrakte (NEU - 12.01.2026)
+## ✅ Streckengeschäft (NEU - 12.01.2026)
+Vollständige Implementierung des Streckengeschäfts (Drop Shipping) im Kontraktmodul.
+
+### Definition
+Ein Streckengeschäft ist ein Handelsgeschäft, bei dem die Ware direkt vom Lieferanten zum Abnehmer geliefert wird - ohne Zwischenlagerung im eigenen Lager.
+
+### Features:
+
+**Neuer Kontrakttyp "Strecke":**
+- Ein Streckengeschäft verknüpft automatisch einen EK-Kontrakt (Einkauf vom Lieferanten) mit einem VK-Kontrakt (Verkauf an Abnehmer)
+- Beide Kontrakte teilen eine gemeinsame `strecken_id`
+- Felder: `ist_strecke`, `strecken_id`, `strecken_rolle`
+
+**Frontend-Features:**
+- **Neu-Dropdown:** "Einzelkontrakt" und "Streckengeschäft" Optionen
+- **Strecken-Dialog:** Zwei-Spalten-Layout zur Auswahl von Lieferant (EK) und Abnehmer (VK)
+- **Lieferrouten-Visualisierung:** Grafische Darstellung des Warenflusses
+- **STRECKE Badge:** Orangenes Badge in der Kontrakt-Liste
+- **Partner-Anzeige:** "→ Partner-Name" unter dem Vertragspartner
+- **Filter:** Dropdown-Option "Strecke" zeigt nur Strecken-Kontrakte
+- **Kontextmenü-Erweiterung:**
+  - "EK-Kontrakt öffnen" / "VK-Kontrakt öffnen"
+  - "Zu Strecke verknüpfen" (bei normalen Kontrakten)
+  - "Strecke auflösen"
+- **Detail-Header:** Zeigt Strecken-Badge und verknüpften Partner
+
+**Backend-APIs:**
+- `POST /api/kontrakte/strecken` - Neues Streckengeschäft (erstellt EK + VK automatisch)
+- `GET /api/kontrakte/strecken` - Alle Streckengeschäfte laden
+- `GET /api/kontrakte?nur_strecke=true` - Filter für Strecken-Kontrakte
+- `POST /api/kontrakte/{id}/strecke/verknuepfen` - Bestehende Kontrakte verknüpfen
+- `DELETE /api/kontrakte/strecken/{id}/aufloesen` - Strecken-Verknüpfung auflösen
+- `POST /api/kontrakte/{id}/positionen/spiegeln` - Position spiegeln (EK↔VK)
+
+**Strecken-Status:**
+- Berechnet aus EK- und VK-Status
+- OFFEN, AKTIV, TEILERFUELLT, ERFUELLT, ABGESCHLOSSEN, STORNO
+
+**Lager-Logik:**
+- Abhollager: Lager des Lieferanten (typ: "lieferant")
+- Ziellager: Lager des Abnehmers (typ: "abnehmer")
+- Eigenes Lager wird nicht benötigt (Direktlieferung)
+
+### Dateien:
+- `/app/backend/routers/kontrakte.py` - Strecken-APIs + berechne_strecken_status()
+- `/app/frontend/src/features/kontrakte/KontraktePage.tsx` - Strecken-UI + Dialoge
+- `/app/tests/test_streckengeschaeft.py` - 13 Unit-Tests (100% bestanden)
+
+---
+
+## ✅ Audit-Protokoll für Kontrakte (12.01.2026)
 Umfassendes, manipulationssicheres Aktivitätsprotokoll für alle Kontrakt-Aktionen.
 
 ### Features:
