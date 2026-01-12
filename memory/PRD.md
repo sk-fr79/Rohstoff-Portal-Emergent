@@ -1,6 +1,25 @@
 # Rohstoff Portal - Product Requirements Document
 
-## Projektstatus: ENTWICKLUNG AKTIV
+## Projektstatus: ENTWICKLUNG AKTIV (Stand: 12.01.2026)
+
+## Ausstehende Aufgaben (Priorisiert)
+
+### P1 - Anstehend
+- **API-System Phase 7:** Import/Export und Audit-Logs für Referenztabellen
+- **PDF-Export:** Implementierung der PDF-Erstellung für Rechnungen und Lieferscheine
+- **Sammelrechnungen:** Funktion implementieren, mit der mehrere Fuhren zu einer einzigen Sammelrechnung zusammengefasst werden können
+
+### P2 - Backlog
+- Datenimport aus dem Altsystem
+- Vollständige PWA-Funktionen (Offline-Fähigkeit)
+- Umfassendes Unit- und E2E-Testing für alle Module
+- Zusätzliche Features für das API-System (Webhooks, Daten-Transformationen)
+
+### Bekannte Technische Schulden
+- TypeScript-Warnungen in `FuhrenPage.tsx` und anderen Core-Feature-Seiten
+- Layout-Problem in der Einstellungsseite (`ReferenceTablesTab.tsx`) bei vielen Einträgen
+
+---
 
 ## Original Problem Statement
 Modernisierung einer veralteten Java/Echo2-Anwendung "Rohstoff Portal" zu einer modernen Architektur mit:
