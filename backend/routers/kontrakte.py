@@ -191,6 +191,12 @@ class KontraktUpdate(BaseModel):
     telefon: Optional[str] = None
     telefax: Optional[str] = None
     email: Optional[str] = None
+    # Bankverbindung
+    id_bankverbindung: Optional[str] = None
+    bank_iban: Optional[str] = None
+    bank_bic: Optional[str] = None
+    bank_name: Optional[str] = None
+    bank_waehrung: Optional[str] = None
     # Ansprechpartner
     id_ansprechpartner: Optional[str] = None
     ansprechpartner_name: Optional[str] = None
