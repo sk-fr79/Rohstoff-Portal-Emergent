@@ -23,7 +23,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { ReferenceSelect } from '@/components/ui/reference-select';
+import { ReferenceSelect, ReferenceOption } from '@/components/ui/reference-select';
 
 // ========================== SCHEMA ==========================
 const artikelSchema = z.object({
