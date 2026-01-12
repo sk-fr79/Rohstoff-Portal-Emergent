@@ -177,6 +177,21 @@ export function FirmeneinstellungenPage() {
     }
   });
 
+  // Firma manuell synchronisieren
+  const syncMutation = useMutation({
+    mutationFn: async () => {
+      const response = await api.post('/system/firma/sync');
+      return response.data;
+    },
+    onSuccess: (data) => {
+      toast.success(data.message || 'Firmendaten synchronisiert');
+      queryClient.invalidateQueries({ queryKey: ['firma'] });
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.detail || 'Fehler beim Synchronisieren');
+    }
+  });
+
   if (isLoadingFirma) {
     return (
       <div className="flex items-center justify-center h-64">
