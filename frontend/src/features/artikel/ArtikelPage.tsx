@@ -48,6 +48,8 @@ const artikelSchema = z.object({
   avv_code_ausgang: z.string().max(50).nullish(),
   eakcode: z.string().max(20).nullish(),
   zolltarifnr: z.string().max(50).nullish(),
+  zolltarifnr_bezeichnung: z.string().max(500).nullish(),
+  zolltarifnr_url: z.string().max(500).nullish(),
   zolltarifnotiz: z.string().max(500).nullish(),
   basel_code: z.string().max(80).nullish(),
   basel_notiz: z.string().max(500).nullish(),
@@ -67,7 +69,6 @@ interface Artikel extends ArtikelForm {
   id: string;
   erstellt_am?: string;
   letzte_aenderung?: string;
-  zolltarifnotiz_url?: string;
 }
 
 // ========================== SIDEBAR SECTIONS ==========================
