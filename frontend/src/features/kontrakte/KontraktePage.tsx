@@ -1098,14 +1098,7 @@ function ProtokollTab({ kontraktId }: ProtokollTabProps) {
   const gruppierteLogs = useMemo(() => {
     const gruppen: Record<string, AuditLogEintrag[]> = {};
     logs.forEach(log => {
-      // UTC zu lokaler Zeit konvertieren
-      const utcString = log.zeitstempel.endsWith('Z') ? log.zeitstempel : log.zeitstempel + 'Z';
-      const datum = new Date(utcString).toLocaleDateString('de-DE', {
-        weekday: 'long',
-        day: '2-digit',
-        month: 'long',
-        year: 'numeric'
-      });
+      const datum = formatDateLong(log.zeitstempel);
       if (!gruppen[datum]) gruppen[datum] = [];
       gruppen[datum].push(log);
     });
