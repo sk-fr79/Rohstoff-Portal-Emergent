@@ -3,7 +3,7 @@ Kontrakte Router - CRUD für Einkaufs- und Verkaufskontrakte
 Erweitert mit Fixierungslogik und Validatoren aus dem Echo2-Altsystem
 """
 
-from fastapi import APIRouter, HTTPException, Depends, Query
+from fastapi import APIRouter, HTTPException, Depends, Query, Request
 from pydantic import BaseModel, Field
 from typing import Optional, List, Dict, Any
 from datetime import datetime, date
@@ -15,6 +15,121 @@ from utils.auth import get_current_user, require_permission
 from routers.nummernkreise import get_naechste_nummer
 
 router = APIRouter(prefix="/api", tags=["Kontrakte"])
+
+
+# ========================== AUDIT LOG HELPER ==========================
+
+AKTION_TYPEN = {
+    "ERSTELLT": {"icon": "plus-circle", "farbe": "emerald", "label": "Erstellt"},
+    "BEARBEITET": {"icon": "pencil", "farbe": "blue", "label": "Bearbeitet"},
+    "STATUS_GEAENDERT": {"icon": "refresh-cw", "farbe": "amber", "label": "Status geändert"},
+    "POSITION_HINZUGEFUEGT": {"icon": "package-plus", "farbe": "green", "label": "Position hinzugefügt"},
+    "POSITION_BEARBEITET": {"icon": "package", "farbe": "blue", "label": "Position bearbeitet"},
+    "POSITION_GELOESCHT": {"icon": "package-x", "farbe": "red", "label": "Position gelöscht"},
+    "GEDRUCKT": {"icon": "printer", "farbe": "gray", "label": "Gedruckt"},
+    "EXPORTIERT": {"icon": "download", "farbe": "violet", "label": "Exportiert"},
+    "GEOEFFNET": {"icon": "eye", "farbe": "slate", "label": "Geöffnet"},
+    "PARTNER_GEAENDERT": {"icon": "building", "farbe": "orange", "label": "Partner geändert"},
+    "LAGER_GEAENDERT": {"icon": "warehouse", "farbe": "cyan", "label": "Lager geändert"},
+    "KOPIERT": {"icon": "copy", "farbe": "indigo", "label": "Kopiert"},
+    "STORNIERT": {"icon": "x-circle", "farbe": "red", "label": "Storniert"},
+    "FREIGEGEBEN": {"icon": "check-circle", "farbe": "green", "label": "Freigegeben"},
+    "ABGESCHLOSSEN": {"icon": "lock", "farbe": "gray", "label": "Abgeschlossen"},
+}
+
+async def audit_log_erstellen(
+    kontrakt_id: str,
+    mandant_id: str,
+    aktion: str,
+    benutzer: dict,
+    details: dict = None,
+    aenderungen: list = None
+):
+    """Erstellt einen Audit-Log Eintrag für einen Kontrakt"""
+    db = get_db()
+    
+    log_eintrag = {
+        "_id": str(uuid.uuid4()),
+        "kontrakt_id": kontrakt_id,
+        "mandant_id": mandant_id,
+        "aktion": aktion,
+        "aktion_meta": AKTION_TYPEN.get(aktion, {"icon": "activity", "farbe": "gray", "label": aktion}),
+        "benutzer_id": benutzer.get("id") or benutzer.get("_id"),
+        "benutzer_name": benutzer.get("name") or f"{benutzer.get('vorname', '')} {benutzer.get('nachname', '')}".strip() or benutzer.get("benutzername"),
+        "benutzer_kuerzel": benutzer.get("kuerzel") or benutzer.get("benutzername", "")[:2].upper(),
+        "zeitstempel": datetime.utcnow().isoformat(),
+        "details": details or {},
+        "aenderungen": aenderungen or [],
+    }
+    
+    await db.kontrakt_audit_log.insert_one(log_eintrag)
+    return log_eintrag
+
+
+def berechne_aenderungen(alt: dict, neu: dict, felder_whitelist: list = None) -> list:
+    """Vergleicht zwei Dictionaries und gibt eine Liste der Änderungen zurück"""
+    aenderungen = []
+    
+    # Felder die verglichen werden sollen
+    relevante_felder = felder_whitelist or [
+        "status", "name1", "name2", "strasse", "plz", "ort", "land",
+        "kontraktnummer", "datum_kontrakt", "datum_lieferung_von", "datum_lieferung_bis",
+        "bemerkung_extern", "bemerkung_intern", "zahlungsbedingung", "waehrung_kurz",
+        "id_ansprechpartner", "id_zustaendiger", "id_adresse",
+        "id_abhollager", "abhollager_name", "id_ziellager", "ziellager_name",
+        "id_ustid", "ustid_text", "id_bankverbindung", "bankverbindung_text",
+        "formulartext_anfang", "formulartext_ende"
+    ]
+    
+    feld_labels = {
+        "status": "Status",
+        "name1": "Firmenname",
+        "name2": "Zusatz",
+        "strasse": "Straße",
+        "plz": "PLZ",
+        "ort": "Ort",
+        "land": "Land",
+        "kontraktnummer": "Kontraktnummer",
+        "datum_kontrakt": "Kontraktdatum",
+        "datum_lieferung_von": "Lieferzeitraum von",
+        "datum_lieferung_bis": "Lieferzeitraum bis",
+        "bemerkung_extern": "Externe Bemerkung",
+        "bemerkung_intern": "Interne Bemerkung",
+        "zahlungsbedingung": "Zahlungsbedingung",
+        "waehrung_kurz": "Währung",
+        "id_ansprechpartner": "Ansprechpartner",
+        "id_zustaendiger": "Interner Zuständiger",
+        "id_adresse": "Vertragspartner",
+        "id_abhollager": "Abhollager",
+        "abhollager_name": "Abhollager Name",
+        "id_ziellager": "Ziellager",
+        "ziellager_name": "Ziellager Name",
+        "id_ustid": "USt-ID",
+        "ustid_text": "USt-ID Text",
+        "id_bankverbindung": "Bankverbindung",
+        "bankverbindung_text": "Bankverbindung Text",
+        "formulartext_anfang": "Formulartext Anfang",
+        "formulartext_ende": "Formulartext Ende",
+    }
+    
+    for feld in relevante_felder:
+        alt_wert = alt.get(feld)
+        neu_wert = neu.get(feld)
+        
+        # Nur wenn sich wirklich etwas geändert hat
+        if alt_wert != neu_wert:
+            # Leere Strings und None als gleich behandeln
+            if (alt_wert in [None, "", []] and neu_wert in [None, "", []]):
+                continue
+                
+            aenderungen.append({
+                "feld": feld,
+                "feld_label": feld_labels.get(feld, feld),
+                "alt": alt_wert,
+                "neu": neu_wert
+            })
+    
+    return aenderungen
 
 
 # ========================== SCHEMAS ==========================
