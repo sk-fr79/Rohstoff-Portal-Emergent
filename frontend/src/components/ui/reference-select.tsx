@@ -49,6 +49,7 @@ export function ReferenceSelect({
   fieldName,
   value,
   onChange,
+  onSelectOption,
   placeholder = 'Auswählen...',
   disabled = false,
   className,
