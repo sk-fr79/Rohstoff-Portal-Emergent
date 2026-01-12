@@ -916,16 +916,18 @@ async def validiere_adresse(data: AdresseCreate, user = Depends(require_permissi
 
 @router.get("/laender")
 async def get_laender(user = Depends(require_permission("adressen", "read"))):
-    """Liste der konfigurierten Länder"""
+    """Liste aller Länder der Welt, sortiert nach Region und Name"""
     laender = []
-    for name, info in EU_LAENDER.items():
+    for name, info in ALLE_LAENDER.items():
         laender.append({
             "name": name,
-            "ust_praefix": info["ust_praefix"],
-            "ist_eu": info["ist_eu"],
-            "ist_homeland": info["ist_homeland"],
+            "ust_praefix": info.get("ust_praefix"),
+            "ist_eu": info.get("ist_eu", False),
+            "ist_homeland": info.get("ist_homeland", False),
+            "region": info.get("region", "Sonstige"),
         })
-    return {"success": True, "data": sorted(laender, key=lambda x: x["name"])}
+    # Sortiere nach Region, dann nach Name
+    return {"success": True, "data": sorted(laender, key=lambda x: (x["region"], x["name"]))}
 
 
 # ============================================================
