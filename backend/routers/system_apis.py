@@ -1513,42 +1513,130 @@ async def import_file_to_reference_table(
 # FIELD BINDINGS - Verknüpfung von Referenztabellen mit Modulfeldern
 # ============================================================
 
-# Verfügbare Module und ihre Felder
-AVAILABLE_MODULES = {
-    "artikel": {
-        "label": "Artikel",
-        "fields": [
-            {"name": "zolltarifnr", "label": "Zolltarifnummer"},
-            {"name": "avv_code_eingang", "label": "AVV-Code Eingang"},
-            {"name": "avv_code_ausgang", "label": "AVV-Code Ausgang"},
-            {"name": "basel_code", "label": "Basel-Code"},
-            {"name": "oecd_code", "label": "OECD-Code"},
-            {"name": "artikelgruppe", "label": "Artikelgruppe"},
-        ]
-    },
-    "adressen": {
-        "label": "Adressen",
-        "fields": [
-            {"name": "land", "label": "Land"},
-            {"name": "branche", "label": "Branche"},
-            {"name": "adressklasse", "label": "Adressklasse"},
-        ]
-    },
-    "kontrakte": {
-        "label": "Kontrakte",
-        "fields": [
-            {"name": "lieferbedingung", "label": "Lieferbedingung (Incoterm)"},
-            {"name": "zahlungsbedingung", "label": "Zahlungsbedingung"},
-        ]
-    },
-    "fuhren": {
-        "label": "Fuhren",
-        "fields": [
-            {"name": "transportmittel", "label": "Transportmittel"},
-            {"name": "entsorgungsart", "label": "Entsorgungsart"},
-        ]
-    },
+# Dynamische Feld-Definition für alle Module
+# Kategorien: stamm, kontakt, steuer, bank, zahlung, sonstiges
+def get_module_fields():
+    """
+    Generiert dynamisch alle verfügbaren Modul-Felder inkl. Sub-Felder.
+    Diese Funktion kann erweitert werden, wenn neue Felder hinzukommen.
+    """
+    return {
+        "artikel": {
+            "label": "Artikel",
+            "fields": [
+                # Stammdaten
+                {"name": "artikelgruppe", "label": "Artikelgruppe", "category": "stamm"},
+                {"name": "artikelgruppe_fibu", "label": "Artikelgruppe (FIBU)", "category": "stamm"},
+                {"name": "einheit", "label": "Mengeneinheit", "category": "stamm"},
+                {"name": "einheit_preis", "label": "Preiseinheit", "category": "stamm"},
+                # Zoll & Export
+                {"name": "zolltarifnr", "label": "Zolltarifnummer", "category": "zoll"},
+                {"name": "avv_code_eingang", "label": "AVV-Code Eingang", "category": "zoll"},
+                {"name": "avv_code_ausgang", "label": "AVV-Code Ausgang", "category": "zoll"},
+                {"name": "eakcode", "label": "EAK-Code", "category": "zoll"},
+                {"name": "basel_code", "label": "Basel-Code", "category": "zoll"},
+                {"name": "oecd_code", "label": "OECD-Code", "category": "zoll"},
+                {"name": "anhang7_3a_code", "label": "Anhang VII 3a Code", "category": "zoll"},
+                {"name": "anhang7_3b_code", "label": "Anhang VII 3b Code", "category": "zoll"},
+                {"name": "oesterreichische_avv", "label": "Österreichische AVV", "category": "zoll"},
+            ]
+        },
+        "adressen": {
+            "label": "Adressen",
+            "fields": [
+                # Stammdaten
+                {"name": "anrede", "label": "Anrede", "category": "stamm"},
+                {"name": "rechtsform", "label": "Rechtsform", "category": "stamm"},
+                {"name": "adresstyp", "label": "Adresstyp", "category": "stamm"},
+                {"name": "branche", "label": "Branche", "category": "stamm"},
+                {"name": "adressklasse", "label": "Adressklasse (A/B/C)", "category": "stamm"},
+                {"name": "potential", "label": "Potentialklasse", "category": "stamm"},
+                # Adresse
+                {"name": "land", "label": "Land", "category": "adresse"},
+                {"name": "sprache", "label": "Sprache", "category": "adresse"},
+                # Steuer
+                {"name": "umsatzsteuer_lkz", "label": "UST-Länderkennzeichen", "category": "steuer"},
+                {"name": "steuernummer", "label": "Steuernummer", "category": "steuer"},
+                # Zahlung
+                {"name": "waehrung", "label": "Währung", "category": "zahlung"},
+                {"name": "zahlungsbedingung_ek", "label": "Zahlungsbedingung (Einkauf)", "category": "zahlung"},
+                {"name": "zahlungsbedingung_vk", "label": "Zahlungsbedingung (Verkauf)", "category": "zahlung"},
+                {"name": "lieferbedingung_ek", "label": "Lieferbedingung (Einkauf)", "category": "zahlung"},
+                {"name": "lieferbedingung_vk", "label": "Lieferbedingung (Verkauf)", "category": "zahlung"},
+                {"name": "kredit_limit_waehrung", "label": "Kreditlimit-Währung", "category": "zahlung"},
+                # Betreuer
+                {"name": "betreuer", "label": "Betreuer 1", "category": "betreuer"},
+                {"name": "betreuer2", "label": "Betreuer 2", "category": "betreuer"},
+                # Bankverbindungen (Sub-Modul)
+                {"name": "bankverbindungen.bank_name", "label": "Bank (Name)", "category": "bank", "is_subfield": True},
+                {"name": "bankverbindungen.bic", "label": "BIC/SWIFT", "category": "bank", "is_subfield": True},
+                {"name": "bankverbindungen.verwendungszweck", "label": "Verwendungszweck", "category": "bank", "is_subfield": True},
+                # Ansprechpartner (Sub-Modul)
+                {"name": "ansprechpartner.anrede", "label": "Ansprechpartner - Anrede", "category": "kontakt", "is_subfield": True},
+                {"name": "ansprechpartner.funktion", "label": "Ansprechpartner - Funktion", "category": "kontakt", "is_subfield": True},
+                {"name": "ansprechpartner.abteilung", "label": "Ansprechpartner - Abteilung", "category": "kontakt", "is_subfield": True},
+            ]
+        },
+        "kontrakte": {
+            "label": "Kontrakte",
+            "fields": [
+                {"name": "vorgang_typ", "label": "Vorgangstyp", "category": "stamm"},
+                {"name": "lieferbedingung", "label": "Lieferbedingung (Incoterm)", "category": "zahlung"},
+                {"name": "zahlungsbedingung", "label": "Zahlungsbedingung", "category": "zahlung"},
+                {"name": "waehrung_kurz", "label": "Währung", "category": "zahlung"},
+                {"name": "status", "label": "Status", "category": "stamm"},
+                # Positionen (Sub-Modul)
+                {"name": "positionen.einheit", "label": "Position - Einheit", "category": "position", "is_subfield": True},
+            ]
+        },
+        "fuhren": {
+            "label": "Fuhren",
+            "fields": [
+                {"name": "transportmittel", "label": "Transportmittel", "category": "transport"},
+                {"name": "entsorgungsart", "label": "Entsorgungsart", "category": "transport"},
+                {"name": "status", "label": "Status", "category": "stamm"},
+                {"name": "einheit", "label": "Mengeneinheit", "category": "stamm"},
+                {"name": "abfallart", "label": "Abfallart", "category": "transport"},
+                {"name": "verpackungsart", "label": "Verpackungsart", "category": "transport"},
+            ]
+        },
+        "rechnungen": {
+            "label": "Rechnungen",
+            "fields": [
+                {"name": "waehrung", "label": "Währung", "category": "zahlung"},
+                {"name": "zahlungsbedingung", "label": "Zahlungsbedingung", "category": "zahlung"},
+                {"name": "status", "label": "Status", "category": "stamm"},
+                {"name": "rechnungsart", "label": "Rechnungsart", "category": "stamm"},
+                # Positionen
+                {"name": "positionen.einheit", "label": "Position - Einheit", "category": "position", "is_subfield": True},
+            ]
+        },
+        "wiegekarten": {
+            "label": "Wiegekarten",
+            "fields": [
+                {"name": "status", "label": "Status", "category": "stamm"},
+                {"name": "waage", "label": "Waage", "category": "stamm"},
+            ]
+        },
+    }
+
+# Kategorien für bessere Gruppierung im UI
+FIELD_CATEGORIES = {
+    "stamm": {"label": "Stammdaten", "icon": "folder"},
+    "adresse": {"label": "Adresse", "icon": "map-pin"},
+    "kontakt": {"label": "Kontakt", "icon": "users"},
+    "steuer": {"label": "Steuer & UST", "icon": "receipt"},
+    "bank": {"label": "Bankverbindungen", "icon": "landmark"},
+    "zahlung": {"label": "Zahlungsbedingungen", "icon": "credit-card"},
+    "zoll": {"label": "Zoll & Export", "icon": "globe"},
+    "transport": {"label": "Transport", "icon": "truck"},
+    "betreuer": {"label": "Betreuer", "icon": "user"},
+    "position": {"label": "Positionen", "icon": "list"},
+    "sonstiges": {"label": "Sonstige", "icon": "more-horizontal"},
 }
+
+# Für Rückwärtskompatibilität
+AVAILABLE_MODULES = get_module_fields()
 
 
 class FieldBindingCreate(BaseModel):
