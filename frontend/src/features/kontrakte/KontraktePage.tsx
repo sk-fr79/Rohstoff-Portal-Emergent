@@ -1377,6 +1377,7 @@ export function KontraktePage() {
   const filteredData = useMemo(() => {
     if (!kontrakteData?.data) return [];
     if (!filterTyp) return kontrakteData.data;
+    if (filterTyp === 'STRECKE') return kontrakteData.data.filter((k: Kontrakt) => k.ist_strecke);
     return kontrakteData.data.filter((k: Kontrakt) => k.vorgang_typ === filterTyp);
   }, [kontrakteData, filterTyp]);
 
