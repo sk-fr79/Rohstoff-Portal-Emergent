@@ -125,6 +125,7 @@ app.include_router(admin.router)
 app.include_router(profil.router)
 app.include_router(system_apis.router)
 app.include_router(nummernkreise.router)
+app.include_router(firma.router)
 
 
 @app.get("/api/health")
