@@ -37,6 +37,8 @@ class ArtikelCreate(BaseModel):
     avv_code_ausgang: Optional[str] = Field(None, max_length=50)
     eakcode: Optional[str] = Field(None, max_length=20)
     zolltarifnr: Optional[str] = Field(None, max_length=50)
+    zolltarifnr_bezeichnung: Optional[str] = Field(None, max_length=500)
+    zolltarifnr_url: Optional[str] = Field(None, max_length=500)
     zolltarifnotiz: Optional[str] = Field(None, max_length=500)
     basel_code: Optional[str] = Field(None, max_length=80)
     basel_notiz: Optional[str] = Field(None, max_length=500)
