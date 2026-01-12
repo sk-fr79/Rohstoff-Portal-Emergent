@@ -276,7 +276,11 @@ export function ReferenceSelect({
               <SourceIcon className={cn("h-3.5 w-3.5 flex-shrink-0", sourceColor)} />
             )}
             <span className="truncate">
-              {selectedOption ? cleanText(selectedOption.label) : (value || placeholder)}
+              {selectedOption 
+                ? cleanText(selectedOption.label) 
+                : displayValue 
+                  ? `${value} | ${displayValue}`
+                  : (value || placeholder)}
             </span>
           </div>
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
