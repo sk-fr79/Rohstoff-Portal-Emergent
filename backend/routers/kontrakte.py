@@ -113,6 +113,23 @@ class KontraktCreate(BaseModel):
     id_haendler: Optional[str] = None  # Referenz zum Benutzer
     haendler_name: Optional[str] = Field(None, max_length=80)
     
+    # === LÄGER ===
+    id_abhollager: Optional[str] = None
+    abhollager_typ: Optional[str] = Field(None, max_length=20)  # 'haupt', 'liefer', 'mandant'
+    abhollager_name: Optional[str] = Field(None, max_length=100)
+    abhollager_strasse: Optional[str] = Field(None, max_length=100)
+    abhollager_plz: Optional[str] = Field(None, max_length=10)
+    abhollager_ort: Optional[str] = Field(None, max_length=50)
+    abhollager_land: Optional[str] = Field(None, max_length=50)
+    
+    id_ziellager: Optional[str] = None
+    ziellager_typ: Optional[str] = Field(None, max_length=20)
+    ziellager_name: Optional[str] = Field(None, max_length=100)
+    ziellager_strasse: Optional[str] = Field(None, max_length=100)
+    ziellager_plz: Optional[str] = Field(None, max_length=10)
+    ziellager_ort: Optional[str] = Field(None, max_length=50)
+    ziellager_land: Optional[str] = Field(None, max_length=50)
+    
     # Termine
     erstellungsdatum: Optional[str] = None
     gueltig_von: Optional[str] = None
