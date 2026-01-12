@@ -70,46 +70,132 @@ def berechne_aenderungen(alt: dict, neu: dict, felder_whitelist: list = None) ->
     """Vergleicht zwei Dictionaries und gibt eine Liste der Änderungen zurück"""
     aenderungen = []
     
-    # Felder die verglichen werden sollen
+    # Felder die verglichen werden sollen - ALLE relevanten Kontrakt-Felder
     relevante_felder = felder_whitelist or [
-        "status", "name1", "name2", "strasse", "plz", "ort", "land",
-        "kontraktnummer", "datum_kontrakt", "datum_lieferung_von", "datum_lieferung_bis",
-        "bemerkung_extern", "bemerkung_intern", "zahlungsbedingung", "waehrung_kurz",
-        "id_ansprechpartner", "id_zustaendiger", "id_adresse",
-        "id_abhollager", "abhollager_name", "id_ziellager", "ziellager_name",
-        "id_ustid", "ustid_text", "id_bankverbindung", "bankverbindung_text",
-        "formulartext_anfang", "formulartext_ende"
+        # Status & Nummern
+        "status", "kontraktnummer", "referenz_kunde", "referenz_lieferant",
+        
+        # Partner-Daten
+        "id_adresse", "name1", "name2", "strasse", "hausnummer", "plz", "ort", "land", "land_code",
+        "telefon", "telefax", "email",
+        "id_ansprechpartner", "ansprechpartner_name",
+        "id_zustaendiger", "zustaendiger_name",
+        
+        # USt-ID & Bankverbindung
+        "id_ustid", "ustid_text", "ust_id",
+        "id_bankverbindung", "bankverbindung_text",
+        
+        # Termine & Lieferung
+        "datum_kontrakt", "datum_lieferung_von", "datum_lieferung_bis",
+        "lieferzeit_typ", "lieferzeit_wert",
+        
+        # Konditionen
+        "zahlungsbedingung", "zahlungsbedingung_kurz", "zahlungsziel_tage",
+        "lieferbedingung", "lieferbedingung_kurz", "lieferbedingung_ort",
+        "skonto_prozent", "skonto_tage",
+        
+        # Währung
+        "waehrung_kurz", "waehrung_fremd_kurz", "waehrungskurs",
+        
+        # Läger
+        "id_abhollager", "abhollager_name", "abhollager_typ",
+        "id_ziellager", "ziellager_name", "ziellager_typ",
+        
+        # Texte & Bemerkungen
+        "formulartext_anfang", "formulartext_ende",
+        "bemerkung_extern", "bemerkung_intern",
+        "kopie_bemerkung_auf_pos",
+        
+        # Fixierung
+        "ist_fixierung", "fixierung_typ", "fixierung_basis",
+        "fixierung_von", "fixierung_bis",
+        
+        # Flags
+        "abgeschlossen", "aktiv", "deleted",
+        "vorgang_typ",
     ]
     
     feld_labels = {
+        # Status & Nummern
         "status": "Status",
+        "kontraktnummer": "Kontraktnummer",
+        "referenz_kunde": "Kundenreferenz",
+        "referenz_lieferant": "Lieferantenreferenz",
+        
+        # Partner-Daten
+        "id_adresse": "Vertragspartner-ID",
         "name1": "Firmenname",
         "name2": "Zusatz",
         "strasse": "Straße",
+        "hausnummer": "Hausnummer",
         "plz": "PLZ",
         "ort": "Ort",
         "land": "Land",
-        "kontraktnummer": "Kontraktnummer",
+        "land_code": "Ländercode",
+        "telefon": "Telefon",
+        "telefax": "Telefax",
+        "email": "E-Mail",
+        "id_ansprechpartner": "Ansprechpartner-ID",
+        "ansprechpartner_name": "Ansprechpartner",
+        "id_zustaendiger": "Zuständiger-ID",
+        "zustaendiger_name": "Interner Zuständiger",
+        
+        # USt-ID & Bankverbindung
+        "id_ustid": "USt-ID Auswahl",
+        "ustid_text": "USt-ID",
+        "ust_id": "USt-ID",
+        "id_bankverbindung": "Bankverbindung-ID",
+        "bankverbindung_text": "Bankverbindung",
+        
+        # Termine
         "datum_kontrakt": "Kontraktdatum",
         "datum_lieferung_von": "Lieferzeitraum von",
         "datum_lieferung_bis": "Lieferzeitraum bis",
-        "bemerkung_extern": "Externe Bemerkung",
-        "bemerkung_intern": "Interne Bemerkung",
+        "lieferzeit_typ": "Lieferzeit-Typ",
+        "lieferzeit_wert": "Lieferzeit",
+        
+        # Konditionen
         "zahlungsbedingung": "Zahlungsbedingung",
+        "zahlungsbedingung_kurz": "Zahlungsbedingung (kurz)",
+        "zahlungsziel_tage": "Zahlungsziel (Tage)",
+        "lieferbedingung": "Lieferbedingung",
+        "lieferbedingung_kurz": "Lieferbedingung (kurz)",
+        "lieferbedingung_ort": "Lieferbedingung Ort",
+        "skonto_prozent": "Skonto %",
+        "skonto_tage": "Skonto-Tage",
+        
+        # Währung
         "waehrung_kurz": "Währung",
-        "id_ansprechpartner": "Ansprechpartner",
-        "id_zustaendiger": "Interner Zuständiger",
-        "id_adresse": "Vertragspartner",
-        "id_abhollager": "Abhollager",
-        "abhollager_name": "Abhollager Name",
-        "id_ziellager": "Ziellager",
-        "ziellager_name": "Ziellager Name",
-        "id_ustid": "USt-ID",
-        "ustid_text": "USt-ID Text",
-        "id_bankverbindung": "Bankverbindung",
-        "bankverbindung_text": "Bankverbindung Text",
+        "waehrung_fremd_kurz": "Fremdwährung",
+        "waehrungskurs": "Wechselkurs",
+        
+        # Läger
+        "id_abhollager": "Abhollager-ID",
+        "abhollager_name": "Abhollager",
+        "abhollager_typ": "Abhollager-Typ",
+        "id_ziellager": "Ziellager-ID",
+        "ziellager_name": "Ziellager",
+        "ziellager_typ": "Ziellager-Typ",
+        
+        # Texte
         "formulartext_anfang": "Formulartext Anfang",
         "formulartext_ende": "Formulartext Ende",
+        "bemerkung_extern": "Externe Bemerkung",
+        "bemerkung_intern": "Interne Bemerkung",
+        "kopie_bemerkung_auf_pos": "Bemerkung auf Positionen",
+        
+        # Fixierung
+        "ist_fixierung": "Ist Fixierung",
+        "fixierung_typ": "Fixierungstyp",
+        "fixierung_basis": "Fixierungsbasis",
+        "fixierung_von": "Fixierung von",
+        "fixierung_bis": "Fixierung bis",
+        
+        # Flags
+        "abgeschlossen": "Abgeschlossen",
+        "aktiv": "Aktiv",
+        "deleted": "Gelöscht",
+        "vorgang_typ": "Vorgangsart",
     }
     
     # Nur Felder vergleichen die im neuen Dictionary vorhanden sind (d.h. geändert wurden)
@@ -129,7 +215,7 @@ def berechne_aenderungen(alt: dict, neu: dict, felder_whitelist: list = None) ->
                 
             aenderungen.append({
                 "feld": feld,
-                "feld_label": feld_labels.get(feld, feld),
+                "feld_label": feld_labels.get(feld, feld.replace("_", " ").title()),
                 "alt": alt_wert,
                 "neu": neu_wert
             })
