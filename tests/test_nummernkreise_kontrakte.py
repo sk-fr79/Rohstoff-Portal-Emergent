@@ -13,7 +13,7 @@ import requests
 import os
 import uuid
 
-BASE_URL = os.environ.get('base_url', 'https://demobackend.emergentagent.com')
+BASE_URL = "http://localhost:8001"
 
 # Test credentials
 ADMIN_USER = "admin"
