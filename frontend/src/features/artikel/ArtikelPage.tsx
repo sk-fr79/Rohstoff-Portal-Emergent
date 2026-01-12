@@ -289,6 +289,15 @@ export function ArtikelPage() {
     setIsNewRecord(false);
     setIsEditing(false);
     setActiveSection('stamm');
+    
+    // URL aus gespeicherter Notiz extrahieren (falls vorhanden)
+    if (artikel.zolltarifnotiz) {
+      const urlMatch = artikel.zolltarifnotiz.match(/https?:\/\/[^\s]+/);
+      setZolltarifUrl(urlMatch ? urlMatch[0] : null);
+    } else {
+      setZolltarifUrl(null);
+    }
+    
     Object.entries(artikel).forEach(([key, value]) => {
       if (key in artikelSchema.shape) {
         setValue(key as keyof ArtikelForm, value as any);
