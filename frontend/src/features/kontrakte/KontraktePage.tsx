@@ -2300,9 +2300,9 @@ export function KontraktePage({ defaultFilter = '', pageTitle }: KontraktePagePr
       <div ref={containerRef} className="flex-1 flex overflow-hidden">
         <div className="p-6 overflow-auto transition-none" style={selectedKontrakt ? leftPanelStyle : { width: '100%' }}>
           {/* Streckengeschäfte - nur bei STRECKE-Filter oder ohne Filter */}
-          {streckenGruppen.length > 0 && (filterTyp === 'STRECKE' || !isFixedFilter) && (
-            <div className={filterTyp === 'STRECKE' ? "" : "mb-4"}>
-              {filterTyp !== 'STRECKE' && (
+          {streckenGruppen.length > 0 && (defaultFilter === 'STRECKE' || !isFixedFilter) && (
+            <div className={defaultFilter === 'STRECKE' ? "" : "mb-4"}>
+              {defaultFilter !== 'STRECKE' && (
                 <div className="flex items-center gap-2 mb-2">
                   <ArrowRightLeft className="h-4 w-4 text-orange-500" />
                   <span className="text-sm font-medium text-gray-700">Streckengeschäfte</span>
