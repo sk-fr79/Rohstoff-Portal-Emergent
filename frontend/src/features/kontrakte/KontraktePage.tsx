@@ -1551,7 +1551,6 @@ export function KontraktePage({ defaultFilter = '', pageTitle }: KontraktePagePr
   // Search & Filter States
   const [searchQuery, setSearchQuery] = useState('');
   const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>({ from: undefined, to: undefined });
-  const [showFilters, setShowFilters] = useState(true);
   
   // Fester Filter-Modus basierend auf defaultFilter
   const isFixedFilter = defaultFilter !== '';
