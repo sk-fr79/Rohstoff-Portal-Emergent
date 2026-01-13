@@ -10,13 +10,13 @@ import { format } from 'date-fns';
 import { de } from 'date-fns/locale';
 import { 
   Plus, MoreHorizontal, Pencil, Trash2, FileText, Eye, 
-  Save, X, Building2, Package, Calendar as CalendarIcon, Truck,
+  Save, X, Building2, Package, Truck,
   ArrowDownToLine, ArrowUpFromLine, CheckCircle, Clock,
-  AlertTriangle, Ban, TrendingUp, Lock,
-  DollarSign, FileCheck, MessageSquare, Percent, Scale,
-  User, Users, Search, ChevronDown, CreditCard,
-  History, Printer, Download, RefreshCw, Activity, Copy,
-  XCircle, Warehouse, ChevronRight, Filter, ArrowRightLeft,
+  AlertTriangle, Ban, TrendingUp,
+  DollarSign, FileCheck, MessageSquare,
+  User, Search, ChevronDown, CreditCard,
+  History, Copy,
+  XCircle, ChevronRight, ArrowRightLeft,
   Link2, Unlink, ArrowRight, SlidersHorizontal, CalendarRange
 } from 'lucide-react';
 import { api } from '@/services/api/client';
