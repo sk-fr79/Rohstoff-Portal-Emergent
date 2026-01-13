@@ -103,11 +103,12 @@ const navGroups: NavGroup[] = [
 export function MainLayout() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [expandedGroups, setExpandedGroups] = useState<string[]>(['Stammdaten', 'Bewegungsdaten', 'Waage']);
+  const [expandedGroups, setExpandedGroups] = useState<string[]>(['Stammdaten', 'Kontrakte', 'Waage']);
   const [savedExpandedGroups, setSavedExpandedGroups] = useState<string[]>([]);
   const { user, logout } = useAuthStore();
   const { istAdmin, canRead } = usePermissionsStore();
   const navigate = useNavigate();
+  const location = useLocation();
 
   // Navigation basierend auf Berechtigungen filtern
   const filteredNavGroups = navGroups.map(group => ({
