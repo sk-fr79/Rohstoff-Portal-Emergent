@@ -1690,7 +1690,7 @@ export function KontraktePage({ defaultFilter = '', pageTitle }: KontraktePagePr
       streckenGruppen: Array.from(streckenMap.values()), 
       normaleKontrakte: normale 
     };
-  }, [kontrakteData, filterTyp, searchQuery, dateRange, matchesSearch, matchesDateRange]);
+  }, [kontrakteData, defaultFilter, searchQuery, dateRange, matchesSearch, matchesDateRange]);
 
   // Mutations
   const createMutation = useMutation({
