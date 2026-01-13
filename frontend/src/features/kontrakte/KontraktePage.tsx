@@ -2105,14 +2105,16 @@ export function KontraktePage({ defaultFilter = '', pageTitle }: KontraktePagePr
       {/* Content */}
       <div ref={containerRef} className="flex-1 flex overflow-hidden">
         <div className="p-6 overflow-auto transition-none" style={selectedKontrakt ? leftPanelStyle : { width: '100%' }}>
-          {/* Streckengeschäfte - Kompakte Liste */}
-          {streckenGruppen.length > 0 && (
-            <div className="mb-4">
-              <div className="flex items-center gap-2 mb-2">
-                <ArrowRightLeft className="h-4 w-4 text-orange-500" />
-                <span className="text-sm font-medium text-gray-700">Streckengeschäfte</span>
-                <Badge variant="outline" className="text-xs bg-orange-50 text-orange-600 border-orange-200">{streckenGruppen.length}</Badge>
-              </div>
+          {/* Streckengeschäfte - nur bei STRECKE-Filter oder ohne Filter */}
+          {streckenGruppen.length > 0 && (filterTyp === 'STRECKE' || !isFixedFilter) && (
+            <div className={filterTyp === 'STRECKE' ? "" : "mb-4"}>
+              {filterTyp !== 'STRECKE' && (
+                <div className="flex items-center gap-2 mb-2">
+                  <ArrowRightLeft className="h-4 w-4 text-orange-500" />
+                  <span className="text-sm font-medium text-gray-700">Streckengeschäfte</span>
+                  <Badge variant="outline" className="text-xs bg-orange-50 text-orange-600 border-orange-200">{streckenGruppen.length}</Badge>
+                </div>
+              )}
               <div className="space-y-1">
                 {streckenGruppen.map((strecke) => (
                   <StreckenKarte 
@@ -2126,10 +2128,10 @@ export function KontraktePage({ defaultFilter = '', pageTitle }: KontraktePagePr
             </div>
           )}
           
-          {/* Normale Kontrakte als Tabelle */}
-          {(normaleKontrakte.length > 0 || filterTyp !== 'STRECKE') && filterTyp !== 'STRECKE' && (
+          {/* Normale Kontrakte als Tabelle - bei EK/VK-Filter oder ohne Filter */}
+          {normaleKontrakte.length > 0 && filterTyp !== 'STRECKE' && (
             <div>
-              {streckenGruppen.length > 0 && (
+              {streckenGruppen.length > 0 && !isFixedFilter && (
                 <div className="flex items-center gap-2 mb-2">
                   <FileText className="h-4 w-4 text-gray-500" />
                   <span className="text-sm font-medium text-gray-700">Einzelkontrakte</span>
