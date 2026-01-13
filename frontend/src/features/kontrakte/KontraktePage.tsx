@@ -854,7 +854,7 @@ function PositionDialog({ open, onClose, onSave, position, waehrung, readOnly = 
 
               {/* Gültigkeit */}
               <div className="p-3 bg-gray-50 rounded-lg border">
-                <Label className="text-xs text-gray-600 flex items-center gap-1 mb-2"><Calendar className="h-3 w-3" />Gültigkeit</Label>
+                <Label className="text-xs text-gray-600 flex items-center gap-1 mb-2"><CalendarDays className="h-3 w-3" />Gültigkeit</Label>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1">
                     <Label className="text-xs text-gray-500">Von</Label>
@@ -2442,7 +2442,7 @@ export function KontraktePage({ defaultFilter = '', pageTitle }: KontraktePagePr
                         {/* Termine */}
                         <div className="pt-4 border-t">
                           <h4 className="font-semibold text-gray-900 flex items-center gap-2 mb-3">
-                            <Calendar className="h-4 w-4 text-blue-600" />
+                            <CalendarDays className="h-4 w-4 text-blue-600" />
                             Termine
                           </h4>
                           <div className="grid grid-cols-3 gap-4">
