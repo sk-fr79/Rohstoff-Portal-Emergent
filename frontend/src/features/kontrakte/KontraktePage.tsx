@@ -1629,13 +1629,6 @@ export function KontraktePage() {
     queryFn: async () => { const response = await api.get('/kontrakte/lookup/mandant'); return response.data.data as MandantData | null; }
   });
 
-  const filteredData = useMemo(() => {
-    if (!kontrakteData?.data) return [];
-    if (!filterTyp) return kontrakteData.data;
-    if (filterTyp === 'STRECKE') return kontrakteData.data.filter((k: Kontrakt) => k.ist_strecke);
-    return kontrakteData.data.filter((k: Kontrakt) => k.vorgang_typ === filterTyp);
-  }, [kontrakteData, filterTyp]);
-
   // Gruppierte Streckengeschäfte und normale Kontrakte
   const { streckenGruppen, normaleKontrakte } = useMemo(() => {
     if (!kontrakteData?.data) return { streckenGruppen: [], normaleKontrakte: [] };
