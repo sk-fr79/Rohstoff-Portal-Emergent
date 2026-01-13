@@ -1,50 +1,36 @@
 <analysis>**original_problem_statement:**
 Der Benutzer möchte eine veraltete Java/Echo2-Anwendung namens Rohstoff Portal modernisieren. Das Ziel ist eine neue Architektur mit einem FastAPI/Python-Backend, einer PostgreSQL-Datenbank (aktuell MongoDB) und einem modernen React PWA-Frontend.
 
-Die jüngsten Anforderungen konzentrieren sich auf die massive Erweiterung und Neugestaltung des **Kontrakt-Moduls**:
-1.  **Neugestaltung der Vertragspartner-Sektion:** Der Benutzer war mit dem Layout unzufrieden und forderte ein kompakteres, moderneres smartes Design. Dies umfasste die Auswahl von USt-IDs und Bankverbindungen direkt aus den Stammdaten des Partners.
-2.  **Lager-Logik:** Felder aus dem Termine-Reiter sollten in die Kopfdaten verschoben werden. Ein neuer Reiter Läger sollte hinzugefügt werden, um ein Abhol- und Ziellager aus den Adress-Stammdaten (inkl. Lieferadressen) des Partners auszuwählen. Die Logik sollte zwischen Einkaufs- (EK) und Verkaufskontrakten (VK) unterscheiden.
-3.  **Zentrale Firmeneinstellungen:** Eine neue Seite in der Administration, um eine Adresse aus den Stammdaten als Haupt-Mandantenadresse zu definieren. Diese Adresse soll dann als Eigenes Lager im Kontraktmodul referenziert werden.
-4.  **(Aktuell)** **Neugestaltung der Positionserfassung:** Der Benutzer fordert eine komplette Überarbeitung der Erfassung von Kontraktpositionen:
-    *   Ein neues, smartes Design für das Position hinzufügen/bearbeiten-Formular.
-    *   Eine moderne Artikelauswahl mit Filterung aus den Artikelstammdaten.
-    *   Eine Funktion zum Kopieren bestehender Positionen.
-    *   Eine verbesserte, informativere Übersicht der Positionen direkt im Kontrakt (Menge, Preis, Gesamt, etc.).
-    *   Die Möglichkeit, Positionsdetails per Doppelklick auch im Lesemodus des Kontrakts zu öffnen.
+Die jüngsten Anforderungen umfassten:
+1.  **Implementierung des Streckengeschäfts:** Ein neuer Kontrakttyp Strecke sollte eingeführt werden, bei dem ein Einkaufs- (EK) und ein Verkaufs- (VK) Kontrakt miteinander verknüpft sind, ohne dass die Ware das eigene Lager berührt.
+2.  **Iterative UI-Neugestaltung:** Nach der ersten Implementierung forderte der Benutzer mehrere UI-Überarbeitungen für die Darstellung von Streckengeschäften. Die finale, genehmigte Version ist eine minimalistische Accordion-Ansicht, die EK- und VK-Kontrakte gruppiert.
+3.  **Aufteilung des Kontraktmoduls:** Das monolithische Kontraktmodul sollte zur besseren Übersicht in drei separate, dedizierte Module aufgeteilt werden: Einkaufskontrakte, Verkaufskontrakte und Streckenkontrakte, zugänglich über ein neues Untermenü in der Seitenleiste.
+4.  **Trennung der Logik:** Die Einkaufs- und Verkaufsmodule sollen nur noch Einzelkontrakte anzeigen und erstellen können, während das Streckenmodul ausschließlich für die Verwaltung von Streckengeschäften zuständig ist.
+5.  **Moderne Filter- und Suchleiste:** Implementierung einer prominenten, modernen und smarten Suchleiste (Wildcard-Suche) sowie einer Filterleiste darüber. Der erste Filter, der implementiert werden sollte, ist ein Datumsbereichs-Selektor für das Kontraktdatum.
 
 **User's preferred language**: German
 
 **what currently exists?**
-*   Ein voll funktionsfähiges, rollenbasiertes Zugriffskontrollsystem (RBAC) und ein Einstellungen-Bereich.
-*   **Abgeschlossen:** Das dynamische Nummernkreis-System ist implementiert und im Kontraktmodul integriert. Die Verwaltungsseite ist in die Einstellungen eingebunden.
-*   **Abgeschlossen (Major Redesign):** Die Vertragspartner-Sektion im Kontraktmodul wurde komplett überarbeitet. Sie verwendet nun ein kompaktes, kartenbasiertes Design. Die Auswahl von USt-IDs und Bankverbindungen aus den Stammdaten des Partners ist implementiert, inklusive automatischer Vorauswahl der Haupt-ID/des Hauptkontos.
-*   **Abgeschlossen:** Die Logik für Läger (Abhol-/Ziellager) ist im Kontraktmodul implementiert. Die UI wurde entsprechend angepasst (Reiter Termine entfernt, Reiter Läger hinzugefügt).
-*   **Abgeschlossen:** Eine neue Seite Firmeneinstellungen unter Administration wurde erstellt. Hier kann eine Adresse als Haupt-Mandant definiert werden. Diese Adresse wird nun als Eigenes Lager im Kontraktmodul verwendet. Das zugehörige Backend () wurde erstellt.
-*   **In Arbeit:** Für die Neugestaltung der Positionserfassung wurde ein neuer Backend-Endpunkt  zur gefilterten Artikelsuche erstellt. Die Frontend-Implementierung hat noch nicht begonnen.
-*   Mehrere vom Benutzer gemeldete Bugs bezüglich der Datenanzeige und -speicherung im Kontraktmodul wurden behoben (z.B. Anzeige von Ansprechpartner/USt-ID/Bankverbindung nach dem Speichern und im Editiermodus).
+*   Ein voll funktionsfähiges, rollenbasiertes Zugriffskontrollsystem (RBAC) und ein dynamisches Nummernkreis-System.
+*   Das Kontraktmodul wurde massiv überarbeitet und in drei separate, routenbasierte Module aufgeteilt: Einkauf, Verkauf und Strecke.
+*   Die Navigation in der Seitenleiste () wurde erweitert, um ein aufklappbares Untermenü für Kontrakte zu unterstützen.
+*   **Streckengeschäft-Funktionalität:**
+    *   Das Backend () wurde um neue Datenmodelle, API-Endpunkte () und Logik zur Verknüpfung von EK- und VK-Kontrakten erweitert.
+    *   Die UI () wurde mehrfach überarbeitet und stellt Streckengeschäfte nun in einer vom Benutzer genehmigten, minimalistischen Accordion-Ansicht dar.
+*   **Moderne Filter- & Suchleiste:**
+    *   Eine neue, prominente Filter- und Suchleiste wurde in allen drei Kontraktmodulen implementiert.
+    *   Sie enthält einen globalen Wildcard-Suchfilter und einen Datumsbereichs-Filter mit einem benutzerdefinierten Kalender-Popup ().
+    *   Die Filterlogik wird clientseitig über  in  angewendet.
 
 **Last working item**:
--   **Last item agent was working:** Beginn der Implementierung für die Neugestaltung der Kontrakt-Positionserfassung. Der Agent hat den Backend-Endpunkt  erstellt, der das Filtern von Artikeln nach Gruppe und Klassifizierung ermöglicht. Der nächste Schritt ist die Neugestaltung der Frontend-Komponenten.
--   **Status:** IN PROGRESS
--   **Agent Testing Done:** N
--   **Which testing method agent to use?** both. Dies ist eine umfassende UI/UX- und Funktionsänderung. Frontend-Tests sind entscheidend für das neue Dialog- und Listendesign. Backend-Tests müssen die neue Artikelsuche validieren.
+-   **Last item agent was working:** Implementierung einer modernen und smarten Filter- und Suchleiste für alle drei Kontraktmodule (Einkauf, Verkauf, Strecke). Dies umfasste die Erstellung einer neuen -Komponente, die UI-Integration in  sowie die Implementierung der clientseitigen Filterlogik für die Wildcard-Suche und den Datumsbereich.
+-   **Status:** NONE (COMPLETED)
+-   **Agent Testing Done:** Y
+-   **Which testing method agent to use?** NA
 -   **User Testing Done:** N
 
 **All Pending/In progress Issue list**:
--   **Issue 1: (P0) Neugestaltung der Kontrakt-Positionserfassung**
-    -   **Attempted fixes:** Ein Backend-Endpunkt () zur Artikelsuche wurde in  erstellt.
-    -   **Next debug checklist:**
-        1.  **Positionen-Übersicht neu gestalten:** Die aktuelle Tabellenansicht in  ersetzen durch eine Liste, die die geforderten Felder (Menge, Preis/Einheit, Gesamtpreis, Artikelbez., Artikel-Nr.) anzeigt.
-        2.  **Kopier-Funktion implementieren:** Einen Button zum Duplizieren einer vorhandenen Position hinzufügen.
-        3.  **Neuen Position-Dialog erstellen:** Den bestehenden  durch ein neues, smartes und modernes Formular ersetzen.
-        4.  **Artikelauswahl-Komponente integrieren:** Eine neue Komponente erstellen, die den -Endpunkt mit Filteroptionen (Artikelgruppe, Klassifizierung) nutzt.
-        5.  **Detailansicht via Doppelklick:** Implementieren, dass ein Doppelklick auf eine Position (auch im Lesemodus) den Detaildialog öffnet.
-    -   **Why fix this issue and what will be achieved with the fix?** Dies ist eine zentrale Anforderung des Benutzers zur Verbesserung der Benutzerfreundlichkeit und Effizienz bei der Erfassung von Kontrakten.
-    -   **Status:** IN PROGRESS
-    -   **Is recurring issue?** N
-    -   **Should Test frontend/backend/both after fix?** both
-    -   **Blocked on other issue:** None
--   **Issue 2: (P2) Verifizierung des Bugfixes für die Profilspeicherung**
+-   **Issue 1: (P2) Verifizierung des Bugfixes für die Profilspeicherung**
     -   **Attempted fixes:** In einer früheren Sitzung wurde ein -Fehler beim Speichern des Benutzerprofils behoben.
     -   **Next debug checklist:** Bitten Sie den Benutzer zu bestätigen, dass das Speichern von Profiländerungen jetzt ohne Fehler funktioniert.
     -   **Why fix this issue and what will be achieved with the fix?** Dies schließt einen vom Benutzer gemeldeten kritischen Fehler ab.
@@ -54,30 +40,33 @@ Die jüngsten Anforderungen konzentrieren sich auf die massive Erweiterung und N
     -   **Blocked on other issue:** None
 
 **In progress Task List**:
--   Keine, die Hauptaufgabe ist unter All Pending/In progress Issue list aufgeführt.
+-   Keine.
 
 **Upcoming and Future Tasks**
 -   **Upcoming Tasks:**
+    -   **(P0) Weitere Filter hinzufügen:** Die neue Filterleiste soll um zusätzliche Filter für Kontrakte erweitert werden (z.B. Status, Partner, Artikel).
     -   **(P1) Nummernkreis-System ausrollen:** Das neue System auf andere Module (Rechnungen, Lieferscheine etc.) anwenden.
     -   **(P1) Fixierungsmodul implementieren:** Ein dediziertes Modul zur Verwaltung von Fixierungen.
     -   **(P1) API-System Phase 7:** Implementierung von Import/Export und Audit-Logs für Referenztabellen.
     -   **(P2) PDF-Export:** Implementierung der PDF-Erstellung für Kontrakte, Rechnungen und Lieferscheine.
-    -   **(P2) Sammelrechnungen:** Funktion implementieren, mit der mehrere Fuhren zu einer einzigen Sammelrechnung zusammengefasst werden können.
 -   **Future Tasks:**
+    -   Sammelrechnungen.
     -   Datenimport aus dem Altsystem.
     -   Vollständige PWA-Funktionen (Offline-Fähigkeit).
     -   Umfassendes Unit- und E2E-Testing für alle Module.
 
 **Completed work in this session**
--   **Nummernkreis-System Fertigstellung:** Integration der  in die Navigation und erfolgreicher E2E-Test. Ein Bug im Backend-Datenbankcheck () wurde vom Testing-Agent behoben.
--   **Vertragspartner-Sektion Redesign:** Komplette Neugestaltung der UI im Kontrakt-Formular zu einem kompakten, kartenbasierten Layout. Inklusive Auswahl für USt-IDs und Bankverbindungen.
--   **Lager-Logik Implementierung:** Die Termine-Felder wurden in die Kopfdaten verschoben und ein neuer Läger-Reiter wurde erstellt, um Abhol- und Ziellager basierend auf Partner- und Mandantendaten auszuwählen.
--   **Firmeneinstellungen (Mandant):** Neue Backend-Route () und Frontend-Seite () zur Definition einer zentralen Firmenadresse, die von anderen Modulen (z.B. Kontrakte für Eigenes Lager) genutzt wird.
--   **Bugfixes im Kontrakt-Modul:**
-    -   Behebung eines Absturzes bei der Auswahl von Partnern mit leeren USt-ID-Einträgen.
-    -   Sicherstellung, dass Partnerdaten (USt-ID, Bankverbindung) und Ansprechpartner nach dem Speichern und erneuten Öffnen eines Kontrakts korrekt angezeigt und im Editiermodus bearbeitbar sind.
-    -   Korrektur der Backend-Schemata (, ), um das Speichern von Bankverbindungs- und Lager-Informationen zu ermöglichen.
-    -   Korrektur des Backend-Lookups, um eingebettete Bankverbindungen und Lieferadressen aus der Adressen-Collection zu laden.
+-   **Streckengeschäft Backend & API (DONE):** Die  wurde um Felder (, , etc.) und einen Endpunkt  zur Erstellung von Streckengeschäften erweitert.
+-   **Streckengeschäft UI - Iterative Entwicklung (DONE):** Die UI in  wurde mehrfach nach Benutzerfeedback umgestaltet – von separaten Zeilen über verbundene Karten bis zur finalen, minimalistischen Accordion-Ansicht.
+-   **Aufteilung des Kontrakt-Moduls (DONE):**
+    -   Die Seitenleiste in  wurde für Untermenüs angepasst.
+    -   Die  wurde um die Routen ,  und  erweitert.
+    -   Wrapper-Komponenten (, etc.) wurden erstellt, die  mit den entsprechenden Props (, ) aufrufen.
+-   **Logische Trennung der Module (DONE):** Die Filterlogik in  wurde angepasst, sodass die Einkaufs-/Verkaufsseiten nur noch Einzelkontrakte und die Streckenseite nur noch Streckengeschäfte anzeigt.
+-   **Moderne Filter- & Suchleiste (DONE):**
+    -   Eine neue, wiederverwendbare Filter- und Suchleiste wurde in  implementiert.
+    -   Eine neue UI-Komponente  für den Datumsbereichs-Filter wurde erstellt.
+    -   Clientseitige Filterlogik für Suche und Datum wurde implementiert.
 
 **Earlier issues found/mentioned but not fixed**
 -   Diverse TypeScript-Warnungen in verschiedenen, nicht direkt bearbeiteten Dateien.
@@ -90,59 +79,54 @@ Die jüngsten Anforderungen konzentrieren sich auf die massive Erweiterung und N
 
 
 **Key Technical Concepts**
--   **Dynamisches Nummernkreis-System:** Ein zentralisiertes Backend-System zur Verwaltung sequentieller Belegnummern.
--   **Kompaktes Card-UI:** Umstellung von großen Formularbereichen auf modulare, kartenbasierte Ansichten, um die Informationsdichte zu erhöhen und das Scrollen zu reduzieren (siehe Vertragspartner, Läger).
--   **Zentrale Firmeneinstellungen (Mandant):** Ein neues Singleton-Muster im Backend (), um eine zentrale Firmenadresse zu speichern, die von anderen Modulen referenziert werden kann. Dies entkoppelt die Mandantendaten von hartcodierten Werten.
--   **Dynamische Lookups:** Starke Nutzung von Backend-Lookups, um Stammdaten (Benutzer, Adressen, Artikel) dynamisch in Dropdowns und Auswahlkomponenten zu laden und zu verknüpfen.
+-   **Prop-gesteuerte, wiederverwendbare Seiten:**  wurde zu einer generischen Komponente refaktorisiert, die über Props (, ) gesteuert wird, um drei verschiedene Routen zu bedienen.
+-   **Hierarchische Navigation:** Die Seitenleiste wurde erweitert, um verschachtelte und ausklappbare Menüpunkte zu unterstützen.
+-   **Client-seitige Filterung:** Die neue Such- und Datumsbereichs-Filterung ist vollständig clientseitig in  mit  implementiert, um die von  abgerufenen Daten zu verarbeiten.
+-   **Iterative UI-Entwicklung:** Schnelle Anpassung und Austausch ganzer UI-Paradigmen (Tabelle -> Karten -> Accordion) basierend auf direktem Benutzerfeedback.
+-   **Zusammengesetzte UI-Komponenten:** Die neue Filterleiste kombiniert mehrere Shadcn-Komponenten (, , ) mit der neu erstellten -Komponente zu einer funktionalen Einheit.
 
 **key DB schema**
--   **kontrakte:** (Collection ) **STARK MODIFIZIERT** - Erweitert um Felder für die Speicherung von ausgewählten Bankverbindungen und Lageradressen: , , , , , , , .
--   **adressen:** (Collection ) Das Feld  wurde implizit hinzugefügt, um die als Mandant definierte Adresse zu markieren.
--   **firma_settings:** (Neue Collection) Speichert die ID der als Firmenadresse ausgewählten Adresse. Schema: .
+-   **kontrakte (MODIFIZIERT):** Erweitert um Felder zur Verwaltung von Streckengeschäften: 
 
 **changes in tech stack**
--   Keine.
+-    und  wurden als neue Frontend-Abhängigkeiten für die Kalender-Komponente hinzugefügt.
 
 **All files of reference**
--   : Die zentrale Datei für das Kontraktmodul, die massiv überarbeitet wurde.
--   : Das zugehörige Backend, das um Lookups und neue Felder erweitert wurde.
--   : Neue UI zur Verwaltung der Mandanten-Adresse.
--   : Neues Backend zur Verwaltung der Mandanten-Adresse.
--   : Erweitert um einen  Endpunkt.
--   : Angepasst, um ein Stern-Symbol für die Firmenadresse anzuzeigen.
+-   : Die zentrale, jetzt generische Komponente für alle Kontrakt-Ansichten.
+-   : Backend-Logik für Kontrakte, inklusive der neuen Streckengeschäft-Endpunkte.
+-   : Enthält die Logik für das neue Navigations-Untermenü.
+-   : Definiert die neuen Routen für die aufgeteilten Kontrakt-Module.
+-   : Neue, wiederverwendbare Kalender-Komponente.
+-   , , : Wrapper-Komponenten für die spezifischen Ansichten.
+-   : Wurde aktualisiert, um die abgeschlossene Arbeit am Streckengeschäft zu dokumentieren.
 
 **Areas that need refactoring**:
--   Das neue -System sollte nach Abschluss der Implementierung auf andere Module (z.B. Rechnungen) ausgerollt werden, um dortige Nummerierungslogiken zu ersetzen.
--   Die bekannten TypeScript-Warnungen und das Scroll-Problem in  sind weiterhin offen.
+-   Die TypeScript-Fehler, die während der Entwicklung auftraten (z. B. in  und ) wurden teilweise nur umgangen. Eine saubere Behebung ist empfehlenswert.
+-   Das -System sollte auf andere Module (z.B. Rechnungen) ausgerollt werden.
 
 **key api endpoints**
--   : Neue CRUD-Endpunkte für die Firmeneinstellungen.
--   : Neuer Endpunkt, um die definierte Firmenadresse (Mandant) abzurufen.
--   : Neuer Endpunkt zur gefilterten Suche von Artikeln.
--   : Modifiziert, um nun auch  zurückzugeben.
--   : Modifiziert, um die neuen Felder für Bankverbindungen und Läger zu speichern.
+-   : Erstellt ein neues Streckengeschäft (EK- und VK-Kontrakt).
 
 **Critical Info for New Agent**
--   Ihre unmittelbare Aufgabe ist die **vollständige Neugestaltung der Positionserfassung im Kontraktmodul**, wie in All Pending/In progress Issue list beschrieben. Beginnen Sie mit dem Frontend.
--   Der Benutzer legt extrem hohen Wert auf **smarte, moderne und kompakte UI/UX**. Orientieren Sie sich am kürzlich umgesetzten Design der Vertragspartner- und Läger-Sektionen (kartenbasiert, wenig Scrollen, klare Informationen).
--   Die Logik für die Artikelauswahl muss eine **Filterung nach Artikelgruppe und Klassifizierungen** unterstützen. Der Backend-Endpunkt dafür existiert bereits.
--   Achten Sie darauf, dass alle neuen Funktionen (Kopieren, Detailansicht per Doppelklick) sowohl im **Neu- als auch im Bearbeitungs-/Lesemodus** eines Kontrakts funktionieren.
+-   Der Benutzer legt sehr hohen Wert auf smarte, coole und minimalistische UI/UX. Seien Sie bereit, UI-Implementierungen basierend auf subjektivem Feedback schnell und iterativ zu ändern. Die aktuelle Accordion-Ansicht für Streckengeschäfte und die neue Filter-/Suchleiste sind vom Benutzer genehmigt und sollten als Designvorlage dienen.
+-   Die  ist nun eine generische Komponente. Änderungen daran wirken sich auf alle drei Module (EK, VK, Strecke) aus. Spezifische Logik muss über die -Prop gesteuert werden.
+-   Der nächste logische Schritt, basierend auf der letzten Benutzeranforderung, ist das Hinzufügen weiterer Filter zur neu erstellten Filterleiste.
 
 **documents and test reports created in this job**
--    (mehrfach aktualisiert)
 -   
+-    (aktualisiert)
 
 **Last 10 User Messages and any pending HUMAN messages**
--   10. **(IN PROGRESS)** Fordert eine komplette Neugestaltung der Kontrakt-Positionserfassung mit 4 Kernanforderungen: neues Design, Artikelauswahl mit Filter, Positionen kopieren, verbesserte Übersicht und Detailansicht per Doppelklick.
--   9. **(RESOLVED)** Meldet, dass Läger- und Bankverbindungs-Auswahlen nach dem Verlassen der Maske nicht gespeichert werden. Agent hat das Backend-Schema korrigiert und die Funktion verifiziert.
--   8. **(IN PROGRESS)** Fordert die Erstellung einer zentralen Firmeneinstellungen-Seite, um eine Mandantenadresse zu definieren, die vom Kontraktmodul als Eigenes Lager verwendet wird.
--   7. **(IN PROGRESS)** Fordert, den Termine-Reiter in Kopfdaten zu verschieben und einen neuen Läger-Reiter für Abhol-/Ziellager zu erstellen.
--   6. **(RESOLVED)** Meldet 3 Bugs nach dem Redesign: 1) Keine Ansprechpartner wird fälschlich angezeigt, 2) USt-ID/Bankverbindung fehlen nach dem Speichern, 3) Ansprechpartner nicht änderbar. Agent hat alle 3 Bugs behoben.
--   5. **(RESOLVED)** Meldet einen Crash bei der Auswahl des Kunden Constellium, vermutlich wegen mehrerer USt-IDs. Agent hat das Frontend-Filtering korrigiert.
--   4. **(IN PROGRESS)** Fragt, wie mehrere USt-IDs und Bankverbindungen für Constellium ausgewählt werden können, da diese nicht angezeigt werden.
--   3. **(IN PROGRESS)** Gibt Feedback zum Redesign der Vertragspartner-Sektion: zu unübersichtlich, Ansprechpartnerauswahl schlecht, zu viele Infos bei interner Zuständigkeit, zu viel Scrollen. Fordert ein smartes modernes design.
--   2. **(DONE)** Schließt die Implementierung des Nummernkreis-Systems und der Vertragspartner-Erweiterungen ab.
--   1. **(DONE)** Bestätigt den Plan des Agenten, das Nummernkreis-System fertigzustellen.
+-   10. **(NEW)** Fordert eine moderne, smarte Filter- und Suchleiste über allen Kontraktmodulen, mit einem Datumsbereichs-Picker als ersten Filter.
+-   9. **(RESOLVED)** Fordert, dass die EK/VK-Module keine Streckengeschäfte mehr anzeigen oder erstellen können, um die Übersichtlichkeit zu wahren. Nur das Streckenmodul soll dies tun.
+-   8. **(NEW)** Fordert die Aufteilung des Kontraktmoduls in drei separate Untermenüs/Seiten: Einkauf, Verkauf und Strecke.
+-   7. **(RESOLVED)** Lehnt die Verbundene Karten-Ansicht als zu unübersichtlich ab und fordert eine sehr minimalistische Version mit Accordion.
+-   6. **(IN PROGRESS)** Wählt Option A (Verbundene Karten) für die Darstellung der Streckengeschäfte.
+-   5. **(RESOLVED)** Findet die ursprüngliche Darstellung der Streckengeschäfte als separate Zeilen nicht ideal und bittet um smarte Vorschläge zur Gruppierung. Stellt ein Bild zur Verfügung.
+-   4. **(RESOLVED)** Bestätigt die erste Implementierung des Streckengeschäfts und schließt die Aufgabe ab.
+-   3. **(RESOLVED)** Der Agent schließt die Aufgabe zum Streckengeschäft mit einer Zusammenfassung ab.
+-   2. **(NEW)** Bestätigt die Anforderungen für die Implementierung des Streckengeschäfts (gleiche Liste, Gruppierung ja, kein eigener Status, ja zur Verknüpfung).
+-   1. **(NEW)** Fordert die Implementierung eines neuen Kontrakttyps namens Strecke (Drop-Shipping) und gibt eine Definition sowie erste Anforderungen an die UI.
 
 **Project Health Check:**
 -   **Broken:** Keine.
@@ -154,12 +138,13 @@ Die jüngsten Anforderungen konzentrieren sich auf die massive Erweiterung und N
 -   EU VIES VAT Validation API
 -   country-flag-icons
 -   emergentintegrations (OCR)
+-   react-day-picker, date-fns (neu)
 
 **Testing status**
--   **Testing agent used after significant changes:** YES
+-   **Testing agent used after significant changes:** YES (für die initiale Streckengeschäft-Backend-Implementierung)
 -   **Troubleshoot agent used after agent stuck in loop:** NO
 -   **Test files created:**
-    -   Der Testing Agent hat in  neue Testfälle generiert und ausgeführt.
+    -   
 -   **Known regressions:** Keine
 
 **Credentials to test flow:**
@@ -167,4 +152,5 @@ Die jüngsten Anforderungen konzentrieren sich auf die massive Erweiterung und N
 -   **Test-Benutzer (eingeschränkte Rechte):**  / 
 
 **What agent forgot to execute**
--   Der Agent war dabei, die Neugestaltung der Kontrakt-Positionen zu beginnen. Es wurde ein Backend-Endpunkt erstellt, aber die gesamte Frontend-Arbeit (neuer Dialog, neue Listenansicht, Artikelauswahl-Komponente) steht noch aus und ist die unmittelbare nächste Aufgabe.</analysis>
+-   Die Verifizierung für den Bugfix der Profilspeicherung () wurde nicht erneut beim Benutzer angefragt.
+-   Die älteren, niedrig priorisierten Probleme (TypeScript-Warnungen, Scroll-Problem in ) wurden nicht angegangen.</analysis>
