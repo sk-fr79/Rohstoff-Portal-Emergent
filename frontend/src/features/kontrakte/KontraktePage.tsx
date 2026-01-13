@@ -287,14 +287,6 @@ interface Kontrakt extends KontraktForm {
   strecken_partner?: { ek?: StreckenPartner; vk?: StreckenPartner };
 }
 
-interface StreckengeschaeftData {
-  strecken_id: string;
-  ek_kontrakt: Kontrakt | null;
-  vk_kontrakt: Kontrakt | null;
-  status: { code: string; label: string; farbe: string };
-  erstellt_am?: string;
-}
-
 // ========================== SIDEBAR SECTIONS ==========================
 const sidebarSections = [
   { id: 'kopf', label: 'Kopfdaten', icon: FileText },
@@ -314,17 +306,6 @@ const statusColors: Record<string, { bg: string; text: string; icon: any }> = {
   TEILERFUELLT: { bg: 'bg-yellow-100', text: 'text-yellow-700', icon: AlertTriangle },
   ERFUELLT: { bg: 'bg-emerald-100', text: 'text-emerald-700', icon: CheckCircle },
   STORNO: { bg: 'bg-red-100', text: 'text-red-700', icon: Ban },
-};
-
-// Strecken-Status-Farben
-const streckenStatusColors: Record<string, { bg: string; text: string; border: string }> = {
-  OFFEN: { bg: 'bg-slate-50', text: 'text-slate-700', border: 'border-slate-200' },
-  AKTIV: { bg: 'bg-blue-50', text: 'text-blue-700', border: 'border-blue-200' },
-  TEILERFUELLT: { bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-200' },
-  ERFUELLT: { bg: 'bg-green-50', text: 'text-green-700', border: 'border-green-200' },
-  ABGESCHLOSSEN: { bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-300' },
-  STORNO: { bg: 'bg-red-50', text: 'text-red-700', border: 'border-red-200' },
-  UNVOLLSTAENDIG: { bg: 'bg-gray-50', text: 'text-gray-500', border: 'border-gray-200' },
 };
 
 // ========================== BENUTZER-AUSWAHL ==========================
