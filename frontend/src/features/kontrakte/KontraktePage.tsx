@@ -2049,15 +2049,13 @@ export function KontraktePage() {
           {(normaleKontrakte.length > 0 || filterTyp !== 'STRECKE') && filterTyp !== 'STRECKE' && (
             <div>
               {streckenGruppen.length > 0 && (
-                <div className="flex items-center gap-2 mb-3">
-                  <div className="h-8 w-8 rounded-lg bg-gray-100 flex items-center justify-center">
-                    <FileText className="h-4 w-4 text-gray-600" />
-                  </div>
-                  <h2 className="font-semibold text-gray-900">Einzelkontrakte</h2>
-                  <Badge variant="secondary">{normaleKontrakte.length}</Badge>
+                <div className="flex items-center gap-2 mb-2">
+                  <FileText className="h-4 w-4 text-gray-500" />
+                  <span className="text-sm font-medium text-gray-700">Einzelkontrakte</span>
+                  <Badge variant="outline" className="text-xs">{normaleKontrakte.length}</Badge>
                 </div>
               )}
-              <div className="bg-white rounded-xl shadow-sm border">
+              <div className="bg-white rounded-lg shadow-sm border">
                 <DataTable columns={columns} data={normaleKontrakte} searchKey="name1" searchPlaceholder="Vertragspartner suchen..." onRowDoubleClick={openDetail} />
               </div>
             </div>
