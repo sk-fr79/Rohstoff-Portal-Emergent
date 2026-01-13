@@ -2101,6 +2101,9 @@ export function KontraktePage({ defaultFilter = '', pageTitle }: KontraktePagePr
   };
   const { title, desc } = getTitleAndDescription();
 
+  // Ergebnis-Count
+  const totalResults = filterTyp === 'STRECKE' ? streckenGruppen.length : normaleKontrakte.length + streckenGruppen.length;
+
   return (
     <div className="h-full flex flex-col">
       {/* Header */}
@@ -2116,8 +2119,6 @@ export function KontraktePage({ defaultFilter = '', pageTitle }: KontraktePagePr
             </div>
           </div>
           <div className="flex items-center gap-3">
-            {/* Filter nur anzeigen wenn kein defaultFilter */}
-            {!isFixedFilter && (
               <Select value={filterTyp || "ALL"} onValueChange={(v) => setFilterTyp(v === "ALL" ? "" : v)}>
                 <SelectTrigger className="w-[160px]"><SelectValue placeholder="Alle Typen" /></SelectTrigger>
                 <SelectContent>
