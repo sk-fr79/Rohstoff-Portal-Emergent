@@ -1636,6 +1636,44 @@ export function KontraktePage() {
     return kontrakteData.data.filter((k: Kontrakt) => k.vorgang_typ === filterTyp);
   }, [kontrakteData, filterTyp]);
 
+  // Gruppierte Streckengeschäfte und normale Kontrakte
+  const { streckenGruppen, normaleKontrakte } = useMemo(() => {
+    if (!kontrakteData?.data) return { streckenGruppen: [], normaleKontrakte: [] };
+    
+    const streckenMap = new Map<string, StreckenGruppe>();
+    const normale: Kontrakt[] = [];
+    
+    // Alle Kontrakte durchgehen
+    (kontrakteData.data as Kontrakt[]).forEach(k => {
+      // Filter anwenden
+      if (filterTyp === 'EK' && k.vorgang_typ !== 'EK') return;
+      if (filterTyp === 'VK' && k.vorgang_typ !== 'VK') return;
+      
+      if (k.ist_strecke && k.strecken_id) {
+        // Strecken-Kontrakte gruppieren
+        if (!streckenMap.has(k.strecken_id)) {
+          streckenMap.set(k.strecken_id, { strecken_id: k.strecken_id, ek_kontrakt: null, vk_kontrakt: null });
+        }
+        const gruppe = streckenMap.get(k.strecken_id)!;
+        if (k.vorgang_typ === 'EK') gruppe.ek_kontrakt = k;
+        else if (k.vorgang_typ === 'VK') gruppe.vk_kontrakt = k;
+      } else if (filterTyp !== 'STRECKE') {
+        // Normale Kontrakte (nicht bei Strecken-Filter)
+        normale.push(k);
+      }
+    });
+    
+    // Wenn nur Strecken gefiltert werden, zeige Strecken - sonst nur gruppiert wenn nicht gefiltert
+    if (filterTyp === 'STRECKE') {
+      return { streckenGruppen: Array.from(streckenMap.values()), normaleKontrakte: [] };
+    }
+    
+    return { 
+      streckenGruppen: Array.from(streckenMap.values()), 
+      normaleKontrakte: normale 
+    };
+  }, [kontrakteData, filterTyp]);
+
   // Mutations
   const createMutation = useMutation({
     mutationFn: (data: any) => api.post('/kontrakte', data),
