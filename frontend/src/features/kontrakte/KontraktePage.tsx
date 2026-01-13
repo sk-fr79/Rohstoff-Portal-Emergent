@@ -1647,13 +1647,13 @@ export function KontraktePage({ defaultFilter = '', pageTitle }: KontraktePagePr
       if (!matchesDateRange(k)) return;
       
       // Bei EK/VK-Filter: NUR Einzelkontrakte (keine Strecken)
-      if (filterTyp === 'EK') {
+      if (defaultFilter === 'EK') {
         if (k.vorgang_typ === 'EK' && !k.ist_strecke) {
           normale.push(k);
         }
         return;
       }
-      if (filterTyp === 'VK') {
+      if (defaultFilter === 'VK') {
         if (k.vorgang_typ === 'VK' && !k.ist_strecke) {
           normale.push(k);
         }
@@ -1661,7 +1661,7 @@ export function KontraktePage({ defaultFilter = '', pageTitle }: KontraktePagePr
       }
       
       // Bei STRECKE-Filter: Nur Strecken gruppieren
-      if (filterTyp === 'STRECKE') {
+      if (defaultFilter === 'STRECKE') {
         if (k.ist_strecke && k.strecken_id) {
           if (!streckenMap.has(k.strecken_id)) {
             streckenMap.set(k.strecken_id, { strecken_id: k.strecken_id, ek_kontrakt: null, vk_kontrakt: null });
