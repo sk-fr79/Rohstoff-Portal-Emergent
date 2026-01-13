@@ -2065,6 +2065,7 @@ export function KontraktePage({ defaultFilter = '', pageTitle }: KontraktePagePr
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
+            )}
           </div>
         </div>
       </div>
