@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Outlet, NavLink, useNavigate } from 'react-router-dom';
+import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   LayoutDashboard,
@@ -23,6 +23,9 @@ import {
   BarChart3,
   Building2,
   Shield,
+  ArrowDownToLine,
+  ArrowUpFromLine,
+  ArrowRightLeft,
 } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { usePermissionsStore, ModuleKey } from '@/store/permissionsStore';
@@ -30,9 +33,24 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
+// Navigation item type
+interface NavItem {
+  path: string;
+  label: string;
+  icon: any;
+  moduleKey: ModuleKey;
+  children?: NavItem[];
+}
+
+interface NavGroup {
+  label?: string;
+  icon?: any;
+  items: NavItem[];
+}
+
 // Navigation Items with grouping like the reference design
 // Each item has a moduleKey for permission checking
-const navGroups = [
+const navGroups: NavGroup[] = [
   {
     items: [
       { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, moduleKey: 'dashboard' as ModuleKey },
@@ -48,10 +66,12 @@ const navGroups = [
     ]
   },
   {
-    label: 'Bewegungsdaten',
+    label: 'Kontrakte',
     icon: FileText,
     items: [
-      { path: '/kontrakte', label: 'Kontrakte', icon: FileText, moduleKey: 'kontrakte' as ModuleKey },
+      { path: '/kontrakte/einkauf', label: 'Einkauf', icon: ArrowDownToLine, moduleKey: 'kontrakte' as ModuleKey },
+      { path: '/kontrakte/verkauf', label: 'Verkauf', icon: ArrowUpFromLine, moduleKey: 'kontrakte' as ModuleKey },
+      { path: '/kontrakte/strecken', label: 'Strecken', icon: ArrowRightLeft, moduleKey: 'kontrakte' as ModuleKey },
     ]
   },
   {
