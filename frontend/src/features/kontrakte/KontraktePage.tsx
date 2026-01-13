@@ -2024,17 +2024,15 @@ export function KontraktePage() {
       {/* Content */}
       <div ref={containerRef} className="flex-1 flex overflow-hidden">
         <div className="p-6 overflow-auto transition-none" style={selectedKontrakt ? leftPanelStyle : { width: '100%' }}>
-          {/* Streckengeschäfte als Karten */}
+          {/* Streckengeschäfte - Kompakte Liste */}
           {streckenGruppen.length > 0 && (
-            <div className="mb-6">
-              <div className="flex items-center gap-2 mb-3">
-                <div className="h-8 w-8 rounded-lg bg-orange-100 flex items-center justify-center">
-                  <ArrowRightLeft className="h-4 w-4 text-orange-600" />
-                </div>
-                <h2 className="font-semibold text-gray-900">Streckengeschäfte</h2>
-                <Badge variant="secondary" className="bg-orange-100 text-orange-700">{streckenGruppen.length}</Badge>
+            <div className="mb-4">
+              <div className="flex items-center gap-2 mb-2">
+                <ArrowRightLeft className="h-4 w-4 text-orange-500" />
+                <span className="text-sm font-medium text-gray-700">Streckengeschäfte</span>
+                <Badge variant="outline" className="text-xs bg-orange-50 text-orange-600 border-orange-200">{streckenGruppen.length}</Badge>
               </div>
-              <div className="space-y-3">
+              <div className="space-y-1">
                 {streckenGruppen.map((strecke) => (
                   <StreckenKarte 
                     key={strecke.strecken_id} 
