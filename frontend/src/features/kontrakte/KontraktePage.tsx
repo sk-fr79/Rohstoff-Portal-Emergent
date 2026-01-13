@@ -6,16 +6,18 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from 'sonner';
+import { format } from 'date-fns';
+import { de } from 'date-fns/locale';
 import { 
   Plus, MoreHorizontal, Pencil, Trash2, FileText, Eye, 
-  Save, X, Building2, Package, Calendar, Truck,
+  Save, X, Building2, Package, Calendar as CalendarIcon, Truck,
   ArrowDownToLine, ArrowUpFromLine, CheckCircle, Clock,
   AlertTriangle, Ban, TrendingUp, Lock,
   DollarSign, FileCheck, MessageSquare, Percent, Scale,
   User, Users, Search, ChevronDown, CreditCard,
   History, Printer, Download, RefreshCw, Activity, Copy,
   XCircle, Warehouse, ChevronRight, Filter, ArrowRightLeft,
-  Link2, Unlink, ArrowRight
+  Link2, Unlink, ArrowRight, SlidersHorizontal, CalendarRange
 } from 'lucide-react';
 import { api } from '@/services/api/client';
 import { Button } from '@/components/ui/button';
@@ -36,6 +38,7 @@ import { ResizeHandle } from '@/components/ui/resize-handle';
 import { WAEHRUNGEN, getWaehrung } from '@/data/waehrungen';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+import { Calendar } from '@/components/ui/calendar';
 import { formatRelativeTime, formatDateTime, formatDateLong } from '@/lib/dateUtils';
 
 // ========================== TYPES ==========================
