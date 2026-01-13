@@ -2146,12 +2146,27 @@ export function KontraktePage({ defaultFilter = '', pageTitle }: KontraktePagePr
           
           {/* Keine Daten */}
           {streckenGruppen.length === 0 && normaleKontrakte.length === 0 && !isLoading && (
-            <div className="bg-white rounded-xl shadow-sm border p-12 text-center">
-              <div className="h-16 w-16 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-4">
-                <FileText className="h-8 w-8 text-gray-400" />
+            <div className="bg-white rounded-lg shadow-sm border p-12 text-center">
+              <div className={cn(
+                "h-16 w-16 rounded-full flex items-center justify-center mx-auto mb-4",
+                filterTyp === 'EK' ? "bg-green-100" : filterTyp === 'VK' ? "bg-blue-100" : filterTyp === 'STRECKE' ? "bg-orange-100" : "bg-gray-100"
+              )}>
+                {filterTyp === 'EK' ? <ArrowDownToLine className="h-8 w-8 text-green-500" /> :
+                 filterTyp === 'VK' ? <ArrowUpFromLine className="h-8 w-8 text-blue-500" /> :
+                 filterTyp === 'STRECKE' ? <ArrowRightLeft className="h-8 w-8 text-orange-500" /> :
+                 <FileText className="h-8 w-8 text-gray-400" />}
               </div>
-              <h3 className="font-medium text-gray-900 mb-1">Keine Kontrakte gefunden</h3>
-              <p className="text-sm text-gray-500">Erstellen Sie einen neuen Kontrakt oder ändern Sie den Filter.</p>
+              <h3 className="font-medium text-gray-900 mb-1">
+                {filterTyp === 'EK' ? 'Keine Einkaufskontrakte' : 
+                 filterTyp === 'VK' ? 'Keine Verkaufskontrakte' : 
+                 filterTyp === 'STRECKE' ? 'Keine Streckengeschäfte' : 
+                 'Keine Kontrakte gefunden'}
+              </h3>
+              <p className="text-sm text-gray-500">
+                {filterTyp === 'STRECKE' 
+                  ? 'Erstellen Sie ein neues Streckengeschäft.'
+                  : `Erstellen Sie einen neuen ${filterTyp || 'Kontrakt'}.`}
+              </p>
             </div>
           )}
         </div>
