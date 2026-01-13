@@ -17,7 +17,8 @@ import {
   User, Users, Search, ChevronDown, CreditCard,
   History, Copy, RefreshCw, Printer, Download, Activity,
   XCircle, ChevronRight, ArrowRightLeft, Filter, Warehouse,
-  Link2, Unlink, ArrowRight, SlidersHorizontal, CalendarRange
+  Link2, Unlink, ArrowRight, SlidersHorizontal, CalendarRange,
+  CalendarDays
 } from 'lucide-react';
 import { api } from '@/services/api/client';
 import { Button } from '@/components/ui/button';
