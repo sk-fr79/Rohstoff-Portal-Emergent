@@ -2151,6 +2151,153 @@ export function KontraktePage({ defaultFilter = '', pageTitle }: KontraktePagePr
         </div>
       </div>
 
+      {/* Filter- und Searchbar */}
+      <div className="bg-gray-50/80 backdrop-blur-sm border-b border-gray-200 px-6 py-3">
+        {/* Filterbar */}
+        <div className="flex items-center gap-3 mb-3">
+          <div className="flex items-center gap-2">
+            <SlidersHorizontal className="h-4 w-4 text-gray-500" />
+            <span className="text-sm font-medium text-gray-600">Filter</span>
+            {activeFilterCount > 0 && (
+              <Badge className="bg-blue-100 text-blue-700 text-xs">{activeFilterCount} aktiv</Badge>
+            )}
+          </div>
+          
+          {/* Datums-Range Filter */}
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button 
+                variant="outline" 
+                size="sm"
+                className={cn(
+                  "h-8 gap-2 text-sm font-normal",
+                  (dateRange.from || dateRange.to) && "bg-blue-50 border-blue-200 text-blue-700"
+                )}
+              >
+                <CalendarRange className="h-4 w-4" />
+                {dateRange.from ? (
+                  dateRange.to ? (
+                    <>
+                      {format(dateRange.from, "dd.MM.yy", { locale: de })} - {format(dateRange.to, "dd.MM.yy", { locale: de })}
+                    </>
+                  ) : (
+                    <>ab {format(dateRange.from, "dd.MM.yyyy", { locale: de })}</>
+                  )
+                ) : (
+                  "Kontraktdatum"
+                )}
+                {(dateRange.from || dateRange.to) && (
+                  <X 
+                    className="h-3 w-3 ml-1 hover:text-red-500" 
+                    onClick={(e) => { e.stopPropagation(); setDateRange({ from: undefined, to: undefined }); }}
+                  />
+                )}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <div className="p-3 border-b">
+                <div className="text-sm font-medium">Kontraktdatum wählen</div>
+                <div className="text-xs text-gray-500">Wählen Sie einen Datumsbereich</div>
+              </div>
+              <div className="flex">
+                <div className="border-r">
+                  <div className="px-3 py-2 text-xs font-medium text-gray-500 bg-gray-50">Von</div>
+                  <Calendar
+                    mode="single"
+                    selected={dateRange.from}
+                    onSelect={(date) => setDateRange(prev => ({ ...prev, from: date }))}
+                    initialFocus
+                  />
+                </div>
+                <div>
+                  <div className="px-3 py-2 text-xs font-medium text-gray-500 bg-gray-50">Bis</div>
+                  <Calendar
+                    mode="single"
+                    selected={dateRange.to}
+                    onSelect={(date) => setDateRange(prev => ({ ...prev, to: date }))}
+                    disabled={(date) => dateRange.from ? date < dateRange.from : false}
+                  />
+                </div>
+              </div>
+              <div className="p-2 border-t flex justify-between">
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={() => setDateRange({ from: undefined, to: undefined })}
+                >
+                  Zurücksetzen
+                </Button>
+                <div className="flex gap-1">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => {
+                      const today = new Date();
+                      const thirtyDaysAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
+                      setDateRange({ from: thirtyDaysAgo, to: today });
+                    }}
+                  >
+                    30 Tage
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => {
+                      const today = new Date();
+                      const startOfYear = new Date(today.getFullYear(), 0, 1);
+                      setDateRange({ from: startOfYear, to: today });
+                    }}
+                  >
+                    Dieses Jahr
+                  </Button>
+                </div>
+              </div>
+            </PopoverContent>
+          </Popover>
+
+          {/* Alle Filter löschen */}
+          {activeFilterCount > 0 && (
+            <Button variant="ghost" size="sm" onClick={clearAllFilters} className="h-8 text-gray-500 hover:text-red-600">
+              <XCircle className="h-4 w-4 mr-1" />
+              Filter löschen
+            </Button>
+          )}
+          
+          <div className="flex-1" />
+          
+          {/* Ergebniszähler */}
+          <span className="text-sm text-gray-500">
+            {totalResults} {totalResults === 1 ? 'Ergebnis' : 'Ergebnisse'}
+          </span>
+        </div>
+
+        {/* Searchbar */}
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+          <Input
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder={
+              defaultFilter === 'STRECKE' 
+                ? "Suche nach Kontraktnummer, Partner, Artikel... (Wildcard: * oder %)"
+                : `Suche nach Kontraktnummer, Vertragspartner, Artikel, Ort... (Wildcard: * oder %)`
+            }
+            className="pl-10 pr-10 h-11 text-base bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500 shadow-sm"
+            data-testid="search-input"
+          />
+          {searchQuery && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute right-2 top-1/2 -translate-y-1/2 h-7 w-7 text-gray-400 hover:text-gray-600"
+              onClick={() => setSearchQuery('')}
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          )}
+        </div>
+      </div>
+
       {/* Content */}
       <div ref={containerRef} className="flex-1 flex overflow-hidden">
         <div className="p-6 overflow-auto transition-none" style={selectedKontrakt ? leftPanelStyle : { width: '100%' }}>
