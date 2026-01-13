@@ -1590,28 +1590,45 @@ export function KontraktePage({ defaultFilter = '', pageTitle }: KontraktePagePr
     
     // Alle Kontrakte durchgehen
     (kontrakteData.data as Kontrakt[]).forEach(k => {
-      // Filter anwenden
-      if (filterTyp === 'EK' && k.vorgang_typ !== 'EK') return;
-      if (filterTyp === 'VK' && k.vorgang_typ !== 'VK') return;
+      // Bei EK/VK-Filter: NUR Einzelkontrakte (keine Strecken)
+      if (filterTyp === 'EK') {
+        if (k.vorgang_typ === 'EK' && !k.ist_strecke) {
+          normale.push(k);
+        }
+        return;
+      }
+      if (filterTyp === 'VK') {
+        if (k.vorgang_typ === 'VK' && !k.ist_strecke) {
+          normale.push(k);
+        }
+        return;
+      }
       
+      // Bei STRECKE-Filter: Nur Strecken gruppieren
+      if (filterTyp === 'STRECKE') {
+        if (k.ist_strecke && k.strecken_id) {
+          if (!streckenMap.has(k.strecken_id)) {
+            streckenMap.set(k.strecken_id, { strecken_id: k.strecken_id, ek_kontrakt: null, vk_kontrakt: null });
+          }
+          const gruppe = streckenMap.get(k.strecken_id)!;
+          if (k.vorgang_typ === 'EK') gruppe.ek_kontrakt = k;
+          else if (k.vorgang_typ === 'VK') gruppe.vk_kontrakt = k;
+        }
+        return;
+      }
+      
+      // Kein Filter: Alles anzeigen (Strecken gruppiert, Rest als Einzelkontrakte)
       if (k.ist_strecke && k.strecken_id) {
-        // Strecken-Kontrakte gruppieren
         if (!streckenMap.has(k.strecken_id)) {
           streckenMap.set(k.strecken_id, { strecken_id: k.strecken_id, ek_kontrakt: null, vk_kontrakt: null });
         }
         const gruppe = streckenMap.get(k.strecken_id)!;
         if (k.vorgang_typ === 'EK') gruppe.ek_kontrakt = k;
         else if (k.vorgang_typ === 'VK') gruppe.vk_kontrakt = k;
-      } else if (filterTyp !== 'STRECKE') {
-        // Normale Kontrakte (nicht bei Strecken-Filter)
+      } else {
         normale.push(k);
       }
     });
-    
-    // Wenn nur Strecken gefiltert werden, zeige Strecken - sonst nur gruppiert wenn nicht gefiltert
-    if (filterTyp === 'STRECKE') {
-      return { streckenGruppen: Array.from(streckenMap.values()), normaleKontrakte: [] };
-    }
     
     return { 
       streckenGruppen: Array.from(streckenMap.values()), 
