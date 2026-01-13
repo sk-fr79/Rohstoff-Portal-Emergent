@@ -1999,24 +1999,56 @@ export function KontraktePage({ defaultFilter = '', pageTitle }: KontraktePagePr
   ], [deleteMutation, streckeAufloesenMutation, kontrakteData, openDetail]);
 
   const selectedWaehrung = getWaehrung(watchFields.waehrung_kurz);
+  
+  // Titel und Beschreibung basierend auf Filter
+  const getTitleAndDescription = () => {
+    if (pageTitle) {
+      if (defaultFilter === 'EK') return { title: pageTitle, desc: 'Einkaufskontrakte verwalten' };
+      if (defaultFilter === 'VK') return { title: pageTitle, desc: 'Verkaufskontrakte verwalten' };
+      if (defaultFilter === 'STRECKE') return { title: pageTitle, desc: 'Streckengeschäfte verwalten' };
+    }
+    return { title: 'Kontrakte', desc: 'Einkaufs-, Verkaufs- und Streckenkontrakte verwalten' };
+  };
+  const { title, desc } = getTitleAndDescription();
 
   return (
     <div className="h-full flex flex-col">
       {/* Header */}
       <div className="bg-white border-b border-gray-200 px-6 py-4">
         <div className="flex items-center justify-between">
-          <div><h1 className="text-xl font-semibold text-gray-900">Kontrakte</h1><p className="text-sm text-gray-500 mt-0.5">Einkaufs-, Verkaufs- und Streckenkontrakte verwalten</p></div>
           <div className="flex items-center gap-3">
-            <Select value={filterTyp || "ALL"} onValueChange={(v) => setFilterTyp(v === "ALL" ? "" : v)}>
-              <SelectTrigger className="w-[160px]"><SelectValue placeholder="Alle Typen" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="ALL">Alle Typen</SelectItem>
-                <SelectItem value="EK"><span className="flex items-center gap-2"><ArrowDownToLine className="h-4 w-4 text-green-600" />Einkauf</span></SelectItem>
-                <SelectItem value="VK"><span className="flex items-center gap-2"><ArrowUpFromLine className="h-4 w-4 text-blue-600" />Verkauf</span></SelectItem>
-                <SelectItem value="STRECKE"><span className="flex items-center gap-2"><ArrowRightLeft className="h-4 w-4 text-orange-600" />Strecke</span></SelectItem>
-              </SelectContent>
-            </Select>
-            <DropdownMenu>
+            {defaultFilter === 'EK' && <div className="h-10 w-10 rounded-lg bg-green-100 flex items-center justify-center"><ArrowDownToLine className="h-5 w-5 text-green-600" /></div>}
+            {defaultFilter === 'VK' && <div className="h-10 w-10 rounded-lg bg-blue-100 flex items-center justify-center"><ArrowUpFromLine className="h-5 w-5 text-blue-600" /></div>}
+            {defaultFilter === 'STRECKE' && <div className="h-10 w-10 rounded-lg bg-orange-100 flex items-center justify-center"><ArrowRightLeft className="h-5 w-5 text-orange-600" /></div>}
+            <div>
+              <h1 className="text-xl font-semibold text-gray-900">{title}</h1>
+              <p className="text-sm text-gray-500 mt-0.5">{desc}</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            {/* Filter nur anzeigen wenn kein defaultFilter */}
+            {!isFixedFilter && (
+              <Select value={filterTyp || "ALL"} onValueChange={(v) => setFilterTyp(v === "ALL" ? "" : v)}>
+                <SelectTrigger className="w-[160px]"><SelectValue placeholder="Alle Typen" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ALL">Alle Typen</SelectItem>
+                  <SelectItem value="EK"><span className="flex items-center gap-2"><ArrowDownToLine className="h-4 w-4 text-green-600" />Einkauf</span></SelectItem>
+                  <SelectItem value="VK"><span className="flex items-center gap-2"><ArrowUpFromLine className="h-4 w-4 text-blue-600" />Verkauf</span></SelectItem>
+                  <SelectItem value="STRECKE"><span className="flex items-center gap-2"><ArrowRightLeft className="h-4 w-4 text-orange-600" />Strecke</span></SelectItem>
+                </SelectContent>
+              </Select>
+            )}
+            {/* Neu-Button anpassen basierend auf defaultFilter */}
+            {defaultFilter === 'STRECKE' ? (
+              <Button onClick={handleNewStrecke} className="bg-orange-600 hover:bg-orange-700" data-testid="new-strecke-btn">
+                <Plus className="h-4 w-4 mr-2" />Neues Streckengeschäft
+              </Button>
+            ) : defaultFilter ? (
+              <Button onClick={handleNewKontrakt} className={defaultFilter === 'EK' ? "bg-green-600 hover:bg-green-700" : "bg-blue-600 hover:bg-blue-700"} data-testid="new-kontrakt-btn">
+                <Plus className="h-4 w-4 mr-2" />Neuer {defaultFilter === 'EK' ? 'EK' : 'VK'}-Kontrakt
+              </Button>
+            ) : (
+              <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button className="bg-emerald-600 hover:bg-emerald-700" data-testid="new-kontrakt-btn">
                   <Plus className="h-4 w-4 mr-2" />Neu
