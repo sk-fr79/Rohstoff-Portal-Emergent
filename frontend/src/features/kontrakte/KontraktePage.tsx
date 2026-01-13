@@ -1644,6 +1644,10 @@ export function KontraktePage({ defaultFilter = '', pageTitle }: KontraktePagePr
     
     // Alle Kontrakte durchgehen
     (kontrakteData.data as Kontrakt[]).forEach(k => {
+      // Zuerst: Search und Datums-Filter anwenden
+      if (!matchesSearch(k, searchQuery)) return;
+      if (!matchesDateRange(k)) return;
+      
       // Bei EK/VK-Filter: NUR Einzelkontrakte (keine Strecken)
       if (filterTyp === 'EK') {
         if (k.vorgang_typ === 'EK' && !k.ist_strecke) {
@@ -1688,7 +1692,7 @@ export function KontraktePage({ defaultFilter = '', pageTitle }: KontraktePagePr
       streckenGruppen: Array.from(streckenMap.values()), 
       normaleKontrakte: normale 
     };
-  }, [kontrakteData, filterTyp]);
+  }, [kontrakteData, filterTyp, searchQuery, dateRange, matchesSearch, matchesDateRange]);
 
   // Mutations
   const createMutation = useMutation({
