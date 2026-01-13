@@ -1384,7 +1384,7 @@ function ProtokollTab({ kontraktId }: ProtokollTabProps) {
 }
 
 
-// ========================== STRECKEN-KARTE KOMPONENTE ==========================
+// ========================== STRECKEN-KARTE KOMPONENTE (MINIMALISTISCH) ==========================
 interface StreckenGruppe {
   strecken_id: string;
   ek_kontrakt: Kontrakt | null;
@@ -1400,169 +1400,124 @@ function StreckenKarte({
   onOpenKontrakt: (kontrakt: Kontrakt) => void;
   onAufloesen: (streckenId: string) => void;
 }) {
+  const [isExpanded, setIsExpanded] = useState(false);
   const { ek_kontrakt, vk_kontrakt, strecken_id } = strecke;
   
-  // Strecken-Status berechnen
-  const getStreckenStatus = () => {
-    const ekStatus = ek_kontrakt?.status || 'FEHLT';
-    const vkStatus = vk_kontrakt?.status || 'FEHLT';
-    
-    if (ekStatus === 'STORNO' || vkStatus === 'STORNO') return { label: 'Storniert', color: 'bg-red-100 text-red-700 border-red-200' };
-    if (ek_kontrakt?.abgeschlossen && vk_kontrakt?.abgeschlossen) return { label: 'Abgeschlossen', color: 'bg-emerald-100 text-emerald-700 border-emerald-200' };
-    if (ekStatus === 'ERFUELLT' && vkStatus === 'ERFUELLT') return { label: 'Erfüllt', color: 'bg-green-100 text-green-700 border-green-200' };
-    if (ekStatus === 'AKTIV' || vkStatus === 'AKTIV') return { label: 'Aktiv', color: 'bg-blue-100 text-blue-700 border-blue-200' };
-    if (ekStatus === 'TEILERFUELLT' || vkStatus === 'TEILERFUELLT') return { label: 'In Bearbeitung', color: 'bg-amber-100 text-amber-700 border-amber-200' };
-    return { label: 'Offen', color: 'bg-slate-100 text-slate-700 border-slate-200' };
-  };
-  
-  const status = getStreckenStatus();
+  const ekStatus = ek_kontrakt?.status || 'FEHLT';
+  const vkStatus = vk_kontrakt?.status || 'FEHLT';
   const totalMenge = (ek_kontrakt?.summen?.summe_menge || 0);
-  const ekWert = ek_kontrakt?.summen?.summe_wert || 0;
-  const vkWert = vk_kontrakt?.summen?.summe_wert || 0;
   
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="bg-gradient-to-r from-orange-50/50 via-white to-orange-50/50 border border-orange-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-all"
-    >
-      {/* Header */}
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center shadow-lg">
-            <ArrowRightLeft className="h-5 w-5 text-white" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="font-bold text-gray-900">Streckengeschäft</span>
-              <Badge className={cn("text-xs", status.color)}>{status.label}</Badge>
-            </div>
-            <div className="text-xs text-gray-500">
-              {ek_kontrakt?.erstellungsdatum ? new Date(ek_kontrakt.erstellungsdatum).toLocaleDateString('de-DE') : '-'} 
-              {ek_kontrakt?.sachbearbeiter_name && ` • ${ek_kontrakt.sachbearbeiter_name}`}
-            </div>
-          </div>
+    <div className="border border-gray-200 rounded-lg bg-white overflow-hidden">
+      {/* Kompakte Hauptzeile */}
+      <div 
+        className="flex items-center gap-3 px-3 py-2 hover:bg-gray-50 cursor-pointer"
+        onClick={() => setIsExpanded(!isExpanded)}
+      >
+        <ChevronRight className={cn("h-4 w-4 text-gray-400 transition-transform", isExpanded && "rotate-90")} />
+        <ArrowRightLeft className="h-4 w-4 text-orange-500" />
+        
+        {/* EK Info */}
+        <div className="flex items-center gap-1.5 min-w-0">
+          <ArrowDownToLine className="h-3.5 w-3.5 text-green-600 shrink-0" />
+          <span className="font-mono text-sm text-green-700 truncate">{ek_kontrakt?.kontraktnummer || '-'}</span>
         </div>
+        
+        <ArrowRight className="h-3 w-3 text-gray-300 shrink-0" />
+        
+        {/* VK Info */}
+        <div className="flex items-center gap-1.5 min-w-0">
+          <ArrowUpFromLine className="h-3.5 w-3.5 text-blue-600 shrink-0" />
+          <span className="font-mono text-sm text-blue-700 truncate">{vk_kontrakt?.kontraktnummer || '-'}</span>
+        </div>
+        
+        <span className="text-gray-300">|</span>
+        
+        {/* Route */}
+        <span className="text-sm text-gray-600 truncate flex-1">
+          {ek_kontrakt?.name1 || '?'} → {vk_kontrakt?.name1 || '?'}
+        </span>
+        
+        {/* Menge */}
+        <span className="text-sm font-medium text-gray-700 shrink-0">{totalMenge.toLocaleString('de-DE')} t</span>
+        
+        {/* Status-Dots */}
+        <div className="flex items-center gap-1 shrink-0">
+          <div className={cn("h-2 w-2 rounded-full", ekStatus === 'OFFEN' ? 'bg-slate-400' : ekStatus === 'AKTIV' ? 'bg-green-500' : ekStatus === 'ERFUELLT' ? 'bg-emerald-500' : 'bg-gray-300')} title={`EK: ${ekStatus}`} />
+          <div className={cn("h-2 w-2 rounded-full", vkStatus === 'OFFEN' ? 'bg-slate-400' : vkStatus === 'AKTIV' ? 'bg-green-500' : vkStatus === 'ERFUELLT' ? 'bg-emerald-500' : 'bg-gray-300')} title={`VK: ${vkStatus}`} />
+        </div>
+        
+        {/* Aktionen */}
         <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="h-8 w-8">
+          <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+            <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0">
               <MoreHorizontal className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            {ek_kontrakt && <DropdownMenuItem onClick={() => onOpenKontrakt(ek_kontrakt)}><ArrowDownToLine className="h-4 w-4 mr-2 text-green-600" />EK-Kontrakt öffnen</DropdownMenuItem>}
-            {vk_kontrakt && <DropdownMenuItem onClick={() => onOpenKontrakt(vk_kontrakt)}><ArrowUpFromLine className="h-4 w-4 mr-2 text-blue-600" />VK-Kontrakt öffnen</DropdownMenuItem>}
+            {ek_kontrakt && <DropdownMenuItem onClick={() => onOpenKontrakt(ek_kontrakt)}><ArrowDownToLine className="h-4 w-4 mr-2 text-green-600" />EK öffnen</DropdownMenuItem>}
+            {vk_kontrakt && <DropdownMenuItem onClick={() => onOpenKontrakt(vk_kontrakt)}><ArrowUpFromLine className="h-4 w-4 mr-2 text-blue-600" />VK öffnen</DropdownMenuItem>}
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="text-orange-600" onClick={() => { if (confirm('Streckengeschäft auflösen?')) onAufloesen(strecken_id); }}>
-              <Unlink className="h-4 w-4 mr-2" />Strecke auflösen
+            <DropdownMenuItem className="text-orange-600" onClick={() => { if (confirm('Strecke auflösen?')) onAufloesen(strecken_id); }}>
+              <Unlink className="h-4 w-4 mr-2" />Auflösen
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
       
-      {/* Karten-Container */}
-      <div className="flex items-center gap-3">
-        {/* EK-Karte */}
-        <motion.div 
-          whileHover={{ scale: 1.02 }}
-          onClick={() => ek_kontrakt && onOpenKontrakt(ek_kontrakt)}
-          className={cn(
-            "flex-1 p-3 rounded-lg border-2 cursor-pointer transition-all",
-            ek_kontrakt ? "bg-green-50 border-green-200 hover:border-green-400 hover:shadow" : "bg-gray-50 border-dashed border-gray-300"
-          )}
-        >
-          <div className="flex items-center gap-2 mb-2">
-            <div className="h-7 w-7 rounded-lg bg-green-100 flex items-center justify-center">
-              <ArrowDownToLine className="h-4 w-4 text-green-600" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="font-mono text-sm font-bold text-green-700 truncate">{ek_kontrakt?.kontraktnummer || 'Kein EK'}</div>
-            </div>
-            {ek_kontrakt && (
-              <Badge variant="outline" className={cn("text-xs shrink-0", statusColors[ek_kontrakt.status || 'OFFEN']?.bg, statusColors[ek_kontrakt.status || 'OFFEN']?.text)}>
-                {ek_kontrakt.status || 'OFFEN'}
-              </Badge>
-            )}
-          </div>
-          {ek_kontrakt ? (
-            <div>
-              <div className="font-medium text-gray-900 truncate">{ek_kontrakt.name1}</div>
-              <div className="text-xs text-gray-500 truncate">{ek_kontrakt.ort}</div>
-              <div className="flex items-center gap-2 mt-2 text-xs">
-                <span className="font-medium text-green-700">{(ek_kontrakt.summen?.summe_menge || 0).toLocaleString('de-DE')} t</span>
-                <span className="text-gray-400">|</span>
-                <span className="font-medium">{ekWert.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}</span>
-              </div>
-            </div>
-          ) : (
-            <div className="text-sm text-gray-400 italic">Nicht verknüpft</div>
-          )}
-        </motion.div>
-        
-        {/* Verbindungs-Animation */}
-        <div className="flex flex-col items-center gap-1 px-2">
+      {/* Expandierter Bereich */}
+      <AnimatePresence>
+        {isExpanded && (
           <motion.div
-            animate={{ x: [0, 5, 0] }}
-            transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
-            className="flex items-center gap-1"
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.15 }}
+            className="overflow-hidden border-t border-gray-100"
           >
-            <div className="h-0.5 w-4 bg-gradient-to-r from-green-400 to-orange-400 rounded-full" />
-            <Truck className="h-5 w-5 text-orange-500" />
-            <div className="h-0.5 w-4 bg-gradient-to-r from-orange-400 to-blue-400 rounded-full" />
-          </motion.div>
-          <span className="text-[10px] text-orange-600 font-medium">Direkt</span>
-        </div>
-        
-        {/* VK-Karte */}
-        <motion.div 
-          whileHover={{ scale: 1.02 }}
-          onClick={() => vk_kontrakt && onOpenKontrakt(vk_kontrakt)}
-          className={cn(
-            "flex-1 p-3 rounded-lg border-2 cursor-pointer transition-all",
-            vk_kontrakt ? "bg-blue-50 border-blue-200 hover:border-blue-400 hover:shadow" : "bg-gray-50 border-dashed border-gray-300"
-          )}
-        >
-          <div className="flex items-center gap-2 mb-2">
-            <div className="h-7 w-7 rounded-lg bg-blue-100 flex items-center justify-center">
-              <ArrowUpFromLine className="h-4 w-4 text-blue-600" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="font-mono text-sm font-bold text-blue-700 truncate">{vk_kontrakt?.kontraktnummer || 'Kein VK'}</div>
-            </div>
-            {vk_kontrakt && (
-              <Badge variant="outline" className={cn("text-xs shrink-0", statusColors[vk_kontrakt.status || 'OFFEN']?.bg, statusColors[vk_kontrakt.status || 'OFFEN']?.text)}>
-                {vk_kontrakt.status || 'OFFEN'}
-              </Badge>
-            )}
-          </div>
-          {vk_kontrakt ? (
-            <div>
-              <div className="font-medium text-gray-900 truncate">{vk_kontrakt.name1}</div>
-              <div className="text-xs text-gray-500 truncate">{vk_kontrakt.ort}</div>
-              <div className="flex items-center gap-2 mt-2 text-xs">
-                <span className="font-medium text-blue-700">{(vk_kontrakt.summen?.summe_menge || 0).toLocaleString('de-DE')} t</span>
-                <span className="text-gray-400">|</span>
-                <span className="font-medium">{vkWert.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}</span>
+            <div className="grid grid-cols-2 gap-2 p-3 bg-gray-50/50">
+              {/* EK Details */}
+              <div 
+                className="p-2.5 rounded border border-green-200 bg-white hover:bg-green-50 cursor-pointer transition-colors"
+                onClick={() => ek_kontrakt && onOpenKontrakt(ek_kontrakt)}
+              >
+                <div className="flex items-center gap-2 mb-1.5">
+                  <ArrowDownToLine className="h-4 w-4 text-green-600" />
+                  <span className="font-mono text-sm font-semibold text-green-700">{ek_kontrakt?.kontraktnummer}</span>
+                  <Badge variant="outline" className="text-xs ml-auto">{ekStatus}</Badge>
+                </div>
+                <div className="text-sm font-medium truncate">{ek_kontrakt?.name1}</div>
+                <div className="text-xs text-gray-500 truncate">{ek_kontrakt?.ort}</div>
+                <div className="flex items-center gap-2 mt-1.5 text-xs">
+                  <span>{(ek_kontrakt?.summen?.summe_menge || 0).toLocaleString('de-DE')} t</span>
+                  <span className="text-gray-400">•</span>
+                  <span>{(ek_kontrakt?.summen?.summe_wert || 0).toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}</span>
+                </div>
+              </div>
+              
+              {/* VK Details */}
+              <div 
+                className="p-2.5 rounded border border-blue-200 bg-white hover:bg-blue-50 cursor-pointer transition-colors"
+                onClick={() => vk_kontrakt && onOpenKontrakt(vk_kontrakt)}
+              >
+                <div className="flex items-center gap-2 mb-1.5">
+                  <ArrowUpFromLine className="h-4 w-4 text-blue-600" />
+                  <span className="font-mono text-sm font-semibold text-blue-700">{vk_kontrakt?.kontraktnummer}</span>
+                  <Badge variant="outline" className="text-xs ml-auto">{vkStatus}</Badge>
+                </div>
+                <div className="text-sm font-medium truncate">{vk_kontrakt?.name1}</div>
+                <div className="text-xs text-gray-500 truncate">{vk_kontrakt?.ort}</div>
+                <div className="flex items-center gap-2 mt-1.5 text-xs">
+                  <span>{(vk_kontrakt?.summen?.summe_menge || 0).toLocaleString('de-DE')} t</span>
+                  <span className="text-gray-400">•</span>
+                  <span>{(vk_kontrakt?.summen?.summe_wert || 0).toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}</span>
+                </div>
               </div>
             </div>
-          ) : (
-            <div className="text-sm text-gray-400 italic">Nicht verknüpft</div>
-          )}
-        </motion.div>
-      </div>
-      
-      {/* Footer mit Zusammenfassung */}
-      <div className="flex items-center justify-between mt-3 pt-3 border-t border-orange-100">
-        <div className="flex items-center gap-4 text-xs text-gray-500">
-          <span className="flex items-center gap-1"><Package className="h-3 w-3" />{totalMenge.toLocaleString('de-DE')} t gesamt</span>
-          <span className="flex items-center gap-1"><Calendar className="h-3 w-3" />{ek_kontrakt?.gueltig_bis ? `bis ${new Date(ek_kontrakt.gueltig_bis).toLocaleDateString('de-DE')}` : 'Unbefristet'}</span>
-        </div>
-        <div className="flex items-center gap-1 text-xs">
-          <span className="text-gray-400">Währung:</span>
-          <Badge variant="secondary" className="font-mono text-xs">{ek_kontrakt?.waehrung_kurz || 'EUR'}</Badge>
-        </div>
-      </div>
-    </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   );
 }
 
