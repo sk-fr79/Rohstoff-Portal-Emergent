@@ -1774,7 +1774,7 @@ export function KontraktePage() {
 
   const handleNewKontrakt = () => {
     const today = new Date().toISOString().split('T')[0];
-    const emptyKontrakt: Kontrakt = { id: 'NEU', vorgang_typ: 'EK', name1: '', waehrung_kurz: 'EUR', waehrungskurs: 1, status: 'OFFEN', aktiv: true, erstellungsdatum: today, ist_fixierung: false, ist_strecke: false, positionen: [] };
+    const emptyKontrakt: Kontrakt = { id: 'NEU', vorgang_typ: 'EK', name1: '', waehrung_kurz: 'EUR', waehrungskurs: 1, status: 'OFFEN', aktiv: true, erstellungsdatum: today, ist_fixierung: false, ist_strecke: false, positionen: [], abgeschlossen: false, kopie_bemerkung_auf_pos: false };
     setSelectedKontrakt(emptyKontrakt);
     setSelectedAdresse(null);
     reset(emptyKontrakt);
