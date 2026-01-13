@@ -1523,13 +1523,18 @@ function StreckenKarte({
 
 
 // ========================== MAIN COMPONENT ==========================
-export function KontraktePage() {
+interface KontraktePageProps {
+  defaultFilter?: 'EK' | 'VK' | 'STRECKE' | '';
+  pageTitle?: string;
+}
+
+export function KontraktePage({ defaultFilter = '', pageTitle }: KontraktePageProps) {
   const queryClient = useQueryClient();
   const [selectedKontrakt, setSelectedKontrakt] = useState<Kontrakt | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [isNewRecord, setIsNewRecord] = useState(false);
   const [activeSection, setActiveSection] = useState('kopf');
-  const [filterTyp, setFilterTyp] = useState<string>('');
+  const [filterTyp, setFilterTyp] = useState<string>(defaultFilter);
   const [showPositionDialog, setShowPositionDialog] = useState(false);
   const [editingPosition, setEditingPosition] = useState<Position | null>(null);
   const [selectedAdresse, setSelectedAdresse] = useState<AdresseOption | null>(null);
@@ -1540,18 +1545,29 @@ export function KontraktePage() {
   const [streckenLieferant, setStreckenLieferant] = useState<AdresseOption | null>(null);
   const [streckenAbnehmer, setStreckenAbnehmer] = useState<AdresseOption | null>(null);
   
+  // Fester Filter-Modus basierend auf defaultFilter
+  const isFixedFilter = defaultFilter !== '';
+  
   const { isDragging, containerRef, startDragging, leftPanelStyle, rightPanelStyle } = useResizablePanel();
 
   const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm<KontraktForm>({
     resolver: zodResolver(kontraktSchema),
-    defaultValues: { vorgang_typ: 'EK', waehrung_kurz: 'EUR', waehrungskurs: 1, status: 'OFFEN', aktiv: true, ist_fixierung: false, ist_strecke: false }
+    defaultValues: { 
+      vorgang_typ: defaultFilter === 'VK' ? 'VK' : 'EK', 
+      waehrung_kurz: 'EUR', 
+      waehrungskurs: 1, 
+      status: 'OFFEN', 
+      aktiv: true, 
+      ist_fixierung: false, 
+      ist_strecke: defaultFilter === 'STRECKE' 
+    }
   });
 
   const watchFields = watch();
 
   // Queries
   const { data: kontrakteData, isLoading } = useQuery({
-    queryKey: ['kontrakte'],
+    queryKey: ['kontrakte', defaultFilter],
     queryFn: async () => { const response = await api.get('/kontrakte'); return response.data; }
   });
 
