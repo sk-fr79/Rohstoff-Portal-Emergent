@@ -12,11 +12,11 @@ import {
   Plus, MoreHorizontal, Pencil, Trash2, FileText, Eye, 
   Save, X, Building2, Package, Truck,
   ArrowDownToLine, ArrowUpFromLine, CheckCircle, Clock,
-  AlertTriangle, Ban, TrendingUp,
+  AlertTriangle, Ban, TrendingUp, Lock,
   DollarSign, FileCheck, MessageSquare,
-  User, Search, ChevronDown, CreditCard,
-  History, Copy,
-  XCircle, ChevronRight, ArrowRightLeft,
+  User, Users, Search, ChevronDown, CreditCard,
+  History, Copy, RefreshCw, Printer, Download, Activity,
+  XCircle, ChevronRight, ArrowRightLeft, Filter, Warehouse,
   Link2, Unlink, ArrowRight, SlidersHorizontal, CalendarRange
 } from 'lucide-react';
 import { api } from '@/services/api/client';
