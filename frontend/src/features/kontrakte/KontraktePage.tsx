@@ -2100,7 +2100,7 @@ export function KontraktePage({ defaultFilter = '', pageTitle }: KontraktePagePr
   const { title, desc } = getTitleAndDescription();
 
   // Ergebnis-Count
-  const totalResults = filterTyp === 'STRECKE' ? streckenGruppen.length : normaleKontrakte.length + streckenGruppen.length;
+  const totalResults = defaultFilter === 'STRECKE' ? streckenGruppen.length : normaleKontrakte.length + streckenGruppen.length;
 
   return (
     <div className="h-full flex flex-col">
