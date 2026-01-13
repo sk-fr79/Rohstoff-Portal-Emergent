@@ -2095,7 +2095,57 @@ export function KontraktePage() {
       {/* Content */}
       <div ref={containerRef} className="flex-1 flex overflow-hidden">
         <div className="p-6 overflow-auto transition-none" style={selectedKontrakt ? leftPanelStyle : { width: '100%' }}>
-          <div className="bg-white rounded-xl shadow-sm border"><DataTable columns={columns} data={filteredData} searchKey="name1" searchPlaceholder="Vertragspartner suchen..." onRowDoubleClick={openDetail} /></div>
+          {/* Streckengeschäfte als Karten */}
+          {streckenGruppen.length > 0 && (
+            <div className="mb-6">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="h-8 w-8 rounded-lg bg-orange-100 flex items-center justify-center">
+                  <ArrowRightLeft className="h-4 w-4 text-orange-600" />
+                </div>
+                <h2 className="font-semibold text-gray-900">Streckengeschäfte</h2>
+                <Badge variant="secondary" className="bg-orange-100 text-orange-700">{streckenGruppen.length}</Badge>
+              </div>
+              <div className="space-y-3">
+                {streckenGruppen.map((strecke) => (
+                  <StreckenKarte 
+                    key={strecke.strecken_id} 
+                    strecke={strecke} 
+                    onOpenKontrakt={openDetail}
+                    onAufloesen={(id) => streckeAufloesenMutation.mutate(id)}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+          
+          {/* Normale Kontrakte als Tabelle */}
+          {(normaleKontrakte.length > 0 || filterTyp !== 'STRECKE') && filterTyp !== 'STRECKE' && (
+            <div>
+              {streckenGruppen.length > 0 && (
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="h-8 w-8 rounded-lg bg-gray-100 flex items-center justify-center">
+                    <FileText className="h-4 w-4 text-gray-600" />
+                  </div>
+                  <h2 className="font-semibold text-gray-900">Einzelkontrakte</h2>
+                  <Badge variant="secondary">{normaleKontrakte.length}</Badge>
+                </div>
+              )}
+              <div className="bg-white rounded-xl shadow-sm border">
+                <DataTable columns={columns} data={normaleKontrakte} searchKey="name1" searchPlaceholder="Vertragspartner suchen..." onRowDoubleClick={openDetail} />
+              </div>
+            </div>
+          )}
+          
+          {/* Keine Daten */}
+          {streckenGruppen.length === 0 && normaleKontrakte.length === 0 && !isLoading && (
+            <div className="bg-white rounded-xl shadow-sm border p-12 text-center">
+              <div className="h-16 w-16 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-4">
+                <FileText className="h-8 w-8 text-gray-400" />
+              </div>
+              <h3 className="font-medium text-gray-900 mb-1">Keine Kontrakte gefunden</h3>
+              <p className="text-sm text-gray-500">Erstellen Sie einen neuen Kontrakt oder ändern Sie den Filter.</p>
+            </div>
+          )}
         </div>
 
         {selectedKontrakt && <ResizeHandle isDragging={isDragging} onMouseDown={startDragging} />}
