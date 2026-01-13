@@ -1548,6 +1548,11 @@ export function KontraktePage({ defaultFilter = '', pageTitle }: KontraktePagePr
   const [streckenLieferant, setStreckenLieferant] = useState<AdresseOption | null>(null);
   const [streckenAbnehmer, setStreckenAbnehmer] = useState<AdresseOption | null>(null);
   
+  // Search & Filter States
+  const [searchQuery, setSearchQuery] = useState('');
+  const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>({ from: undefined, to: undefined });
+  const [showFilters, setShowFilters] = useState(true);
+  
   // Fester Filter-Modus basierend auf defaultFilter
   const isFixedFilter = defaultFilter !== '';
   
@@ -1583,6 +1588,52 @@ export function KontraktePage({ defaultFilter = '', pageTitle }: KontraktePagePr
     queryKey: ['mandant-lookup'],
     queryFn: async () => { const response = await api.get('/kontrakte/lookup/mandant'); return response.data.data as MandantData | null; }
   });
+
+  // Wildcard-Suche Funktion
+  const matchesSearch = (kontrakt: Kontrakt, query: string): boolean => {
+    if (!query.trim()) return true;
+    const q = query.toLowerCase();
+    const searchFields = [
+      kontrakt.kontraktnummer,
+      kontrakt.name1,
+      kontrakt.name2,
+      kontrakt.ort,
+      kontrakt.plz,
+      kontrakt.sachbearbeiter_name,
+      kontrakt.status,
+      // Positionen durchsuchen
+      ...(kontrakt.positionen || []).flatMap(p => [p.artbez1, p.artbez2, p.artikel_nr]),
+    ].filter(Boolean).map(s => s?.toLowerCase());
+    
+    // Wildcard-Support: * oder % als Platzhalter
+    if (q.includes('*') || q.includes('%')) {
+      const regex = new RegExp(q.replace(/\*/g, '.*').replace(/%/g, '.*'), 'i');
+      return searchFields.some(f => f && regex.test(f));
+    }
+    return searchFields.some(f => f && f.includes(q));
+  };
+
+  // Datums-Filter Funktion
+  const matchesDateRange = (kontrakt: Kontrakt): boolean => {
+    if (!dateRange.from && !dateRange.to) return true;
+    const kontraktDatum = kontrakt.erstellungsdatum ? new Date(kontrakt.erstellungsdatum) : null;
+    if (!kontraktDatum) return false;
+    if (dateRange.from && kontraktDatum < dateRange.from) return false;
+    if (dateRange.to && kontraktDatum > dateRange.to) return false;
+    return true;
+  };
+
+  // Aktive Filter zählen
+  const activeFilterCount = [
+    searchQuery.trim() ? 1 : 0,
+    dateRange.from || dateRange.to ? 1 : 0,
+  ].reduce((a, b) => a + b, 0);
+
+  // Filter zurücksetzen
+  const clearAllFilters = () => {
+    setSearchQuery('');
+    setDateRange({ from: undefined, to: undefined });
+  };
 
   // Gruppierte Streckengeschäfte und normale Kontrakte
   const { streckenGruppen, normaleKontrakte } = useMemo(() => {
