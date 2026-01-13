@@ -2323,7 +2323,7 @@ export function KontraktePage({ defaultFilter = '', pageTitle }: KontraktePagePr
           )}
           
           {/* Normale Kontrakte als Tabelle - bei EK/VK-Filter oder ohne Filter */}
-          {normaleKontrakte.length > 0 && filterTyp !== 'STRECKE' && (
+          {normaleKontrakte.length > 0 && defaultFilter !== 'STRECKE' && (
             <div>
               {streckenGruppen.length > 0 && !isFixedFilter && (
                 <div className="flex items-center gap-2 mb-2">
