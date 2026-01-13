@@ -2119,16 +2119,6 @@ export function KontraktePage({ defaultFilter = '', pageTitle }: KontraktePagePr
             </div>
           </div>
           <div className="flex items-center gap-3">
-              <Select value={filterTyp || "ALL"} onValueChange={(v) => setFilterTyp(v === "ALL" ? "" : v)}>
-                <SelectTrigger className="w-[160px]"><SelectValue placeholder="Alle Typen" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="ALL">Alle Typen</SelectItem>
-                  <SelectItem value="EK"><span className="flex items-center gap-2"><ArrowDownToLine className="h-4 w-4 text-green-600" />Einkauf</span></SelectItem>
-                  <SelectItem value="VK"><span className="flex items-center gap-2"><ArrowUpFromLine className="h-4 w-4 text-blue-600" />Verkauf</span></SelectItem>
-                  <SelectItem value="STRECKE"><span className="flex items-center gap-2"><ArrowRightLeft className="h-4 w-4 text-orange-600" />Strecke</span></SelectItem>
-                </SelectContent>
-              </Select>
-            )}
             {/* Neu-Button anpassen basierend auf defaultFilter */}
             {defaultFilter === 'STRECKE' ? (
               <Button onClick={handleNewStrecke} className="bg-orange-600 hover:bg-orange-700" data-testid="new-strecke-btn">
