@@ -1602,7 +1602,7 @@ export function KontraktePage({ defaultFilter = '', pageTitle }: KontraktePagePr
       kontrakt.sachbearbeiter_name,
       kontrakt.status,
       // Positionen durchsuchen
-      ...(kontrakt.positionen || []).flatMap(p => [p.artbez1, p.artbez2, p.artikel_nr]),
+      ...(kontrakt.positionen || []).flatMap(p => [p.artbez1]),
     ].filter(Boolean).map(s => s?.toLowerCase());
     
     // Wildcard-Support: * oder % als Platzhalter
