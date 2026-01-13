@@ -84,11 +84,25 @@ export default function App() {
               <ArtikelPage />
             </ProtectedModule>
           } />
-          <Route path="kontrakte" element={
-            <ProtectedModule modul="kontrakte">
-              <KontraktePage />
-            </ProtectedModule>
-          } />
+          {/* Kontrakte - mit Unterrouten */}
+          <Route path="kontrakte">
+            <Route index element={<Navigate to="/kontrakte/einkauf" replace />} />
+            <Route path="einkauf" element={
+              <ProtectedModule modul="kontrakte">
+                <EinkaufskontraktePage />
+              </ProtectedModule>
+            } />
+            <Route path="verkauf" element={
+              <ProtectedModule modul="kontrakte">
+                <VerkaufskontraktePage />
+              </ProtectedModule>
+            } />
+            <Route path="strecken" element={
+              <ProtectedModule modul="kontrakte">
+                <StreckenkontraktePage />
+              </ProtectedModule>
+            } />
+          </Route>
           <Route path="wiegekarten" element={
             <ProtectedModule modul="wiegekarten">
               <WiegekartenPage />
