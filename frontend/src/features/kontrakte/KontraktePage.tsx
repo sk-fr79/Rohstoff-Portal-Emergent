@@ -12,7 +12,7 @@ import {
   Plus, MoreHorizontal, Pencil, Trash2, FileText, Eye, 
   Save, X, Building2, Package, Truck,
   ArrowDownToLine, ArrowUpFromLine, CheckCircle, Clock,
-  AlertTriangle, Ban, TrendingUp, Lock,
+  AlertTriangle, Ban, TrendingUp, Lock, Scale, Percent,
   DollarSign, FileCheck, MessageSquare,
   User, Users, Search, ChevronDown, CreditCard,
   History, Copy, RefreshCw, Printer, Download, Activity,
